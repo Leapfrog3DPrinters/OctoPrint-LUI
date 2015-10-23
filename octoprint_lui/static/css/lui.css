@@ -1,0 +1,693 @@
+/* 
+  Color Variables 
+*/
+/* 
+  Font face
+
+@font-face {
+  font-family: agenda-light;
+  src: url(../fonts/agenda-light.ttf);
+  font-weight: light;
+}
+
+/* 
+  Mixins
+*/
+/* Design CSS */
+html {
+  box-sizing: border-box; }
+
+*, *:before, *:after {
+  box-sizing: inherit; }
+
+html {
+  font-size: 0.8em;
+  user-select: none; }
+
+.clearfix:after {
+  content: "";
+  clear: both;
+  display: table; }
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0; }
+
+body {
+  font-family: agenda-light, sans-serif;
+  margin: 0;
+  font-size: 1.5rem; }
+
+a {
+  color: #ffffff;
+  text-decoration: none; }
+
+.app-wrap {
+  height: 100vh; }
+
+.content {
+  padding: 10px;
+  background: white;
+  box-shadow: inset 0 5px 0 rgba(0, 0, 0, 0.1);
+  line-height: 1.6; }
+
+.circle span {
+  color: #aaa;
+  text-align: center; }
+
+.icon-bar a {
+  text-align: center;
+  font-size: 1em;
+  padding: 1rem;
+  background: #434A54; }
+
+.icon-bar a:first-child {
+  border-left: 0; }
+
+.icon-bar a:hover {
+  background-color: #ffffff;
+  color: #434A54; }
+
+.icon-bar a:hover i {
+  color: #434A54; }
+
+.icon-bar .active, .icon-bar .active i {
+  background-color: #ffffff;
+  color: #434A54; }
+
+.icon-bar {
+  border-top: 3px solid #FF9734; }
+
+.icon-bar i {
+  display: block;
+  font-size: 2.5rem;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+  padding-bottom: 1rem; }
+
+.app-header {
+  background: #434A54;
+  color: #ffffff;
+  padding: 1rem; }
+
+.button-area {
+  display: flex; }
+
+.button-area ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1; }
+
+.button-area .button {
+  border: 1px solid #434A54;
+  border-radius: 1px;
+  display: flex;
+  background-color: #434A54; }
+
+.button-area .button a {
+  color: #ffffff;
+  padding: 10px 5px;
+  flex: 1 1 auto; }
+
+.button-area .button a:active {
+  background-color: #ffffff;
+  color: #434A54; }
+
+.button-area .secondary-button {
+  background-color: #ffffff; }
+
+.button-area .secondary-button a {
+  color: #434A54; }
+
+.button-area .secondary-button a:active {
+  color: #ffffff;
+  background-color: #434A54; }
+
+.button-area .ok-button {
+  background-color: #A9CC3C;
+  border: 1px solid #A9CC3C; }
+
+.button-area .failed-button {
+  background-color: #CC2B14;
+  border: 1px solid #CC2B14; }
+
+.button-area .ok-button a, .button-area .failed-button a {
+  color: #ffffff; }
+
+.button-area .ok-button a:active, .button-area .failed-button a:active {
+  color: #434A54;
+  background-color: #ffffff; }
+
+.title {
+  flex-basis: 100%;
+  border-bottom: 2px solid #FF9734;
+  height: 1.8em; }
+
+/*
+ Stop light
+*/
+#stop-light .light-red:hover {
+  fill: #FF6B3D; }
+
+#stop-light .light-orange:hover {
+  fill: #FAD83A; }
+
+#stop-light .light-green:hover {
+  fill: #6FFF3A; }
+
+/*
+ Flexbox + Important CSS Starts Here
+*/
+/*
+  Overall Layout
+*/
+.app-wrap {
+  display: flex;
+  flex-direction: column; }
+
+.app-wrap > * {
+  flex: 1 0 auto; }
+
+/*
+  Header
+*/
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-basis: 45px;
+  flex-shrink: 1; }
+
+.app-header h3 {
+  align-self: center;
+  font-size: 1em; }
+
+/*
+  Tabs
+*/
+.tabs {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex-shrink: 1; }
+
+.tab {
+  display: none;
+  flex: 1 0 auto; }
+
+.open {
+  display: flex; }
+
+/*
+  Content
+*/
+.content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: stretch; }
+
+.content > * {
+  flex: 1 1 100%; }
+
+/* 
+  Overlay & Fly out
+
+*/
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  display: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity .2s ease-in-out 1s; }
+  .overlay.active {
+    opacity: 1;
+    display: block; }
+
+.flyout {
+  background-color: #ffffff;
+  bottom: 0;
+  height: 100%;
+  max-width: 280px;
+  overflow-y: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transform: translate3d(100%, 0, 0);
+  width: 80%;
+  -webkit-transition: transform 0.2s ease-in-out;
+  -moz-transition: transform 0.2s ease-in-out;
+  -ms-transition: transform 0.2s ease-in-out;
+  -o-transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column; }
+  .flyout.active {
+    transform: translate3d(0, 0, 0); }
+
+.flyout-header {
+  background-color: #434A54;
+  color: white;
+  padding: 0.5em; }
+  .flyout-header h4 {
+    display: inline-block;
+    margin: 0; }
+
+.flyout-body {
+  overflow-y: auto;
+  padding: 1em;
+  flex: 1 1 auto; }
+
+.flyout-close {
+  cursor: pointer;
+  float: right; }
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.4; }
+
+/* 
+  Circles
+*/
+.circle {
+  display: flex;
+  flex-basis: 33%;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px; }
+
+.circle_text ul {
+  margin-top: -100px;
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center; }
+
+.circle > * {
+  flex: 1 1 auto; }
+
+.circle canvas {
+  flex-basis: 130px; }
+
+.target_temp {
+  font-size: 0.9em;
+  color: #aaa; }
+
+/*
+  Icon Bar 
+*/
+.icon-bar {
+  display: flex; }
+
+.icon-bar a {
+  flex: 1 1 auto;
+  color: #ffffff; }
+
+/*   
+  Button-area 
+*/
+.button-area {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between; }
+
+.button-area li {
+  flex: 1 1 100%;
+  text-align: center;
+  min-height: 0px;
+  display: flex; }
+
+.button-area a {
+  display: flex;
+  flex: 1;
+  align-items: center; }
+
+.button-area span {
+  display: block;
+  flex: 1;
+  text-align: center; }
+
+/* 
+  Control 
+*/
+#control .content
+.control-container {
+  display: flex;
+  flex-dirextion: column;
+  align-items: flex-start;
+  flex-basis: 100%; }
+
+.control-container > * {
+  flex: 1 1 100%; }
+
+.controls {
+  font-size: 4em;
+  fill: #434A54; }
+
+.controls:active {
+  fill: #ffffff;
+  stroke-width: 2;
+  stroke: #434A54; }
+
+.control-home {
+  fill: #ffffff;
+  stroke: #434A54;
+  stroke-width: 2; }
+
+.control-home:active {
+  fill: #434A54; }
+
+.controls:active .arrows {
+  fill: #434A54;
+  stroke: #434A54; }
+
+.control-extrusion {
+  flex-wrap: wrap; }
+
+.control-extrusion .extruder {
+  flex-basis: 50%; }
+
+.control-extrusion .extruder.active {
+  border: 2px solid #A9CC3C; }
+
+.arrows {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 3; }
+
+/*
+  filament
+*/
+.spools {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100%; }
+
+.spool {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 50%; }
+
+.spool > * {
+  flex: 1 1 100%; }
+
+.spool ul {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 auto; }
+
+.spool li {
+  flex: 1 1 100%; }
+
+.spool .spool-buttons {
+  align-self: flex-end;
+  margin: 10px; }
+
+/*
+  Progress bar
+*/
+.progress-bar {
+  background-color: #ffffff;
+  height: 30px;
+  padding: 3px;
+  width: 100%;
+  margin: 50px 0;
+  border: 1px #434A54 solid; }
+
+.progress-bar span {
+  display: block;
+  margin: 0;
+  padding: 0;
+  background-color: #434A54;
+  height: 100%;
+  text-align: center;
+  color: #ffffff;
+  font-size: 0.9em; }
+
+/*
+  #Status
+*/
+.print_temperature {
+  display: flex;
+  flex-wrap: wrap;
+  flex-grow: 4; }
+
+.webcam_area {
+  align-self: flex-end; }
+
+#status .content {
+  align-items: flex-start;
+  align-content: flex-start; }
+
+/* 
+  Files tab
+*/
+#files .content {
+  margin: 0px; }
+
+.file_area {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%; }
+
+.file_header {
+  display: flex;
+  border-bottom: 1px solid #FF9734;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0px 10px; }
+
+.file_header > * {
+  padding: 0px 5px; }
+
+.file_list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto; }
+
+.file_entry {
+  display: flex;
+  min-height: 50px;
+  border-bottom: 1px solid #FF9734;
+  flex-direction: column;
+  flex: 0 1 auto; }
+
+.file_entry a {
+  color: #434A54; }
+
+.file_footer {
+  flex: 0 1 auto; }
+
+.file_main {
+  display: flex;
+  flex: 1;
+  min-height: 55px; }
+
+.file_status, .file_info, .file_print {
+  display: flex;
+  flex: 0 0 55px; }
+
+.file_name {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0px; }
+
+.file_entry a {
+  align-items: center;
+  display: flex;
+  padding: 0px 20px;
+  min-width: 0px; }
+
+.file_entry i {
+  flex: 1;
+  text-align: center; }
+
+.file_entry span {
+  flex: 1 1 auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0px; }
+
+.file_entry .file_add_info {
+  display: none;
+  transition: all 500ms linear; }
+
+.file_entry .file_add_info.slide {
+  display: flex;
+  overflow: hidden;
+  flex-wrap: wrap;
+  animation: anim 0.1s ease-in-out;
+  background-color: #F6F7F7; }
+
+.file_extra_info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 50%;
+  padding: 5px 5px; }
+
+.file_entry .file_add_info li {
+  flex-grow: 1; }
+
+.file_info {
+  text-align: center; }
+
+.file_ok {
+  background-color: #A9CC3C; }
+
+.file_failed {
+  background-color: #CC2B14; }
+
+.file_ok i, .file_failed i {
+  color: white; }
+
+/* 
+  Print Steps
+*/
+.print_steps {
+  min-height: 100%;
+  display: flex;
+  flex-wrap: wrap; }
+
+.print_step:first-child {
+  border-top: 1px solid #FF9734;
+  border-left: 0px; }
+
+.print_step {
+  flex: 1 0 100%;
+  background-color: white;
+  display: flex; }
+
+.step_title, .step_info, .step_action {
+  border-bottom: 1px solid #FF9734;
+  bottom-right: 0px; }
+
+.step_status {
+  flex: 0 0 20px;
+  background-color: #F6F7F7;
+  display: flex; }
+
+.step_status.step_done {
+  background-color: #A9CC3C; }
+
+.step_status.step_warning {
+  background-color: #EDDB53; }
+
+.step_status.step_failed {
+  background-color: #CC2B14; }
+
+.step_title {
+  padding: 10px; }
+
+.step_info {
+  flex: 1 1 auto; }
+
+.step_action {
+  flex: 0 1 200px;
+  background-color: white;
+  min-height: 0;
+  display: flex;
+  justify-content: space-between; }
+
+.print_steps .button-area {
+  flex: 1 1 auto;
+  align-items: center; }
+
+.print_steps .button-area li {
+  margin: 0px;
+  height: 55px;
+  flex-basis: 50%; }
+
+/* 
+  Media Queries
+*/
+@media screen and (min-width: 790px) {
+  #status .content > * {
+    flex: 1 1 auto; }
+
+  #status .print_temperature {
+    flex-basis: 50%; }
+
+  #status .print_progress {
+    order: 1;
+    flex-basis: 100%; }
+
+  #status .webcam_area {
+    display: none; }
+
+  .file_entry .file_add_info.slide {
+    flex-wrap: wrap; }
+
+  .file_entry .file_extra_info {
+    flex-basis: 70%;
+    flex-direction: row;
+    flex-wrap: wrap; }
+
+  .file_entry .file_extra_info li {
+    flex-basis: 50%; }
+
+  .file_entry .file_add_info .button-area {
+    flex-wrap: nowrap;
+    flex-basis: 220px; }
+
+  /*   .icon-bar {
+      font-size: 0.8em;
+    }
+  
+    .icon-bar i {
+      font-size: 1.6rem;
+    } */
+  .print_steps {
+    flex-wrap: nowrap; }
+
+  .print_step:first-child {
+    border-left: 1px solid #FF9734;
+    border-top: 0px; }
+
+  .print_step {
+    flex-basis: 20%;
+    flex-direction: column; }
+
+  .step_title, .step_info, .step_action {
+    border-right: 1px solid #FF9734;
+    border-bottom: 0px; }
+
+  .step_title {
+    order: -1;
+    text-align: center; }
+
+  .step_action {
+    flex-basis: auto;
+    align-self: stretch; }
+
+  .print_steps .button-area li {
+    margin: 0px 10px;
+    margin-bottom: 0px; }
+
+  #control .content > * {
+    flex-basis: 50%; }
+
+  .control-extrusion {
+    padding-left: 10px; } }
+/* 
+  Animation Key frames 
+*/
+@keyframes anim {
+  0% {
+    display: none;
+    opacity: 0; }
+  1% {
+    display: flex; }
+  100% {
+    opacity: 1; } }

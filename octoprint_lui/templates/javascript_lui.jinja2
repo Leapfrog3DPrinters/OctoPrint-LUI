@@ -1,0 +1,11 @@
+
+<!-- Lib files -->
+<script src="{{ url_for("static", filename="js/lib/jquery/jquery-2.1.4.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/lodash.min.js") }}"></script>
+{% assets "js_client" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+{% endassets %}
+
+<!-- LUI JS files -->
+<script src="{{ url_for("plugin.lui.static", filename="js/lui.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/circle-progress.js") }}"></script>

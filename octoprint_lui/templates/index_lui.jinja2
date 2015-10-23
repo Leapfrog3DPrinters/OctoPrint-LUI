@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no">
+    <title>OctoPrint - LUI</title>
+        <link rel="stylesheet" href="{{ url_for("plugin.lui.static", filename="css/lui.css") }}">
+        <link rel="stylesheet" href="{{ url_for("plugin.lui.static", filename="css/font-awesome.min.css") }}">
+
+        <script>
+            var UI_API_KEY = "{{ uiApiKey }}";
+            var BASE_URL = "{{ url_for('index') }}";
+        </script>
+</head>
+<body>
+    <div class="app-wrap">
+        {% include 'header_lui.jinja2' %}
+        {% include 'overlay_flyout_lui.jinja2' %}
+        <section class="tabs">
+            {% include "tabs_lui/filament_lui.jinja2" %}
+            {% include 'tabs_lui/files_lui.jinja2' %}
+            {% include 'tabs_lui/print_lui.jinja2' %}
+            {% include 'tabs_lui/status_lui.jinja2' %}
+            {% include 'tabs_lui/control_lui.jinja2' %}
+            {% include 'tabs_lui/settings_lui.jinja2' %}
+        </section>  
+        {% include 'footer_lui.jinja2' %}
+    </div>
+    {% include 'javascript_lui.jinja2' %}
+</body>
+</html>
