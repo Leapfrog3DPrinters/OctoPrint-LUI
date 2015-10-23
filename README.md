@@ -13,8 +13,7 @@ Enables a mobile first responsive UI, build on modern browser capabilities of Fl
 
 ## Setup
 
-Install via the bundled [Plugin Manager](https://github.com/foosel/OctoPrint/wiki/Plugin:-Plugin-Manager)
-or manually using this URL:
+Install via this URL:
 
     https://github.com/Booli/OctoPrint-LUI/archive/master.zip
 

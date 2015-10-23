@@ -6,11 +6,7 @@
     <title>OctoPrint - LUI</title>
         <link rel="stylesheet" href="{{ url_for("plugin.lui.static", filename="css/lui.css") }}">
         <link rel="stylesheet" href="{{ url_for("plugin.lui.static", filename="css/font-awesome.min.css") }}">
-
-        <script>
-            var UI_API_KEY = "{{ uiApiKey }}";
-            var BASE_URL = "{{ url_for('index') }}";
-        </script>
+        {% include 'initscript_lui.jinja2' %}
 </head>
 <body>
     <div class="app-wrap">
