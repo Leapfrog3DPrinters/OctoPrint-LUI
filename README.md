@@ -1,5 +1,6 @@
-# OctoPrint-ForceLogin
+# OctoPrint-LUI
 
+Lily User Interface
 ----
 
 **Note** Works only with current development versions of OctoPrint (1.3.0-dev)
