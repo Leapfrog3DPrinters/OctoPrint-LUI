@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="user-scalable=no">
     <title>OctoPrint - LUI</title>
-        <link rel="stylesheet" href="{{ url_for("plugin.lui.static", filename="css/lui.css") }}">
-        <link rel="stylesheet" href="{{ url_for("plugin.lui.static", filename="css/font-awesome.min.css") }}">
+        {% include 'stylesheets_lui.jinja2' %}
         {% include 'initscript_lui.jinja2' %}
 </head>
 <body>

@@ -1,31 +1,4 @@
 $(function() {
-        OctoPrint = window.OctoPrint;
-
-        //~~ Lodash setup
-
-        _.mixin({"sprintf": sprintf, "vsprintf": vsprintf});
-
-        //~~ Logging setup
-
-        log.setLevel(CONFIG_DEBUG ? "debug" : "info");
-
-        //~~ OctoPrint client setup
-        OctoPrint.options.baseurl = BASEURL;
-        OctoPrint.options.apikey = UI_API_KEY;
-
-        OctoPrint.socket.onMessage("connected", function(data) {
-            var payload = data.data;
-            OctoPrint.options.apikey = payload.apikey;
-
-            // update the API key directly in jquery's ajax options too,
-            // to ensure the fileupload plugin and any plugins still using
-            // $.ajax directly still work fine too
-            UI_API_KEY = payload["apikey"];
-            $.ajaxSetup({
-                headers: {"X-Api-Key": UI_API_KEY}
-            });
-        });
-
 
         //~~ Initialize view models
 
@@ -47,7 +20,7 @@ $(function() {
             var viewModelClass = viewModel[0];
             var viewModelParameters = viewModel[1];
 
-            if (viewModelParameters != undefined) {
+            if (viewModelParameters !== undefined) {
                 if (!_.isArray(viewModelParameters)) {
                     viewModelParameters = [viewModelParameters];
                 }
@@ -167,22 +140,6 @@ $(function() {
 
         //~~ Custom knockout.js bindings
 
-        ko.bindingHandlers.popover = {
-            init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-                var val = ko.utils.unwrapObservable(valueAccessor());
-
-                var options = {
-                    title: val.title,
-                    animation: val.animation,
-                    placement: val.placement,
-                    trigger: val.trigger,
-                    delay: val.delay,
-                    content: val.content,
-                    html: val.html
-                };
-                $(element).popover(options);
-            }
-        };
 
         ko.bindingHandlers.allowBindings = {
             init: function (elem, valueAccessor) {
@@ -203,37 +160,13 @@ $(function() {
             }
         };
 
-        ko.bindingHandlers.qrcode = {
-            update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-                var val = ko.utils.unwrapObservable(valueAccessor());
-
-                var defaultOptions = {
-                    text: "",
-                    size: 200,
-                    fill: "#000",
-                    background: null,
-                    label: "",
-                    fontname: "sans",
-                    fontcolor: "#000",
-                    radius: 0,
-                    ecLevel: "L"
-                };
-
-                var options = {};
-                _.each(defaultOptions, function(value, key) {
-                    options[key] = ko.utils.unwrapObservable(val[key]) || value;
-                });
-
-                $(element).empty().qrcode(options);
-            }
-        };
 
         ko.bindingHandlers.invisible = {
             init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                 if (!valueAccessor()) return;
                 ko.bindingHandlers.style.update(element, function() {
                     return { visibility: 'hidden' };
-                })
+                });
             }
         };
 
@@ -261,10 +194,6 @@ $(function() {
         $.fn.isChildOf = function (element) {
             return $(element).has(this).length > 0;
         };
-
-
-        // Use bootstrap tabdrop for tabs and pills
-        $('.nav-pills, .nav-tabs').tabdrop();
 
         // Allow components to react to tab change
         var tabs = $('#tabs a[data-toggle="tab"]');
@@ -309,7 +238,7 @@ $(function() {
                     viewModel.onBeforeBinding();
                 }
 
-                if (targets != undefined) {
+                if (targets !== undefined) {
                     if (!_.isArray(targets)) {
                         targets = [targets];
                     }
@@ -317,7 +246,7 @@ $(function() {
                     viewModel._bindings = [];
 
                     _.each(targets, function(target) {
-                        if (target == undefined) {
+                        if (target === undefined) {
                             return;
                         }
 
@@ -328,13 +257,13 @@ $(function() {
                             object = target;
                         }
 
-                        if (object == undefined || !object.length) {
+                        if (object === undefined || !object.length) {
                             log.info("Did not bind view model", viewModel.constructor.name, "to target", target, "since it does not exist");
                             return;
                         }
 
                         var element = object.get(0);
-                        if (element == undefined) {
+                        if (element === undefined) {
                             log.info("Did not bind view model", viewModel.constructor.name, "to target", target, "since it does not exist");
                             return;
                         }
@@ -354,7 +283,7 @@ $(function() {
                     });
                 }
 
-                viewModel._unbound = viewModel._bindings != undefined && viewModel._bindings.length == 0;
+                viewModel._unbound = viewModel._bindings !== undefined && viewModel._bindings.length === 0;
 
                 if (viewModel.hasOwnProperty("onAfterBinding")) {
                     viewModel.onAfterBinding();
@@ -368,7 +297,7 @@ $(function() {
         };
 
         if (!_.has(viewModelMap, "settingsViewModel")) {
-            throw new Error("settingsViewModel is missing, can't run UI")
+            throw new Error("settingsViewModel is missing, can't run UI");
         }
         viewModelMap["settingsViewModel"].requestData()
             .done(bindViewModels);

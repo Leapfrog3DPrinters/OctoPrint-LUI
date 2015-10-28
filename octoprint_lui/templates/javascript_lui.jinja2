@@ -1,13 +1,37 @@
-
 <!-- Lib files -->
 <script src="{{ url_for("static", filename="js/lib/jquery/jquery-2.1.4.min.js") }}"></script>
 <script src="{{ url_for("static", filename="js/lib/lodash.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/sprintf.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/loglevel.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/sockjs-0.3.4.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/knockout.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/knockout.mapping-latest.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/babel.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/moment-with-locales.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/modernizr.custom.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/jquery/jquery.ui.widget.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/jquery/jquery.fileupload.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/jquery/jquery.slimscroll.min.js") }}"></script>
+
 {% assets "js_client" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
 
 <!-- LUI JS files -->
 <script src="{{ url_for("plugin.lui.static", filename="js/app/main.js") }}"></script>
+
+<!-- LUI JS App ViewModel files -->
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/settings.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/loginstate.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/printerprofiles.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/users.js") }}"></script>
+
+
+<!-- LUI JS App util files -->
+<script src="{{ url_for("plugin.lui.static", filename="js/app/util/helpers.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/util/viewModelBinder.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/util/dataupdate_light.js") }}"></script>
+
 
 <!-- LUI JS Lib files -->
 <script src="{{ url_for("plugin.lui.static", filename="js/lib/circle-progress.js") }}"></script>

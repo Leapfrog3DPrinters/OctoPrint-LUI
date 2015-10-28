@@ -1,5 +1,62 @@
 $(function() {
 
+    OctoPrint = window.OctoPrint;
+
+    //~~ Lodash setup
+
+    _.mixin({"sprintf": sprintf, "vsprintf": vsprintf});
+
+    //~~ Logging setup
+
+    log.setLevel(CONFIG_DEBUG ? "debug" : "info");
+
+    //~~ OctoPrint client setup
+    OctoPrint.options.baseurl = BASE_URL;
+    OctoPrint.options.apikey = UI_API_KEY;
+
+    OctoPrint.socket.onMessage("connected", function(data) {
+        var payload = data.data;
+        OctoPrint.options.apikey = payload.apikey;
+
+        // update the API key directly in jquery's ajax options too,
+        // to ensure the fileupload plugin and any plugins still using
+        // $.ajax directly still work fine too
+        UI_API_KEY = payload["apikey"];
+        $.ajaxSetup({
+            headers: {"X-Api-Key": UI_API_KEY}
+        });
+    });
+
+
+    //~~ Initialize i18n
+
+    var catalog = window["BABEL_TO_LOAD_" + LOCALE];
+    if (catalog === undefined) {
+        catalog = {messages: undefined, plural_expr: undefined, locale: undefined, domain: undefined}
+    }
+    babel.Translations.load(catalog).install();
+
+    moment.locale(LOCALE);
+
+    // Dummy translation requests for dynamic strings supplied by the backend
+    var dummyTranslations = [
+        // printer states
+        gettext("Offline"),
+        gettext("Opening serial port"),
+        gettext("Detecting serial port"),
+        gettext("Detecting baudrate"),
+        gettext("Connecting"),
+        gettext("Operational"),
+        gettext("Printing from SD"),
+        gettext("Sending file to SD"),
+        gettext("Printing"),
+        gettext("Paused"),
+        gettext("Closed"),
+        gettext("Transfering file to SD")
+    ];
+
+    // Circle Progress stuff
+
 	$('.tool1.circle').circleProgress({
     value: 0.75,
     fill: { gradient: ['#A9CC3C', '#EDDB53', '#CC2B14'] },
