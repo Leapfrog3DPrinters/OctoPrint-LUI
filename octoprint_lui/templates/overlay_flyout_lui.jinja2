@@ -1,4 +1,23 @@
 <div class="overlay"></div>
 <aside id="flyout" class="flyout">
-    <div data-bind="template: { name: settingsTopic()}"></div>  
+    <div data-bind="template: { name: selectedFlyout() }"></div>
+    {% for key in templates.plugin_lui_flyout.order %}
+      {% set entry, data = templates.plugin_lui_flyout.entries[key] %}
+      <script type="text/html" id="{{ data._div }}">
+          <div class="flyout-header">
+              <h4>{{ entry }}</h4>
+              <span class="flyout-close" data-bind="click: closeFlyout">x</span>
+          </div>
+          <div class="flyout-body">
+              <!-- ko allowBindings: false -->
+              <div id="{{ data._div }}_flyout_content">
+                {% include data.template %}
+              </div>
+              <!-- /ko -->
+              <ul class="button-area">
+                <li class="button"><a href="#save" data-bind="click: closeFlyoutWithButton"><span>{{ data.button_text }}</span></a>
+              </ul>
+          </div>
+      </script>
+    {% endfor %}
 </aside>
