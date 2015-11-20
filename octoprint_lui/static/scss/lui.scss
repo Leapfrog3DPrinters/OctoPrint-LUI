@@ -244,6 +244,7 @@ a {
   align-items: center;
   flex-basis: 45px;
   flex-shrink: 1;
+  min-height: 45px;
 }
 
 .app-header h3 {
@@ -316,7 +317,7 @@ a {
   background-color: $second-color;
   bottom: 0;
   height: 100%;
-  max-width: 280px;
+  max-width: 500px;
   overflow-y: auto;
   position: fixed;
   right: 0;
@@ -453,7 +454,7 @@ a {
 }
 
 .controls {
-  font-size: 4em;
+  // font-size: 4em;
   fill: $main-color;
 }
 
@@ -576,6 +577,93 @@ a {
   align-content: flex-start;
 }
 
+
+/* 
+  Settings tab
+*/
+
+.settings_topic { 
+  display: flex;
+  min-height: 50px;
+  border-bottom: 1px solid $third-color;
+  flex-direction: column;
+  flex: 0 1 auto;
+}
+
+.topic_main {
+  display: flex;
+  flex:1;
+  min-height:55px;
+}
+
+.topic_dash {
+  display:flex;
+  flex: 0 0 55px;
+}
+
+.topic_name {
+  display:flex;
+  flex: 1 1 auto;
+  min-width: 0px;
+}
+
+.settings_topic a {
+  align-items: center;
+  display: flex;
+  padding: 0px 20px;
+  min-width: 0px;
+  flex: 1;
+  color: $main-color;
+}
+
+.settings_topic i {
+  flex: 1;
+  text-align: center;
+}
+
+.settings_topic span{
+  flex:1 1 auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0px; 
+}
+
+.topic_info {
+  display:flex;
+  flex: 0 0 55px;
+}
+
+.settings_input {
+  display: flex;
+  flex: 1 1 100%;
+}
+
+.settings_input ul {
+  display: flex;
+  flex-wrap:wrap;
+}
+
+.settings_input li {
+  display: flex;
+}
+
+.settings_entry {
+  flex: 1 1 100%;
+}
+
+
+.settings_entry span{
+  flex: 1 1 20%;
+  min-width: 0;
+}
+
+input:not([type=submit]):not([type=file]) {
+  font-size: 1em;
+  flex: 1 1 auto;
+  min-width:0;
+}
+
 /* 
   Files tab
 */
@@ -616,7 +704,6 @@ a {
   flex: 0 1 auto;
 }
 
-
 .file_entry a {
   color: $main-color;
 }
@@ -647,6 +734,7 @@ a {
   display: flex;
   padding: 0px 20px;
   min-width: 0px;
+  flex: 1;
 }
 
 .file_entry i {

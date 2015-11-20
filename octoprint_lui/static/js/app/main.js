@@ -118,22 +118,19 @@ $(function() {
     // Don't drag links on touch screen
     $('a').on('dragstart', function(event) {event.preventDefault();});
 
-    // Fly over JS  asd
-    var $flyout = $('.flyout'),
-    $overlay = $('.overlay'),
-    $flyoutToggle = $('.flyout-toggle');
-    
-    $flyoutToggle.bind("click keypress", function(e) {
-      e.preventDefault();
-      $flyout.toggleClass('active');
-      $overlay.toggleClass('active');
-    });
-     
-    $overlay.bind("click keypress", function(e) {
-    e.preventDefault();
-      $flyout.toggleClass('active');
-      $overlay.toggleClass('active');
-    });
 
+    var $overlay = $('.overlay'),
+    $flyout = $('.flyout'),
+    $flyoutclose = $('.flyout-close');
+    $overlay.bind("click keypress", function(e) {
+        e.preventDefault();
+        $flyout.toggleClass('active');
+        $overlay.toggleClass('active');
+    });
+    $flyoutclose.bind("click keypress", function(e) {
+        e.preventDefault();
+        $flyout.toggleClass('active');
+        $overlay.toggleClass('active');
+    });
 });
 //

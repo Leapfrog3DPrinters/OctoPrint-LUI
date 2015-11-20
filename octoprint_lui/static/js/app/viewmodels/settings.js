@@ -100,6 +100,11 @@ $(function() {
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 
+
+        //Template observable 
+        self.settingsTopic = ko.observable(undefined);
+
+        // Webcam
         self.webcam_ffmpegPathText = ko.observable();
         self.webcam_ffmpegPathOk = ko.observable(false);
         self.webcam_ffmpegPathBroken = ko.observable(false);
@@ -271,7 +276,7 @@ $(function() {
         };
 
         self.hide = function() {
-            self.settingsDialog.modal("hide");
+            toggleFlyOut();
         };
 
         self.requestData = function(local) {
@@ -595,11 +600,17 @@ $(function() {
                 self.requestData();
             }
         };
+
+        self.showSettingsTopic = function(topic) {
+            toggleFlyOut();
+            self.settingsTopic(topic);
+        };
+
     }
 
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
         ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel"],
-        ["#settings"]
+        ["#settings", "#flyout"]
     ]);
 });

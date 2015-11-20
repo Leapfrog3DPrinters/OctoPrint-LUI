@@ -1,82 +1,171 @@
 <div class="tab" id="settings">
-	<form class="form-horizontal">
-	    <div class="control-group" title="{{ _('Name of this OctoPrint instance, will be shown in the navigation bar and broadcast on the network') }}">
-	        <label class="control-label" for="settings-appearanceName">{{ _('Title') }}</label>
-	        <div class="setting-group">
-	            <input type="text" class="input-block-level" data-bind="value: appearance_name" id="settings-appearanceName">
-	        </div>
-	    </div>
-	</form>
-	<form class="form-horizontal">
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_temperatureGraph" id="settings-featureTemperatureGraph"> {{ _('Enable Temperature Graph') }}
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_gcodeViewer" id="settings-featureGcodeViewer"> {{ _('Enable GCode Visualizer') }}
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_sdSupport" id="settings-featureSdSupport"> {{ _('Enable SD support') }}
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_keyboardControl" id="settings-featureKeyboardControl"> {{ _("Enable Keyboard Control") }}
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_waitForStart" id="settings-featureWaitForStart"> {{ _('Wait for <code>start</code> on connect') }}
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_sdAlwaysAvailable" id="settings-featureSdAlwaysAvailable"> {{ _('Always assume SD card is present') }} <span class="label">{{ _('Repetier') }}</span>
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_alwaysSendChecksum" id="settings-featureAlwaysSendChecksum"> {{ _('Send a checksum with <strong>every</strong> command') }}  <span class="label">{{ _('Repetier') }}</span>
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_repetierTargetTemp" id="settings-featureRepetierTargetTemp"> {{ _('Support <code>TargetExtr%%n</code>/<code>TargetBed</code> target temperature format') }} <span class="label">{{ _('Repetier') }}</span>
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_disableExternalHeatupDetection" id="settings-featureExternalHeatupDetection"> {{ _('Disable detection of external heatups') }} <span class="label">{{ _('Repetier') }}</span>
-	            </label>
-	        </div>
-	    </div>
-	    <div class="control-group">
-	        <div class="setting-group">
-	            <label class="checkbox">
-	                <input type="checkbox" data-bind="checked: feature_swallowOkAfterResend" id="settings-swallowOkAfterResend"> {{ _('Swallow the first "ok" after a resend response') }}
-	            </label>
-	        </div>
-	    </div>
-	</form>
+    <div class="content">
+        <div class="settings_topics">
+            <!-- Printer -->
+            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('settingsPrinter')}">
+                <ul class="topic_main">
+                    <li class="topic_dash">
+                        <a href="">
+                            <i class="fa fa-print"></i>
+                        </a>
+                    </li>
+                    <li class="topic_name">
+                        <a href="#topic">
+                            <span>Printer</span>
+                        </a>
+                    </li>
+                    <li class="topic_info">
+                        <a href="#topic_info">
+                            <i class="fa fa-2x fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div><!-- Printer -->
+            <!-- Materials -->
+            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('settingsMaterials')}">
+                <ul class="topic_main">
+                    <li class="topic_dash">
+                        <a href="">
+                            <i class="fa fa-sun-o"></i>
+                        </a>
+                    </li>
+                    <li class="topic_name">
+                        <a href="#topic">
+                            <span>Materials</span>
+                        </a>
+                    </li>
+                    <li class="topic_info">
+                        <a href="#topic_info">
+                            <i class="fa fa-2x fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div><!-- Materials -->
+            <!-- Users -->
+            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('settingsUsers')}">
+                <ul class="topic_main">
+                    <li class="topic_dash">
+                        <a href="">
+                            <i class="fa fa-user"></i>
+                        </a>
+                    </li>
+                    <li class="topic_name">
+                        <a href="#topic">
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="topic_info">
+                        <a href="#topic_info">
+                            <i class="fa fa-2x fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div><!-- Users -->
+            <!-- Wireless -->
+            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('settingsWireless')}">
+                <ul class="topic_main">
+                    <li class="topic_dash">
+                        <a href="">
+                            <i class="fa fa-wifi"></i>
+                        </a>
+                    </li>
+                    <li class="topic_name">
+                        <a href="#topic">
+                            <span>Wireless</span>
+                        </a>
+                    </li>
+                    <li class="topic_info">
+                        <a href="#topic_info">
+                            <i class="fa fa-2x fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div><!-- Wireless -->
+            <!-- Advanced -->
+            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('settingsAdvanced')}">
+                <ul class="topic_main">
+                    <li class="topic_dash">
+                        <a href="">
+                            <i class="fa fa-plus"></i>
+                        </a>
+                    </li>
+                    <li class="topic_name">
+                        <a href="#topic">
+                            <span>Advanced</span>
+                        </a>
+                    </li>
+                    <li class="topic_info">
+                        <a href="#topic_info">
+                            <i class="fa fa-2x fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div><!-- Advanced -->
+        </div><!-- /Topics -->
+    </div> <!-- /Content -->
 </div>
+<!-- Printer -->
+<script type="text/html" id="settingsPrinter">
+    <div class="flyout-header">
+        <h4>Printer</h4>
+        <span class="flyout-close" onClick="toggleFlyOut()">x</span>
+    </div>
+    <div class="flyout-body">
+        {% include "settings_lui/printer_lui.jinja2" %}
+         <ul class="button-area">
+            <li class="button"><a href="#save" data-bind="click: function() { saveData(undefined, $root.hide) }"><span>Save</span></a>
+        </ul>
+    </div>
+</script>
+<!-- Materials -->
+<script type="text/html" id="settingsMaterials">
+    <div class="flyout-header">
+        <h4>Materials</h4>
+        <span class="flyout-close" onClick="toggleFlyOut()">x</span>
+    </div>
+    <div class="flyout-body">
+        {% include "settings_lui/materials_lui.jinja2" %}
+         <ul class="button-area">
+            <li class="button"><a href="#save" data-bind="click: function() { saveData(undefined, $root.hide) }"><span>Save</span></a>
+        </ul>
+    </div>
+</script>
+<!-- Wireless -->
+<script type="text/html" id="settingsWireless">
+    <div class="flyout-header">
+        <h4>Wirless</h4>
+        <span class="flyout-close" onClick="toggleFlyOut()">x</span>
+    </div>
+    <div class="flyout-body">
+        {% include "settings_lui/wireless_lui.jinja2" %}
+         <ul class="button-area">
+            <li class="button"><a href="#save" data-bind="click: function() { saveData(undefined, $root.hide) }"><span>Save</span></a>
+        </ul>
+    </div>
+</script>
+<!-- Users -->
+<script type="text/html" id="settingsUsers">
+    <div class="flyout-header">
+        <h4>Users</h4>
+        <span class="flyout-close" onClick="toggleFlyOut()">x</span>
+    </div>
+    <div class="flyout-body">
+        {% include "settings_lui/users_lui.jinja2" %}
+         <ul class="button-area">
+            <li class="button"><a href="#save" data-bind="click: function() { saveData(undefined, $root.hide) }"><span>Save</span></a>
+        </ul>
+    </div>
+</script>
+<!-- Advanced -->
+<script type="text/html" id="settingsAdvanced">
+    <div class="flyout-header">
+        <h4>Advanced</h4>
+        <span class="flyout-close" onClick="toggleFlyOut()">x</span>
+    </div>
+    <div class="flyout-body">
+        {% include "settings_lui/advanced_lui.jinja2" %}
+         <ul class="button-area">
+            <li class="button"><a href="#save" data-bind="click: function() { saveData(undefined, $root.hide) }"><span>Save</span></a>
+        </ul>
+    </div>
+</script>

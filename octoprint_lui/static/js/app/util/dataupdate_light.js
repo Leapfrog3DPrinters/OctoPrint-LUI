@@ -72,7 +72,7 @@ function DataUpdater(allViewModels) {
         var pluginsChanged = oldPluginHash != undefined && oldPluginHash != self._pluginHash;
         var configChanged = oldConfigHash != undefined && oldConfigHash != self._configHash;
         if (versionChanged || pluginsChanged || configChanged) {
-            self.reloadOverlay.show();
+            // self.reloadOverlay.show(); Commented for now maybe we want to use this in LUI
         }
     };
 

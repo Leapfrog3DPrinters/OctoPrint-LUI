@@ -1,0 +1,17 @@
+<div class="settings_input">
+    <ul> 
+        <li class="title"><span>Material profiles</span></li>
+        <!-- ko foreach: temperature_profiles -->
+            <li class="settings_entry "><span>Material: </span><input type="text" class="text-right" data-bind="value: name"></li>
+            <li class="settings_entry  extruder_temp"><span>Extruder:</span> <input type="text" data-bind="value: extruder"></li>
+            <li class="settings_entry  bed_temp"><span>Bed:</span> <input type="text" data-bind="value: bed"></li>
+            <ul class="button-area">
+                <li class="button failed-button"><a href="#save"><span>Delete</span></a></li>
+            </ul>
+        <!-- /ko -->
+    </ul>
+</div>    
+
+<ul class="button-area">
+    <li class="button"><a href="#save" data-bind="click: addTemperatureProfile"><span>Add new Profile</span></a>
+</ul>   

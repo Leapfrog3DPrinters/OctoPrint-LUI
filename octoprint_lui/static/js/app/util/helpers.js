@@ -602,5 +602,15 @@ var sizeObservable = function(observable) {
                 observable(result);
             }
         }
-    })
+    });
+
 };
+
+
+function toggleFlyOut () {
+    // Fly over JS  
+    var $flyout = $('.flyout'),
+    $overlay = $('.overlay');
+    $flyout.toggleClass('active');
+    $overlay.toggleClass('active');
+}

@@ -74,7 +74,7 @@ $(function() {
 
             return OctoPrint.browser.login(username, password, remember)
                 .done(function(response) {
-                    new PNotify({title: gettext("Login successful"), text: _.sprintf(gettext('You are now logged in as "%(username)s"'), {username: response.name}), type: "success"});
+                    log.info("User logged in", username);
                     self.fromResponse(response);
                 })
                 .fail(function() {
