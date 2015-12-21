@@ -74,18 +74,18 @@ $(function() {
 
             return OctoPrint.browser.login(username, password, remember)
                 .done(function(response) {
-                    log.info("User logged in", username);
+                    $.notify({title: gettext("Login successful"), text: _.sprintf(gettext('You are now logged in as "%(username)s"'), {username: response.name})}, "success");
                     self.fromResponse(response);
                 })
                 .fail(function() {
-                    new PNotify({title: gettext("Login failed"), text: gettext("User unknown or wrong password"), type: "error"});
+                    $.notify({title: gettext("Login failed"), text: gettext("User unknown or wrong password")}, "error");
                 });
         };
 
         self.logout = function() {
             OctoPrint.browser.logout()
                 .done(function(response) {
-                    new PNotify({title: gettext("Logout successful"), text: gettext("You are now logged out"), type: "success"});
+                    $.notify({title: gettext("Logout successful"), text: gettext("You are now logged out")}, "success");
                     self.fromResponse(response);
                 });
         };

@@ -10,7 +10,9 @@
 <script src="{{ url_for("static", filename="js/lib/babel.js") }}"></script>
 <script src="{{ url_for("static", filename="js/lib/moment-with-locales.min.js") }}"></script>
 <script src="{{ url_for("static", filename="js/lib/modernizr.custom.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/md5.min.js") }}"></script>
 <script src="{{ url_for("static", filename="js/lib/jquery/jquery.ui.widget.js") }}"></script>
+<script src="{{ url_for("static", filename="js/lib/jquery/jquery.iframe-transport.js") }}"></script>
 <script src="{{ url_for("static", filename="js/lib/jquery/jquery.fileupload.js") }}"></script>
 <script src="{{ url_for("static", filename="js/lib/jquery/jquery.slimscroll.min.js") }}"></script>
 
@@ -20,7 +22,6 @@
 {% endassets %}
 
 <!-- LUI JS files -->
-<script src="{{ url_for("plugin.lui.static", filename="js/app/main.js") }}"></script>
 
 <!-- LUI JS App ViewModel files -->
 <script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/settings.js") }}"></script>
@@ -28,14 +29,28 @@
 <script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/printerprofiles.js") }}"></script>
 <script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/users.js") }}"></script>
 <script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/flyout.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/navigation.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/usersettings.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/files.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/printerstate.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/connection.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/terminal.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/viewmodels/filament.js") }}"></script>
+
+
 
 
 
 <!-- LUI JS App util files -->
+
 <script src="{{ url_for("plugin.lui.static", filename="js/app/util/helpers.js") }}"></script>
-<script src="{{ url_for("plugin.lui.static", filename="js/app/util/viewModelBinder.js") }}"></script>
 <script src="{{ url_for("plugin.lui.static", filename="js/app/util/dataupdate_light.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/app/main.js") }}"></script>
+
 
 
 <!-- LUI JS Lib files -->
 <script src="{{ url_for("plugin.lui.static", filename="js/lib/circle-progress.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/lib/notify.js") }}"></script>
+<script src="{{ url_for("plugin.lui.static", filename="js/lib/notify-lui.js") }}"></script>
+

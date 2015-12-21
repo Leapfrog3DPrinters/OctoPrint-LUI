@@ -1,32 +1,80 @@
 <div class="tab" id="filament">
     <div class="content">
-        <div class="spools">
-            <div class="spool left-spool">
-                <div class="title">Left</div>
-                <object data="{{ url_for("plugin.lui.static", filename="img/filament_spool_up_r.svg") }}" type="image/svg+xml"></object>
-                <ul class="spool-properties">
-                    <li>Material: ABS</li>
-                    <li>Filament on spool: 1100 mm</li>
-                    <li>Pre-heat temperature: 250C</li>
-                </ul>
-                <div class="spool-buttons">
-                    <ul class="button-area">
-                        <li class="button flyout-toggle"><a href="#"><span>Change filament</span></a></li>
-                    </ul>
+        <div class="spool left-spool">
+            <div class="Table">
+                <div class="Table-row Table-header">
+                    <div class="Table-item">Left</div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Profile:</div>
+                    <div class="Table-item"><span data-bind="text: leftMaterial().name"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Extruder temperature:</div>
+                    <div class="Table-item"><span data-bind="text: leftMaterial().extruder"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Bed temperature:</div>
+                    <div class="Table-item"><span data-bind="text: leftMaterial().bed"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Filament left</div>
+                    <div class="Table-item"><span data-bind="text: leftFilamentAmount()"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Test</div>
+                    <div class="Table-item"><span data-bind="text: settings.temperature_profiles()[1].extruder"></span></div>
+                </div>
+                <div class="Table-Row">
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button secondary-button"><a href="#" data-bind="click: function(){showFilamentChangeFlyout()}"><span>Change Filament</span></a>
+                        </ul>
+                    </div>
+                </div>
+            </div> 
+            <div class="Table spool_picture">
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <object data="{{ url_for("plugin.lui.static", filename="img/filament_spool_up_r.svg") }}" type="image/svg+xml" style="width: 100%; height: 100%;"></object>
+                    </div>
                 </div>
             </div>
-            <div class="spool right-spool">
-                <div class="title">Right</div>
-                <object data="{{ url_for("plugin.lui.static", filename="img/filament_spool_up_r.svg") }}" type="image/svg+xml"></object>
-                <ul class="spool-properties">
-                    <li>Material: ABS</li>
-                    <li>Filament on spool: 1100 mm</li>
-                    <li>Pre-heat temperature: 250C</li>
-                </ul>
-                <div class="spool-buttons">
-                    <ul class="button-area">
-                        <li class="button flyout-toggle"><a href="#"><span>Change filament</span></a></li>
-                    </ul>
+        </div>
+        <div class="spool right-spool">
+            <div class="Table">
+                <div class="Table-row Table-header">
+                    <div class="Table-item">Right</div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Profile:</div>
+                    <div class="Table-item"><span data-bind="text: rightMaterial().name"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Extruder temperature:</div>
+                    <div class="Table-item"><span data-bind="text: rightMaterial().extruder"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Bed temperature:</div>
+                    <div class="Table-item"><span data-bind="text: rightMaterial().bed"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Filament left</div>
+                    <div class="Table-item"><span data-bind="text: rightFilamentAmount()"></span></div>
+                </div>
+                <div class="Table-Row">
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button secondary-button"><a href="#" data-bind=""><span>Change Filament</span></a>
+                        </ul>
+                    </div>
+                </div>
+            </div> 
+            <div class="Table spool_picture">
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <object data="{{ url_for("plugin.lui.static", filename="img/filament_spool_up_r.svg") }}" type="image/svg+xml" style="width: 100%; height: 100%;"></object>
+                    </div>
                 </div>
             </div>
         </div>

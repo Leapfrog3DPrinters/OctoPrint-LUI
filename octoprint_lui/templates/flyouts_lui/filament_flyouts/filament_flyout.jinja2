@@ -1,0 +1,20 @@
+ <div class="Table">
+    <!-- ko foreach: settings.temperature_profiles -->
+    <div class="Table-row">
+        <div class="Table-item profile_name">
+           <input type="text" class="text-right" data-bind="value: name">
+        </div>
+        <div class="Table-item extruder_temp">
+            <input type="text" data-bind="value: extruder">
+        </div>
+        <div class="Table-item bed_temp">
+            <input type="text" data-bind="value: bed">
+        </div>
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button failed-button"><a href="#delete" data-bind="click: $parent.removeTemperatureProfile"><span>Delete</span></a></li>
+            </ul>
+        </div>
+    </div>
+    <!-- /ko -->
+</div>

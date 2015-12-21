@@ -233,7 +233,7 @@ $(function() {
                 })
                 .fail(function() {
                     var text = gettext("There was unexpected error while saving the printer profile, please consult the logs.");
-                    new PNotify({title: gettext("Saving failed"), text: text, type: "error", hide: false});
+                    $.notify({title: gettext("Saving failed"), text: text}, "error");
                 })
                 .always(function() {
                     self.requestInProgress(false);
@@ -248,7 +248,7 @@ $(function() {
                 })
                 .fail(function() {
                     var text = gettext("There was unexpected error while removing the printer profile, please consult the logs.");
-                    new PNotify({title: gettext("Saving failed"), text: text, type: "error", hide: false});
+                    $.notify({title: gettext("Saving failed"), text: text}, "error");
                 })
                 .always(function() {
                     self.requestInProgress(false);
@@ -270,7 +270,7 @@ $(function() {
                 })
                 .fail(function() {
                     var text = gettext("There was unexpected error while updating the printer profile, please consult the logs.");
-                    new PNotify({title: gettext("Saving failed"), text: text, type: "error", hide: false});
+                    $notify({title: gettext("Saving failed"), text: text}, "error");
                 })
                 .always(function() {
                     self.requestInProgress(false);

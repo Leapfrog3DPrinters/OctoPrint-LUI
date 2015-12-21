@@ -1,0 +1,42 @@
+.notifyjs-lui-base {
+	position: relative;
+    min-height: 52px;
+    color:#444;
+}
+
+.notifyjs-corner {
+    width: 100%;
+}
+
+.notifyjs-lui-base .image {
+    display: table;
+    position: absolute;
+    height: auto;
+    width: auto;
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.notifyjs-lui-base .text-wrapper {
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    margin: 10px 0px;
+    clear: both;
+    color: white;
+    width: 100%;
+}
+
+.notifyjs-lui-base .notify-title {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.notifyjs-lui-base .notify-text {
+    font-size: 12px;
+    font-weight: normal;
+    vertical-align: middle;
+}

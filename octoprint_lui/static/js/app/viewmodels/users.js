@@ -73,7 +73,7 @@ $(function() {
 
             self.currentUser(undefined);
             self.editorActive(true);
-            self.addUserDialog.modal("show");
+            self.addUserDialog.toggleClass("hide");
         };
 
         self.confirmAddUser = function() {
@@ -90,7 +90,7 @@ $(function() {
                 .done(function() {
                     // close dialog
                     self.currentUser(undefined);
-                    self.addUserDialog.modal("hide");
+                    self.addUserDialog.toggleClass("hide");
                 });
         };
 
@@ -98,7 +98,7 @@ $(function() {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(user);
-            self.editUserDialog.modal("show");
+            self.editUserDialog.toggleClass("hide");
         };
 
         self.confirmEditUser = function() {
@@ -112,7 +112,7 @@ $(function() {
                 .done(function() {
                     // close dialog
                     self.currentUser(undefined);
-                    self.editUserDialog.modal("hide");
+                    self.editUserDialog.toggleClass("hide");
                 });
         };
 
@@ -120,7 +120,7 @@ $(function() {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(user);
-            self.changePasswordDialog.modal("show");
+            self.changePasswordDialog.toggleClass("hide");
         };
 
         self.confirmChangePassword = function() {
@@ -130,7 +130,7 @@ $(function() {
                 .done(function() {
                     // close dialog
                     self.currentUser(undefined);
-                    self.changePasswordDialog.modal("hide");
+                    self.changePasswordDialog.toggleClass("hide");
                 });
         };
 
@@ -173,7 +173,15 @@ $(function() {
             }
 
             return OctoPrint.users.add(user)
-                .done(self.fromResponse);
+            .done(
+                self.fromResponse,
+                $.notify({
+                    title: gettext("User Created"),
+                    text: _.sprintf(gettext('You have created "%(username)s"'), {username: user.name})},
+                    "success"
+                )
+            );
+
         };
 
         self.removeUser = function(user) {
@@ -183,16 +191,24 @@ $(function() {
 
             if (user.name == self.loginState.username()) {
                 // we do not allow to delete ourselves
-                new PNotify({
+                $.notify({
                     title: gettext("Not possible"),
-                    text: gettext("You may not delete your own account."),
-                    type: "error"
-                });
+                    text: gettext("You may not delete your own account.")},
+                    "error"
+                );
                 return $.Deferred().reject("You may not delete your own account").promise();
             }
 
             return OctoPrint.users.delete(user.name)
-                .done(self.fromResponse);
+                .done(
+                    self.fromResponse,
+                    $.notify({
+                        title: gettext("User Deleted"),
+                        text: _.sprintf(gettext('You have deleted "%(username)s"'), {username: user.name})},
+                        "success"
+                    )
+                );
+
         };
 
         self.updateUser = function(user) {

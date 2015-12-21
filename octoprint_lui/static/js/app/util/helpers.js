@@ -606,11 +606,7 @@ var sizeObservable = function(observable) {
 
 };
 
-
-function toggleFlyOut () {
-    // Fly over JS  
-    var $flyout = $('.flyout'),
-    $overlay = $('.overlay');
-    $flyout.toggleClass('active');
-    $overlay.toggleClass('active');
+function capitalize(s)
+{
+    return s && s[0].toUpperCase() + s.slice(1);
 }

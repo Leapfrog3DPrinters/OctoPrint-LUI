@@ -1,12 +1,17 @@
 <script>
     var UI_API_KEY = "{{ uiApiKey }}";
-    var BASE_URL = "{{ url_for('index') }}";
+    var BASEURL = "{{ url_for('index') }}";
+    var API_BASEURL = BASEURL + "api/";
+    var PLUGIN_BASEURL = BASEURL + "plugin/";
+
 
     var OCTOPRINT_VIEWMODELS = [];
     var ADDITIONAL_VIEWMODELS = [];
     var OCTOPRINT_ADDITIONAL_BINDINGS = [];
 
     var CONFIG_DEBUG = {%  if debug -%} true; {% else %} false; {%- endif %}
+    var CONFIG_SD_SUPPORT = {% if enableSdSupport -%} true; {% else %} false; {%- endif %}
+
 
     var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
     var SOCKJS_DEBUG = CONFIG_DEBUG;
@@ -17,6 +22,6 @@
     var LOCALE = "{{ g.locale|e }}";
     var AVAILABLE_LOCALES = {{ locales|tojson }};
     var CONFIG_LOGFILESPERPAGE = 10;
-    var CONFIG_USERSPERPAGE = 10;
-    var CONFIG_ACCESS_CONTROL = {% if enableAccessControl -%} true; {% else %} false; {%- endif %}
+    var CONFIG_USERSPERPAGE = 5;
+    var CONFIG_ACCESS_CONTROL = true; 
 </script>

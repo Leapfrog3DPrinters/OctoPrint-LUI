@@ -1,0 +1,64 @@
+<div class="overlay"></div>
+<aside id="settings_flyout" class="flyout">
+    <div class="flyout-header">
+        <h4 data-bind="text: settingsTopic"></h4>
+        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+    </div>
+    <div class="flyout-body">
+        <div id="printer_settings_flyout_content" class="flyout_content">
+            {% include "flyouts_lui/setting_flyouts/printer_flyout.jinja2" %}
+        </div>
+        <div id="materials_settings_flyout_content" class="flyout_content">
+            {% include "flyouts_lui/setting_flyouts/materials_flyout.jinja2" %}
+        </div>
+        <div id="wireless_settings_flyout_content" class="flyout_content">
+            {% include "flyouts_lui/setting_flyouts/wireless_flyout.jinja2" %}
+        </div>
+        <div id="users_settings_flyout_content" class="flyout_content">
+            {% include "flyouts_lui/setting_flyouts/users_flyout.jinja2" %}
+        </div>
+        <!-- ko allowBindings: false -->
+        <div id="advanced_settings_flyout_content" class="flyout_content">
+            {% include "flyouts_lui/setting_flyouts/advanced_flyout.jinja2" %}
+        </div>
+        <!-- /ko -->
+        <!-- ko allowBindings: false -->
+        <div id="terminal_settings_flyout_content" class="flyout_content">
+            {% include "flyouts_lui/setting_flyouts/terminal_flyout.jinja2" %}
+        </div>
+        <!-- /ko -->
+        <ul class="button-area" style="align-self: flex-end">
+          <li class="button secondary-button"><a href="#" data-bind="click: flyout.closeFlyout"><span>Back</span></a>
+          <li class="button"><a href="#" data-bind="click: flyout.closeFlyoutWithButton"><span>Save</span></a>
+        </ul>
+    </div>
+</aside>
+<aside id="login_flyout" class="flyout">
+    <div class="flyout-header">
+        <h4>Login</h4>
+        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+    </div>
+    <div class="flyout-body">
+        <div id="login_flyout_content">
+            {% include "flyouts_lui/login_flyouts/login_flyout.jinja2" %}
+        </div>
+        <ul class="button-area">
+          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutWithButton"><span data-bind="text: textLogin"></span></a>
+        </ul>
+    </div>
+</aside>
+<aside id="filament_flyout" class="flyout">
+    <div class="flyout-header">
+        <h4>Filament</h4>
+        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+    </div>
+    <div class="flyout-body">
+        <div id="filament_flyout_content">
+            {% include "flyouts_lui/filament_flyouts/filament_flyout.jinja2" %}
+        </div>
+        <ul class="button-area">
+          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutWithButton"><span data-bind="">Abort</span></a>
+        </ul>
+    </div>
+</aside>
+

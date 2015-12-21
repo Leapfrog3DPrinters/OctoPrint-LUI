@@ -5,7 +5,7 @@ $(function() {
         self.loginState = parameters[0];
         self.users = parameters[1];
         self.printerProfiles = parameters[2];
-        self.floutViewModel = parameters[3];
+        self.flyout = parameters[3];
 
         self.allViewModels = [];
 
@@ -603,8 +603,19 @@ $(function() {
         };
 
         self.showSettingsTopic = function(topic) {
-            toggleFlyOut();
-            self.settingsTopic(topic);
+            self.requestData();
+            var settings_topic = "#" + topic +'_settings_flyout_content';
+            var $settings_topic_content = $(settings_topic);
+            console.log(settings_topic);
+            $settings_topic_content.addClass('active');
+            self.settingsTopic(capitalize(topic));
+            self.flyout.showFlyout('settings', topic)
+                .done(function () {
+                    console.log("Button Clicked");
+                    self.saveData();
+                })
+                .fail(function() {console.log("Close or Overlay")})
+                .always(function() {$settings_topic_content.removeClass('active')});
         };
 
     }
@@ -612,6 +623,6 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
         ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel", "flyoutViewModel"],
-        ["#settings"]
+        ["#settings", "#settings_flyout"]
     ]);
 });
