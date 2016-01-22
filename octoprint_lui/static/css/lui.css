@@ -832,9 +832,9 @@ a {
   box-sizing: initial;
   position: relative;
   text-align: center;
-  width: 100%;
   font-size: 0.9em;
-  height: 1.5em; }
+  height: 1.5em;
+  width: 100%; }
 
 .progress-small {
   font-size: 9px;
@@ -854,7 +854,7 @@ a {
   height: 100%;
   overflow: hidden;
   position: relative;
-  width: auto; }
+  width: 0px; }
 
 .progress.progress-stacked > span {
   display: inline-block;

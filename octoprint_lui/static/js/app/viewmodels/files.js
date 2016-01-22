@@ -314,6 +314,11 @@ $(function() {
             OctoPrint.files.delete(file.origin, OctoPrint.files.pathForElement(file))
                 .done(function() {
                     self.requestData(undefined, filenameToFocus, OctoPrint.files.pathForElement(file.parent));
+                    $.notify({
+                        title: gettext("File removed succesfully"),
+                        text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
+                        "success"
+                    )
                 })
         };
 
@@ -513,23 +518,15 @@ $(function() {
             }
 
             var uploadProgress = $("#gcode_upload_progress");
-            var uploadProgressBar = uploadProgress.find(".bar");
+            var uploadProgressBar = uploadProgress.find(".bg-orange");
 
             var localTarget = CONFIG_SD_SUPPORT ? $("#drop_locally") : $("#drop");
             var sdTarget = $("#drop_sd");
 
-            function setProgressBar(percentage, text, active) {
+            function setProgressBar(percentage) {
                 uploadProgressBar
                     .css("width", percentage + "%")
-                    .text(text);
 
-                if (active) {
-                    uploadProgress
-                        .addClass("progress-striped active");
-                } else {
-                    uploadProgress
-                        .removeClass("progress-striped active");
-                }
             }
 
             function gcode_upload_done(e, data) {
@@ -569,9 +566,7 @@ $(function() {
 
             function gcode_upload_progress(e, data) {
                 var progress = parseInt(data.loaded / data.total * 100, 10);
-                var uploaded = progress >= 100;
-
-                setProgressBar(progress, uploaded ? gettext("Saving ...") : gettext("Uploading ..."), uploaded);
+                setProgressBar(progress);
             }
 
             function setDropzone(dropzone, enable) {
