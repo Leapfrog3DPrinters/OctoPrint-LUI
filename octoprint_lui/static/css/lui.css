@@ -812,7 +812,7 @@ a {
           flex: 1 1 100%; }
 
 .bg-main {
-  background-color: #434A54; }
+  background-color: #434A54 !important; }
 
 .bg-orange {
   background-color: #FF9734 !important; }
@@ -825,6 +825,10 @@ a {
 
 .bg-red {
   background-color: #CC2B14 !important; }
+
+.bg-none {
+  background-color: transparent !important;
+  color: #434A54 !important; }
 
 .progress {
   background-color: #f9f9f9;
@@ -854,7 +858,7 @@ a {
   height: 100%;
   overflow: hidden;
   position: relative;
-  width: 0px; }
+  float: left; }
 
 .progress.progress-stacked > span {
   display: inline-block;

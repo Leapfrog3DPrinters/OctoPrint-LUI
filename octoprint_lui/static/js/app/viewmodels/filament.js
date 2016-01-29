@@ -39,13 +39,7 @@ $(function() {
     };
 
     self._processStateData = function(data) {
-        self.isErrorOrClosed(data.flags.closedOrError);
-        self.isOperational(data.flags.operational);
-        self.isPaused(data.flags.paused);
-        self.isPrinting(data.flags.printing);
-        self.isError(data.flags.error);
-        self.isReady(data.flags.ready);
-        self.isLoading(data.flags.loading);
+
     };
 
     self.onBeforeBinding = function () {

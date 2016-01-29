@@ -676,7 +676,7 @@ a {
 }
 
 .bg-main {
-  background-color: $main-color;
+  background-color: $main-color !important;
 }
 
 .bg-orange {
@@ -693,6 +693,11 @@ a {
 
 .bg-red {
   background-color: $color-failed !important;
+}
+
+.bg-none {
+  background-color: transparent !important;
+  color: $main-color !important;
 }
 
 
@@ -727,7 +732,7 @@ a {
   height: 100%;
   overflow: hidden;
   position: relative;
-  width: 0px;
+  float: left;
 }
 .progress.progress-stacked > span {
   display: inline-block;
