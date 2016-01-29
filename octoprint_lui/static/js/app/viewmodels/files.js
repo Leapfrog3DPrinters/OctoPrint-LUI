@@ -6,6 +6,7 @@ $(function() {
         self.settingsViewModel = parameters[0];
         self.loginState = parameters[1];
         self.printerState = parameters[2];
+        self.flyout = parameters[3];
         //self.slicing = parameters[3];
 
         self.isErrorOrClosed = ko.observable(undefined);
@@ -689,7 +690,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel"],
-        ["#files"]
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel"],
+        ["#files", "#file_flyout"]
     ]);
 });

@@ -56,7 +56,7 @@ $(function() {
   OCTOPRINT_VIEWMODELS.push([
     FilamentViewModel,
     ["loginStateViewModel","settingsViewModel","flyoutViewModel","printerStateViewModel"],
-    ["#filament", "#filament_flyout"]
+    ["#filament_status", "#filament_flyout"]
   ]);
 
 });

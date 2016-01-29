@@ -61,4 +61,18 @@
         </ul>
     </div>
 </aside>
+<aside id="file_flyout" class="flyout">
+    <div class="flyout-header">
+        <h4>Print jobs</h4>
+        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+    </div>
+    <div class="flyout-body">
+        <div id="filament_flyout_content">
+            {% include "flyouts_lui/file_flyouts/file_flyout.jinja2" %}
+        </div>
+        <ul class="button-area">
+          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutWithButton"><span data-bind="">Select job</span></a>
+        </ul>
+    </div>
+</aside>
 

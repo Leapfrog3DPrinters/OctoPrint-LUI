@@ -4,6 +4,7 @@ $(function() {
         var self = this;
 
         self.loginState = parameters[0];
+        self.flyout = parameters[1];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -213,11 +214,18 @@ $(function() {
         self.cancel = function() {
             OctoPrint.job.cancel();
         };
+
+        self.showFileSelectFlyout =function () {
+            self.flyout.showFlyout('file')
+            .done(function (){
+              console.log("file");
+            });
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel"],
-        ["#status"]
+        ["loginStateViewModel", "flyoutViewModel"],
+        ["#print"]
     ]);
 });

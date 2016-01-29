@@ -162,6 +162,9 @@ a {
   color: #434A54;
   background-color: #ffffff; }
 
+.button-area i {
+  padding-right: 1em; }
+
 .title {
   -webkit-flex-basis: 100%;
       -ms-flex-preferred-size: 100%;
@@ -580,11 +583,17 @@ a {
     -webkit-flex-basis: 0;
         -ms-flex-preferred-size: 0;
             flex-basis: 0;
-    padding: 0.5em;
+    padding: 0.4em;
     word-break: break-word; }
     .Table-item:before {
       width: 30%;
       font-weight: 700; }
+  .Table-nested {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+        -ms-flex-direction: column;
+            flex-direction: column; }
 
 .Table-item-grow-1 {
   -webkit-box-flex: 1;
@@ -1035,7 +1044,8 @@ a {
 
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
-  padding-left: 10px; }
+  padding-left: 10px;
+  min-width: 0; }
 
 /* 
   Settings Flyout
