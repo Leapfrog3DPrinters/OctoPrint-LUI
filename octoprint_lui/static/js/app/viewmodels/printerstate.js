@@ -87,6 +87,13 @@ $(function() {
                 return gettext("Pause");
         });
 
+        self.fileSelected = ko.computed(function() {
+            if(self.filename()) 
+                return true
+            else 
+                return false
+        });
+
         self.timelapseString = ko.computed(function() {
             var timelapse = self.timelapse();
 

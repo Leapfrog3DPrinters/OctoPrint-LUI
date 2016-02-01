@@ -9,9 +9,9 @@
             </div>
 
             <!-- ko foreach: filesAndFolders -->
-            <div class="file_entry" data-bind="attr: { id: $root.getEntryId($data) }, template: { name: $root.templateFor($data), data: $data }"></div>
+            <div class="file_entry" data-bind="attr: { id: $root.getEntryIdSelect($data) }, template: { name: $root.templateForSelect($data), data: $data }"></div>
             <!-- /ko -->
-            <script type="text/html" id="files_template_machinecode">
+            <script type="text/html" id="files_template_select_machinecode">
                 <ul class="file_main">
                     <li class="file_status" data-bind="css: $root.getSuccessClass($data)"><a href="#file_status"><i class="fa" data-bind="css: $root.getSuccessIcon($data)"></i></a></li>
                     <li class="file_name"><a href="#file_name"><span data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }, text: name, click: function() { if ($root.enableAdditionalData($data)) { $root.loadFile($data, false); } else { return; } }, css: { disabled: !$root.enableAdditionalData($data) }" title="{{ _('Additional data') }}"></span></a></li>
@@ -26,7 +26,7 @@
                 </div>
             </script>
 
-            <script type="text/html" id="files_template_model">
+            <script type="text/html" id="files_template_select_model">
                 <div class="title muted" data-bind="text: name"></div>
                 <div class="uploaded">{{ _('Uploaded') }}: <span data-bind="text: formatTimeAgo(date)"></span></div>
                 <div class="size">{{ _('Size') }}: <span data-bind="text: formatSize(size)"></span></div>
@@ -36,7 +36,7 @@
                 </div>
             </script>
 
-            <script type="text/html" id="files_template_folder">
+            <script type="text/html" id="files_template_select_folder">
                 <div data-bind="click: $root.changeFolder">
                     <ul class="file_main">
                         <li class="file_status file_neutral"><a href="#file_status"><i class="fa fa-folder-open"></i></a></li>

@@ -377,8 +377,16 @@ $(function() {
             return "files_template_" + data.type;
         };
 
+        self.templateForSelect = function(data) {
+            return "files_template_select_" + data.type;
+        };
+
         self.getEntryId = function(data) {
             return "gcode_file_" + md5(data["origin"] + ":" + data["name"]);
+        };
+
+        self.getEntryIdSelect = function(data) {
+            return "gcode_file_select_" + md5(data["origin"] + ":" + data["name"]);
         };
 
         self.getEntryElement = function(data) {

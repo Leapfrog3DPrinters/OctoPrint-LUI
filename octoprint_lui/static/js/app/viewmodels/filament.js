@@ -7,15 +7,6 @@ $(function() {
     self.flyout = parameters[2];
     self.printerState = parameters[3];
 
-    self.isErrorOrClosed = ko.observable(undefined);
-    self.isOperational = ko.observable(undefined);
-    self.isPrinting = ko.observable(undefined);
-    self.isPaused = ko.observable(undefined);
-    self.isError = ko.observable(undefined);
-    self.isReady = ko.observable(undefined);
-    self.isLoading = ko.observable(undefined);
-
-
     self.leftMaterial = ko.observable(undefined);
     self.rightMaterial = ko.observable(undefined);
 

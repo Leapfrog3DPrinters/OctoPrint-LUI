@@ -885,6 +885,7 @@ input:not([type=submit]):not([type=file]) {
   display:flex;
   flex-direction:column;
   min-height: 100%;
+  padding-bottom: 10px;
 }
 
 .file_header {
