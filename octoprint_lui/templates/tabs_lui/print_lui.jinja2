@@ -1,77 +1,149 @@
 <div class="tab open" id="print">
     <div class="content">
-        <div class="print_steps">
-            <div class="print_step load_filament">
-                <div class="step_status step_done">
+        <div class="status_block print_status">
+            <div class="Table">
+                <div class="Table-row Table-header">
+                    <div class="Table-item">Print Job</div>
                 </div>
-                <div class="step_title">
-                    Load Filament
+                <div class="Table-row">
+                    <div class="Table-item Table-item-grow-4"><i class="fa fa-cube" style="font-size: 12em; color: lightgrey"></i></div>
+                    <div class="Table-item Table-item-grow-5 Table-nested">
+                        <div class="Table-row">
+                            <div class="Table-item">Job name:</div>
+                            <div class="Table-item" data-bind="text: filename"></div>
+                        </div>
+                        <div class="Table-row">
+                            <div class="Table-item">Estimated time:</div>
+                            <div class="Table-item" data-bind="text: estimatedPrintTimeString">1h</div>
+                        </div>
+                        <div class="Table-row">
+                            <div class="Table-item">Time left:</div>
+                            <div class="Table-item" data-bind="text: printTimeLeftString">59m</div>
+                        </div>
+                        <div class="Table-row">
+                            <div class="Table-item">Print time:</div>
+                            <div class="Table-item" data-bind="text: printTimeString">1m</div>
+                        </div>
+                        <div class="Table-row">
+                            <div class="Table-item">
+                                <ul class="button-area">
+                                    <li class="button" data-bind="click: function(){showFileSelectFlyout()}, css: {disabled: isPrinting() || !loginState.loggedIn()} " id="file_select"><a href="#"><span><i class="fa fa-file"></i>Select print job</span></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="step_info">
-                </div>
-                <div class="step_action">
-                    <ul class="button-area">
-                        <li class="button secondary-button"><a href="#skip"><span>Skip</span></a></li>
-                        <li class="button"><a href="#load_filament"><span>Change</span></a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="print_step calibrate_bed">
-                <div class="step_status step_done">
-                </div>
-                <div class="step_title">
-                    Calibrate bed
-                </div>
-                <div class="step_info">
-                </div>
-                <div class="step_action">
-                    <ul class="button-area">
-                        <li class="button secondary-button"><a href="#skip"><span>Skip</span></a></li>
-                        <li class="button"><a href="#load_filament" onclick="$.notify({title: 'hello0000000', text: 'yes'} ,'error')"><span>Calibrate</span></a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="print_step pre_heat">
-                <div class="step_status"></div>
-                <div class="step_title">
-                    Preheat
-                </div>
-                <div class="step_info">
-                </div>
-                <div class="step_action">
-                    <ul class="button-area">
-                        <li class="button secondary-button"><a href="#skip"><span>Skip</span></a></li>
-                        <li class="button"><a href="#load_filament"><span>Preheat</span></a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="print_step load_file disabled">
-                <div class="step_status ">
-                </div>
-                <div class="step_title">
-                    Load File
-                </div>  
-                <div class="step_info">
-                </div>
-                <div class="step_action">
-                    <ul class="button-area">
-                        <li class="button"><a href="#load_filament"><span>Load File</span></a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="print_step print_file disabled">
-                <div class="step_status"></div>
-                <div class="step_title">
-                    Print File
-                </div>
-                <div class="step_info">
-                </div>
-                <div class="step_action">
-                    <ul class="button-area">
-                        <li class="button ok-button"><a href="#load_filament"><span>Start Print</span></a></li>
-                    </ul>
-                </div>
-            </div>
+            </div> 
         </div>
+        <div class="status_block print_control" data-bind="visible: !isPrinting()">
+            <div class="Table">
+                <div class="Table-row Table-header">
+                    <div class="Table-item">Print Control</div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button secondary-button"><a href="#"><span>Pre-heat</span></a></li>
+                        </ul>
+                    </div>
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button ok-button" data-bind="click: print, css: { disabled: !isOperational() || !fileSelected() || !loginState.loggedIn()}"><a href="#"><span><i class="fa fa-play"></i>Start print</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div> 
+        </div>
+        <div class="status_block print_progress" data-bind="visible: isPrinting()">
+            <div class="Table">
+                <div class="Table-row Table-header">
+                    <div class="Table-item">Print Status</div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Status</div>
+                    <div class="Table-item Table-item-grow-7">
+                        <div class="progress">
+                            <span class="bg-orange" style="width: 40%">Pre-heating</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">Total</div>
+                    <div class="Table-item Table-item-grow-7">
+                        <div class="progress">
+                            <span class="bg-main" style="width: 10%"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button"><a href="#"><span ><i class="fa fa-pause"></i>Pause</span></a></li>
+                        </ul>
+                    </div>
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button failed-button" data-bind="click: cancel"><a href="#"><span><i class="fa fa-stop"></i>Cancel</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div> 
+        </div>
+        <!-- ko allowBindings: false -->
+        <div id="filament_status" class="status_block print_filament">
+            <div class="Table">
+                <div class="Table-row Table-header">
+                    <div class="Table-item">Left</div>
+                    <div class="Table-item">Right</div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-row">
+                        <div class="Table-item">Material</div>
+                        <div class="Table-item">ABS</div>
+                    </div>
+                    <div class="Table-row">
+                        <div class="Table-item">Material</div>
+                        <div class="Table-item">PLA</div>
+                    </div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-row">
+                        <div class="Table-item">Filament left</div>
+                        <div class="Table-item">2000mm</div>
+                    </div>
+                    <div class="Table-row">
+                        <div class="Table-item">Filament left</div>
+                        <div class="Table-item">3000mm</div>
+                    </div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-row">
+                        <div class="Table-item">Filament needed</div>
+                        <div class="Table-item">2000mm</div>
+                    </div>
+                    <div class="Table-row">
+                        <div class="Table-item">Filament needed</div>
+                        <div class="Table-item">4000mm</div>
+                    </div>
+                </div>
+                <div class="Table-row" data-bind="visible: !printerState.isPrinting()">
+                    <div class="Table-row">
+                        <div class="Table-item">
+                            <ul class="button-area">
+                                <li class="button secondary-button" data-bind="click: function(){showFilamentChangeFlyout()}"><a href="#"><span><i class="fa fa-refresh"></i>Change filament</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="Table-row">
+                        <div class="Table-item">
+                            <ul class="button-area">
+                                <li class="button secondary-button" data-bind="click: function(){showFilamentChangeFlyout()}"><a href="#"><span><i class="fa fa-refresh"></i>Change filament</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </div>
+        <!-- /ko -->
     </div>
 </div>

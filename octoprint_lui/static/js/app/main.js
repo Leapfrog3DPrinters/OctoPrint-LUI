@@ -370,38 +370,6 @@ $(function() {
     viewModelMap["settingsViewModel"].requestData()
         .done(bindViewModels);
 
-    // Circle Progress stuff
-
-	$('.tool1.circle').circleProgress({
-    value: 0.75,
-    fill: { gradient: ['#A9CC3C', '#EDDB53', '#CC2B14'] },
-    thickness: 20,
-    size: 130,
-    startAngle: Math.PI*(3/4)
-	}).on('circle-animation-progress', function(event, progress, stepValue) {
-    	$(this).find('strong').text(String(stepValue.toFixed(2)).substr(2)*4 + " C°");
-	});
-
-	$('.tool2.circle').circleProgress({
-    value: 0.2,
-    fill: { gradient: ['#A9CC3C', '#EDDB53', '#CC2B14'] },
-    thickness: 20,
-    size: 130,
-    startAngle: Math.PI*(3/4)
-	}).on('circle-animation-progress', function(event, progress, stepValue) {
-    	$(this).find('strong').text(String(stepValue.toFixed(2)).substr(2)*4 + " C°");
-	});
-
-	$('.chamber.circle').circleProgress({
-    value: 0.3,
-    fill: { gradient: ['#A9CC3C', '#EDDB53', '#CC2B14'] },
-    thickness: 20,
-    size: 130,
-    startAngle: Math.PI*(3/4)
-	}).on('circle-animation-progress', function(event, progress, stepValue) {
-    	$(this).find('strong').text(String(stepValue.toFixed(2)).substr(2) + " C°");
-	});
-
 
     // Icon bar selection
     $('.icon-bar a').on('click', function() {
@@ -412,7 +380,6 @@ $(function() {
         $(this).addClass('active');
         console.log(tabID);
         $(tabID).addClass('open');
-        $('.app-header h3').text(tabID);
 
     });
 

@@ -6,6 +6,7 @@ $(function() {
         self.settingsViewModel = parameters[0];
         self.loginState = parameters[1];
         self.printerState = parameters[2];
+        self.flyout = parameters[3];
         //self.slicing = parameters[3];
 
         self.isErrorOrClosed = ko.observable(undefined);
@@ -314,6 +315,11 @@ $(function() {
             OctoPrint.files.delete(file.origin, OctoPrint.files.pathForElement(file))
                 .done(function() {
                     self.requestData(undefined, filenameToFocus, OctoPrint.files.pathForElement(file.parent));
+                    $.notify({
+                        title: gettext("File removed succesfully"),
+                        text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
+                        "success"
+                    )
                 })
         };
 
@@ -371,8 +377,16 @@ $(function() {
             return "files_template_" + data.type;
         };
 
+        self.templateForSelect = function(data) {
+            return "files_template_select_" + data.type;
+        };
+
         self.getEntryId = function(data) {
             return "gcode_file_" + md5(data["origin"] + ":" + data["name"]);
+        };
+
+        self.getEntryIdSelect = function(data) {
+            return "gcode_file_select_" + md5(data["origin"] + ":" + data["name"]);
         };
 
         self.getEntryElement = function(data) {
@@ -513,23 +527,15 @@ $(function() {
             }
 
             var uploadProgress = $("#gcode_upload_progress");
-            var uploadProgressBar = uploadProgress.find(".bar");
+            var uploadProgressBar = uploadProgress.find(".bg-orange");
 
             var localTarget = CONFIG_SD_SUPPORT ? $("#drop_locally") : $("#drop");
             var sdTarget = $("#drop_sd");
 
-            function setProgressBar(percentage, text, active) {
+            function setProgressBar(percentage) {
                 uploadProgressBar
                     .css("width", percentage + "%")
-                    .text(text);
 
-                if (active) {
-                    uploadProgress
-                        .addClass("progress-striped active");
-                } else {
-                    uploadProgress
-                        .removeClass("progress-striped active");
-                }
             }
 
             function gcode_upload_done(e, data) {
@@ -569,9 +575,7 @@ $(function() {
 
             function gcode_upload_progress(e, data) {
                 var progress = parseInt(data.loaded / data.total * 100, 10);
-                var uploaded = progress >= 100;
-
-                setProgressBar(progress, uploaded ? gettext("Saving ...") : gettext("Uploading ..."), uploaded);
+                setProgressBar(progress);
             }
 
             function setDropzone(dropzone, enable) {
@@ -694,7 +698,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel"],
-        ["#files"]
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel"],
+        ["#files", "#file_flyout"]
     ]);
 });

@@ -7,15 +7,6 @@ $(function() {
     self.flyout = parameters[2];
     self.printerState = parameters[3];
 
-    self.isErrorOrClosed = ko.observable(undefined);
-    self.isOperational = ko.observable(undefined);
-    self.isPrinting = ko.observable(undefined);
-    self.isPaused = ko.observable(undefined);
-    self.isError = ko.observable(undefined);
-    self.isReady = ko.observable(undefined);
-    self.isLoading = ko.observable(undefined);
-
-
     self.leftMaterial = ko.observable(undefined);
     self.rightMaterial = ko.observable(undefined);
 
@@ -39,13 +30,7 @@ $(function() {
     };
 
     self._processStateData = function(data) {
-        self.isErrorOrClosed(data.flags.closedOrError);
-        self.isOperational(data.flags.operational);
-        self.isPaused(data.flags.paused);
-        self.isPrinting(data.flags.printing);
-        self.isError(data.flags.error);
-        self.isReady(data.flags.ready);
-        self.isLoading(data.flags.loading);
+
     };
 
     self.onBeforeBinding = function () {
@@ -62,7 +47,7 @@ $(function() {
   OCTOPRINT_VIEWMODELS.push([
     FilamentViewModel,
     ["loginStateViewModel","settingsViewModel","flyoutViewModel","printerStateViewModel"],
-    ["#filament", "#filament_flyout"]
+    ["#filament_status", "#filament_flyout"]
   ]);
 
 });

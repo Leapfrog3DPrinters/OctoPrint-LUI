@@ -162,6 +162,9 @@ a {
   color: #434A54;
   background-color: #ffffff; }
 
+.button-area i {
+  padding-right: 1em; }
+
 .title {
   -webkit-flex-basis: 100%;
       -ms-flex-preferred-size: 100%;
@@ -580,11 +583,17 @@ a {
     -webkit-flex-basis: 0;
         -ms-flex-preferred-size: 0;
             flex-basis: 0;
-    padding: 0.5em;
+    padding: 0.4em;
     word-break: break-word; }
     .Table-item:before {
       width: 30%;
       font-weight: 700; }
+  .Table-nested {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+        -ms-flex-direction: column;
+            flex-direction: column; }
 
 .Table-item-grow-1 {
   -webkit-box-flex: 1;
@@ -812,7 +821,7 @@ a {
           flex: 1 1 100%; }
 
 .bg-main {
-  background-color: #434A54; }
+  background-color: #434A54 !important; }
 
 .bg-orange {
   background-color: #FF9734 !important; }
@@ -826,15 +835,19 @@ a {
 .bg-red {
   background-color: #CC2B14 !important; }
 
+.bg-none {
+  background-color: transparent !important;
+  color: #434A54 !important; }
+
 .progress {
   background-color: #f9f9f9;
   color: #fff;
   box-sizing: initial;
   position: relative;
   text-align: center;
-  width: 100%;
   font-size: 0.9em;
-  height: 1.5em; }
+  height: 1.5em;
+  width: 100%; }
 
 .progress-small {
   font-size: 9px;
@@ -854,7 +867,7 @@ a {
   height: 100%;
   overflow: hidden;
   position: relative;
-  width: auto; }
+  float: left; }
 
 .progress.progress-stacked > span {
   display: inline-block;
@@ -1031,7 +1044,8 @@ a {
 
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
-  padding-left: 10px; }
+  padding-left: 10px;
+  min-width: 0; }
 
 /* 
   Settings Flyout
@@ -1052,7 +1066,8 @@ input:not([type=submit]):not([type=file]) {
   -webkit-flex-direction: column;
       -ms-flex-direction: column;
           flex-direction: column;
-  min-height: 100%; }
+  min-height: 100%;
+  padding-bottom: 10px; }
 
 .file_header {
   display: -webkit-box;
