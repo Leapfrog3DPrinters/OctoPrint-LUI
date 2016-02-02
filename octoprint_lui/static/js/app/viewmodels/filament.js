@@ -10,8 +10,14 @@ $(function() {
     self.leftMaterial = ko.observable(undefined);
     self.rightMaterial = ko.observable(undefined);
 
-    self.leftFilamentAmount = ko.observable(undefined);
-    self.rightFilamentAmount = ko.observable(undefined);
+    self.leftFilamentAmount = ko.computed(function(){
+        if (self.printerState.filament()[1] !== undefined)
+            return formatFilament(self.printerState.filament()[1]["data"]()["length"]);
+    });
+    self.rightFilamentAmount = ko.computed(function(){
+        if (self.printerState.filament()[1] !== undefined)
+            return formatFilament(self.printerState.filament()[0]["data"]()["length"]);
+    });
 
 
     self.showFilamentChangeFlyout =function () {
@@ -38,8 +44,30 @@ $(function() {
         self.rightMaterial(self.settings.temperature_profiles()[0]);
     };
 
+
     self.onStartUp = function () {
         // Something with loading defaults
+    };
+
+    self.startLoading = function(tool) {
+        self.sendApi({
+            command: "start_loading", 
+            tool: tool});
+    };
+
+    self.stopLoading = function() {
+        self.sendApi({
+            command: "stop_loading"});
+    };
+
+    self.sendApi = function(data) {
+      $.ajax({
+          url: API_BASEURL + "plugin/lui",
+          type: "POST",
+          dataType: "json",
+          contentType: "application/json; charset=UTF-8",
+          data: JSON.stringify(data)
+      });
     };
 
   }
