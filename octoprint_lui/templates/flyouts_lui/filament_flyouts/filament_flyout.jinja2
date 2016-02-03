@@ -1,12 +1,12 @@
 <div class="Table no-border">
     <div class="Table-row">
-        <div class="Table-item" data-bind="css : {disabled:  toolNum != 1 }" >
+        <div class="Table-item" data-bind="css : {disabled:  toolNum() != 1 }" >
                           <div style="width: 60px;  text-align: center;">
                 <img src="{{ url_for("plugin.lui.static", filename="img/nozzle.svg") }}" width="60" style="" /><br />
                 Left
             </div>
         </div>
-        <div class="Table-item" data-bind="css : {disabled:  toolNum != 0 }"  >
+        <div class="Table-item" data-bind="css : {disabled:  toolNum() != 0 }"  >
             <div style="width: 60px; align-self: flex-end; margin-left: auto; text-align: center;">
                 <img src="{{ url_for("plugin.lui.static", filename="img/nozzle.svg") }}" width="60" style="" /><br />
                 Right
@@ -29,12 +29,16 @@
                        optionsText: 'name',
                        value: selectedTemperatureProfile,
                        optionsCaption: 'Choose material...'"></select>
-
+        <div style="width: 300px; margin: 0 auto">
+            <!-- Check https://andreruffert.github.io/rangeslider.js/ -->
+            <input type="range" data-bind="value: newFilamentLength, attr: { min: sliderMin, max: sliderMax, step: sliderStep }" >
+            </div>
         <ul class="button-area">
             <li class="button ok-button" id="unload_cmd" data-bind="click: doLoad, css: { disabled: !selectedTemperatureProfile() || isPreheating() || printerState.isLoading() || !loginState.loggedIn()}">
                 <a href="#"><span><i class="fa fa-arrow-down"></i>Load</span></a>
             </li>
         </ul>
+
     </div>
     <div class="swap_process_step" id="swap_process_stopload">
         <div class="explain">Please insert the filament until it is grabbed by the extruder. Wait for the filament to be extruded before pressing done.</div>
