@@ -269,6 +269,11 @@ $(function() {
                  return true
         };
 
+        self.isToolSwapReady = function (actual, target) {
+            if (target - actual < 3)
+                return true
+        };
+
         self.heatingProgress = function(actual, target) {
             if (target === 0) 
                 target = 200
@@ -344,6 +349,7 @@ $(function() {
         self.setTargetFromProfile = function(item, profile) {
             if (!profile) return;
 
+            
             var onSuccess = function() {
                 item.newTarget("");
             };
@@ -352,6 +358,9 @@ $(function() {
                 self._setBedTemperature(profile.bed)
                     .done(onSuccess);
             } else {
+                // Assume set works and update target temperature right away. Essential for filament swap.
+                item.target(profile.extruder);
+
                 self._setToolTemperature(item.key(), profile.extruder)
                     .done(onSuccess);
             }
@@ -391,6 +400,7 @@ $(function() {
         self._setToolTemperature = function(tool, temperature) {
             var data = {};
             data[tool] = parseInt(temperature);
+
             return OctoPrint.printer.setToolTargetTemperatures(data);
         };
 

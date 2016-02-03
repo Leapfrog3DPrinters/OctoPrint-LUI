@@ -14,7 +14,7 @@ $orangeborder: 1px solid $third-color;
 
 /* 
   Font face
-
+    */  
 @font-face {
   font-family: agenda-light;
   src: url(../fonts/agenda-light.ttf);
@@ -868,6 +868,18 @@ input:not([type=submit]):not([type=file]) {
   min-width: 0;
 }
 
+select {
+$dark-color: #f2f2f2;
+
+  font-size: 1em;
+  padding: 10px;
+  min-width: 0;
+  border: 1px solid $dark-color;
+   border-radius: 3px;
+
+}
+
+
 /* 
   Settings Flyout
 */
@@ -1130,6 +1142,42 @@ pre code {
 .pre-scrollable {
   max-height: 340px;
   overflow-y: scroll;
+}
+
+/* Filament swap */
+.swap_process_step {
+    width: 100%;
+  display: none;
+  &.active {
+    display: inline-block;
+  }
+}
+
+.explain
+{
+    padding: 40px 0;
+}
+
+#swap_process_status_text
+{
+    padding: 20px 0;
+    color: $main-color;
+    text-align: center;
+}
+
+#swap_process_status_heating
+{
+    padding: 20px 0;
+}
+
+.no-border
+{
+    border: 0 !important;
+}
+
+.select-material
+{
+    width: 100%;
 }
 
 /* 

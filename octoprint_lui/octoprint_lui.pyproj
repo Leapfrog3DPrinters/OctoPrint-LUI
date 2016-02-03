@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{de5a17f9-5acf-4a8b-8a17-84ba84dbeca0}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>__init__.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+    <InterpreterVersion />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="compilerconfig.json" />
+    <Content Include="compilerconfig.json.defaults" />
+    <Content Include="static\css\font-awesome.min.css" />
+    <Content Include="static\css\lui.css" />
+    <Content Include="static\css\lui.min.css" />
+    <Content Include="static\css\notifyjs-lui.css" />
+    <Content Include="static\fonts\agenda-light.ttf" />
+    <Content Include="static\fonts\fontawesome-webfont.svg" />
+    <Content Include="static\img\dots16.gif" />
+    <Content Include="static\img\dots32.gif" />
+    <Content Include="static\img\dots64.gif" />
+    <Content Include="static\img\filament_spool.svg" />
+    <Content Include="static\img\filament_spool_up_l.svg" />
+    <Content Include="static\img\filament_spool_up_r.svg" />
+    <Content Include="static\img\logo.png" />
+    <Content Include="static\img\naviagtion-2.svg" />
+    <Content Include="static\img\naviagtion-3.svg" />
+    <Content Include="static\img\naviagtion-z-02.svg" />
+    <Content Include="static\img\navigation.svg" />
+    <Content Include="static\img\nozzle.svg" />
+    <Content Include="static\js\app\main.js" />
+    <Content Include="static\js\app\util\dataupdate_light.js" />
+    <Content Include="static\js\app\util\helpers.js" />
+    <Content Include="static\js\app\viewmodels\connection.js" />
+    <Content Include="static\js\app\viewmodels\filament.js" />
+    <Content Include="static\js\app\viewmodels\files.js" />
+    <Content Include="static\js\app\viewmodels\flyout.js" />
+    <Content Include="static\js\app\viewmodels\loginstate.js" />
+    <Content Include="static\js\app\viewmodels\navigation.js" />
+    <Content Include="static\js\app\viewmodels\printerprofiles.js" />
+    <Content Include="static\js\app\viewmodels\printerstate.js" />
+    <Content Include="static\js\app\viewmodels\settings.js" />
+    <Content Include="static\js\app\viewmodels\temperature.js" />
+    <Content Include="static\js\app\viewmodels\terminal.js" />
+    <Content Include="static\js\app\viewmodels\users.js" />
+    <Content Include="static\js\app\viewmodels\usersettings.js" />
+    <Content Include="static\js\lib\circle-progress.js" />
+    <Content Include="static\js\lib\notify-lui.js" />
+    <Content Include="static\js\lib\notify.js" />
+    <Content Include="static\js\viewmodel.js" />
+    <Content Include="static\scss\lui.css" />
+    <Content Include="static\scss\lui.min.css" />
+    <Content Include="static\scss\lui.scss" />
+    <Content Include="templates\flyouts_lui\filament_flyouts\filament_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\file_flyouts\file_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\login_flyouts\login_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\setting_flyouts\advanced_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\setting_flyouts\materials_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\setting_flyouts\printer_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\setting_flyouts\terminal_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\setting_flyouts\users_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\setting_flyouts\wireless_flyout.jinja2" />
+    <Content Include="templates\footer_lui.jinja2" />
+    <Content Include="templates\header_lui.jinja2" />
+    <Content Include="templates\index_lui.jinja2" />
+    <Content Include="templates\initscript_lui.jinja2" />
+    <Content Include="templates\javascript_lui.jinja2" />
+    <Content Include="templates\overlay_flyouts_lui.jinja2" />
+    <Content Include="templates\stylesheets_lui.jinja2" />
+    <Content Include="templates\tabs_lui\control_lui.jinja2" />
+    <Content Include="templates\tabs_lui\filament_lui.jinja2" />
+    <Content Include="templates\tabs_lui\files_lui.jinja2" />
+    <Content Include="templates\tabs_lui\print_lui.jinja2" />
+    <Content Include="templates\tabs_lui\settings_lui.jinja2" />
+    <Content Include="templates\tabs_lui\settings_lui_octo.jinja2" />
+    <Content Include="templates\tabs_lui\status_lui.jinja2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="static\" />
+    <Folder Include="static\css" />
+    <Folder Include="static\fonts" />
+    <Folder Include="static\img" />
+    <Folder Include="static\js" />
+    <Folder Include="static\js\app" />
+    <Folder Include="static\js\app\util" />
+    <Folder Include="static\js\app\viewmodels" />
+    <Folder Include="static\js\lib" />
+    <Folder Include="static\scss" />
+    <Folder Include="templates\" />
+    <Folder Include="templates\flyouts_lui\" />
+    <Folder Include="templates\flyouts_lui\filament_flyouts\" />
+    <Folder Include="templates\flyouts_lui\file_flyouts\" />
+    <Folder Include="templates\flyouts_lui\login_flyouts\" />
+    <Folder Include="templates\flyouts_lui\setting_flyouts\" />
+    <Folder Include="templates\tabs_lui\" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>

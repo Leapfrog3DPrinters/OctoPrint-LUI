@@ -228,6 +228,7 @@ $(function() {
               console.log("file");
             });
         };
+
     }
 
     OCTOPRINT_VIEWMODELS.push([
