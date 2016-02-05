@@ -27,6 +27,16 @@ $(function() {
 
         self.busyFiles = ko.observableArray([]);
 
+        self.enablePrint = ko.computed(function() {
+            return self.isOperational() && self.isReady() && !self.isPrinting() && self.loginState.isUser() && self.filename() != undefined;
+        });
+        self.enablePause = ko.computed(function() {
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+        });
+        self.enableCancel = ko.computed(function() {
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+        });
+
         self.filament = ko.observableArray([]);
         self.estimatedPrintTime = ko.observable(undefined);
         self.lastPrintTime = ko.observable(undefined);
@@ -224,8 +234,15 @@ $(function() {
 
         self.showFileSelectFlyout =function () {
             self.flyout.showFlyout('file')
-            .done(function (){
-              console.log("file");
+                .done(function (){
+                  console.log("file");
+            });
+        };
+
+        self.showInfoFlyout = function () {
+            self.flyout.showFlyout('info')
+                .done(function (){
+                  console.log("info");
             });
         };
     }
@@ -233,6 +250,6 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
         ["loginStateViewModel", "flyoutViewModel"],
-        ["#print"]
+        ["#print", "#info_flyout"]
     ]);
 });
