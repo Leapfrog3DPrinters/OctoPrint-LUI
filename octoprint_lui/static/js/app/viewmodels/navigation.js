@@ -14,6 +14,7 @@ $(function() {
                     if (!self.loginState.loggedIn()) {
                         self.loginState.login();
                         console.log("Logged In");
+                        self.flyout.closeFlyoutWithButton();
                     }
                     else {
                         self.loginState.logout();

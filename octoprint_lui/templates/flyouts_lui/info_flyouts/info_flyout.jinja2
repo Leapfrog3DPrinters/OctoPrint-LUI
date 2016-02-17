@@ -1,0 +1,101 @@
+<!-- ko allowBindings: false -->
+<div id="temp">
+    <div class="Table">
+        <div class="Table-row Table-header">
+            <div class="Table-item Table-item-grow-3">Temperature</div>
+            <div class="Table-item Table-item-grow-5"></div>
+            <div class="Table-item">A</div>
+            <div class="Table-item">T</div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">Left</div>
+            <div class="Table-item Table-item-grow-6">
+                <div class="progress">
+                    <span style="width: 0%" data-bind="text: toolStatus()[1].text, style: { width: toolProgress()[1] + '%'}, visible: isOperational(), css: toolStatus()[1].color"></span>
+                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
+                </div>
+            </div>
+            <div class="Table-item" data-bind="text: tools()[1]['actual'], visible: isOperational()"></div>
+            <div class="Table-item bold" data-bind="text: tools()[1]['target'], visible: isOperational()"></div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">Right</div>
+            <div class="Table-item Table-item-grow-6">
+                <div class="progress">
+                    <span data-bind="text: toolStatus()[0].text, style: { width: toolProgress()[0] + '%'}, visible: isOperational(), css: toolStatus()[0].color"></span>
+                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
+                </div>
+            </div>
+            <div class="Table-item" data-bind="text: tools()[0]['actual'], visible: isOperational()"></div>
+            <div class="Table-item bold" data-bind="text: tools()[0]['target'], visible: isOperational()"></div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">Bed</div>
+            <div class="Table-item Table-item-grow-6">
+                <div class="progress">
+                    <span style="width: 0%" data-bind="text: toolStatus()[2].text, style: { width: toolProgress()[2] + '%'}, visible: isOperational(), css: toolStatus()[2].color"></span>
+                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
+                </div>
+            </div>
+            <div class="Table-item" data-bind='text: bedTemp["actual"], visible: isOperational()'></div>
+            <div class="Table-item bold" data-bind='text: bedTemp["target"], visible: isOperational()'></div>
+        </div>
+    </div> 
+</div>
+<!-- /ko -->
+<!-- ko allowBindings: false -->
+<div id="term">
+    <div class="terminal">
+        <div class="Table">
+            <div class="Table-row Table-header">
+                <div class="Table-item">
+                    Terminal
+                </div>
+            </div>
+            <div class="Table-row">
+                <div class="Table-item">
+                    <pre id="terminal-output" class="pre-scrollable" data-bind="foreach: displayedLines"><span data-bind="text: line, css: {muted: type == 'filtered' || type == 'cut'}"></span><br></pre>
+                </div>
+            </div>
+            <div class="Table-row">
+                <div class="Table-item">
+                    <small class="pull-left"><button class="btn btn-mini" data-bind="click: toggleAutoscroll, css: {active: autoscrollEnabled}">{{ _('Autoscroll') }}</button> <span data-bind="text: lineCount"></span></small>
+                </div>
+            </div>
+            <div class="Table-row">
+                <div class="Table-item">
+                    
+                </div>
+            </div>
+
+
+            <small class="pull-right"><a href="#" data-bind="click: scrollToEnd">{{ _("Scroll to end") }}</a>&nbsp;|&nbsp;<a href="#" data-bind="click: selectAll">{{ _("Select all") }}</a></small>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span6" id="termin-filterpanel">
+            <div data-bind="foreach: filters">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="attr: { value: regex }, checked: $parent.activeFilters"> <span data-bind="text: name"></span>
+                </label>
+            </div>
+        </div>
+        <div class="span6" id="terminal-sendpanel" style="display: none;" data-bind="visible: loginState.isUser">
+            <div class="input-append">
+                <input type="text" id="terminal-command" data-bind="value: command, event: { keyup: function(d,e) { return handleKeyUp(e); }, keydown: function(d,e) { return handleKeyDown(e); } }, enable: isOperational() && loginState.isUser()">
+                <button class="btn" type="button" id="terminal-send" data-bind="click: sendCommand, enable: isOperational() && loginState.isUser()">{{ _('Send') }}</button>
+            </div>
+            <small class="muted">{{ _('Hint: Use the arrow up/down keys to recall commands sent previously') }}</small>
+        </div>
+    </div>
+
+    <div>
+        <div><small><a href="javascript:void(0);" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i> {{ _('Advanced options') }}</a></small></div>
+        <div class="hide">
+            <button class="btn btn-block" type="button" data-bind="click: fakeAck, enable: isOperational() && loginState.isUser()">{{ _("Fake Acknowledgement") }}</button>
+            <small class="muted">{{ _("If acknowledgements (\"ok\"s) sent by the firmware get lost due to issues with the serial communication to your printer, OctoPrint's communication with it can become stuck. If that happens, this can help. Please be advised that such occurences hint at general communication issues with your printer which will probably negatively influence your printing results and which you should therefore try to resolve!") }}</small>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

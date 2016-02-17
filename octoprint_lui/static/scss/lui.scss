@@ -196,6 +196,10 @@ a {
   background-color: $second-color;
 }
 
+.button-area i {
+  padding-right: 1em;
+}
+
 .title {
   flex-basis: 100%;
   border-bottom: 2px solid $third-color;
@@ -501,12 +505,15 @@ a {
     flex-wrap: nowrap;
     flex-grow: 1;
     flex-basis: 0;
-    padding: 0.5em;
+    padding: 0.4em;
     word-break: break-word;
     &:before {
       width: 30%;
       font-weight: 700;
     }
+  }
+  &-nested {
+    flex-direction: column;
   }
 }
 
@@ -858,6 +865,7 @@ a {
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
   padding-left: 10px;
+  min-width: 0;
 }
 
 /* 
@@ -877,6 +885,7 @@ input:not([type=submit]):not([type=file]) {
   display:flex;
   flex-direction:column;
   min-height: 100%;
+  padding-bottom: 10px;
 }
 
 .file_header {

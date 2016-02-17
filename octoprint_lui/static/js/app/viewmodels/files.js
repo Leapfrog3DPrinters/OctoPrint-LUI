@@ -6,6 +6,7 @@ $(function() {
         self.settingsViewModel = parameters[0];
         self.loginState = parameters[1];
         self.printerState = parameters[2];
+        self.flyout = parameters[3];
         //self.slicing = parameters[3];
 
         self.isErrorOrClosed = ko.observable(undefined);
@@ -376,8 +377,16 @@ $(function() {
             return "files_template_" + data.type;
         };
 
+        self.templateForSelect = function(data) {
+            return "files_template_select_" + data.type;
+        };
+
         self.getEntryId = function(data) {
             return "gcode_file_" + md5(data["origin"] + ":" + data["name"]);
+        };
+
+        self.getEntryIdSelect = function(data) {
+            return "gcode_file_select_" + md5(data["origin"] + ":" + data["name"]);
         };
 
         self.getEntryElement = function(data) {
@@ -689,7 +698,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel"],
-        ["#files"]
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel"],
+        ["#files", "#file_flyout"]
     ]);
 });
