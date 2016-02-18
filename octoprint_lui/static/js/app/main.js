@@ -422,5 +422,81 @@ $(function() {
         }
     );
 
+    // JQuery Virtual Keyboard init
+
+    var keyboardLayouts = {
+        qwerty: {
+            display: {
+                'bksp'   :  "\u2190",
+                'accept' : 'Accept',
+                'default': 'ABC',
+                'meta1'  : '.?123',
+                'meta2'  : '#+='
+            },
+
+            layout: 'custom',
+            customLayout: {
+                'default': [
+                    'q w e r t y u i o p {bksp}',
+                    'a s d f g h j k l {enter}',
+                    '{s} z x c v b n m , . {s}',
+                    '{meta1} {space} {meta1} {accept}'
+                ],
+                'shift': [
+                    'Q W E R T Y U I O P {bksp}',
+                    'A S D F G H J K L {enter}',
+                    '{s} Z X C V B N M ! ? {s}',
+                    '{meta1} {space} {meta1} {accept}'
+                ],
+                'meta1': [
+                    '1 2 3 4 5 6 7 8 9 0 {bksp}',
+                    '- / : ; ( ) \u20ac & @ {enter}',
+                    '{meta2} . , ? ! \' " {meta2}',
+                    '{default} {space} {default} {accept}'
+                ],
+                'meta2': [
+                    '[ ] { } # % ^ * + = {bksp}',
+                    '_ \\ | ~ < > $ \u00a3 \u00a5 {enter}',
+                    '{meta1} . , ? ! \' " {meta1}',
+                    '{default} {space} {default} {accept}'
+                ]
+            }
+        },
+        number: {
+            layout: 'custom',
+            customLayout: {
+                normal: [
+                    '7 8 9 {clear}',
+                    '4 5 6 {cancel}',
+                    '1 2 3 {accept}',
+                    '. 0 {sp:3.1}',
+                ]
+            },
+            usePreview: true,
+            display: {
+                'accept':'Accept:Accept',
+                'clear':'Clear:Clear'
+            }
+        }
+    };
+
+    $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
+
+    $("input[type='number']").keyboard(keyboardLayouts.number);
+
+    ko.bindingHandlers.keyboardForeach = {
+        init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
+        },
+        update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            setTimeout(function() {
+                $(element.parentElement).find("input[type='number']").keyboard(keyboardLayouts.number);
+                $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
+
+            }, 10);
+            return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
+        }
+    };
+    ko.virtualElements.allowedBindings.keyboardForeach = true;
 
 });

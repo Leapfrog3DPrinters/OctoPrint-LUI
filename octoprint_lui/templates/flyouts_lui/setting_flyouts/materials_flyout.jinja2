@@ -5,16 +5,16 @@
         <div class="Table-item">Bed</div>
         <div class="Table-item">Action</div>
     </div>
-    <!-- ko foreach: temperature_profiles -->
+    <!-- ko keyboardForeach: temperature_profiles -->
     <div class="Table-row">
         <div class="Table-item profile_name">
-           <input type="text" class="text-right" data-bind="value: name">
+            <input type="text" data-bind="value: name">
         </div>
         <div class="Table-item extruder_temp">
-            <input type="text" data-bind="value: extruder">
+            <input type="number" data-bind="value: extruder">
         </div>
         <div class="Table-item bed_temp">
-            <input type="text" data-bind="value: bed">
+            <input type="number" data-bind="value: bed">
         </div>
         <div class="Table-item">
             <ul class="button-area">
