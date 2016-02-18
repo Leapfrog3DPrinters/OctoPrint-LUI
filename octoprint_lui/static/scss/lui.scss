@@ -295,6 +295,7 @@ a {
 
 .content > * {
   flex: 1 1 100%;
+  min-width: 0;
 }
 
 /* 
@@ -374,6 +375,7 @@ a {
 
 .flyout-body > * {
   flex: 1 1 100%;
+  min-width: 0;
 }
 
 .flyout-close {
@@ -495,6 +497,7 @@ a {
   &-row {
     width: 100%;
     display: flex;
+    min-width: 0;
     //&:nth-of-type(even) { background-color: $dark-color; }
     //&:nth-of-type(odd) { background-color: $light-color; }
   }
@@ -505,6 +508,7 @@ a {
     flex-wrap: nowrap;
     flex-grow: 1;
     flex-basis: 0;
+    min-width: 0;
     padding: 0.4em;
     word-break: break-word;
     &:before {
