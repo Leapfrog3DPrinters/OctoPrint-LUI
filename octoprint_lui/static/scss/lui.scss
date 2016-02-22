@@ -15,11 +15,20 @@ $orangeborder: 1px solid $third-color;
 /* 
   Font face
 
+*/
+
 @font-face {
   font-family: agenda-light;
   src: url(../fonts/agenda-light.ttf);
   font-weight: light;
 }
+
+@font-face {
+  font-family: agenda-medium;
+  src: url(../fonts/agenda-medium.ttf);
+  font-weight: medium;
+}
+
 
 /* 
   Mixins
@@ -43,7 +52,7 @@ html {
 }
 
 html {
-  font-size: 0.8em;
+  font-size: 0.89em;
   user-select: none;
 }
 
@@ -95,6 +104,9 @@ a {
   font-size: 1em;
   padding:1rem;
   background:$main-color;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .icon-bar a:first-child {
@@ -125,7 +137,7 @@ a {
   font-size: 2.5rem;
   color:$second-color;
   text-shadow:2px 2px 0 rgba(0,0,0,0.1);
-  padding-bottom: 1rem;
+  padding-right: 0.5em;
 }
 
 .app-header {
@@ -247,16 +259,16 @@ a {
 
 .app-header {
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-start;
   align-items: center;
   flex-basis: 45px;
   flex-shrink: 1;
   min-height: 45px;
 }
 
-.app-header h3 {
-  align-self: center;
-  font-size: 1em;
+
+.app-header .header_login {
+  margin-left: auto;
 }
 
 /*
@@ -264,8 +276,6 @@ a {
 */
 
 .tabs {
-  overflow-y:scroll;
-  -webkit-overflow-scrolling:touch;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -275,6 +285,7 @@ a {
 .tab {
   display: none;
   flex: 1 0 auto;
+  height:200px;
 }
 
 .open {
@@ -312,6 +323,7 @@ a {
   right: 0;
   bottom: 0;
   opacity: 0;
+  z-index: 1;
   //@include transition(opacity);
   //transition: opacity .2s ease-in-out 1s;
   &.active {
@@ -390,6 +402,7 @@ a {
 
 .hide {
   display: none;
+  // flex-grow: 0.001;
 }
 
 /* 
@@ -483,7 +496,7 @@ a {
   flex-wrap: nowrap;
   justify-content: space-between;
   border: 1px solid $dark-color;
-  font-size: 1.2rem;
+  // font-size: 1.2rem;
   margin: 10px 0px;
   line-height: 1.5;
 
@@ -498,8 +511,6 @@ a {
     width: 100%;
     display: flex;
     min-width: 0;
-    //&:nth-of-type(even) { background-color: $dark-color; }
-    //&:nth-of-type(odd) { background-color: $light-color; }
   }
   // .Table-row-item
   &-item {
@@ -509,7 +520,7 @@ a {
     flex-grow: 1;
     flex-basis: 0;
     min-width: 0;
-    padding: 0.4em;
+    padding: 0.3em 0.4em;
     word-break: break-word;
     &:before {
       width: 30%;
@@ -518,6 +529,7 @@ a {
   }
   &-nested {
     flex-direction: column;
+    padding-left: 0;
   }
 }
 
@@ -876,6 +888,23 @@ input:not([type=submit]):not([type=file]) {
   Settings Flyout
 */
 
+/*
+  Print Tab
+*/
+
+#print .content {
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+#print .content > * {
+  flex: 0 1 auto;
+  width: 100%;
+}
+
+#print .Table { 
+  margin: 0;
+}
 
 /* 
   Files tab
@@ -883,6 +912,20 @@ input:not([type=submit]):not([type=file]) {
 
 #files .content {
   margin: 0px;
+}
+
+.file_upload {
+  flex-basis: 30%;
+}
+
+.file_search {
+  flex-basis: 60%;
+  padding-left: 0.5em;
+}
+
+.file_sort{
+  flex-basis: 5%;
+  margin-left:auto;
 }
 
 .file_area {
@@ -896,12 +939,7 @@ input:not([type=submit]):not([type=file]) {
   display: flex;
   border-bottom: 1px solid $third-color;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0px 10px;
-}
-
-.file_header > * {
-  padding: 0px 5px;
+  justify-content:flex-start;
 }
 
 .file_list {
@@ -965,22 +1003,25 @@ input:not([type=submit]):not([type=file]) {
   min-width: 0px; 
 }
 
-
-// .file_entry .file_add_info {
-//   display: none;
-//   transition: all 500ms linear;
-// }
-
 .file_entry .file_add_info li {
   flex-grow:1;
 }
 
 .file_add_info {
   background-color: #f2f2f2;
+  display: flex;
+  &.hide{
+    display: none;
+  }
 }
 
 .file_add_info_content {
   padding:5px;
+}
+
+.file_add_info_buttons {
+  margin-left: auto;
+  align-self:center;
 }
 
 .file_info {
@@ -988,10 +1029,10 @@ input:not([type=submit]):not([type=file]) {
 }
 
 .file_ok {
-  background-color:  $color-ok;
+  color:  $color-ok;
 }
 .file_failed {
-  background-color:  $color-failed;
+  color:  $color-failed;
 }
 
 .file_ok i, .file_failed i {
@@ -1015,75 +1056,6 @@ input:not([type=submit]):not([type=file]) {
   cursor: pointer;
 }
 
-/* 
-  Print Steps
-*/
-
-.print_steps {
-  min-height:100%;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.print_step:first-child{
-  border-top: 1px solid $third-color;
-  border-left: 0px;
-}
-
-.print_step {
-  flex: 1 0 100%;
-  background-color: white;
-  display: flex;
-}
-
-.step_title, .step_info, .step_action {
-  border-bottom: 1px solid $third-color;
-  bottom-right: 0px;
-}
-
-.step_status {
-  flex: 0 0 20px;
-  background-color: $off-white;
-  display: flex;
-}
-
-.step_status.step_done {
-  background-color: $color-ok;
-}
-
-.step_status.step_warning {
-  background-color: $color-warning;
-}
-
-.step_status.step_failed {
-  background-color: $color-failed;
-}
-.step_title {
-  padding: 10px;
-}
-
-.step_info {
-  flex: 1 1 auto;
-}
-
-.step_action {
-  flex: 0 1 200px;
-  background-color: white;
-  min-height: 0;
-  display:flex;
-  justify-content:space-between;
-}
-
-.print_steps .button-area {
-  flex:1 1 auto;
-  align-items:center;
-}
-
-.print_steps .button-area li {
-  margin: 0px;
-  height: 55px;
-  flex-basis:50%;
-}
 
 #term {
   .terminal {
@@ -1157,56 +1129,18 @@ pre code {
     flex-basis:50%;
   }
 
-  .file_entry .file_add_info .button-area {
-    flex-wrap: nowrap;
-    flex-basis:220px;
+  // .file_entry .file_add_info .button-area {
+  //   flex-wrap: nowrap;
+  //   flex-basis:220px;
+  // }
+
+  #print .content > * {
+    width:50%;
   }
 
-  .print_steps {
-    flex-wrap:nowrap;
-  }
-
-  .print_step:first-child {
-    border-left: 1px solid $third-color;
-    border-top: 0px;
-  }
-
-  .print_step {
-    flex-basis:20%;
-    flex-direction: column;
-  }
-
-  .step_title, .step_info, .step_action {
-    border-right: 1px solid $third-color;
-    border-bottom: 0px;
-  }
-
-  .step_title {
-    order: -1;
-    text-align: center;
-  }
-
-  .step_action {
-    flex-basis:auto;
-    align-self:stretch;  
-  }
-  
-  .print_steps .button-area li {
-    margin: 0px 10px;
-    margin-bottom: 0px;
-  }
-
-  #control .content > * {
-    flex-basis: 50%;
-  }
 
   .control-extrusion {
     padding-left: 10px;
-  }
-
-  .status_block {
-    flex-basis: 50%;
-    flex-wrap:wrap;
   }
 
   .spool .spool_picture {
