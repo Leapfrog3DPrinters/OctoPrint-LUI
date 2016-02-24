@@ -6,6 +6,7 @@ $(function() {
         self.settings = parameters[1];
         self.usersettings = parameters[2];
         self.flyout = parameters[3];
+        self.printerState = parameters[4];
 
         self.showLoginFlyout = function (){
             self.usersettings.show();  
@@ -32,7 +33,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
-        ["loginStateViewModel", "settingsViewModel", "userSettingsViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "settingsViewModel", "userSettingsViewModel", "flyoutViewModel", "printerStateViewModel"],
         ["#header"]
     ]);
 });

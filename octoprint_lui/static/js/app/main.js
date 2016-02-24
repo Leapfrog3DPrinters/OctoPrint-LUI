@@ -422,6 +422,18 @@ $(function() {
         }
     );
 
+    // jQuery overscroll
+
+    $(".tabs").overscroll({
+            direction: 'vertical',
+            showThumbs: false
+    });
+
+    $(".flyout-body").overscroll({
+            direction: 'vertical',
+            showThumbs: false
+    });
+
     // JQuery Virtual Keyboard init
 
     var keyboardLayouts = {

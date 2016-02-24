@@ -6,14 +6,13 @@
                     <div class="Table-item">Print Job</div>
                 </div>
                 <div class="Table-row">
-                    <div class="Table-item Table-item-grow-4"><i class="fa fa-cube" style="font-size: 12em; color: lightgrey"></i></div>
-                    <div class="Table-item Table-item-grow-5 Table-nested">
+                    <div class="Table-item">Job name:</div>
+                    <div class="Table-item Table-item-grow-2"><span data-bind="text: filename" class="text_wrap"></span></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item Table-item-grow-6 Table-nested">
                         <div class="Table-row">
-                            <div class="Table-item">Job name:</div>
-                            <div class="Table-item" data-bind="text: filename"></div>
-                        </div>
-                        <div class="Table-row">
-                            <div class="Table-item">Estimated time:</div>
+                            <div class="Table-item">Estimated:</div>
                             <div class="Table-item" data-bind="text: estimatedPrintTimeString">1h</div>
                         </div>
                         <div class="Table-row">
@@ -24,13 +23,14 @@
                             <div class="Table-item">Print time:</div>
                             <div class="Table-item" data-bind="text: printTimeString">1m</div>
                         </div>
-                        <div class="Table-row">
-                            <div class="Table-item">
-                                <ul class="button-area">
-                                    <li class="button" data-bind="click: function(){showFileSelectFlyout()}, css: {disabled: isPrinting() || !loginState.loggedIn()} " id="file_select"><a href="#"><span><i class="fa fa-file"></i>Select print job</span></a></li>
-                                </ul>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="Table-item Table-item-grow-2"><i class="fa fa-cube" style="font-size: 4em; color: lightgrey"></i></div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button" data-bind="click: function(){showFileSelectFlyout()}, css: {disabled: !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select"><a href="#"><span><i class="fa fa-file"></i>Select print job</span></a></li>
+                        </ul>
                     </div>
                 </div>
             </div> 
@@ -61,7 +61,7 @@
                 </div>
                 <div class="Table-row">
                     <div class="Table-item">Status</div>
-                    <div class="Table-item Table-item-grow-7">
+                    <div class="Table-item Table-item-grow-5">
                         <div class="progress">
                             <span class="bg-orange" style="width: 40%">Pre-heating</span>
                         </div>
@@ -69,7 +69,7 @@
                 </div>
                 <div class="Table-row">
                     <div class="Table-item">Total</div>
-                    <div class="Table-item Table-item-grow-7">
+                    <div class="Table-item Table-item-grow-5">
                         <div class="progress">
                             <span class="bg-main" style="width: 10%"></span>
                         </div>
@@ -78,7 +78,7 @@
                 <div class="Table-row">
                     <div class="Table-item">
                         <ul class="button-area">
-                            <li class="button" data-bind="click: function(){showInfoFlyout()}"><a href="#"><span><i class="fa fa-gears"></i>More info</span></a></li>
+                            <li class="button" data-bind="click: function(){showInfoFlyout()}"><a href="#"><span><i class="fa fa-gears"></i>Info</span></a></li>
                         </ul>
                     </div>
                     <div class="Table-item">
@@ -98,8 +98,8 @@
         <div id="filament_status" class="status_block print_filament">
             <div class="Table">
                 <div class="Table-row Table-header">
-                    <div class="Table-item">Left</div>
-                    <div class="Table-item">Right</div>
+                    <div class="Table-item">Left Extruder</div>
+                    <div class="Table-item">Right Extruder</div>
                 </div>
                 <div class="Table-row">
                     <div class="Table-row">
@@ -113,36 +113,26 @@
                 </div>
                 <div class="Table-row">
                     <div class="Table-row">
-                        <div class="Table-item">Filament left</div>
-                        <div class="Table-item">2000mm</div>
+                        <div class="Table-item">2.1m</div>
+                        <div class="Table-item">3.4m</div>
                     </div>
                     <div class="Table-row">
-                        <div class="Table-item">Filament left</div>
-                        <div class="Table-item">3000mm</div>
-                    </div>
-                </div>
-                <div class="Table-row">
-                    <div class="Table-row">
-                        <div class="Table-item">Filament needed</div>
-                        <div class="Table-item" data-bidn>2000mm</div>
-                    </div>
-                    <div class="Table-row">
-                        <div class="Table-item">Filament needed</div>
-                        <div class="Table-item">4000mm</div>
+                        <div class="Table-item">1.4m</div>                        
+                        <div class="Table-item">4.0m</div>
                     </div>
                 </div>
                 <div class="Table-row" data-bind="visible: !printerState.isPrinting()">
                     <div class="Table-row">
                         <div class="Table-item">
                             <ul class="button-area">
-                                <li class="button secondary-button" data-bind="click: function(){showFilamentChangeFlyout()}"><a href="#"><span><i class="fa fa-refresh"></i>Change filament</span></a></li>
+                                <li class="button secondary-button" data-bind="click: function(){showFilamentChangeFlyout()}"><a href="#"><span><i class="fa fa-refresh"></i>Swap filament</span></a></li>
                             </ul>
                         </div>
                     </div>
                     <div class="Table-row">
                         <div class="Table-item">
                             <ul class="button-area">
-                                <li class="button secondary-button" data-bind="click: function(){showFilamentChangeFlyout()}"><a href="#"><span><i class="fa fa-refresh"></i>Change filament</span></a></li>
+                                <li class="button secondary-button" data-bind="click: function(){showFilamentChangeFlyout()}"><a href="#"><span><i class="fa fa-refresh"></i>Swap filament</span></a></li>
                             </ul>
                         </div>
                     </div>

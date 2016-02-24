@@ -290,6 +290,8 @@ $(function() {
                     if (printAfterLoad) {
                         OctoPrint.job.start();
                     }
+                    if(self.flyout.deferred)
+                        self.flyout.closeFlyoutWithButton();
                 });
         };
 
@@ -327,7 +329,6 @@ $(function() {
             if (!file) {
                 return;
             }
-
             self.slicing.show(file.origin, OctoPrint.files.pathForElement(file), true);
         };
 
@@ -368,9 +369,9 @@ $(function() {
 
         self.getSuccessIcon = function(data) {
             if (!data["prints"] || !data["prints"]["last"]) {
-                return "fa-minus";
+                return "fa-circle-thin";
             }
-            return data["prints"]["last"]["success"] ? "fa-check" : "fa-close";
+            return data["prints"]["last"]["success"] ? "fa-check file_ok" : "fa-close file_failed";
         };
 
         self.templateFor = function(data) {
