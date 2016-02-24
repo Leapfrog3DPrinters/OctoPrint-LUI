@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="Windows-1252"?>
 <div class="Table no-border">
     <div class="Table-row">
         <div class="Table-item" data-bind="css : {disabled:  toolNum() != 1 }" >
@@ -29,10 +30,7 @@
                        optionsText: 'name',
                        value: selectedTemperatureProfile,
                        optionsCaption: 'Choose material...'"></select>
-        <div style="width: 300px; margin: 0 auto">
-            <!-- Check https://andreruffert.github.io/rangeslider.js/ -->
-            <input type="range" data-bind="value: newFilamentLength, attr: { min: sliderMin, max: sliderMax, step: sliderStep }" >
-            </div>
+       
         <ul class="button-area">
             <li class="button ok-button" id="unload_cmd" data-bind="click: doLoad, css: { disabled: !selectedTemperatureProfile() || isPreheating() || printerState.isLoading() || !loginState.loggedIn()}">
                 <a href="#"><span><i class="fa fa-arrow-down"></i>Load</span></a>
