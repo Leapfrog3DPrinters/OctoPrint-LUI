@@ -231,6 +231,7 @@ $(function() {
 
         self.pause = function() {
             OctoPrint.job.pause();
+
         };
 
         self.cancel = function() {
@@ -240,7 +241,6 @@ $(function() {
         self.showFileSelectFlyout =function () {
             self.flyout.showFlyout('file')
                 .done(function (){
-                  console.log("file");
             });
         };
 

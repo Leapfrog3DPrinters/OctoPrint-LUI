@@ -610,3 +610,14 @@ function capitalize(s)
 {
     return s && s[0].toUpperCase() + s.slice(1);
 }
+
+function changeTabTo(tab){
+    var tabID=$('#' + tab);
+    $('.tabs > .tab.open').removeClass('open');
+    $(tabID).addClass('open');
+    $('.icon-bar > a.active').removeClass('active');
+    var icon = tab + "_icon";
+    var icon_link =$('#' + icon );
+    $(icon_link).addClass('active');
+    console.log("Tab changed to #" + tab);
+}

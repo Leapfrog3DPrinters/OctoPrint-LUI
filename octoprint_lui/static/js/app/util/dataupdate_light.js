@@ -172,8 +172,43 @@ function DataUpdater(allViewModels) {
             gcodeUploadProgressBar.css("width", "0%");
             gcodeUploadProgressBar.text("");
             gcodeFilesViewModel.requestData(payload.remote, "sdcard");
+        } else if (type == "PrintStarted") {
+            $.notify({
+                title: gettext("Print job started"),
+                text: _.sprintf(gettext(' Printing file: "%(filename)s"'), {filename: payload.filename})},
+                "success"
+            )
+        } else if (type == "PrintPaused") {
+            $.notify({
+                title: gettext("Print job paused"),
+                text: _.sprintf(gettext('Pausing file: "%(filename)s"'), {filename: payload.filename})},
+                "warning"
+            )
+        } else if (type == "PrintCancelled") {
+            $.notify({
+                title: gettext("Print job canceled"),
+                text: _.sprintf(gettext('Canceled file: "%(filename)s"'), {filename: payload.filename})},
+                "error"
+            )
+        } else if (type == "PrintDone") {
+            $.notify({
+                title: gettext("Print job finished"),
+                text: _.sprintf(gettext(' Finished file: "%(filename)s"'), {filename: payload.filename})},
+                "success"
+            )
+        } else if (type == "PrintResumed") {
+            $.notify({
+                title: gettext("Print job resumed"),
+                text: _.sprintf(gettext(' Resuming file: "%(filename)s"'), {filename: payload.filename})},
+                "success"
+            )
+        } else if (type == "FileSelected") {
+            $.notify({
+                title: gettext("File selected succesfully"),
+                text: _.sprintf(gettext('Selected file: "%(filename)s"'), {filename: payload.filename})},
+                "success"
+            )
         }
-
         var legacyEventHandlers = {
             "UpdatedFiles": "onUpdatedFiles",
             "MetadataStatisticsUpdated": "onMetadataStatisticsUpdated",

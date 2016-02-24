@@ -292,6 +292,7 @@ $(function() {
                     }
                     if(self.flyout.deferred)
                         self.flyout.closeFlyoutWithButton();
+                    changeTabTo("print");
                 });
         };
 
