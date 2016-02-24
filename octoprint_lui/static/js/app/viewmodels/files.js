@@ -290,7 +290,8 @@ $(function() {
                     if (printAfterLoad) {
                         OctoPrint.job.start();
                     }
-                    self.flyout.closeFlyoutWithButton();
+                    if(self.flyout.deferred)
+                        self.flyout.closeFlyoutWithButton();
                 });
         };
 
@@ -328,7 +329,6 @@ $(function() {
             if (!file) {
                 return;
             }
-
             self.slicing.show(file.origin, OctoPrint.files.pathForElement(file), true);
         };
 

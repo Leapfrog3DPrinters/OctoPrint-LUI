@@ -25,6 +25,11 @@ $(function() {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
+        self.filenameNoExtension = ko.computed(function(){
+            if(self.filename())
+                return self.filename().slice(0,(self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
+        })
+
         self.busyFiles = ko.observableArray([]);
 
         self.enablePrint = ko.computed(function() {
