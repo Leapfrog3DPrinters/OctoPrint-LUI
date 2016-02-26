@@ -15,7 +15,7 @@ $(function() {
                 newTarget: ko.observable(),
                 newOffset: ko.observable()
             }
-        };
+        }
 
         self.tools = ko.observableArray([]);
         self.hasBed = ko.observable(true);
@@ -227,35 +227,8 @@ $(function() {
             return result;
         };
 
-        self.setStatus = function (toolStatus, status) {
-            switch (status) {
-                case 'COOLING':
-                    toolStatus.status = "COOLING";
-                    toolStatus.text = "Cooling...";
-                    toolStatus.color = "bg-yellow";
-                    return toolStatus;
-                case 'HEATING':
-                    toolStatus.status = "HEATING";
-                    toolStatus.text = "Heating...";
-                    toolStatus.color = "bg-orange";
-                    return toolStatus;
-                case 'READY':
-                    toolStatus.status = "READY";
-                    toolStatus.text = "";
-                    toolStatus.color = "bg-green";    
-                    return toolStatus;
-                case 'IDLE':
-                    toolStatus.status = "IDLE";
-                    toolStatus.text = "";
-                    toolStatus.color = "bg-main";    
-                    return toolStatus;
-                default:
-                    return toolStatus;
-            }
-        };
-
         self.isToolCooling = function (actual, target) {
-            if (actual > 50 && target === 0) 
+            if (actual > 50 && target < actual - 10) 
                 return true
         };
 
@@ -268,6 +241,16 @@ $(function() {
             if(Math.abs(actual - target) < 3 && target > 40)
                  return true
         };
+
+        self.isToolSwapReady = function (actual, target) {
+            if (target - actual < 3)
+                return true
+        };
+
+        self.isToolIdle = function (actual, target) {
+            if (target === 0 && actual < 50)
+                return true
+        }
 
         self.heatingProgress = function(actual, target) {
             if (target === 0) 
@@ -284,26 +267,35 @@ $(function() {
         self.setToolStatus = function() {
             var tools = self.tools();
             var toolStatus = self.toolStatus();
+            var toolProgress = self.toolProgress();
 
             for (var i = 0; i < tools.length + 1; i++) {
                 var actual = self.returnToolTemperature(i, "actual");
                 var target = self.returnToolTemperature(i, "target");
 
                 if (self.isToolCooling(actual, target) ) {
-                    toolStatus[i] = self.setStatus(toolStatus[i], 'COOLING');
+                    toolStatus[i].status("COOLING");
+                    toolStatus[i].text("Cooling...");
+                    toolStatus[i].color("bg-yellow");
                 }
                 else if ( self.isToolHeating(actual, target) ) {
-                    toolStatus[i] = self.setStatus(toolStatus[i], 'HEATING');
+                    toolStatus[i].status("HEATING");
+                    toolStatus[i].text("Heating...");
+                    toolStatus[i].color("bg-orange");
                 }
                 else if (self.isToolReady(actual, target) ) {
-                    toolStatus[i] = self.setStatus(toolStatus[i], 'READY');
+                    toolStatus[i].status("READY");
+                    toolStatus[i].text("");
+                    toolStatus[i].color("bg-green");
                 }
-                else {
-                    toolStatus[i] = self.setStatus(toolStatus[i], 'IDLE');
+                else if (self.isToolIdle(actual, target)){
+                    toolStatus[i].status("IDLE");
+                    toolStatus[i].text("");
+                    toolStatus[i].color("bg-main");
                 }
-                self.toolProgress()[i] = (self.heatingProgress(actual, target));
-
+               toolProgress[i] = self.heatingProgress(actual, target);
             }
+            self.toolProgress(toolProgress);
             self.toolStatus(toolStatus);
         };
 
@@ -344,6 +336,7 @@ $(function() {
         self.setTargetFromProfile = function(item, profile) {
             if (!profile) return;
 
+            
             var onSuccess = function() {
                 item.newTarget("");
             };
@@ -352,6 +345,9 @@ $(function() {
                 self._setBedTemperature(profile.bed)
                     .done(onSuccess);
             } else {
+                // Assume set works and update target temperature right away. Essential for filament swap.
+                item.target(profile.extruder);
+
                 self._setToolTemperature(item.key(), profile.extruder)
                     .done(onSuccess);
             }
@@ -391,6 +387,7 @@ $(function() {
         self._setToolTemperature = function(tool, temperature) {
             var data = {};
             data[tool] = parseInt(temperature);
+
             return OctoPrint.printer.setToolTargetTemperatures(data);
         };
 

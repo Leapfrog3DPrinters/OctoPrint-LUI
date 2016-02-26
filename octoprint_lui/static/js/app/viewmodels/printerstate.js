@@ -250,6 +250,7 @@ $(function() {
                   console.log("info");
             });
         };
+
     }
 
     OCTOPRINT_VIEWMODELS.push([

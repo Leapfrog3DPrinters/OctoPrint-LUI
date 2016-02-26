@@ -101,6 +101,7 @@ $(function() {
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 
+        self.plugins_lui_filaments = ko.observableArray([]);
 
         //Template observable 
         self.settingsTopic = ko.observable(undefined);
@@ -491,6 +492,12 @@ $(function() {
                 terminalFilters: function(value) { self.terminalFilters($.extend(true, [], value)) },
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
+                }
+                ,
+                plugins: {
+                    lui: {
+                        filaments: function (value) { self.plugins_lui_filaments($.extend(true, [], value)); }
+                    }
                 }
             };
 

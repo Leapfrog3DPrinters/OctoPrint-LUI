@@ -1,38 +1,32 @@
 <div id="login_dropdown_loggedout" style="padding: 15px" class="dropdown-menu" data-bind="css: {hide: loginState.loggedIn()}">
-    <label for="login_user">{{ _('Username') }}</label>
-    <input type="text" id="login_user" data-bind="value: loginState.loginUser, event: {'keyup': loginState.onLoginUserKeyup}" placeholder="{{ _('Username') }}" autocapitalize="none">
-    <label for="login_pass">{{ _('Password') }}</label>
-    <input type="password" id="login_pass" data-bind="value: loginState.loginPass, event: {'keyup': loginState.onLoginPassKeyup}" placeholder="{{ _('Password') }}">
-    <label class="checkbox">
-        <input type="checkbox" id="login_remember" data-bind="checked: loginState.loginRemember"> {{ _('Remember me') }}
-    </label>
+	<div class="Table">
+		<div class="Table-row">
+		    <div class="Table-item">
+		    	<label for="login_user">{{ _('Username') }}</label>
+		    </div>
+		    <div class="Table-item">
+		    	<input type="text" id="login_user" data-bind="value: loginState.loginUser, event: {'keyup': loginState.onLoginUserKeyup}" placeholder="{{ _('Username') }}" autocapitalize="none">
+		    </div>
+		</div>
+		<div class="Table-row">
+			<div class="Table-item">
+				<label for="login_pass">{{ _('Password') }}</label>
+			</div>
+		    <div class="Table-item">
+		    	<input type="password" id="login_pass" data-bind="value: loginState.loginPass, event: {'keyup': loginState.onLoginPassKeyup}" placeholder="{{ _('Password') }}">
+		    </div>
+		</div>
+		<div class="Table-row">
+		    <div class="Table-item">
+		    	<label class="checkbox">
+		    		<input type="checkbox" id="login_remember" data-bind="checked: loginState.loginRemember"> {{ _('Remember me') }}
+		    	</label>
+		    </div>
+		</div>
+	</div>
 </div>
 <div id="login_dropdown_loggedin" class="hide" data-bind="css: {hide: !loginState.loggedIn()}">
 	<div id="usersettings_dialog">
-        <div class="tab-content">
-			<fieldset>
-			    <legend>{{ _('Password') }}</legend>
-			    <p>
-			        {{ _('If you do not wish to change your password, just leave the following fields empty.') }}
-			    </p>
-			    <div class="control-group">
-			        <label class="control-label" for="userSettings-access_password">{{ _('New Password') }}</label>
-			        <div class="controls">
-			            <input type="password" class="input-block-level" id="userSettings-access_password" data-bind="value: access_password" required>
-			        </div>
-			    </div>
-			    <div class="control-group" data-bind="css: {error: passwordMismatch()}">
-			        <label class="control-label" for="userSettings-access_repeatedPassword">{{ _('Repeat Password') }}</label>
-			        <div class="controls">
-			            <input type="password" class="input-block-level" id="userSettings-access_repeatedPassword" data-bind="value: access_repeatedPassword, valueUpdate: 'afterkeydown'" required>
-			            <span class="help-inline" data-bind="visible: passwordMismatch()">{{ _('Passwords do not match') }}</span>
-			        </div>
-			    </div>
-			</fieldset>
-        </div>
-	    <div class="modal-footer">
-	        <button class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Abort') }}</button>
-	        <button class="btn btn-primary" data-bind="click: function() { save(); }, enable: saveEnabled()">{{ _('Confirm') }}</button>
-	    </div>
+		Log out?
 	</div>
 </div>
