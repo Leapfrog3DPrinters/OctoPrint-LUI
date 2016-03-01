@@ -14,8 +14,7 @@ $orangeborder: 1px solid $third-color;
 
 /* 
   Font face
-
-*/
+*/  
 
 @font-face {
   font-family: agenda-light;
@@ -210,7 +209,7 @@ a {
 }
 
 .button-area i {
-  padding-right: 1em;
+  padding-right: 0.4em;
 }
 
 .title {
@@ -885,6 +884,18 @@ input:not([type=submit]):not([type=file]) {
   min-width: 0;
 }
 
+select {
+$dark-color: #f2f2f2;
+
+  font-size: 1em;
+  padding: 10px;
+  min-width: 0;
+  border: 1px solid $dark-color;
+   border-radius: 3px;
+
+}
+
+
 /* 
   Settings Flyout
 */
@@ -905,6 +916,10 @@ input:not([type=submit]):not([type=file]) {
 
 #print .Table { 
   margin: 0;
+}
+
+#print .filament_amount {
+  padding-left: 0.5em;
 }
 
 /* 
@@ -1013,7 +1028,7 @@ input:not([type=submit]):not([type=file]) {
   display: flex;
   &.hide{
     display: none;
-  }
+}
 }
 
 .file_add_info_content {
@@ -1107,6 +1122,26 @@ pre code {
 .pre-scrollable {
   max-height: 340px;
   overflow-y: scroll;
+}
+
+/* Filament swap */
+
+.swap_process_step {
+  display: none;
+  width: 100%;
+  &.active {
+    display: inline-block;
+  }
+}
+
+.no-border
+{
+    border: 0 !important;
+}
+
+.select-material
+{
+    width: 100%;
 }
 
 /* 

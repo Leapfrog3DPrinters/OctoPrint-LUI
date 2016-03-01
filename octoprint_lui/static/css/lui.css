@@ -3,7 +3,6 @@
 */
 /* 
   Font face
-
 */
 @font-face {
   font-family: agenda-light;
@@ -179,7 +178,7 @@ a {
   background-color: #ffffff; }
 
 .button-area i {
-  padding-right: 1em; }
+  padding-right: 0.4em; }
 
 .title {
   -webkit-flex-basis: 100%;
@@ -1064,6 +1063,13 @@ input:not([type=submit]):not([type=file]) {
   padding-left: 10px;
   min-width: 0; }
 
+select {
+  font-size: 1em;
+  padding: 10px;
+  min-width: 0;
+  border: 1px solid #f2f2f2;
+  border-radius: 3px; }
+
 /* 
   Settings Flyout
 */
@@ -1090,6 +1096,9 @@ input:not([type=submit]):not([type=file]) {
 
 #print .Table {
   margin: 0; }
+
+#print .filament_amount {
+  padding-left: 0.5em; }
 
 /* 
   Files tab
@@ -1340,6 +1349,19 @@ pre code {
 .pre-scrollable {
   max-height: 340px;
   overflow-y: scroll; }
+
+/* Filament swap */
+.swap_process_step {
+  display: none;
+  width: 100%; }
+  .swap_process_step.active {
+    display: inline-block; }
+
+.no-border {
+  border: 0 !important; }
+
+.select-material {
+  width: 100%; }
 
 /* 
   Media Queries

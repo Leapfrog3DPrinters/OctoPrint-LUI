@@ -424,12 +424,12 @@ $(function() {
 
     // jQuery overscroll
 
-    $(".tabs").overscroll({
+    $(".flyout-body").overscroll({
             direction: 'vertical',
             showThumbs: false
     });
 
-    $(".flyout-body").overscroll({
+    $("#tabs").overscroll({
             direction: 'vertical',
             showThumbs: false
     });
@@ -443,32 +443,32 @@ $(function() {
                 'accept' : 'Accept',
                 'default': 'ABC',
                 'meta1'  : '.?123',
-                'meta2'  : '#+='
+                'meta2'  : '#+=',
+                'clear'  : 'Clear'
             },
-
             layout: 'custom',
             customLayout: {
                 'default': [
                     'q w e r t y u i o p {bksp}',
-                    'a s d f g h j k l {enter}',
+                    'a s d f g h j k l {clear}',
                     '{s} z x c v b n m , . {s}',
                     '{meta1} {space} {meta1} {accept}'
                 ],
                 'shift': [
                     'Q W E R T Y U I O P {bksp}',
-                    'A S D F G H J K L {enter}',
+                    'A S D F G H J K L {clear}',
                     '{s} Z X C V B N M ! ? {s}',
                     '{meta1} {space} {meta1} {accept}'
                 ],
                 'meta1': [
                     '1 2 3 4 5 6 7 8 9 0 {bksp}',
-                    '- / : ; ( ) \u20ac & @ {enter}',
+                    '- / : ; ( ) \u20ac & @ {clear}',
                     '{meta2} . , ? ! \' " {meta2}',
                     '{default} {space} {default} {accept}'
                 ],
                 'meta2': [
                     '[ ] { } # % ^ * + = {bksp}',
-                    '_ \\ | ~ < > $ \u00a3 \u00a5 {enter}',
+                    '_ \\ | ~ < > $ \u00a3 \u00a5 {clear}',
                     '{meta1} . , ? ! \' " {meta1}',
                     '{default} {space} {default} {accept}'
                 ]
