@@ -1097,6 +1097,9 @@ select {
 #print .Table {
   margin: 0; }
 
+#print .filament_amount {
+  padding-left: 0.5em; }
+
 /* 
   Files tab
 */

@@ -6,10 +6,14 @@ import time
 import threading
 import re
 
+from copy import deepcopy
+
 import octoprint.plugin
 from octoprint.settings import settings
 
 from octoprint.util import RepeatedTimer
+from octoprint.util import dict_merge
+
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
@@ -27,11 +31,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self.loading_filament = None
 		self.unloading_filament = None
 		self.start_time = None
-		self.current_print_extrusion_amount = 0.0
+		self.current_print_extrusion_amount = None
 		self.last_print_extrusion_amount = 0.0
+		self.last_send_extrusion_amount = None
+		self.last_saved_extrusion_amount = None
+
 
 		self.last_extrusion = 0
 		self.current_extrusion = 0
+
+		self.filament_amount = None 
 
 		self.materials = _s.get(["temperature", "profiles"])
 		self.defaultMaterial = {
@@ -42,16 +51,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 		self.filamentDefaults = [
 			{
-				"amountLeft": 0,
+				"tool": 0,
+				"amount": {
+					"length": 30000, "volume": 0
+				},
 				"material": self.defaultMaterial
 			},
 			{
-				"amountLeft": 300000,
+				"tool": 1,
+				"amount":{
+					"length": 30000, "volume": 0
+				},
 				"material": self.defaultMaterial
 			}
 		]
 
 		self.regexExtruder = re.compile("(^|[^A-Za-z][Ee])(-?[0-9]*\.?[0-9]+)")
+
+	def initialize(self):
+		self._logger.info(self._settings.get(["filaments"]))
+		self.filament_amount = [data["amount"]["length"] for data in self._settings.get(["filaments"])]
+
+		self.last_send_filament_amount = deepcopy(self.filament_amount)
+		self.last_saved_filament_amount = deepcopy(self.filament_amount)
+		self.current_print_extrusion_amount = [0.0,0.0]
+
 
 	def get_settings_defaults(self):
 		return dict(
@@ -142,6 +166,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self._printer.change_tool("tool0") # Always set tool back to right extruder
 		self._logger.info("Unloading finished")
 
+	def save_filament_amount(self):
+		current = self._settings.get(["filaments"])
+		for index, data in enumerate(current):	
+			data["amount"]["length"] = self.filament_amount[index]
+		self._settings.set(["filaments"], current)
+
 	def checkExtrusion(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode:
 			if gcode == "G92":
@@ -151,23 +181,34 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 			if (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
 				extrusion_code = self.regexExtruder.search(cmd)
 				if extrusion_code is not None:
+					tool = comm_instance.getCurrentTool()
 					current_extrusion = float(extrusion_code.group(2))
 					extrusion_amount = current_extrusion - self.last_extrusion
-					self.current_print_extrusion_amount += extrusion_amount
-					self.filamentDefaults[comm_instance.getCurrentTool()]["amountLeft"] -= extrusion_amount
-					self._logger.info("Filament left :%f" % self.filamentDefaults[comm_instance.getCurrentTool()]["amountLeft"])
-					self._logger.info("Extrusion amount:%f" % self.current_print_extrusion_amount)
+					self.current_print_extrusion_amount[tool] += extrusion_amount
+					self.filament_amount[tool] -= extrusion_amount
 					self.last_extrusion = current_extrusion
-					# self._logger.info("Exrusion amount:%f" % extrusion_amount)
+					if (self.last_send_filament_amount[tool] - self.filament_amount[tool] > 10):
+						filament_length = [{"length":x} for x in self.filament_amount]
+						data = {"extrusion": self.current_print_extrusion_amount, "filament": filament_length}
+						self._send_client_message("update_filament_amount", data)
+						self.last_send_filament_amount = deepcopy(self.filament_amount)
+					if (self.last_saved_filament_amount[tool] - self.filament_amount[tool] > 100):
+						self.save_filament_amount()
+						self.last_saved_extrusion_amount = deepcopy(self.filament_amount)
+
+
 
 		
 
 	def on_event(self, event, playload, *args, **kwargs):
-		if (event == "PrintFailed" or event == "PrintCanceled" or event == "PrintDone"):
+		if (event == "PrintFailed" or event == "PrintCanceled" or event == "PrintDone" or event == "Error"):
 			self.last_print_extrusion_amount = self.current_print_extrusion_amount
 			self.current_print_extrusion_amount = 0.0
+			self.save_filament_amount()
+
+
 		if (event == "PrintStarted"):
-			self.current_print_extrusion_amount = 0.0
+			self.current_print_extrusion_amount = [0.0, 0.0]
 
 
 __plugin_name__ = "lui"

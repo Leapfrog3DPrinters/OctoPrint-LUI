@@ -102,6 +102,26 @@ $(function() {
                 return gettext("Pause");
         });
 
+        self.leftFilament = ko.computed(function() {
+            filaments = self.filament();
+            for (var key in filaments) {
+                if (filaments[key].name() == "Tool 1") {
+                    return formatFilament(filaments[key].data());
+                }
+            }
+            return "-"
+        });
+
+        self.rightFilament = ko.computed(function() {
+            filaments = self.filament();
+            for (var key in filaments) {
+                if (filaments[key].name() == "Tool 0") {
+                    return formatFilament(filaments[key].data());
+                }
+            }
+            return "-"
+        });
+
         self.fileSelected = ko.computed(function() {
             if(self.filename()) 
                 return true

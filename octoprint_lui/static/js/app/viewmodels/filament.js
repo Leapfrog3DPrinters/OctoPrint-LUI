@@ -21,6 +21,9 @@ $(function () {
         self.selectedTemperatureProfile = ko.observable(undefined);
         self.materialProfiles = ko.observableArray([]);
 
+        self.filamentAmountString = ko.observableArray([ko.observable(),ko.observable()]);
+        self.filamentAmount = ko.observableArray([ko.observable(0),ko.observable(0)]);
+
         self.DEFAULT_STATUS_TEXT = gettext('');
         self.UNLOADING_STATUS_TEXT = gettext('The filament is being released from the extruder. Please wait...');
         self.LOADING_STATUS_TEXT = gettext('');
@@ -28,23 +31,19 @@ $(function () {
 
         self.currentStatus = ko.observable(self.DEFAULT_STATUS_TEXT);
 
-        self.leftFilament = ko.computed(function() {
-            filaments = self.printerState.filament();
-            for (var key in filaments) {
-                if (filaments[key].name() == "Tool 1") {
-                    return formatFilament(filaments[key].data());
-                }
+        self.checkRightFilamentAmount = ko.computed (function(){
+            if (self.printerState.filament()[0]) {
+                if (self.filamentAmount()[0]() < self.printerState.filament()[0].data().length)
+                    return "file_failed"
             }
-        });
+        })
 
-        self.rightFilament = ko.computed(function() {
-            filaments = self.printerState.filament();
-            for (var key in filaments) {
-                if (filaments[key].name() == "Tool 0") {
-                    return formatFilament(filaments[key].data());
-                }
+        self.checkLeftFilamentAmount = ko.computed (function(){
+            if (self.printerState.filament()[1]) {
+                if (self.filamentAmount()[1]() < self.printerState.filament()[0].data().length)
+                    return "file_failed"
             }
-        });
+        })
 
         self.toolText = ko.computed(function() {
             if (self.toolNum() != undefined) {
@@ -281,6 +280,8 @@ $(function () {
             }
 
             var messageType = data.type;
+            var messageData = data.data;
+
             console.log("plugin sends: " + messageType);
             switch (messageType) {
                 case "load_filament_start":
@@ -292,11 +293,20 @@ $(function () {
                 case "unloading_filament_stop":
                     self.unloadingStopped();
                     break;
+                case "update_filament_amount":
+                    console.log(messageData.extrusion)
+
+                    for (var key in messageData.filament) {
+                        self.filamentAmount()[key](messageData.filament[key].length);
+                        self.filamentAmountString()[key](formatFilament(messageData.filament[key]));
+                    }
+
             }
         };
 
         // Helpers
         // ------------------
+
 
 
         self.saveFilamentMaterial = function (material) {
@@ -356,11 +366,14 @@ $(function () {
         }
 
         self.onAfterBinding = function(){
+            for (var key in self.settings.plugins_lui_filaments()) {
+                self.filamentAmountString()[key](formatFilament(self.settings.plugins_lui_filaments()[key]["amount"]));
+                self.filamentAmount()[key](self.settings.plugins_lui_filaments()[key]["amount"]["length"])
+            }
             self.copyMaterialProfiles();
         };
 
         self.onEventSettingsUpdated = function () {
-            // could check for updated 
             self.copyMaterialProfiles();
         };
 
