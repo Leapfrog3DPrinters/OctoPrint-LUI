@@ -493,12 +493,6 @@ $(function() {
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
                 }
-                ,
-                plugins: {
-                    lui: {
-                        filaments: function (value) { self.plugins_lui_filaments($.extend(true, [], value)); }
-                    }
-                }
             };
 
             var mapToObservables = function(data, mapping, local, keyPrefix) {

@@ -199,9 +199,9 @@ a {
 #stop-light .light-green:hover {
   fill: #6FFF3A; }
 
-/*
- Flexbox + Important CSS Starts Here
-*/
+#slider_wrapper {
+  padding: 10px 0px; }
+
 /*
   Overall Layout
 */

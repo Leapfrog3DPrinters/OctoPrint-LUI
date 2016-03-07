@@ -18,6 +18,8 @@ $(function () {
         self.printerState = parameters[3];
         self.temperatureState = parameters[4];
 
+        self.filamentUnload = ko.observable(0);
+
         self.selectedTemperatureProfile = ko.observable(undefined);
         self.materialProfiles = ko.observableArray([]);
 
@@ -36,14 +38,14 @@ $(function () {
                 if (self.filamentAmount()[0]() < self.printerState.filament()[0].data().length)
                     return "file_failed"
             }
-        })
+        });
 
         self.checkLeftFilamentAmount = ko.computed (function(){
             if (self.printerState.filament()[1]) {
                 if (self.filamentAmount()[1]() < self.printerState.filament()[0].data().length)
                     return "file_failed"
             }
-        })
+        });
 
         self.toolText = ko.computed(function() {
             if (self.toolNum() != undefined) {
@@ -54,6 +56,10 @@ $(function () {
             }
 
         });
+
+        self.getFilamentAmount = function (tool) {
+                self.filamentUnload(self.filamentAmountString()[tool]());
+        }
 
         // Views
         // ------------------
@@ -67,8 +73,10 @@ $(function () {
             });
             
             self.toolNum(toolNum);
+            self.getFilamentAmount(toolNum)
 
             self.showUnload();
+            slider.noUiSlider.set(330)
 
             self.flyout.showFlyout('filament')
             .always(function () {
@@ -134,6 +142,7 @@ $(function () {
 
                     newMaterial = self.materialProfiles()[0]; // Hard-coded 'none' material
                     self.saveFilamentMaterial(newMaterial);
+                    self.setFilamentAmount(toolNum, 0);
 
                     self.showLoad();
 
@@ -150,6 +159,7 @@ $(function () {
 
             if (targetProfile.name == 'None') {
                 self.flyout.closeFlyoutWithButton();
+                self.setFilamentAmount(toolNum, 0);
                 return;
             }
 
@@ -169,10 +179,11 @@ $(function () {
 
 
         self.startLoadingFilament = function () {
+            console.log("Start loading clicked")
 
             self.loadFilament().fail(function () {
                 console.log('Loading time-out');
-                self.showLoad();
+                //self.showLoad();
 
                 $.notify(
                     {
@@ -189,7 +200,7 @@ $(function () {
             self.stopLoadingFilament();
 
             // Stop waiting for timeout
-            self.deferredLoadCtrl = undefined;
+            self.deferredLoadCtrl.resolve();
 
             newMaterial = self.selectedTemperatureProfile();
 
@@ -242,9 +253,15 @@ $(function () {
 
             self.currentStatus(self.LOADING_STATUS_TEXT);
 
+            if (slider.noUiSlider.get()) 
+                amount = slider.noUiSlider.get() * 1000;
+
+            console.log(amount);
+
             self._sendApi({
                 command: "start_loading",
-                tool: "tool" + self.toolNum()
+                tool: "tool" + self.toolNum(),
+                amount: amount
             });
 
             return self.deferredLoadCtrl;
@@ -294,7 +311,7 @@ $(function () {
                     self.unloadingStopped();
                     break;
                 case "update_filament_amount":
-                    console.log(messageData.extrusion)
+                    //console.log(messageData.extrusion)
 
                     for (var key in messageData.filament) {
                         self.filamentAmount()[key](messageData.filament[key].length);
@@ -307,22 +324,31 @@ $(function () {
         // Helpers
         // ------------------
 
+        self.setFilamentAmount = function (tool, amount) {
+            self._sendApi({
+                command: "update_filament", 
+                tool: tool,
+                amount: amount
+            })
+        };
 
 
         self.saveFilamentMaterial = function (material) {
             if (material != undefined) {
                 toolNum = self.toolNum();
-                self.settings.plugins_lui_filaments()[toolNum]["material"] = material;
-                self.settings.saveData();  
+                self.settings.settings.plugins.lui.filaments()[toolNum]["material"].name(material.name);
+                self.settings.settings.plugins.lui.filaments()[toolNum]["material"].extruder(material.extruder);
+                self.settings.settings.plugins.lui.filaments()[toolNum]["material"].bed(material.bed);
+                self.settings.saveData();
             }
-        }
+        };
 
         self.checkPreheatComplete = function () {
             setTimeout( function() {
                 if (self.temperatureState.toolStatus()[toolNum].status() == "READY") 
                     self.deferredTempCtrl.resolve();
             }, 4000);
-        }
+        };
 
         self._resetHeating = function () {
             //TODO: Disable this function if user is 'advanced' and has pre-heating on when opening flyout
@@ -366,9 +392,10 @@ $(function () {
         }
 
         self.onAfterBinding = function(){
-            for (var key in self.settings.plugins_lui_filaments()) {
-                self.filamentAmountString()[key](formatFilament(self.settings.plugins_lui_filaments()[key]["amount"]));
-                self.filamentAmount()[key](self.settings.plugins_lui_filaments()[key]["amount"]["length"])
+            for (var key in self.settings.settings.plugins.lui.filaments()) {
+                console.log(self.settings.settings.plugins.lui.filaments()[key]["amount"])
+                self.filamentAmountString()[key](formatFilament(ko.mapping.toJS(self.settings.settings.plugins.lui.filaments()[key]["amount"])));
+                self.filamentAmount()[key](self.settings.settings.plugins.lui.filaments()[key]["amount"]["length"])
             }
             self.copyMaterialProfiles();
         };

@@ -495,6 +495,26 @@ $(function() {
     $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
 
     $("input[type='number']").keyboard(keyboardLayouts.number);
+    
+    $("#input-format").keyboard({
+        layout: 'custom',
+        customLayout: {
+            normal: [
+                '7 8 9 {clear}',
+                '4 5 6 {cancel}',
+                '1 2 3 {accept}',
+                '. 0 {sp:3.1}',
+            ]
+        },
+        usePreview: true,
+        display: {
+            'accept':'Accept:Accept',
+            'clear':'Clear:Clear'
+        },
+        accepted: function (event, keyboard, el) {
+            slider.noUiSlider.set(keyboard.$preview.val());
+        }
+    });
 
     ko.bindingHandlers.keyboardForeach = {
         init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
@@ -510,5 +530,39 @@ $(function() {
         }
     };
     ko.virtualElements.allowedBindings.keyboardForeach = true;
+
+    var slider = document.getElementById('slider');
+
+    noUiSlider.create(slider, {
+        start: 330,
+        step: 1,
+        behaviour: 'snap',
+        connect: 'lower',
+        range: {
+            'min': 0,
+            'max': 330
+        },
+        format: {
+          to: function ( value ) {
+            return value.toFixed(0);
+          },
+          from: function ( value ) {
+            return value;
+          }
+        }
+    });
+
+    var inputFormat = document.getElementById('input-format');
+    var filament_percent = document.getElementById('filament_percent');
+
+    slider.noUiSlider.on('update', function( values, handle ) {
+        inputFormat.value = values[handle];
+        percent = ((values[handle] / 330) * 100).toFixed(0);
+        filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+    });
+
+    inputFormat.addEventListener('change', function(){
+        slider.noUiSlider.set(this.value);
+    });
 
 });

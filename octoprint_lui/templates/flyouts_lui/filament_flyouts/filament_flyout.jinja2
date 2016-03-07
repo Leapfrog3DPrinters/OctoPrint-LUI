@@ -8,7 +8,7 @@
         <div class="Table-item">
             <div id="swap_process" data-bind="css: { disabled: !printerState.isOperational() }">
                 <div class="swap_process_step" id="swap_process_unload">
-                    <div class="explain">Please press unload to release the filament from the extruder.</div>
+                    <div class="explain">Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind="text: filamentUnload" class="bold"></span> left.</div>
                     <ul class="button-area">
                         <li class="button ok-button" id="unload_cmd" data-bind="click: doUnload, css: { disabled: !loginState.loggedIn()}">
                             <a href="#"><span><i class="fa fa-arrow-up"></i>Unload</span></a>
@@ -20,8 +20,22 @@
                     <select class="select-material" data-bind="options: materialProfiles,
                                    optionsText: 'name',
                                    value: selectedTemperatureProfile,
-                                   optionsCaption: 'Choose material...'"></select>
-                   
+                                   optionsCaption: 'Choose material...'">
+                    </select>
+                    Select how much filament is on the spool:
+                    <div id="slider_wrapper">
+                        <div id="slider" class="noUi-extended"></div>
+                    </div>
+                    <div class="Table">
+                        <div class="Table-row">
+                            <div class="Table-item">
+                                <input id="input-format"></input>
+                            </div>
+                            <div class="Table-item">
+                                <span id="filament_percent"></span>   
+                            </div>
+                        </div>
+                    </div>
                     <ul class="button-area">
                         <li class="button ok-button" id="unload_cmd" data-bind="click: selectMaterial, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn()}">
                             <a href="#"><span>Select</span></a>
@@ -36,7 +50,7 @@
             <div class="swap_process_step" id="swap_process_stopload">
                 <div class="explain">Please insert the filament in the filament drawer. Make sure that the filament is past both wheels.</div>
                 <ul class="button-area">
-                    <li class="button ok-button" data-bind="click: startLoadingFilament, css: { disabled: !loginState.loggedIn()}">
+                    <li class="button ok-button" data-bind="click: function () {startLoadingFilament() }, css: { disabled: !loginState.loggedIn()}">
                         <a href="#"><span><i class="fa fa-arrow-down"></i>Start Quick Load</span></a>
                     </li>
                     <li class="button ok-button" id="unload_cmd" data-bind="click: doStopLoad, css: { disabled: !loginState.loggedIn()}">
@@ -60,5 +74,9 @@
         </div>
         <div class="Table-item" style="text-align: right" ><span data-bind="text: temperatureState.tools()[toolNum()]['actual']"></span><span> &deg;C</span></div>
         <div class="Table-item" >/ <b data-bind="text: temperatureState.tools()[toolNum()]['target']"></b><b> &deg;C</b></div>
+    </div>
+    <div class="Table-row">
+        <div class="Table-item">
+        </div>
     </div>
 </div> <!-- / Table --> 
