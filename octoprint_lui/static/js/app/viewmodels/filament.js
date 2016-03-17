@@ -99,10 +99,16 @@ $(function () {
         self.showUnload = function () {
             filaments = self.settings.plugins_lui_filaments();
             toolNum = self.toolNum();
-            targetProfile = filaments[toolNum].material;
+            if (toolNum == 0){
+                targetProfile = self.settings.settings.plugins.lui.filaments.tool0["material"];
+            }
+            if (toolNum == 1){
+                targetProfile = self.settings.settings.plugins.lui.filaments.tool1["material"];
+            }
+            console.log(targetProfile)
 
             // Check if material is loaded, if not, move to load screen
-            if (targetProfile.name == 'None')
+            if (targetProfile.name() == 'None')
                 self.showLoad()
             else
                 {
@@ -129,8 +135,12 @@ $(function () {
 
         self.doUnload = function () {
             toolNum = self.toolNum();
-            targetProfile = self.settings.plugins_lui_filaments()[toolNum].material;
-
+            if (toolNum == 0){
+                targetProfile = self.settings.settings.plugins.lui.filaments.tool0["material"];
+            }
+            if (toolNum == 1){
+                targetProfile = self.settings.settings.plugins.lui.filaments.tool1["material"];
+            }
             $('#swap_process_unload').removeClass('active');
 
             self.preheatForSwap(targetProfile).done(function () {
@@ -336,10 +346,13 @@ $(function () {
         self.saveFilamentMaterial = function (material) {
             if (material != undefined) {
                 toolNum = self.toolNum();
-                self.settings.settings.plugins.lui.filaments()[toolNum]["material"].name(material.name);
-                self.settings.settings.plugins.lui.filaments()[toolNum]["material"].extruder(material.extruder);
-                self.settings.settings.plugins.lui.filaments()[toolNum]["material"].bed(material.bed);
-                self.settings.saveData();
+                if (toolNum === 0 ){
+                    self.settings.settings.plugins.lui.filaments.tool0["material"] = material;
+                }
+                if (toolNum === 1 ){
+                    self.settings.settings.plugins.lui.filaments.tool1["material"] = material;
+                }
+                self.settings.saveData({plugins: { lui: ko.mapping.toJS(self.settings.settings.plugins.lui) }}); 
             }
         };
 
@@ -392,11 +405,21 @@ $(function () {
         }
 
         self.onAfterBinding = function(){
-            for (var key in self.settings.settings.plugins.lui.filaments()) {
-                console.log(self.settings.settings.plugins.lui.filaments()[key]["amount"])
-                self.filamentAmountString()[key](formatFilament(ko.mapping.toJS(self.settings.settings.plugins.lui.filaments()[key]["amount"])));
-                self.filamentAmount()[key](self.settings.settings.plugins.lui.filaments()[key]["amount"]["length"])
-            }
+            _.each(self.settings.settings.plugins.lui.filaments, function(value, key){
+                if (key == 'tool0') {
+                    self.filamentAmountString()[0](formatFilament(ko.mapping.toJS(value["amount"])));
+                    self.filamentAmount()[0](value["amount"]["length"]());
+                }
+                else if (key == 'tool1') {
+                    self.filamentAmountString()[1](formatFilament(ko.mapping.toJS(value["amount"])));
+                    self.filamentAmount()[1](value["amount"]["length"]());
+                }
+            });
+            // for (var key in self.settings.settings.plugins.lui.filaments) {
+            //     console.log(self.settings.settings.plugins.lui.filaments[key]["amount"])
+            //     self.filamentAmountString()[key](formatFilament(ko.mapping.toJS(self.settings.settings.plugins.lui.filaments[key]["amount"])));
+            //     self.filamentAmount()[key](self.settings.settings.plugins.lui.filaments[key]["amount"]["length"])
+            // }
             self.copyMaterialProfiles();
         };
 

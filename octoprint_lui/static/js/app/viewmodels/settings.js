@@ -225,58 +225,6 @@ $(function() {
             self.webcam_ffmpegPathReset();
         };
 
-        self.isDialogActive = function() {
-            return self.settingsDialog.is(":visible");
-        };
-
-        self.onStartup = function() {
-            self.settingsDialog = $('#settings_dialog');
-            self.settingsUpdatedDialog = $('#settings_dialog_update_detected');
-        };
-
-        self.onAllBound = function(allViewModels) {
-            self.allViewModels = allViewModels;
-
-            self.settingsDialog.on('show', function(event) {
-                if (event.target.id == "settings_dialog") {
-                    callViewModels(allViewModels, "onSettingsShown");
-                }
-            });
-            self.settingsDialog.on('hidden', function(event) {
-                if (event.target.id == "settings_dialog") {
-                    callViewModels(allViewModels, "onSettingsHidden");
-                }
-            });
-            self.settingsDialog.on('beforeSave', function () {
-                callViewModels(allViewModels, "onSettingsBeforeSave");
-            });
-
-            $(".reload_all", self.settingsUpdatedDialog).click(function(e) {
-                e.preventDefault();
-                self.settingsUpdatedDialog.modal("hide");
-                self.requestData();
-                return false;
-            });
-            $(".reload_nonconflicts", self.settingsUpdatedDialog).click(function(e) {
-                e.preventDefault();
-                self.settingsUpdatedDialog.modal("hide");
-                self.requestData(undefined, true);
-                return false;
-            });
-        };
-
-        self.show = function() {
-            // show settings, ensure centered position
-            self.settingsDialog.modal({
-                minHeight: function() { return Math.max($.fn.modal.defaults.maxHeight() - 80, 250); }
-            }).css({
-                width: 'auto',
-                'margin-left': function() { return -($(this).width() /2); }
-            });
-
-            return false;
-        };
-
         self.hide = function() {
             toggleFlyOut();
         };
@@ -493,6 +441,12 @@ $(function() {
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
                 }
+                ,
+                plugins: {
+                    lui: {
+                        filaments: function (value) { self.plugins_lui_filaments($.extend(true, [], value)); }
+                    }
+                }
             };
 
             var mapToObservables = function(data, mapping, local, keyPrefix) {
@@ -604,19 +558,23 @@ $(function() {
         };
 
         self.showSettingsTopic = function(topic) {
-            self.requestData();
             var settings_topic = "#" + topic +'_settings_flyout_content';
             var $settings_topic_content = $(settings_topic);
             console.log(settings_topic);
             $settings_topic_content.addClass('active');
             self.settingsTopic(capitalize(topic));
+            callViewModels(allViewModels, "onSettingsShown");
             self.flyout.showFlyout('settings', topic)
                 .done(function () {
                     console.log("Button Clicked");
                     self.saveData();
                 })
                 .fail(function() {console.log("Close or Overlay")})
-                .always(function() {$settings_topic_content.removeClass('active')});
+                .always(function() {
+                    $settings_topic_content.removeClass('active')
+                    callViewModels(allViewModels, "onSettingsHidden");
+
+                });
         };
 
     }

@@ -286,6 +286,7 @@ a {
   display: none;
   flex: 1 0 auto;
   height:200px;
+  overflow-y: auto;
 }
 
 .open {
@@ -525,6 +526,9 @@ a {
     &:before {
       width: 30%;
       font-weight: 700;
+    }
+    .fa{
+      align-self:center;
     }
   }
   &-nested {

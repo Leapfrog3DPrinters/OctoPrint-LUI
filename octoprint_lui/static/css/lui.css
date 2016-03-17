@@ -273,7 +273,8 @@ a {
   -webkit-flex: 1 0 auto;
       -ms-flex: 1 0 auto;
           flex: 1 0 auto;
-  height: 200px; }
+  height: 200px;
+  overflow-y: auto; }
 
 .open {
   display: -webkit-box;
@@ -603,6 +604,10 @@ a {
     .Table-item:before {
       width: 30%;
       font-weight: 700; }
+    .Table-item .fa {
+      -webkit-align-self: center;
+          -ms-flex-item-align: center;
+              align-self: center; }
   .Table-nested {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;

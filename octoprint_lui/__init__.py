@@ -52,28 +52,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 				"name": "None"
 			}
 
-		self.filamentDefaults = [
-			{
-				"tool": 0, 
-				"amount": {
-					"length": 0, "volume": 0
+		self.filamentDefaults = {
+				"tool0": {
+					"amount": {
+						"length": 0, "volume": 0
+					},
+					"material": self.defaultMaterial
 				},
-				"material": self.defaultMaterial
-			},
-			{	"tool": 1, 
-				"amount":{
-					"length": 0, "volume": 0
-				},
-				"material": self.defaultMaterial
+				"tool1": {
+					"amount":{
+						"length": 0, "volume": 0
+					},
+					"material": self.defaultMaterial
+				} 
 			}
-		]	
 
 		self.regexExtruder = re.compile("(^|[^A-Za-z][Ee])(-?[0-9]*\.?[0-9]+)")
 
 	def initialize(self):
 		self._logger.info(self._settings.get(["filaments"]))
 		filaments = self._settings.get(["filaments"])
-		self.filament_amount = [data["amount"]["length"] for data in filaments]
+		self.filament_amount = [filaments["tool"+str(index)]["amount"]["length"] for index, data in enumerate(filaments)]
 		self._logger.info(self.filament_amount)
 
 		self.last_send_filament_amount = deepcopy(self.filament_amount)
@@ -132,9 +131,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 					self.loading_filament.cancel()
 					self._logger.info("Stop loading command received")
 					self._logger.info(self._settings.get(["filaments"]))
-
 			elif command == "update_filament":
-				self.filament_amount[data["tool"]] = data["amount"]
+				tool = data["tool"]
+				tool_num = int(tool[len("tool"):])
+				self.filament_amount[tool_num] = data["amount"]
 				self.save_filament_amount()
 				self.send_filament_amount()
 
@@ -174,7 +174,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self.isLoading = False
 		tool_num = int(tool[len("tool"):])
 		self.filament_amount[tool_num] = amount
-		# self.save_filament_amount()
+		self.save_filament_amount(tool)
 		self.send_filament_amount()
 		self.loading_filament = None
 		self._send_client_message("loading_filament_stop")
@@ -191,14 +191,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self._printer.change_tool("tool0") # Always set tool back to right extruder
 		self._logger.info("Unloading finished")
 
-	def save_filament_amount(self):
+	def save_filament_amount(self, tool):
+		tool_num = int(tool[len("tool"):])
 		current = self._settings.get(["filaments"])
-		self._logger.info(self._settings.get(["filaments"]))
-		for index, data in enumerate(current):	
-			data["amount"]["length"] = self.filament_amount[index]
-		self._settings.set(["filaments"], current)
-		self._logger.info(self._settings.get(["filaments"]))
-		# self._settings.save(force=True)
+		current[tool]["amount"]["length"] = self.filament_amount[tool_num]
+		self._logger.info(current)
+		self._settings.set(["filaments"], current, force=True)
+		self._settings.save(force=True)
 
 	def checkExtrusion(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode:

@@ -112,14 +112,14 @@
                 </div>
                 <div class="Table-row">
                     <div class="Table-row">
-                        <!-- ko if: settings.settings.plugins.lui.filaments()[1]-->
-                        <div class="Table-item" data-bind="text: settings.settings.plugins.lui.filaments()[1].material.name"></div>
+                        <!-- ko if: settings.settings.plugins.lui.filaments.tool1-->
+                        <div class="Table-item" data-bind="text: settings.settings.plugins.lui.filaments.tool1.material.name"></div>
                         <!-- /ko -->
                         <div class="Table-item" data-bind="text: filamentAmountString()[1], , css: checkLeftFilamentAmount()"></div>
                     </div>
                     <div class="Table-row">
-                        <!-- ko if: settings.settings.plugins.lui.filaments()[0]-->
-                        <div class="Table-item" data-bind="text: settings.settings.plugins.lui.filaments()[0].material.name"></div>
+                        <!-- ko if: settings.settings.plugins.lui.filaments.tool0-->
+                        <div class="Table-item" data-bind="text: settings.settings.plugins.lui.filaments.tool0.material.name"></div>
                         <!-- /ko -->
                         <div class="Table-item" data-bind="text: filamentAmountString()[0], css: checkRightFilamentAmount()"></div>
                     </div>
