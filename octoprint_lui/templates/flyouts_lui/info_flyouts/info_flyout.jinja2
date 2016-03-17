@@ -14,9 +14,9 @@
                     <span style="width: 0%" data-bind="text: toolStatus()[1].text, style: { width: toolProgress()[1] + '%'}, visible: isOperational(), css: toolStatus()[1].color"></span>
                     <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
                 </div>
-            </div>
+            </div>{# 
             <div class="Table-item" data-bind="text: tools()[1]['actual'], visible: isOperational()"></div>
-            <div class="Table-item bold" data-bind="text: tools()[1]['target'], visible: isOperational()"></div>
+            <div class="Table-item bold" data-bind="text: tools()[1]['target'], visible: isOperational()"></div> #}
         </div>
         <div class="Table-row">
             <div class="Table-item">Right</div>
@@ -26,8 +26,8 @@
                     <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
                 </div>
             </div>
-            <div class="Table-item" data-bind="text: tools()[0]['actual'], visible: isOperational()"></div>
-            <div class="Table-item bold" data-bind="text: tools()[0]['target'], visible: isOperational()"></div>
+{#             <div class="Table-item" data-bind="text: tools()[0]['actual'], visible: isOperational()"></div>
+            <div class="Table-item bold" data-bind="text: tools()[0]['target'], visible: isOperational()"></div> #}
         </div>
         <div class="Table-row">
             <div class="Table-item">Bed</div>
