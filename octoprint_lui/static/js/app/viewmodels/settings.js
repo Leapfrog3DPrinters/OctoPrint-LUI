@@ -519,6 +519,10 @@ $(function() {
                 });
         };
 
+        self.onAllBound = function(allViewModels) {
+            self.allViewModels = allViewModels;
+        }
+
         self.onEventSettingsUpdated = function() {
             var preventSettingsRefresh = _.any(self.allViewModels, function(viewModel) {
                 if (viewModel.hasOwnProperty("onSettingsPreventRefresh")) {
@@ -563,7 +567,7 @@ $(function() {
             console.log(settings_topic);
             $settings_topic_content.addClass('active');
             self.settingsTopic(capitalize(topic));
-            callViewModels(allViewModels, "onSettingsShown");
+            callViewModels(self.allViewModels, "onSettingsShown");
             self.flyout.showFlyout('settings', topic)
                 .done(function () {
                     console.log("Button Clicked");
@@ -572,7 +576,7 @@ $(function() {
                 .fail(function() {console.log("Close or Overlay")})
                 .always(function() {
                     $settings_topic_content.removeClass('active')
-                    callViewModels(allViewModels, "onSettingsHidden");
+                    callViewModels(self.allViewModels, "onSettingsHidden");
 
                 });
         };
