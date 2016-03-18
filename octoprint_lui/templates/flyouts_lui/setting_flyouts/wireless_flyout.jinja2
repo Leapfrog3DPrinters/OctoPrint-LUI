@@ -1,5 +1,5 @@
 <div id="settings_plugin_networkmanager">
-	<div id="networkmanager_connections" class="Table">
+	<div id="networkmanager_connections" class="Table active">
 		<div class="Table-row Table-header">
 			<div class="Table-item Table-item-grow-8">
 				Wifi
@@ -15,14 +15,14 @@
 			</div>
 		</div>
 		<!-- ko foreach: listHelper.paginatedItems -->
-		<div class="Table-row">
+		<div class="Table-row" data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">>
 			<div class="Table-item Table-item-grow-8 text_wrap" data-bind="text: ssid"></div>
 			<div class="Table-item">
 				<i class="fa" data-bind="css: $root.isActive($data)"></i>
 			</div>
 			<div class="Table-item" data-bind="text: signal"></div>
 			<div class="Table-item">
-				<i class="fa fa-lock"></i>
+				<i class="fa" data-bind="css: $root.isEncrypted($data)"></i>
 			</div>
 		</div>
 		<!-- /ko -->
@@ -32,53 +32,49 @@
 			</div>
 		</div>
 		<div class="Table-row">
-			<div class="Table-item">
-				Disconnected
-			</div>
+			<div class="Table-item" data-bind="text: ethernetConnectionText"></div>
 		</div>
 	</div>
-	<div id="networmanager_connect">
-		<div class="Table">
-			<div class="Table-row Table-header">
-				<div class="Table-item">
-					Connect to Wifi Network
-				</div>
+	<div id="networmanager_connect" class="Table">
+		<div class="Table-row Table-header">
+			<div class="Table-item">
+				Connect to Wifi Network
 			</div>
-			<div class="Table-row ">
-				<div class="Table-item">
-					SSID:
-				</div>
-				<div class="Table-item">
-					<input type="text" placeholder="Leapfrog" value=""></input>
-				</div>
+		</div>
+		<div class="Table-row ">
+			<div class="Table-item">
+				SSID:
 			</div>
-			<div class="Table-row ">
-				<div class="Table-item">
-					Password:
-				</div>
-				<div class="Table-item">
-					<input type="password"></input>
-				</div>
+			<div class="Table-item">
+				<input type="text" placeholder="Leapfrog" value=""></input>
 			</div>
-			<div class="Table-row ">
-				<div class="Table-item">
-					Re-type password:
-				</div>
-				<div class="Table-item">
-					<input type="password"></input>
-				</div>
+		</div>
+		<div class="Table-row ">
+			<div class="Table-item">
+				Password:
 			</div>
-			<div class="Table-row">
-				<div class="Table-item">
-					<ul class="button-area">
-						<li class="button secondary-button"><a href=""><span>Back</span></a></li>
-					</ul>
-				</div>
-				<div class="Table-item">
-					<ul class="button-area">
-						<li class="button"><a href=""><span>Connect</span></a></li>
-					</ul>
-				</div>
+			<div class="Table-item">
+				<input type="password"></input>
+			</div>
+		</div>
+		<div class="Table-row ">
+			<div class="Table-item">
+				Re-type password:
+			</div>
+			<div class="Table-item">
+				<input type="password"></input>
+			</div>
+		</div>
+		<div class="Table-row">
+			<div class="Table-item">
+				<ul class="button-area">
+					<li class="button secondary-button"><a href=""><span>Back</span></a></li>
+				</ul>
+			</div>
+			<div class="Table-item">
+				<ul class="button-area">
+					<li class="button"><a href=""><span>Connect</span></a></li>
+				</ul>
 			</div>
 		</div>
 	</div>
