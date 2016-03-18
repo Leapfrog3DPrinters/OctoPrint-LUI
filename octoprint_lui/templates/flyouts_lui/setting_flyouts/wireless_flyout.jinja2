@@ -15,7 +15,7 @@
 			</div>
 		</div>
 		<!-- ko foreach: listHelper.paginatedItems -->
-		<div class="Table-row" data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">>
+		<div class="Table-row" data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
 			<div class="Table-item Table-item-grow-8 text_wrap" data-bind="text: ssid"></div>
 			<div class="Table-item">
 				<i class="fa" data-bind="css: $root.isActive($data)"></i>
@@ -46,15 +46,15 @@
 				SSID:
 			</div>
 			<div class="Table-item">
-				<input type="text" placeholder="Leapfrog" value=""></input>
+				<input type="text" placeholder="Leapfrog" data-bind="value: editorWifiSsid"></input>
 			</div>
 		</div>
-		<div class="Table-row ">
+		<div class="Table-row">
 			<div class="Table-item">
 				Password:
 			</div>
 			<div class="Table-item">
-				<input type="password"></input>
+				<input type="password" data-bind="value: editorWifiPassphrase1"></input>
 			</div>
 		</div>
 		<div class="Table-row ">
@@ -62,20 +62,21 @@
 				Re-type password:
 			</div>
 			<div class="Table-item">
-				<input type="password"></input>
+				<input type="password" data-bind="value: editorWifiPassphrase2"></input>
 			</div>
 		</div>
 		<div class="Table-row">
 			<div class="Table-item">
 				<ul class="button-area">
-					<li class="button secondary-button"><a href=""><span>Back</span></a></li>
+					<li class="button secondary-button" data-bind="click: cancelWifiConfiguration"><a href=""><span>Back</span></a></li>
 				</ul>
 			</div>
 			<div class="Table-item">
 				<ul class="button-area">
-					<li class="button"><a href=""><span>Connect</span></a></li>
+					<li class="button" data-bind="click: confirmWifiConfiguration"><a href=""><span>Connect</span></a></li>
 				</ul>
 			</div>
 		</div>
+		<span class="help-inline" data-bind="visible: editorWifiPassphraseMismatch()">{{ _('Passwords do not match') }}</span>
 	</div>
 </div>
