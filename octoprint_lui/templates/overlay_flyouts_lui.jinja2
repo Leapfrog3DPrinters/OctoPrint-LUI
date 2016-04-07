@@ -24,6 +24,11 @@
             {% include "flyouts_lui/setting_flyouts/advanced_flyout.jinja2" %}
         </div>
         <!-- /ko -->
+        <!-- ko allowBindings: false -->
+        <div id="update_settings_flyout_content" class="flyout_content">
+            {% include "flyouts_lui/setting_flyouts/update_flyout.jinja2" %}
+        </div>
+        <!-- /ko -->
         <ul class="button-area" style="align-self: flex-end">
           <li class="button secondary-button"><a href="#" data-bind="click: flyout.closeFlyout"><span>Back</span></a>
           <li class="button"><a href="#" data-bind="click: flyout.closeFlyoutWithButton"><span>Save</span></a></li>

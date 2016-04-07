@@ -523,12 +523,10 @@ a {
     min-width: 0;
     padding: 0.3em 0.4em;
     word-break: break-word;
+    align-self:center;
     &:before {
       width: 30%;
       font-weight: 700;
-    }
-    .fa{
-      align-self:center;
     }
   }
   &-nested {
@@ -542,6 +540,28 @@ a {
   .Table-item-grow-#{$i} {
     flex-grow: $i;
   }
+}
+
+// Add badge to font awesome
+.fa {
+  position: relative;
+}
+
+.badge {
+  font-size: .25em;
+  font-family: Agenda-Medium;
+  font-weight: 700;
+  display: block;
+  position: absolute;
+  top: -1.5em;
+  right: -2.2em;
+  width: 2em;
+  height: 2em;
+  line-height: 2.2em;
+  border-radius: 50%;
+  text-align: center;
+  color: #fff;
+  background: rgba(190, 0, 0, 1);
 }
 
 /*

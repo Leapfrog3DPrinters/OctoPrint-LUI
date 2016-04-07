@@ -490,8 +490,6 @@ $(function() {
                 };
             }
 
-            self.settingsDialog.trigger("beforeSave");
-
             self.sending(data === undefined || options.sending || false);
 
             if (data === undefined) {
@@ -570,10 +568,9 @@ $(function() {
             callViewModels(self.allViewModels, "onSettingsShown");
             self.flyout.showFlyout('settings', topic)
                 .done(function () {
-                    console.log("Button Clicked");
                     self.saveData();
                 })
-                .fail(function() {console.log("Close or Overlay")})
+                .fail(function() {})
                 .always(function() {
                     $settings_topic_content.removeClass('active')
                     callViewModels(self.allViewModels, "onSettingsHidden");

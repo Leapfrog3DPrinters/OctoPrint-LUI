@@ -600,14 +600,13 @@ a {
             flex-basis: 0;
     min-width: 0;
     padding: 0.3em 0.4em;
-    word-break: break-word; }
+    word-break: break-word;
+    -webkit-align-self: center;
+        -ms-flex-item-align: center;
+            align-self: center; }
     .Table-item:before {
       width: 30%;
       font-weight: 700; }
-    .Table-item .fa {
-      -webkit-align-self: center;
-          -ms-flex-item-align: center;
-              align-self: center; }
   .Table-nested {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -675,6 +674,25 @@ a {
   -webkit-flex-grow: 10;
       -ms-flex-positive: 10;
           flex-grow: 10; }
+
+.fa {
+  position: relative; }
+
+.badge {
+  font-size: .25em;
+  font-family: Agenda-Medium;
+  font-weight: 700;
+  display: block;
+  position: absolute;
+  top: -1.5em;
+  right: -2.2em;
+  width: 2em;
+  height: 2em;
+  line-height: 2.2em;
+  border-radius: 50%;
+  text-align: center;
+  color: #fff;
+  background: #be0000; }
 
 /*
  Pagination (multiple pages)
@@ -1311,7 +1329,6 @@ select {
   opacity: 0;
   filter: alpha(opacity=0);
   -webkit-transform: translate(-300px, 0) scale(4);
-      -ms-transform: translate(-300px, 0) scale(4);
           transform: translate(-300px, 0) scale(4);
   font-size: 23px;
   direction: ltr;

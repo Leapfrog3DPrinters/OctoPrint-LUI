@@ -1,0 +1,85 @@
+<div id="update">
+	<div class="Table">
+		<div class="Table-row Table-header">
+			<div class="Table-item">
+				Version infromation
+			</div>
+			<div class="Table-item">
+				<span style="margin-left: auto;">Bolt!</span>
+			</div>
+		</div>
+		<div class="Table-row">
+			<div class="Table-item Table-item-grow-4">
+				Leapfrog UI
+			</div>
+			<div class="Table-item">
+				0.1.0
+			</div>
+			<div class="Table-item Table-item-grow-3">
+				<ul class="button-area">
+					<li class="button"><a href=""><span><i class="fa fa-refresh"></i>Update</span></a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="Table-row">
+			<div class="Table-item Table-item-grow-4">
+				OctoPrint
+			</div>
+			<div class="Table-item">
+				1.3.0
+			</div>
+			<div class="Table-item Table-item-grow-3">
+				<ul class="button-area">
+					<li class="button ok-button disabled"><a href=""><span><i class="fa fa-check"></i>Up-to-date</span></a></li>
+				</ul>
+			</div>		
+		</div>
+	</div>
+	<!-- ko allowBindings: false -->
+	<div id="flash_arduino">
+		<div class="Table">
+			<div class="Table-row Table-header">
+				<div class="Table-item">
+					Firmware
+				</div>
+			</div>
+			<div class="Table-row">
+				<div class="Table-item Table-item-grow-4">
+					Bolt! <!-- TODO: Make model name ko.observable -->
+				</div>
+				<div class="Table-item">
+					2.4
+				</div>
+				<div class="Table-item Table-item-grow-3">
+					<ul class="button-area">
+						<li id="settings-flash-arduino-start" class="button" data-bind="css: {disabled: !flash_enable()}"><a href="#"><span><i class="fa fa-upload"></i>Flash</span></a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="Table-row">
+				<div class="Table-item">
+					<ul class="button-area">
+						<li class="button secondary-button fileinput-button"><a href="#"><span>Upload firmware (*.hex)</span><input id="settings-flash-arduino" type="file" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file") }}"></a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="Table-row">
+				<div class="Table-item">
+					<div class="progress">
+						<span id="flash_read_progress" class="bg-none" style="width: 100%">Reading</span>
+					</div>
+					<div class="progress">
+						<span id="flash_write_progress" class="bg-none" style="width: 100%">Writing</span>
+					</div>
+					<div class="progress">
+						<span id="flash_verify_progress" class="bg-none" style="width: 100%">Verify</span>
+					</div>
+					<div class="progress">
+						<span id="flash_done_progress" class="bg-none" style="width: 100%">Done</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- /ko -->
+</div>

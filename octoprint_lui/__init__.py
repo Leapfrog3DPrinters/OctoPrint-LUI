@@ -1,18 +1,20 @@
 from __future__ import absolute_import
 
-import flask
 import logging
 import time
 import threading
 import re
+import subprocess
+
+from pipes import quote
 
 from functools import partial
 
 from copy import deepcopy
-
+from flask import jsonify, make_response, render_template
 import octoprint.plugin
-from octoprint.settings import settings
 
+from octoprint.settings import settings
 from octoprint.util import RepeatedTimer
 from octoprint.util import dict_merge
 
@@ -25,7 +27,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 				octoprint.plugin.EventHandlerPlugin):
 
 	def __init__(self):
-		_s = settings();
 
 		self.time_out = 10
 		self.unloading_time_out = 3
@@ -39,13 +40,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self.last_saved_extrusion_amount = None
 		self.loadingAmount = 0
 
+		self.update_info = [
+			{
+				'identifier': 'octoprint_lui',
+				'path': '/Users/pim/lpfrg/OctoPrint-LUI',
+				'update': False,
+				'action': 'update_lui'
+			},
+			{
+				'identifier': 'octoprint_networkmanager',
+				'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
+				'update': False,
+				'action': 'update_networkmanager'
+			},			{
+				'identifier': 'octoprint',
+				'path': '/Users/pim/lpfrg/OctoPrint',
+				'update': False,
+				'action': 'update_octoprint'
+			}
+			]
 
 		self.last_extrusion = 0
 		self.current_extrusion = 0
 
 		self.filament_amount = None 
 
-		self.materials = _s.get(["temperature", "profiles"])
 		self.defaultMaterial = {
 				"bed": 0,
 				"extruder": 0,
@@ -70,6 +89,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self.regexExtruder = re.compile("(^|[^A-Za-z][Ee])(-?[0-9]*\.?[0-9]+)")
 
 	def initialize(self):
+		self.materials = self._settings.global_get(["temperature", "profiles"])
 		self._logger.info(self._settings.get(["filaments"]))
 		filaments = self._settings.get(["filaments"])
 		self.filament_amount = [filaments["tool"+str(index)]["amount"]["length"] for index, data in enumerate(filaments)]
@@ -79,6 +99,87 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self.last_saved_filament_amount = deepcopy(self.filament_amount)
 		self.current_print_extrusion_amount = [0.0,0.0]
 
+		## Set update actions into the settings
+		## This is a nifty function to check if a variable is in 
+		## a list of dictionaries. 
+		def is_variable_in_dict(variable, dict):
+			return any(True for x in dict if x['action'] == variable)
+
+		actions = self._settings.global_get(["system", "actions"])
+
+		## Add update LUI to the actions	
+		if not is_variable_in_dict('update_lui', actions):
+			update_lui = {
+				"action": "update_lui",
+				"name": "Update LUI",
+				"command": "cd /home/lily/OctoPrint-LUI && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+				"confirm": False
+			}
+			actions.append(update_lui)
+
+		## Add update network manager to the actions
+		if not is_variable_in_dict('update_networkmanager', actions):
+			update_networkmanager = {
+				"action": "update_networkmanager",
+				"name": "Update NetworkManager",
+				"command": "cd /home/lily/OctoPrint-NetworkManager && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+				"confirm": False
+			}
+			actions.append(update_networkmanager)
+
+		## Add update OctoPrint core to the actions
+		if not is_variable_in_dict('update_octoprint', actions):
+			update_octoprint = {
+				"action": "update_octoprint",
+				"name": "Update OctoPrint",
+				"command": "cd /home/lily/OctoPrint && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+				"confirm": False
+			}
+			actions.append(update_octoprint)
+
+		self._settings.global_set(["system", "actions"], actions)
+		self._logger.info(self._settings.global_get(["system", "actions"]))
+
+		## Lets check for updates on our stuff
+
+		for update in self.update_info:
+			update['update'] = self.check_for_update(update['path'])
+
+
+		self._logger.info(self.update_info)
+
+	def check_for_update(self, path):
+		# First fetch the repo
+		self.fetch_git_repo(path)
+		if self.is_update_needed(path):
+			return True
+
+
+	def is_update_needed(self, path):
+		local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+		remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
+		base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+
+		if (local == remote):
+			##~ Remote and local are the same, git is up-to-date
+			self._logger.info("Git with path: {path} is up-to-date".format(path=path))
+			return True #Testing
+		elif(local == base):
+			##~ Local is behind, we need to pull
+			self._logger.info("Git with path: {path} needs to be pulled".format(path=path))
+			return True
+		elif(remote == base):
+			##~ This should never happen and should actually call a fresh reset of the git TODO
+			self._logger.info("Git with path: {path} needs to be pushed".format(path=path))
+			return True
+
+
+	def fetch_git_repo(self, path):
+		try:
+			output = subprocess.check_output(['git', 'fetch'],cwd=path)
+		except subprocess.CalledProcessError as err:
+			self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
+		self._logger.debug("Fetched git repo: {path}".format(path=path))
 
 	def get_settings_defaults(self):
 		return dict(
@@ -86,6 +187,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 			lpfrg_model= "Xeed"
 		)
 
+	def on_api_get(self, request):
+		return jsonify(dict(
+			update=self.update_info
+			))
 
 	def get_api_commands(self):
 			return dict(
@@ -96,7 +201,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 			) 
 
 	def on_api_command(self, command, data):
-			import flask
 			if command == "start_loading":
 				if self.loading_filament is None:
 					self.isLoading = True
@@ -144,7 +248,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		return True
 
 	def on_ui_render(self, now, request, render_kwargs):
-		from flask import render_template, make_response
 		return make_response(render_template("index_lui.jinja2", **render_kwargs))
 
 	def _send_client_message(self, message_type, data=None):
