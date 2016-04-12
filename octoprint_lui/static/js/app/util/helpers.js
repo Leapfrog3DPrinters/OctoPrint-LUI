@@ -619,5 +619,4 @@ function changeTabTo(tab){
     var icon = tab + "_icon";
     var icon_link =$('#' + icon );
     $(icon_link).addClass('active');
-    console.log("Tab changed to #" + tab);
 }

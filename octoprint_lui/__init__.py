@@ -16,8 +16,7 @@ import octoprint.plugin
 
 from octoprint.settings import settings
 from octoprint.util import RepeatedTimer
-from octoprint.util import dict_merge
-
+from octoprint.server import VERSION
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
@@ -40,23 +39,39 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		self.last_saved_extrusion_amount = None
 		self.loadingAmount = 0
 
+		self.last_git_fetch = 0
 		self.update_info = [
 			{
-				'identifier': 'octoprint_lui',
+				'identifier': 'lui',
 				'path': '/Users/pim/lpfrg/OctoPrint-LUI',
 				'update': False,
-				'action': 'update_lui'
+				'action': 'update_lui',
+				'name': "Leapfrog UI",
+				'version': "testing"
 			},
 			{
-				'identifier': 'octoprint_networkmanager',
+				'identifier': 'networkmanager',
 				'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
 				'update': False,
-				'action': 'update_networkmanager'
-			},			{
+				'action': 'update_networkmanager',
+				'name': 'Network Manager',
+				'version': "0.0.1"
+			},
+			{
+				'identifier': 'flasharduino',
+				'path': '/Users/pim/lpfrg/OctoPrint-flashArduino',
+				'update': False,
+				'action': 'update_flasharduino',
+				'name': 'Flash Firmware Module',
+				'version': "0.0.1"
+			},		
+			{
 				'identifier': 'octoprint',
 				'path': '/Users/pim/lpfrg/OctoPrint',
 				'update': False,
-				'action': 'update_octoprint'
+				'action': 'update_octoprint',
+				'name': 'OctoPrint',
+				'version': VERSION
 			}
 			]
 
@@ -137,23 +152,38 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 			}
 			actions.append(update_octoprint)
 
+		## Add update flasharduino to the actions
+		if not is_variable_in_dict('update_flasharduino', actions):
+			update_flasharduino = {
+				"action": "update_update_flasharduino",
+				"name": "Update Flash Firmware Module",
+				"command": "cd /home/lily/OctoPrint-flashArduino && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+				"confirm": False
+			}
+			actions.append(update_flasharduino)
+
 		self._settings.global_set(["system", "actions"], actions)
 		self._logger.info(self._settings.global_get(["system", "actions"]))
 
-		## Lets check for updates on our stuff
 
-		for update in self.update_info:
-			update['update'] = self.check_for_update(update['path'])
-
+		self.update_info_list()
 
 		self._logger.info(self.update_info)
 
-	def check_for_update(self, path):
-		# First fetch the repo
-		self.fetch_git_repo(path)
-		if self.is_update_needed(path):
-			return True
+	def update_info_list(self, force=False):
+		self.fetch_all_repos(force)
+		for update in self.update_info:
+			update['update'] = self.is_update_needed(update['path'])
+			if update['identifier'] == 'lui':
+				update['version'] = self._plugin_manager.get_plugin_info(update['identifier']).version
 
+	def fetch_all_repos(self, force):
+		##~ Make sure we only fetch if we haven't for half an hour or if we are forced
+		current_time = time.time()
+		if force or (current_time - self.last_git_fetch) > 3600:
+			self.last_git_fetch = current_time
+			for update in self.update_info:
+				self.fetch_git_repo(update['path'])
 
 	def is_update_needed(self, path):
 		local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
@@ -163,7 +193,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		if (local == remote):
 			##~ Remote and local are the same, git is up-to-date
 			self._logger.info("Git with path: {path} is up-to-date".format(path=path))
-			return True #Testing
+			return False #Testing TODO
 		elif(local == base):
 			##~ Local is behind, we need to pull
 			self._logger.info("Git with path: {path} needs to be pulled".format(path=path))
@@ -240,7 +270,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 				tool_num = int(tool[len("tool"):])
 				self.filament_amount[tool_num] = data["amount"]
 				self.save_filament_amount()
-				self.send_filament_amount()
+				self.send_filament_amount(tool)
 
 
 			
@@ -321,7 +351,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 						self.send_filament_amount()
 						self.last_send_filament_amount = deepcopy(self.filament_amount)
 					if (self.last_saved_filament_amount[tool] - self.filament_amount[tool] > 100):
-						self.save_filament_amount()
+						self.save_filament_amount("tool"+tool)
 						self.last_saved_extrusion_amount = deepcopy(self.filament_amount)
 
 
@@ -344,7 +374,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 			self.current_print_extrusion_amount = [0.0, 0.0]
 
 
-__plugin_name__ = "lui"
+__plugin_name__ = "Leapfog UI"
 def __plugin_load__():
 	global __plugin_implementation__
 	__plugin_implementation__ = LUIPlugin()

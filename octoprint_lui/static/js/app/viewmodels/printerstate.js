@@ -267,7 +267,6 @@ $(function() {
         self.showInfoFlyout = function () {
             self.flyout.showFlyout('info')
                 .done(function (){
-                  console.log("info");
             });
         };
 

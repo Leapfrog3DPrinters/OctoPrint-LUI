@@ -378,7 +378,6 @@ $(function() {
         var tabID = $(this).attr('href');
         $('.icon-bar > a.active').removeClass('active');
         $(this).addClass('active');
-        console.log(tabID);
         $(tabID).addClass('open');
 
     });

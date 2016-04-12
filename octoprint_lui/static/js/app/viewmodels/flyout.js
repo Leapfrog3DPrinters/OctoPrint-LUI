@@ -9,8 +9,6 @@ $(function() {
       self.deferred = $.Deferred();
 
       self.template_flyout = '#'+flyout+'_flyout';
-      console.log(self.template_flyout);
-
       var $toggle_flyout = $(self.template_flyout),
           $overlay = $('.overlay');
       $toggle_flyout.addClass('active');

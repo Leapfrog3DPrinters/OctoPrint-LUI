@@ -2,38 +2,25 @@
 	<div class="Table">
 		<div class="Table-row Table-header">
 			<div class="Table-item">
-				Version infromation
+				Version information
 			</div>
 			<div class="Table-item">
 				<span style="margin-left: auto;">Bolt!</span>
 			</div>
 		</div>
+		<!-- ko foreach: updateinfo -->
 		<div class="Table-row">
-			<div class="Table-item Table-item-grow-4">
-				Leapfrog UI
+			<div class="Table-item Table-item-grow-4" data-bind="text: name">
 			</div>
-			<div class="Table-item">
-				0.1.0
+			<div class="Table-item text_wrap" data-bind="text: version">
 			</div>
 			<div class="Table-item Table-item-grow-3">
 				<ul class="button-area">
-					<li class="button"><a href=""><span><i class="fa fa-refresh"></i>Update</span></a></li>
+					<li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function(){$root.sendSystemCommand($data)}"><a href=""><span data-bind="text: $root.getUpdateText($data)"></span></a></li>
 				</ul>
 			</div>
 		</div>
-		<div class="Table-row">
-			<div class="Table-item Table-item-grow-4">
-				OctoPrint
-			</div>
-			<div class="Table-item">
-				1.3.0
-			</div>
-			<div class="Table-item Table-item-grow-3">
-				<ul class="button-area">
-					<li class="button ok-button disabled"><a href=""><span><i class="fa fa-check"></i>Up-to-date</span></a></li>
-				</ul>
-			</div>		
-		</div>
+		<!-- /ko -->
 	</div>
 	<!-- ko allowBindings: false -->
 	<div id="flash_arduino">
