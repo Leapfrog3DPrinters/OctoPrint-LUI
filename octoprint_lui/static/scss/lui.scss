@@ -1100,7 +1100,7 @@ $dark-color: #f2f2f2;
 #term {
   .terminal {
     #terminal-output {
-      min-height: 340px;
+      min-height: 150px;
       margin-bottom: 5px;
     }
 
@@ -1144,7 +1144,7 @@ pre code {
 }
 
 .pre-scrollable {
-  max-height: 340px;
+  max-height: 150px;
   overflow-y: scroll;
 }
 

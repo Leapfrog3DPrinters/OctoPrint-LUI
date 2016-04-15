@@ -1337,7 +1337,7 @@ select {
 #term .terminal {
   margin-bottom: 30px; }
   #term .terminal #terminal-output {
-    min-height: 340px;
+    min-height: 150px;
     margin-bottom: 5px; }
 #term #terminal-sendpanel {
   text-align: right; }
@@ -1369,7 +1369,7 @@ pre code {
   border: 0; }
 
 .pre-scrollable {
-  max-height: 340px;
+  max-height: 150px;
   overflow-y: scroll; }
 
 /* Filament swap */
