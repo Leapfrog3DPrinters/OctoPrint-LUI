@@ -385,9 +385,6 @@ $(function() {
     // Open additional info print file
     $('li.file_name, li.file_info').on('click', function() {
         $(this).parent().siblings('.file_add_info').toggleClass('slide');
-        // this is retarded performance wise.
-        //$(this).siblings('.file_info').children().children('.fa').toggleClass('fa-angle-down fa-angle-up');
-        //$(this).children().children('.fa').toggleClass('fa-angle-down fa-angle-up');
     });
 
 

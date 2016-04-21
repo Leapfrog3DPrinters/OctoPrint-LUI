@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import absolute_import
 
 import logging
@@ -6,16 +7,18 @@ import threading
 import re
 import subprocess
 import threading
+import netaddr
 
 from pipes import quote
 from functools import partial
 from copy import deepcopy
-from flask import jsonify, make_response, render_template
+from flask import jsonify, make_response, render_template, request
 
 import octoprint.plugin
 from octoprint.settings import settings
 from octoprint.util import RepeatedTimer
 from octoprint.server import VERSION
+from octoprint.server.util.flask import get_remote_address
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
@@ -27,7 +30,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def __init__(self):
 
-        ##~ Filament loading stuff
+        ##~ Filament loading variables
+        self.relative_extrusion = False
         self.time_out = 10
         self.unloading_time_out = 3
         self.isLoading = False
@@ -38,35 +42,40 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.last_print_extrusion_amount = 0.0
         self.last_send_extrusion_amount = None
         self.last_saved_extrusion_amount = None
-        self.loadingAmount = 0
-
+        
         self.last_extrusion = 0
         self.current_extrusion = 0
 
         self.filament_amount = None 
 
         self.defaultMaterial = {
-                "bed": 0,
-                "extruder": 0,
-                "name": "None"
-            }
+            "bed": 0,
+            "extruder": 0,
+            "name": "None"
+        }
 
         self.filamentDefaults = {
-                "tool0": {
-                    "amount": {
-                        "length": 0, "volume": 0
-                    },
-                    "material": self.defaultMaterial
-                },
-                "tool1": {
-                    "amount":{
-                        "length": 0, "volume": 0
-                    },
-                    "material": self.defaultMaterial
-                } 
-            }
+            "tool0": {
+                "amount":   {"length": 0, "volume": 0},
+                "material": self.defaultMaterial
+            },
+            "tool1": {
+                "amount":   {"length": 0, "volume": 0},
+                "material": self.defaultMaterial
+            } 
+        }
 
         self.regexExtruder = re.compile("(^|[^A-Za-z][Ee])(-?[0-9]*\.?[0-9]+)")
+
+        self.filament_change_tool = None
+        self.filament_change_profile = None
+        self.filament_change_amount = 0 
+        self.load_amount = 0
+        self.load_filament_timer = None
+        self.load_extrusion_amount = 0
+        self.load_extrusion_speed = 0
+        self.filament_in_progress = False
+
 
 
         ##~ Update software init
@@ -116,8 +125,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.current_temperature_data = None
         self.temperature_window = 3
         self.ready_timer_default = {'tool0': 5, 'tool1': 5, 'bed': 5}
-        self.ready_timer = deepcopy(self.ready_timer_default)
-        self.tool_busy = False
+        self.ready_timer = {'tool0': 0, 'tool1': 0, 'bed': 0}
         self.callback_mutex = threading.RLock()
         self.callbacks = list()
 
@@ -222,11 +230,63 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Fetched git repo: {path}".format(path=path))
 
     def get_settings_defaults(self):
-        return dict(
-            filaments=self.filamentDefaults,
-            lpfrg_model= "Xeed"
-        )
+        return {
+            "filaments": {
+                "tool0": {
+                    "amount":   {"length": 0, "volume": 0},
+                    "material": {
+                        "bed": 0,
+                        "extruder": 0,
+                        "name": "None"
+                    }
+                },
+                "tool1": {
+                   "amount":   {"length": 0, "volume": 0},
+                   "material": {
+                       "bed": 0,
+                       "extruder": 0,
+                       "name": "None"
+                   }
+                } 
+            },
+            "model": "Xeed",
+        }
 
+    ##~ OctoPrint UI Plugin
+    def will_handle_ui(self, request):
+        return True
+
+    def on_ui_render(self, now, request, render_kwargs):
+        remote_address = get_remote_address(request)
+        localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
+        from_localhost = netaddr.IPAddress(remote_address) in localhost
+
+        response = make_response(render_template("index_lui.jinja2", local_addr=from_localhost, **render_kwargs))
+
+        if remote_address is None:
+            from octoprint.server.util.flask import add_non_caching_response_headers
+            add_non_caching_response_headers(response)
+
+        return response
+
+    def get_ui_additional_key_data_for_cache(self):
+        remote_address = get_remote_address(request)
+        if remote_address is None:
+            return
+
+        localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
+        from_localhost = netaddr.IPAddress(remote_address) in localhost
+
+        return "local" if from_localhost else "remote"
+
+    def get_ui_additional_request_data_for_preemptive_caching(self):
+        return dict(environ_overrides=dict(REMOTE_ADDR=get_remote_address(request)))
+
+    def get_ui_additional_unless(self):
+        remote_address = get_remote_address(request)
+        return remote_address is None
+
+    ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request):
         return jsonify(dict(
             update=self.update_info
@@ -234,105 +294,230 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_api_commands(self):
             return dict(
-                    start_loading=["tool", "amount"],
-                    start_unloading=["tool"],
-                    stop_loading=[],
-                    update_filament = ["tool", "amount"]
+                    change_filament=["tool"],
+                    unload_filament=[],
+                    load_filament=["profile", "amount"],
+                    cancel_change_filament=[],
+                    update_filament = ["tool", "amount"],
+                    refresh_update_info = []
             ) 
 
     def on_api_command(self, command, data):
-            if command == "start_loading":
-                if self.loading_filament is None:
-                    self.isLoading = True
-                    if "tool" in data:
-                        tool = data["tool"]
-                    if "amount" in data:
-                        amount = data["amount"]
-                    self._logger.info(tool)
-                    self._printer.change_tool(tool)
-                    self._printer.commands(["G91", "M302"]) #HACK TO TEST TODO
-                    self.start_time = time.time()
-                    loadingFinishedPartial = partial(self.loadingFinished, tool=tool, amount=amount)
-                    self.loading_filament = RepeatedTimer(0.2, self.loadingTimer, run_first=True, on_finish=loadingFinishedPartial)
-                    self.loading_filament.start()
-                    self._send_client_message("loading_filament_start")
-                    self._logger.info("Loading started")
-            elif command == "start_unloading":
-                if self.unloading_filament is None:
-                    self.isLoading = True
-                    if "tool" in data:
-                        tool = data["tool"]
-                    self._logger.info(tool)
-                    self._printer.change_tool(tool)
-                    self._printer.commands(["G91", "M302"]) #HACK TO TEST TODO
-                    self.start_time = time.time()
-                    self.unloading_filament = RepeatedTimer(0.2, self.unloadingTimer, run_first=True, on_finish=self.unloadingFinished)
-                    self.unloading_filament.start()
-                    self._send_client_message("unloading_filament_start")
-                    self._logger.info("Unloading started")
-            elif command == "stop_loading":
-                if self.loading_filament is not None:
-                    self.loading_filament.cancel()
-                    self._logger.info("Stop loading command received")
-                    self._logger.info(self._settings.get(["filaments"]))
-            elif command == "update_filament":
-                tool = data["tool"]
-                tool_num = int(tool[len("tool"):])
-                self.filament_amount[tool_num] = data["amount"]
-                self.save_filament_amount()
-                self.send_filament_amount(tool)
+        self._call_api_method(**data)
 
+    def _on_api_command_change_filament(self, tool, *args, **kwargs):
+        # Send to the front end that we are currently changing filament.
+        self.send_client_in_progress()
+        # Get current loaded filaments
+        filaments = self._settings.get(['filaments'])
+        self._logger.info(filaments)        
+        # Set filament change tool and profile
+        self.filament_change_tool = tool
+        self.filament_loaded_profile = filaments[tool]
+        self._printer.change_tool(tool)
 
-            
-    def will_handle_ui(self, request):
-        return True
+        # Check if filament is loaded, if so report to front end. 
+        if (self.filament_loaded_profile['material']['name'] == 'None'):
+            # No filament is loaded in this tool, directly continue to load section
+            self.send_client_skip_unload();
 
-    def on_ui_render(self, now, request, render_kwargs):
-        return make_response(render_template("index_lui.jinja2", **render_kwargs))
+        self._logger.info("Change filament called with {kwargs}".format(kwargs=kwargs))
 
+    def _on_api_command_unload_filament(self, *args, **kwargs):
+        # Heat up to old profile temperature and unload filament
+        temp = int(self.filament_loaded_profile['material']['extruder'])
+        self.heat_to_temperature(self.filament_change_tool, 
+                                temp, 
+                                self.unload_filament)
+        self._logger.info("Unload filament called with {kwargs}".format(kwargs=kwargs))
+
+    def _on_api_command_load_filament(self, profile, amount, *args, **kwargs):
+        # Heat up to new profile temperature and load filament
+        self.filament_change_profile = profile
+        if (profile['name'] == "None"):
+            # The user wants to load a None profile. So we just finish the swap wizard
+            self.send_client_finished()
+            return None
+        self.filament_change_amount = amount 
+        temp = int(profile['extruder'])
+        self.heat_to_temperature(self.filament_change_tool, 
+                                temp, 
+                                self.load_filament)
+        self._logger.info("Load filament called with {kwargs}".format(kwargs=kwargs))
+
+    def _on_api_command_cancel_change_filament(self, *args, **kwargs):
+        # Abort mission! Stop filament loading.
+        # Cancel all heat up and reset
+        # Loading has already started, so just cancel the loading 
+        # which will stop heating already.
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+        # Other wise we haven't started loading yet, so cancel the heating 
+        # and clear all callbacks added to the heating. 
+        else:
+            with self.callback_mutex:
+                del self.callbacks[:]
+            self._printer.set_temperature(self.filament_change_tool, 0)
+            self.send_client_cancelled()
+        self._logger.info("Cancel change filament called with {kwargs}".format(kwargs=kwargs))
+
+    def _on_api_command_update_filament(self, *args, **kwargs):
+        # Update the filament amount that is logged in tha machine
+        self._logger.info("Update filament amount called with {kwargs}".format(kwargs=kwargs))
+
+    def _on_api_command_refresh_update_info(self, *args, **kwargs):
+        # Force refresh update info
+        self._logger.info("Refresh update info: {kwargs}".format(kwargs=kwargs))
+        self.update_info_list(force=True)
+
+    ##~ Load and Unload methods
+
+    def load_filament(self, tool):
+        ## This is xeed load function, TODO: Bolt! function and switch
+        self.load_amount = 0
+
+        # We can set one change of extrusion and speed during the timer
+        # Start with load_initial and change to load_change at load_change['start']
+        load_initial=dict(amount=16.67, speed=2000)
+        load_test=dict(amount=16.67, speed=2000)
+
+        load_change=dict(start=1900, amount=2.5, speed=300)
+
+        # Total amount being loaded
+        self.load_amount_stop = 100
+        self._printer.commands("G91")
+        load_filament_partial = partial(self._load_filament_repeater, initial=load_test) ## TEST TODO
+        self.load_filament_timer = RepeatedTimer(0.5, 
+                                                load_filament_partial, 
+                                                run_first=True, 
+                                                condition=self._load_filament_running,
+                                                on_condition_false=self._load_filament_condition,
+                                                on_cancelled=self._load_filament_cancelled,
+                                                on_finish=self._load_filament_finished)
+        self.load_filament_timer.start()
+        self.send_client_loading()
+
+    def unload_filament(self, tool):
+        ## This is xeed load function, TODO: Bolt! function and switch
+        self.load_amount = 0
+
+        # We can set one change of extrusion and speed during the timer
+        # Start with load_initial and change to load_change at load_change['start']
+        unload_initial=dict(amount=16.67, speed=2000)
+        unload_test=dict(amount=-16.67, speed=2000)
+
+        unload_change=dict(start=1900, amount=2.5, speed=300)
+
+        # Total amount being loaded
+        self.load_amount_stop = 100
+        self._printer.commands("G91")
+        unload_filament_partial = partial(self._load_filament_repeater, initial=unload_test) ## TEST TODO
+        self.load_filament_timer = RepeatedTimer(0.5, 
+                                                unload_filament_partial, 
+                                                run_first=True, 
+                                                condition=self._load_filament_running,
+                                                on_condition_false=self._unload_filament_condition,
+                                                on_cancelled=self._load_filament_cancelled,
+                                                on_finish=self._unload_filament_finished)
+        self.load_filament_timer.start()
+        self.send_client_unloading()
+
+    def _load_filament_repeater(self, initial, change=None):
+        load_extrusion_amount = initial['amount']
+        load_extrusion_speed = initial['speed']
+        # Swap to the change condition
+        if change:
+            if (self.load_amount >= change['start']):
+                load_extrusion_amount = change['amount']
+                load_extrusion_speed = change['speed']
+
+        # Set global load_amount
+        self.load_amount += abs(load_extrusion_amount)
+        # Run extrusion command
+        self._printer.commands("G1 E%s F%d" % (load_extrusion_amount, load_extrusion_speed))
+
+        # Check loading progress 
+        progress = int((self.load_amount / self.load_amount_stop) * 100)
+        # Send message every other percent to keep data stream to minimum
+        if progress % 2:
+            self.send_client_loading_progress(dict(progress=progress))
+
+    def _load_filament_running(self):
+        return self.load_amount <= self.load_amount_stop
+
+    def _load_filament_condition(self):
+        # When loading is complete, set new loaded filament
+        new_filament = {
+            "amount":   {"length": self.filament_change_amount, "volume": 0},
+            "material": self.filament_change_profile
+        }
+        filaments = self._settings.get(['filaments'])
+        filaments[self.filament_change_tool] = new_filament
+        self._settings.set(["filaments"], filaments)
+        self.send_client_finished()
+
+    def _unload_filament_condition(self):
+        # When unloading finished, set standard None filament.
+        temp_filament = {
+            "amount":   {"length": 0, "volume": 0},
+            "material": self.defaultMaterial
+        }
+        filaments = self._settings.get(['filaments'])
+        filaments[self.filament_change_tool] = temp_filament
+        self._settings.set(["filaments"], filaments)
+        self.send_client_skip_unload()
+
+    def _load_filament_finished(self):
+        # Loading is finished, turn off heaters, reset load timer and back to normal movements
+        test = self._settings.get(['filaments'])
+        self._logger.info(test)
+        self._printer.commands("G90")
+        self._printer.set_temperature(self.filament_change_tool, 0)
+        self.load_filament_timer = None
+
+    def _unload_filament_finished(self):
+        # Loading is finished, turn off heaters, reset load timer and back to normal movements
+        self._printer.commands("G90")
+        self.load_filament_timer = None
+
+    def _load_filament_cancelled(self):
+        # A load or unload action has been cancelled, turn off the heating
+        # send cancelled info.
+        self._printer.set_temperature(self.filament_change_tool, 0)
+        self.send_client_cancelled()
+
+    ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
-            self._plugin_manager.send_plugin_message("lui", dict(type=unicode(message_type, errors='ignore'), data=data))
+        self._plugin_manager.send_plugin_message("lui", dict(type=unicode(message_type, errors='ignore'), data=data))
 
-    def loadingTimer(self):
-        if self.start_time is not None:
-            self.now = time.time()
-            if self.now - self.start_time > self.time_out:
-                self.loading_filament.cancel()
-                self._logger.info("Loading stopped due to timer hit")
-                self.start_time = None
-                self.loading_filament = None
-        self._printer.extrude(1)
+    def send_client_heating(self):
+        self._send_client_message('tool_heating')
 
-    def unloadingTimer(self):
-        if self.start_time is not None:
-            self.now = time.time()
-            if self.now - self.start_time > self.unloading_time_out:
-                self.unloading_filament.cancel()
-                self._logger.info("Unloading stopped")
-                self.start_time = None
-        self._printer.extrude(-1)
+    def send_client_loading(self):
+        self._send_client_message('filament_loading')
 
-    def loadingFinished(self, tool, amount):
-        self._printer.commands("G90")
-        self.isLoading = False
-        tool_num = int(tool[len("tool"):])
-        self.filament_amount[tool_num] = amount
-        self.save_filament_amount(tool)
-        self.send_filament_amount()
-        self.loading_filament = None
-        self._send_client_message("loading_filament_stop")
-        self._printer.change_tool("tool0") # Always set tool back to right extruder
-        self._logger.info("Loading finished")
-        self._logger.info(self._settings.get(["filaments"]))
+    def send_client_loading_progress(self, data):
+        self._send_client_message('filament_load_progress', data)
 
+    def send_client_unloading(self):
+        self._send_client_message('filament_unloading')
 
-    def unloadingFinished(self):
-        self._printer.commands("G90")
-        self.isLoading = False
-        self.unloading_filament = None
-        self._send_client_message("unloading_filament_stop")
-        self._printer.change_tool("tool0") # Always set tool back to right extruder
-        self._logger.info("Unloading finished")
+    def send_client_finished(self, data=None):
+        self._send_client_message('filament_finished', data)
+
+    def send_client_cancelled(self):
+        self._send_client_message('filament_cancelled')
+
+    def send_client_skip_unload(self):
+        self._send_client_message('skip_unload')
+
+    def send_client_in_progress(self):
+        self._send_client_message('filament_in_progress')
+
+    def send_client_filament_amount(self):
+        filament_length = [{"length":x} for x in self.filament_amount]
+        data = {"extrusion": self.current_print_extrusion_amount, "filament": filament_length}
+        self._send_client_message("update_filament_amount", data)
 
     def save_filament_amount(self, tool):
         tool_num = int(tool[len("tool"):])
@@ -342,34 +527,77 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._settings.set(["filaments"], current, force=True)
         self._settings.save(force=True)
 
-    def check_extrusion(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+    def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+        """
+        Uses the plugin gcode sent hook.
+        Keeps track of extrusion amounts, needs to react to G92 due to extrusion zero-ing.
+        Needs to keep track of relative or absolute extrusion mode. G90 / G91
+        """
         if gcode:
+            # Handle relative / absolute axis
+            if (gcode == "G90" or gcode == "G91"):
+                self._process_G90_G91(cmd)
+
+            # Handle zero of axis 
             if gcode == "G92":
-                if self.regexExtruder.search(cmd):
-                    self.last_extrusion = 0
-                    self._logger.info("Extruder zero: %s" % cmd)
+                self._process_G92(cmd)
+
+            ##~ For now only handle extrusion when actually printing a job
             if (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
-                extrusion_code = self.regexExtruder.search(cmd)
-                if extrusion_code is not None:
-                    tool = comm_instance.getCurrentTool()
-                    current_extrusion = float(extrusion_code.group(2))
-                    extrusion_amount = current_extrusion - self.last_extrusion
-                    self.current_print_extrusion_amount[tool] += extrusion_amount
-                    self.filament_amount[tool] -= extrusion_amount
-                    self.last_extrusion = current_extrusion
-                    if (self.last_send_filament_amount[tool] - self.filament_amount[tool] > 10):
-                        self.send_filament_amount()
-                        self.last_send_filament_amount = deepcopy(self.filament_amount)
-                    if (self.last_saved_filament_amount[tool] - self.filament_amount[tool] > 100):
-                        self.save_filament_amount("tool"+tool)
-                        self.last_saved_extrusion_amount = deepcopy(self.filament_amount)
+                self._process_G0_G1(cmd, comm_instance)
+
+    def _process_G90_G91(self, cmd):
+        ##~ Process G90 and G91 commands. Handle relative extrusion
+        if cmd == "G90":
+            self.relative_extrusion = False
+        else:
+            self.relative_extrusion = True
+
+    def _process_G92(self, cmd):
+        ##~ Process a G92 command and handle zero-ing of extrusion distances
+        if self.regexExtruder.search(cmd):
+            self.last_extrusion = 0
+            self._logger.info("Extruder zero: %s" % cmd)
+
+    def _process_G0_G1(self, cmd, comm_instance):
+        ##~ Process a G0/G1 command with extrusion
+        extrusion_code = self.regexExtruder.search(cmd)
+        if extrusion_code is not None:
+            tool = comm_instance.getCurrentTool()
+            current_extrusion = float(extrusion_code.group(2))
+            # Handle relative vs absolute extrusion
+            if self.relative_extrusion:
+                extrusion_amount = current_extrusion
+            else:
+                extrusion_amount = current_extrusion - self.last_extrusion
+            # Add extrusion to current printing amount and remove from available filament
+            self.current_print_extrusion_amount[tool] += extrusion_amount
+            self.filament_amount[tool] -= extrusion_amount
+
+            # Needed for absolute extrusion printing
+            self.last_extrusion = current_extrusion
+
+            if (self.last_send_filament_amount[tool] - self.filament_amount[tool] > 10):
+                self.send_filament_amount()
+                self.last_send_filament_amount = deepcopy(self.filament_amount)
+
+            if (self.last_saved_filament_amount[tool] - self.filament_amount[tool] > 100):
+                self.save_filament_amount("tool"+tool)
+                self.last_saved_extrusion_amount = deepcopy(self.filament_amount)
 
 
+    def on_printer_add_temperature(self, data):
+        """
+        PrinterCallback function that is called whenever a temperature is added to
+        the printer interface.
 
-    def send_filament_amount(self):
-        filament_length = [{"length":x} for x in self.filament_amount]
-        data = {"extrusion": self.current_print_extrusion_amount, "filament": filament_length}
-        self._send_client_message("update_filament_amount", data)
+        We use this call to update the tool status with the function check_tool_status()
+        """
+        if self.current_temperature_data == None:
+            self.current_temperature_data = data
+        self.old_temperature_data = deepcopy(self.current_temperature_data)
+        self.current_temperature_data = data
+        self.check_tool_status()
 
     def check_tool_status(self):
         """
@@ -419,30 +647,48 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                    status = "HEATING"
             else:
                    status = "COOLING"
-            
+
+            self.tool_status[tool] = status           
             self.change_status(tool, status)
 
-        def change_status(self, tool, new_status):
-            if new_status == "READY":
-                with self.callback_mutex:
-                    for callback in self.callbacks:
-                        try: callback(tool)
-                        except: self._logger.exception("Something went horribly wrong on reaching the target temperature")
-                    del self.callbacks[:]
+    def change_status(self, tool, new_status):
+        """
+        Calls callback registered to tool change to status
+        """
+        if new_status == "READY":
+            with self.callback_mutex:
+                for callback in self.callbacks:
+                    try: callback(tool)
+                    except: self._logger.exception("Something went horribly wrong on reaching the target temperature")
+                del self.callbacks[:]
 
-    def heat_to_temperate(self, tool, temp, callback):
+    def heat_to_temperature(self, tool, temp, callback):
+        """
+        Heat tool up to temp and execute callback when tool is declared READY
+        """
+        with self.callback_mutex:
             self.callbacks.append(callback)
+        self._printer.set_temperature(tool, temp)
+        self.send_client_heating()
 
+    ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):
-        if (event == "PrintFailed" or event == "PrintCanceled" or event == "PrintDone" or event == "Error"):
+        if (event == "PrintFailed" or event == "PrintCancelled" or event == "PrintDone" or event == "Error"):
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = 0.0
             self.save_filament_amount()
             self._settings.save(force=True)
 
-
         if (event == "PrintStarted"):
             self.current_print_extrusion_amount = [0.0, 0.0]
+
+    ##~ Helper method that calls api defined functions
+    def _call_api_method(self, command, *args, **kwargs):
+        """Call the method responding to api command"""
+        name = "_on_api_command_{}".format(command)
+        method = getattr(self, name, None)
+        if method is not None and callable(method):
+            method(*args, **kwargs)
 
 
 __plugin_name__ = "Leapfog UI"
@@ -452,5 +698,5 @@ def __plugin_load__():
 
     global __plugin_hooks__ 
     __plugin_hooks__ = {
-        # "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.check_extrusion
+        "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook
     }

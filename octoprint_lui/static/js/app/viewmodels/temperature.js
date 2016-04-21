@@ -253,9 +253,12 @@ $(function() {
         }
 
         self.heatingProgress = function(actual, target) {
-            if (target === 0) 
+            if (target === 0) {
                 target = 200
-            return ((actual / target) * 100).toFixed(2);
+            }
+            var progress = ((actual / target) * 100).toFixed(2);
+            var result = (progress <= 100) ? progress : 100;
+            return result;
         }
 
         self.returnToolTemperature = function(tool, type) {

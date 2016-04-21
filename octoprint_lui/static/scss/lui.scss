@@ -911,11 +911,11 @@ input:not([type=submit]):not([type=file]) {
 select {
 $dark-color: #f2f2f2;
 
-  font-size: 1em;
-  padding: 10px;
+  font-size: 1.3em;
+  padding: 5px;
   min-width: 0;
   border: 1px solid $dark-color;
-   border-radius: 3px;
+  border-radius: 3px;
 
 }
 
@@ -1157,6 +1157,13 @@ pre code {
     display: inline-block;
   }
 }
+
+// #tool_heating, #tool_loading {
+//   display: none;
+//   &.active{
+//     display: flex;
+//   }
+// }
 
 .no-border
 {
