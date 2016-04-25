@@ -15,7 +15,7 @@
                     <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
                 </div>
             </div>
-            <div class="Table-item Table-item-grow-2" data-bind="html:formatTemperature(tools()[1]['actual']()), visible: isOperational()"></div>
+            <div class="Table-item Table-item-grow-2" data-bind="text: tools()[1]['actual'], visible: isOperational()"></div>
             <div class="Table-item Table-item-grow-2 bold" data-bind="text: tools()[1]['target'], visible: isOperational()"></div>
         </div>
         <div class="Table-row">
@@ -26,7 +26,7 @@
                     <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
                 </div>
             </div>
-            <div class="Table-item Table-item-grow-2" data-bind="html:formatTemperature(tools()[0]['actual']()), visible: isOperational()"></div>
+            <div class="Table-item Table-item-grow-2" data-bind="text: tools()[0]['actual'], visible: isOperational()"></div>
             <div class="Table-item  Table-item-grow-2 bold" data-bind="text: tools()[0]['target'], visible: isOperational()"></div>
         </div>
         <div class="Table-row">
