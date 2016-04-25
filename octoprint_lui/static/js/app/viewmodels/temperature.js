@@ -303,21 +303,16 @@ $(function() {
         };
 
 
-        self.getMaxTemp = function(actuals, targets) {
-            var pair;
-            var maxTemp = 0;
-            actuals.forEach(function(pair) {
-                if (pair[1] > maxTemp){
-                    maxTemp = pair[1];
+        self.isHeating = ko.pureComputed(function(){
+                var toolStatus = self.toolStatus()
+                for (var i = 0; i < toolStatus.length; i++) {
+                    if (toolStatus[i].status() == "HEATING") {
+                        return true
+                    }
                 }
-            });
-            targets.forEach(function(pair) {
-                if (pair[1] > maxTemp){
-                    maxTemp = pair[1];
-                }
-            });
-            return maxTemp;
-        }
+                return false
+        });
+
 
         self.setTarget = function(item) {
             var value = item.newTarget();

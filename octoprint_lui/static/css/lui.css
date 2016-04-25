@@ -599,7 +599,7 @@ a {
         -ms-flex-preferred-size: 0;
             flex-basis: 0;
     min-width: 0;
-    padding: 0.3em 0.4em;
+    padding: 0.3em 0.1em;
     word-break: break-word;
     -webkit-align-self: center;
         -ms-flex-item-align: center;

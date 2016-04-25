@@ -32,37 +32,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Filament loading variables
         self.relative_extrusion = False
-        self.time_out = 10
-        self.unloading_time_out = 3
-        self.isLoading = False
-        self.loading_filament = None
-        self.unloading_filament = None
-        self.start_time = None
         self.current_print_extrusion_amount = None
         self.last_print_extrusion_amount = 0.0
-        self.last_send_extrusion_amount = None
-        self.last_saved_extrusion_amount = None
+        self.last_send_filament_amount = None
+        self.last_saved_filament_amount = None
         
         self.last_extrusion = 0
         self.current_extrusion = 0
 
         self.filament_amount = None 
 
-        self.defaultMaterial = {
+        self.default_material = {
             "bed": 0,
             "extruder": 0,
             "name": "None"
-        }
-
-        self.filamentDefaults = {
-            "tool0": {
-                "amount":   {"length": 0, "volume": 0},
-                "material": self.defaultMaterial
-            },
-            "tool1": {
-                "amount":   {"length": 0, "volume": 0},
-                "material": self.defaultMaterial
-            } 
         }
 
         self.regexExtruder = re.compile("(^|[^A-Za-z][Ee])(-?[0-9]*\.?[0-9]+)")
@@ -188,6 +171,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.info(self.update_info)
 
+        ## Get filament amount stored in config
+        self.update_filament_amount()
+
     def update_info_list(self, force=False):
         self.fetch_all_repos(force)
         for update in self.update_info:
@@ -234,22 +220,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "filaments": {
                 "tool0": {
                     "amount":   {"length": 0, "volume": 0},
-                    "material": {
-                        "bed": 0,
-                        "extruder": 0,
-                        "name": "None"
-                    }
+                    "material": self.default_material
                 },
                 "tool1": {
-                   "amount":   {"length": 0, "volume": 0},
-                   "material": {
-                       "bed": 0,
-                       "extruder": 0,
-                       "name": "None"
-                   }
+                    "amount":   {"length": 0, "volume": 0},
+                    "material": self.default_material
                 } 
             },
             "model": "Xeed",
+            "zoffset": 0,
         }
 
     ##~ OctoPrint UI Plugin
@@ -370,6 +349,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.info("Refresh update info: {kwargs}".format(kwargs=kwargs))
         self.update_info_list(force=True)
 
+    def on_api_move_to_filament_load_position(self, *args, **kwargs):
+        self.move_to_filament_load_position()
+
+    def on_api_move_to_maintenance_position(self, *args, **kwargs):
+        self.move_to_maintenance_position()
+
     ##~ Load and Unload methods
 
     def load_filament(self, tool):
@@ -379,14 +364,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # We can set one change of extrusion and speed during the timer
         # Start with load_initial and change to load_change at load_change['start']
         load_initial=dict(amount=16.67, speed=2000)
-        load_test=dict(amount=16.67, speed=2000)
-
         load_change=dict(start=1900, amount=2.5, speed=300)
 
         # Total amount being loaded
-        self.load_amount_stop = 100
+        self.load_amount_stop = 2100
+        self.move_to_filament_load_poistion()
         self._printer.commands("G91")
-        load_filament_partial = partial(self._load_filament_repeater, initial=load_test) ## TEST TODO
+        load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
         self.load_filament_timer = RepeatedTimer(0.5, 
                                                 load_filament_partial, 
                                                 run_first=True, 
@@ -403,15 +387,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # We can set one change of extrusion and speed during the timer
         # Start with load_initial and change to load_change at load_change['start']
-        unload_initial=dict(amount=16.67, speed=2000)
-        unload_test=dict(amount=-16.67, speed=2000)
-
-        unload_change=dict(start=1900, amount=2.5, speed=300)
+        unload_initial=dict(amount= -2.5, speed=300)
+        unload_change=dict(start=30, amount= -16.67, speed=2000)
 
         # Total amount being loaded
-        self.load_amount_stop = 100
+        self.load_amount_stop = 2100
         self._printer.commands("G91")
-        unload_filament_partial = partial(self._load_filament_repeater, initial=unload_test) ## TEST TODO
+        unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
         self.load_filament_timer = RepeatedTimer(0.5, 
                                                 unload_filament_partial, 
                                                 run_first=True, 
@@ -451,20 +433,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "amount":   {"length": self.filament_change_amount, "volume": 0},
             "material": self.filament_change_profile
         }
-        filaments = self._settings.get(['filaments'])
-        filaments[self.filament_change_tool] = new_filament
-        self._settings.set(["filaments"], filaments)
+        self.set_filament_profile(self.filament_change_tool, new_filament)
+        self.update_filament_amount()
         self.send_client_finished()
 
     def _unload_filament_condition(self):
         # When unloading finished, set standard None filament.
         temp_filament = {
             "amount":   {"length": 0, "volume": 0},
-            "material": self.defaultMaterial
+            "material": self.default_material
         }
-        filaments = self._settings.get(['filaments'])
-        filaments[self.filament_change_tool] = temp_filament
-        self._settings.set(["filaments"], filaments)
+        self.set_filament_profile(self.filament_change_tool, temp_filament)
+        self.update_filament_amount()
         self.send_client_skip_unload()
 
     def _load_filament_finished(self):
@@ -515,17 +495,48 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message('filament_in_progress')
 
     def send_client_filament_amount(self):
-        filament_length = [{"length":x} for x in self.filament_amount]
-        data = {"extrusion": self.current_print_extrusion_amount, "filament": filament_length}
+        data = {"extrusion": self.current_print_extrusion_amount, "filament": self.filament_amount}
         self._send_client_message("update_filament_amount", data)
 
-    def save_filament_amount(self, tool):
-        tool_num = int(tool[len("tool"):])
-        current = self._settings.get(["filaments"])
-        current[tool]["amount"]["length"] = self.filament_amount[tool_num]
-        self._logger.info(current)
-        self._settings.set(["filaments"], current, force=True)
+    ## ~ Save helpers
+    def set_filament_profile(self, tool, profile):
+        filaments = self._settings.get(['filaments'])
+        filaments[tool] = profile
+        self._settings.set(["filaments"], filaments)
         self._settings.save(force=True)
+
+    def get_filament_amount(self):
+        filaments = self._settings.get(['filaments'])
+        filament_amount = [filaments["tool"+str(index)]["amount"]["length"] for index, data in enumerate(filaments)]
+        return filament_amount
+
+    def save_filament_amount(self):
+        self.set_filament_amount("tool0")
+        self.set_filament_amount("tool1")
+
+    def update_filament_amount(self):
+        self.filament_amount = self.get_filament_amount()
+        self.last_send_filament_amount = deepcopy(self.filament_amount)
+        self.last_saved_filament_amount = deepcopy(self.filament_amount)
+
+    def set_filament_amount(self, tool):
+        tool_num = int(tool[len("tool"):])
+        filaments = self._settings.get(["filaments"])
+        amount = {'length': self.filament_amount[tool_num], 'volume':0}
+        filaments[tool]["amount"] = amount 
+        self._settings.set(["filaments"], filaments)
+        self._settings.save(force=True)
+
+    ## ~ Gcode script hook. Used for Z-offset Xeed
+    def script_hook(self, comm, script_type, script_name):
+        if not script_type == "gcode":
+            return None
+    
+        if script_name == "beforePrintStarted":
+            return ["M206 Z%.2f" % self._settings.get_float(["zoffset"])], None
+
+        if script_name == "afterPrinterConnected":
+            return ["M206 Z%.2f" % self._settings.get_float(["zoffset"])], None
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -578,12 +589,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.last_extrusion = current_extrusion
 
             if (self.last_send_filament_amount[tool] - self.filament_amount[tool] > 10):
-                self.send_filament_amount()
+                self.send_client_filament_amount()
                 self.last_send_filament_amount = deepcopy(self.filament_amount)
 
             if (self.last_saved_filament_amount[tool] - self.filament_amount[tool] > 100):
-                self.save_filament_amount("tool"+tool)
-                self.last_saved_extrusion_amount = deepcopy(self.filament_amount)
+                self.set_filament_amount("tool"+str(tool))
+                self.last_saved_filament_amount = deepcopy(self.filament_amount)
 
 
     def on_printer_add_temperature(self, data):
@@ -671,6 +682,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.set_temperature(tool, temp)
         self.send_client_heating()
 
+    ##~ Printer Control functions
+    def move_to_maintenance_position(self):
+        # First home X and Y 
+        self._printer.home(['x', 'y'])
+        self._printer.commands(["G1 X115 Y15 F6000"]) 
+
+    def move_to_filament_load_position(self):
+        # First home X and Y 
+        self._printer.home(['x', 'y'])
+        self._printer.commands(["G1 X210 Y0 F6000"]) 
+
+
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):
         if (event == "PrintFailed" or event == "PrintCancelled" or event == "PrintDone" or event == "Error"):
@@ -698,5 +721,6 @@ def __plugin_load__():
 
     global __plugin_hooks__ 
     __plugin_hooks__ = {
-        "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook
+        "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
+        "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook
     }

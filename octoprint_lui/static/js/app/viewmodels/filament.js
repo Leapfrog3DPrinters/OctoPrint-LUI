@@ -175,6 +175,7 @@ $(function () {
                 return;
             }
 
+            console.log(data);
             var messageType = data.type;
             var messageData = data.data;
             switch (messageType) {
@@ -228,10 +229,8 @@ $(function () {
                 case "update_filament_amount":
                     //console.log(messageData.extrusion)
                     // TODO
-                    for (var key in messageData.filament) {
-                        self.filamentAmount()[key](messageData.filament[key].length);
-                        self.filamentAmountString()[key](formatFilament(messageData.filament[key]));
-                    }
+                        self.rightAmount(messageData.filament[0])
+                        self.leftAmount(messageData.filament[1])
                     break;
 
             }

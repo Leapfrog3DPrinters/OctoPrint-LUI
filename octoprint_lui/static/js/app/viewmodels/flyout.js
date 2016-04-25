@@ -5,7 +5,7 @@ $(function() {
     self.deferred = undefined;
     self.template_flyout = undefined;
     
-    self.showFlyout = function(flyout, topic) {
+    self.showFlyout = function(flyout) {
       self.deferred = $.Deferred();
 
       self.template_flyout = '#'+flyout+'_flyout';
@@ -13,6 +13,11 @@ $(function() {
           $overlay = $('.overlay');
       $toggle_flyout.addClass('active');
       $overlay.addClass('active');
+
+      // Call viewmodels with the flyout method on{FlyoutTopic}Shown
+
+      var method = "on" + capitalize(flyout) + "FlyoutShown";
+      callViewModels(self.allViewModels, method);
 
       return self.deferred;
     };
@@ -33,6 +38,10 @@ $(function() {
       $overlay.removeClass('active');
       
       self.deferred.resolve();
+    };
+
+    self.onAllBound = function(allViewModels) {
+        self.allViewModels = allViewModels;
     };
   }
 

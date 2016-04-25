@@ -5,6 +5,7 @@ $(function() {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
+        self.temperatureState = parameters[2];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -121,6 +122,19 @@ $(function() {
             }
             return "-"
         });
+
+        self.stateStepString = ko.computed(function() {
+            if (self.temperatureState.isHeating()) return "Heating";
+            return self.stateString();
+        });
+
+        self.stateStepColor = ko.computed(function() {
+            if (self.temperatureState.isHeating()) return "bg-orange"
+            if (self.isPrinting()) return "bg-main"
+            if (self.isError()) return "bg-red"
+            return "bg-none"
+        });
+
 
         self.fileSelected = ko.computed(function() {
             if(self.filename()) 
@@ -274,7 +288,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel"],
         ["#print", "#info_flyout"]
     ]);
 });
