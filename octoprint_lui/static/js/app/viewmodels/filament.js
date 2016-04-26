@@ -117,7 +117,7 @@ $(function () {
 
         self.finishedLoading = function () {
             // We are finished close the flyout
-            self.flyout.closeFlyoutWithButton();
+            self.flyout.closeFlyoutAccept();
         };
 
         // Api send functions

@@ -33,7 +33,7 @@ $(function() {
         self.saveCalibration = function() {
             self.settings.settings.plugins.lui.zoffset(self.calibration_zOffset());
             self.settings.saveData();
-            self.flyout.closeFlyoutWithButton();
+            self.flyout.closeFlyoutAccept();
         };
 
         self.onAfterBinding = function() {
