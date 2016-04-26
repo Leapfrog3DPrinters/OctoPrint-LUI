@@ -1087,7 +1087,8 @@ input:not([type=submit]):not([type=file]) {
   min-width: 0; }
 
 select {
-  font-size: 1.3em;
+  font-family: agenda-medium, sans-serif;
+  font-size: 1em;
   padding: 5px;
   min-width: 0;
   border: 1px solid #f2f2f2;

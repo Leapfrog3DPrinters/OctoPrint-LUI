@@ -909,14 +909,13 @@ input:not([type=submit]):not([type=file]) {
 }
 
 select {
-$dark-color: #f2f2f2;
-
-  font-size: 1.3em;
+  $dark-color: #f2f2f2;
+  font-family: agenda-medium, sans-serif;
+  font-size: 1em;
   padding: 5px;
   min-width: 0;
   border: 1px solid $dark-color;
   border-radius: 3px;
-
 }
 
 
