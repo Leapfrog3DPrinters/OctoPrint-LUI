@@ -223,10 +223,6 @@ $(function() {
             self.webcam_ffmpegPathReset();
         };
 
-        self.hide = function() {
-            toggleFlyOut();
-        };
-
         self.requestData = function(local) {
             // handle old parameter format
             var callback = undefined;
@@ -602,7 +598,7 @@ $(function() {
         };
 
         self.startZoffset = function() {
-            self.flyout.closeFlyoutWithButton();
+            self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('zoffset');
 
         };

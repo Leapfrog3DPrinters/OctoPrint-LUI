@@ -291,7 +291,7 @@ $(function() {
                         OctoPrint.job.start();
                     }
                     if(self.flyout.deferred)
-                        self.flyout.closeFlyoutWithButton();
+                        self.flyout.closeFlyoutAccept();
                     changeTabTo("print");
                 });
         };

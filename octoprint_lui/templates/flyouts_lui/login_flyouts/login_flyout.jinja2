@@ -27,6 +27,22 @@
 </div>
 <div id="login_dropdown_loggedin" class="hide" data-bind="css: {hide: !loginState.loggedIn()}">
 	<div id="usersettings_dialog">
-		Log out?
+		You are currently logged in as <span data-bind="text:loginState.userMenuText"></span>, do you want to log out?
+	</div>
+</div>
+<div class="Table">
+	<div class="Table-row">
+	    <div class="Table-item">        
+	        <ul class="button-area">
+	          <li class="button"><a href="#save" data-bind="click: loginState.loginOrOut"><span data-bind="text: textLogin"></span></a></li>
+	        </ul>
+	    </div>
+	</div>
+	<div class="Table-row">
+	    <div class="Table-item">        
+	        <ul class="button-area">
+	          <li class="button failed-button"><a href="#" data-bind="click: function() {system.systemReboot()}"><span>Reboot</span></a></li>
+	        </ul>
+	    </div>
 	</div>
 </div>

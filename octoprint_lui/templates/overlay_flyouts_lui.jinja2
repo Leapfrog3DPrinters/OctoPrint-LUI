@@ -31,7 +31,7 @@
         <!-- /ko -->
         <ul class="button-area" style="align-self: flex-end">
           <li class="button secondary-button"><a href="#" data-bind="click: flyout.closeFlyout"><span>Back</span></a>
-          <li class="button"><a href="#" data-bind="click: flyout.closeFlyoutWithButton"><span>Save</span></a></li>
+          <li class="button"><a href="#" data-bind="click: flyout.closeFlyoutAccept"><span>Save</span></a></li>
         </ul>
     </div>
 </aside>
@@ -44,9 +44,15 @@
         <div id="login_flyout_content">
             {% include "flyouts_lui/login_flyouts/login_flyout.jinja2" %}
         </div>
-        <ul class="button-area">
-          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutWithButton"><span data-bind="text: textLogin"></span></a></li>
-        </ul>
+        <div class="Table">
+            <div class="Table-row">
+                <div class="Table-item">        
+                    <ul class="button-area">
+                      <li class="button secondary-button"><a href="#save" data-bind="click: flyout.closeFlyout"><span>Back</span></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </aside>
 <aside id="filament_flyout" class="flyout">
@@ -84,7 +90,7 @@
             {% include "flyouts_lui/info_flyouts/info_flyout.jinja2" %}
         </div>
         <ul class="button-area">
-          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutWithButton"><span>Close</span></a></li>
+          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutAccept"><span>Close</span></a></li>
         </ul>
     </div>
 </aside>
@@ -98,8 +104,47 @@
             {% include "flyouts_lui/setting_flyouts/zoffset_flyout.jinja2" %}
         </div>
         <ul class="button-area">
-          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutWithButton"><span>Close</span></a></li>
+          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutAccept"><span>Close</span></a></li>
         </ul>
+    </div>
+</aside>
+<aside id="confirmation_flyout" class="flyout">
+    <div class="flyout-header">
+        <h4>Confirmation</h4>
+        <span class="flyout-close" data-bind="click: closeFlyout">x</span>
+    </div>
+    <div class="flyout-body">
+        <div id="info_flyout_content">
+            <div class="Table">
+                <div class="Table-row Table-header">
+                    <div class="Table-item">
+                        <div data-bind="text: confirmation_title"></div>
+                    </div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <div id="confirmation_text" data-bind="text: confirmation_text"></div>
+                    </div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <div id="confirmation_question" data-bind="text: confirmation_question"></div>
+                    </div>
+                </div>
+                <div class="Table-row">
+                    <div class="Table-item">
+                        <ul class="button-area">
+                          <li class="button failed-button"><a href="#save" data-bind="click: closeFlyout"><span>Cancel</span></a></li>
+                        </ul>
+                    </div>
+                    <div class="Table-item">
+                        <ul class="button-area">
+                            <li class="button ok-button"><a href="#save" data-bind="click: closeFlyoutAccept"><span>Confirm</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </aside>
 

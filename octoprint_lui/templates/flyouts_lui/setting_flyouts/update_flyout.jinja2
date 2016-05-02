@@ -1,11 +1,11 @@
 <div id="update">
-	<div class="Table">
+	<div class="Table" data-bind="css: {disabled: updating()}">
 		<div class="Table-row Table-header">
 			<div class="Table-item">
 				Version information
 			</div>
 			<div class="Table-item">
-				<span style="margin-left: auto;">Bolt!</span>
+				<span style="margin-left: auto;"><i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>Bolt!</span>
 			</div>
 		</div>
 		<!-- ko foreach: updateinfo -->
@@ -16,7 +16,7 @@
 			</div>
 			<div class="Table-item Table-item-grow-3">
 				<ul class="button-area">
-					<li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function(){$root.sendSystemCommand($data)}"><a href=""><span data-bind="text: $root.getUpdateText($data)"></span></a></li>
+					<li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function(){$root.sendUpdateCommand($data)}"><a href=""><span data-bind="text: $root.getUpdateText($data)"></span></a></li>
 				</ul>
 			</div>
 		</div>
