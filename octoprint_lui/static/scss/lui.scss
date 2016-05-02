@@ -33,6 +33,7 @@ $orangeborder: 1px solid $third-color;
   Mixins
 */
 
+
 @mixin transition($item) {
     -webkit-transition: $item 0.2s ease-in-out;  
     -moz-transition: $item 0.2s ease-in-out;
@@ -97,6 +98,10 @@ a {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.visibleflex {
+  display: flex;
 }
 
 .icon-bar a {
@@ -1155,6 +1160,20 @@ pre code {
   width: 100%;
   &.active {
     display: inline-block;
+  }
+}
+
+#swap-info {
+  display:none;
+  &.active {
+    display:flex;
+  }
+}
+
+#swap-load-unload {
+  display: none;
+  &.active {
+    display:flex;
   }
 }
 
