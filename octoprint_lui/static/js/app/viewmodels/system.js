@@ -3,6 +3,7 @@ $(function() {
         var self = this;
 
         self.loginState = parameters[0];
+        self.flyout = parameters[1];
 
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
@@ -67,22 +68,33 @@ $(function() {
                     });
             };
 
-            // Out for now, no confirmation dialog yet.
-            // if (commandSpec.confirm) {
-            //     showConfirmationDialog({
-            //         message: commandSpec.confirm,
-            //         onproceed: function() {
-            //             callback();
-            //         },
-            //         oncancel: function() {
-            //             deferred.reject("cancelled", arguments);
-            //         }
-            //     });
-            // } else {
+            // Confirmation Dialog
+            if (commandSpec.confirm) {
+                self.flyout.showConfirmationFlyout(commandSpec.confirm)
+                    .done(function(){
+                        callback();
+                    })
+                    .fail(function(){
+                        deferred.reject("cancelled", arguments);
+                    });
+            } else {
                 callback();
-            // }
+            }
 
             return deferred.promise();
+        };
+
+        self.systemReboot = function() {
+            console.log("System Reboot called")
+            var dialog = {'title': 'Reboot system', 'text': 'You are about to reboot the system.', 'question' : 'Do you want to continue?'};
+            var command = {'actionSource': 'custom', 'action': 'reboot', 'name': 'Reboot', confirm: dialog};
+            self.triggerCommand(command);
+        };
+
+        self.systemShutdown = function() {
+            var dialog = {'title': 'Shutdown system', 'text': 'You are about to shutdown the system.', 'question' : 'Do you want to continue?'};
+            var command = {'actionSource': 'custom', 'action': 'shutdown', 'name': 'Shutdown', confirm: dialog};
+            self.triggerCommand(command);
         };
 
         self.onUserLoggedIn = function(user) {
@@ -108,7 +120,7 @@ $(function() {
     // view model class, parameters for constructor, container to bind to
     ADDITIONAL_VIEWMODELS.push([
         SystemViewModel,
-        ["loginStateViewModel"],
+        ["loginStateViewModel", "flyoutViewModel"],
         []
     ]);
 });

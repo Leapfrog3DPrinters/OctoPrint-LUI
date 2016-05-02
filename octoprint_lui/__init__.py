@@ -158,12 +158,32 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ## Add update flasharduino to the actions
         if not is_variable_in_dict('update_flasharduino', actions):
             update_flasharduino = {
-                "action": "update_update_flasharduino",
+                "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
                 "command": "cd /home/lily/OctoPrint-flashArduino && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_flasharduino)
+
+        ## Add shutdown 
+        if not is_variable_in_dict('shutdown', actions):
+            shutdown = {
+                "action": "shutdown",
+                "name": "Shutdown",
+                "command": "sudo shutdown -h now",
+                "confirm": True
+            }
+            actions.append(shutdown)
+
+        ## Add reboot
+        if not is_variable_in_dict('reboot', actions):
+            reboot = {
+                "action": "reboot",
+                "name": "Reboot",
+                "command": "sudo shutdown -r now",
+                "confirm": True
+            }
+            actions.append(reboot)
 
         self._settings.global_set(["system", "actions"], actions)
 
@@ -178,7 +198,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetch_all_repos(force)
         for update in self.update_info:
             update['update'] = self.is_update_needed(update['path'])
-            if update['identifier'] == 'lui':
+            if update['identifier'] == 'lui': ## TODO
                 update['version'] = self._plugin_manager.get_plugin_info(update['identifier']).version
 
     def fetch_all_repos(self, force):
@@ -197,7 +217,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
             self._logger.info("Git with path: {path} is up-to-date".format(path=path))
-            return False #Testing TODO
+            return False 
         elif(local == base):
             ##~ Local is behind, we need to pull
             self._logger.info("Git with path: {path} needs to be pulled".format(path=path))
