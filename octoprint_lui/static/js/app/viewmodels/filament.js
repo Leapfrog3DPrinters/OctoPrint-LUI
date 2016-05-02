@@ -19,6 +19,9 @@ $(function () {
 
         self.filaments = ko.observableArray([]);
 
+        self.leftFilament = ko.observable("None");
+        self.rightFilament = ko.observable("None");
+
         self.leftAmount = ko.observable(undefined);
         self.rightAmount = ko.observable(undefined);
 
@@ -49,12 +52,16 @@ $(function () {
         });
 
         self.leftAmountString = ko.pureComputed(function(){
-            if (!self.leftAmount()) return "-";
+            if (!self.leftAmount()) {
+                return "-";
+            }
             return (self.leftAmount() / 1000).toFixed(2) + "m";
         });
 
         self.rightAmountString = ko.pureComputed(function(){
-            if (!self.rightAmount()) return "-";
+            if (!self.rightAmount()) {
+                return "-";
+            }
             return (self.rightAmount() / 1000).toFixed(2) + "m";
         });
 
@@ -85,6 +92,10 @@ $(function () {
             self.showUnload();
             slider.noUiSlider.set(330)
 
+            $('#swap-load-unload').addClass('active');
+            $('#swap-info').removeClass('active')
+            
+
             self.flyout.showFlyout('filament')
             .always(function () {
                 // If this closes we need to reset stuff
@@ -106,19 +117,23 @@ $(function () {
         };
 
         self.showLoad = function () {
+            $('#swap-info').removeClass('active')
+            $('#swap-load-unload').addClass('active');
             $('.swap_process_step').removeClass('active');
             $('#load_filament').addClass('active');
             self.filamentLoading(false);
         };
 
         self.showFinished = function () {
+            $('#swap-info').removeClass('active')
+            $('#swap-load-unload').addClass('active');
             $('.swap_process_step').removeClass('active');
             $('#finished_filament').addClass('active');
         };
 
         self.finishedLoading = function () {
             // We are finished close the flyout
-            self.flyout.closeFlyoutWithButton();
+            self.flyout.closeFlyoutAccept();
         };
 
         // Api send functions
@@ -176,7 +191,6 @@ $(function () {
                 return;
             }
 
-            console.log(data);
             var messageType = data.type;
             var messageData = data.data;
             switch (messageType) {
@@ -189,6 +203,8 @@ $(function () {
                 case "tool_heating":
                     self.filamentInProgress(true);
                     self.filamentLoading(true);
+                    $('#swap-info').addClass('active')
+                    $('#swap-load-unload').removeClass('active');
                     break;
                 case "filament_loading":
                     // Show loading info
@@ -211,9 +227,7 @@ $(function () {
                         text: _.sprintf(gettext('Filament with profile .. and amount .. loaded'), {})},
                         "success"
                     )
-                    // Update the settings from the back-end because it has updated
-                    self.settings.requestData();
-                    //self.populateFilamentInfo();
+                    self.requestData();
                     break;
                 case "filament_cancelled":
                     self.filamentInProgress(false);
@@ -224,7 +238,7 @@ $(function () {
                         text: _.sprintf(gettext('Please re-run load filament procedure'), {})},
                         "warning"
                     )
-                    self.settings.requestData();
+                    self.requestData();
                     // Do cancel action
                     break;
                 case "update_filament_amount":
@@ -249,18 +263,29 @@ $(function () {
         }
 
         self.onBeforeBinding = function(){
-            self.filaments = self.settings.settings.plugins.lui.filaments;
-            self.leftAmount = self.filaments.tool1.amount.length;
-            self.rightAmount = self.filaments.tool0.amount.length;
+            self.requestData();
             self.tool("tool0");
             self.copyMaterialProfiles();
         };
 
         self.onEventSettingsUpdated = function () {
-            // self.populateFilamentInfo();
             self.copyMaterialProfiles();
         };
 
+        self.fromResponse = function(data) {
+            var filaments = ko.mapping.fromJS(data.filaments);
+            self.filaments(filaments());
+            self.leftFilament(self.filaments().find(x=> x.tool() === "tool1").material.name());
+            self.rightFilament(self.filaments().find(x=> x.tool() === "tool0").material.name());
+            self.leftAmount(self.filaments().find(x=> x.tool() === "tool1").amount());
+            self.rightAmount(self.filaments().find(x=> x.tool() === "tool0").amount());
+        }
+
+        self.requestData = function () {
+          OctoPrint.simpleApiGet('lui', {
+            success: self.fromResponse
+          });
+        }
 
 
     }

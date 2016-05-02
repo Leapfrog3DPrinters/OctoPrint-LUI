@@ -109,15 +109,11 @@
                 </div>
                 <div class="Table-row">
                     <div class="Table-row">
-                        <!-- ko if: filaments.tool1-->
-                        <div class="Table-item" data-bind="text: filaments.tool1.material.name"></div>
-                        <!-- /ko -->
+                        <div class="Table-item" data-bind="text: leftFilament"></div>
                         <div class="Table-item" data-bind="text: leftAmountString, , css: checkLeftFilamentAmount()"></div>
                     </div>
                     <div class="Table-row">
-                        <!-- ko if: filaments.tool0-->
-                        <div class="Table-item" data-bind="text: filaments.tool0.material.name"></div>
-                        <!-- /ko -->
+                        <div class="Table-item" data-bind="text: rightFilament"></div>
                         <div class="Table-item" data-bind="text: rightAmountString, css: checkRightFilamentAmount()"></div>
                     </div>
                 </div>

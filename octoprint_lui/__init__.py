@@ -8,11 +8,14 @@ import re
 import subprocess
 import threading
 import netaddr
+import os
 
 from pipes import quote
 from functools import partial
 from copy import deepcopy
 from flask import jsonify, make_response, render_template, request
+
+from tinydb import TinyDB, Query 
 
 import octoprint.plugin
 from octoprint.settings import settings
@@ -59,6 +62,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.load_extrusion_speed = 0
         self.filament_in_progress = False
 
+        ##~ TinyDB 
+
+        self.filament_database_path = None
+        self.filament_query = None
+        self.filament_database = None
 
 
         ##~ Update software init
@@ -117,6 +125,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
 
+        ##~ TinyDB
+        self.filament_database_path = os.path.join(self.get_plugin_data_folder(), "filament.json")
+        self.filament_database = TinyDB(self.filament_database_path)
+        self.filament_query = Query()
+        if self.filament_database.all() == []:
+            self._logger.info("No database found creating one...")
+            self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0, 
+                                                    'material': self.default_material} for i in range(2))
+
+
         ## Set update actions into the settings
         ## This is a nifty function to check if a variable is in 
         ## a list of dictionaries. 
@@ -158,12 +176,32 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ## Add update flasharduino to the actions
         if not is_variable_in_dict('update_flasharduino', actions):
             update_flasharduino = {
-                "action": "update_update_flasharduino",
+                "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
                 "command": "cd /home/lily/OctoPrint-flashArduino && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_flasharduino)
+
+        ## Add shutdown 
+        if not is_variable_in_dict('shutdown', actions):
+            shutdown = {
+                "action": "shutdown",
+                "name": "Shutdown",
+                "command": "sudo shutdown -h now",
+                "confirm": True
+            }
+            actions.append(shutdown)
+
+        ## Add reboot
+        if not is_variable_in_dict('reboot', actions):
+            reboot = {
+                "action": "reboot",
+                "name": "Reboot",
+                "command": "sudo shutdown -r now",
+                "confirm": True
+            }
+            actions.append(reboot)
 
         self._settings.global_set(["system", "actions"], actions)
 
@@ -178,7 +216,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetch_all_repos(force)
         for update in self.update_info:
             update['update'] = self.is_update_needed(update['path'])
-            if update['identifier'] == 'lui':
+            if update['identifier'] == 'lui': ## TODO
                 update['version'] = self._plugin_manager.get_plugin_info(update['identifier']).version
 
     def fetch_all_repos(self, force):
@@ -197,7 +235,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
             self._logger.info("Git with path: {path} is up-to-date".format(path=path))
-            return False #Testing TODO
+            return False 
         elif(local == base):
             ##~ Local is behind, we need to pull
             self._logger.info("Git with path: {path} needs to be pulled".format(path=path))
@@ -217,16 +255,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_settings_defaults(self):
         return {
-            "filaments": {
-                "tool0": {
-                    "amount":   {"length": 0, "volume": 0},
-                    "material": self.default_material
-                },
-                "tool1": {
-                    "amount":   {"length": 0, "volume": 0},
-                    "material": self.default_material
-                } 
-            },
             "model": "Xeed",
             "zoffset": 0,
         }
@@ -238,7 +266,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def on_ui_render(self, now, request, render_kwargs):
         remote_address = get_remote_address(request)
         localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
-        from_localhost = netaddr.IPAddress(remote_address) in localhost
+        if remote_address is None:
+            from_localhost = True
+        else:
+            from_localhost = netaddr.IPAddress(remote_address) in localhost
 
         response = make_response(render_template("index_lui.jinja2", local_addr=from_localhost, **render_kwargs))
 
@@ -268,7 +299,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request):
         return jsonify(dict(
-            update=self.update_info
+            update=self.update_info,
+            filaments=self.filament_database.all()
             ))
 
     def get_api_commands(self):
@@ -287,12 +319,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
         # Send to the front end that we are currently changing filament.
         self.send_client_in_progress()
-        # Get current loaded filaments
-        filaments = self._settings.get(['filaments'])
-        self._logger.info(filaments)        
         # Set filament change tool and profile
         self.filament_change_tool = tool
-        self.filament_loaded_profile = filaments[tool]
+        self.filament_loaded_profile = self.filament_database.get(self.filament_query.tool == tool)
         self._printer.change_tool(tool)
 
         # Check if filament is loaded, if so report to front end. 
@@ -368,7 +397,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Total amount being loaded
         self.load_amount_stop = 2100
-        self.move_to_filament_load_poistion()
+        self.move_to_filament_load_position()
         self._printer.commands("G91")
         load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
         self.load_filament_timer = RepeatedTimer(0.5, 
@@ -430,7 +459,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _load_filament_condition(self):
         # When loading is complete, set new loaded filament
         new_filament = {
-            "amount":   {"length": self.filament_change_amount, "volume": 0},
+            "amount":  self.filament_change_amount,
             "material": self.filament_change_profile
         }
         self.set_filament_profile(self.filament_change_tool, new_filament)
@@ -440,7 +469,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _unload_filament_condition(self):
         # When unloading finished, set standard None filament.
         temp_filament = {
-            "amount":   {"length": 0, "volume": 0},
+            "amount": 0,
             "material": self.default_material
         }
         self.set_filament_profile(self.filament_change_tool, temp_filament)
@@ -449,8 +478,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _load_filament_finished(self):
         # Loading is finished, turn off heaters, reset load timer and back to normal movements
-        test = self._settings.get(['filaments'])
-        self._logger.info(test)
         self._printer.commands("G90")
         self._printer.set_temperature(self.filament_change_tool, 0)
         self.load_filament_timer = None
@@ -500,14 +527,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ## ~ Save helpers
     def set_filament_profile(self, tool, profile):
-        filaments = self._settings.get(['filaments'])
-        filaments[tool] = profile
-        self._settings.set(["filaments"], filaments)
-        self._settings.save(force=True)
+        self.filament_database.update(profile, self.filament_query.tool == tool)
 
     def get_filament_amount(self):
-        filaments = self._settings.get(['filaments'])
-        filament_amount = [filaments["tool"+str(index)]["amount"]["length"] for index, data in enumerate(filaments)]
+        filament_amount = [self.filament_database.get(self.filament_query.tool == "tool"+str(index))["amount"] for index in range(2)]
         return filament_amount
 
     def save_filament_amount(self):
@@ -521,11 +544,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def set_filament_amount(self, tool):
         tool_num = int(tool[len("tool"):])
-        filaments = self._settings.get(["filaments"])
-        amount = {'length': self.filament_amount[tool_num], 'volume':0}
-        filaments[tool]["amount"] = amount 
-        self._settings.set(["filaments"], filaments)
-        self._settings.save(force=True)
+        self.filament_database.update({'amount': self.filament_amount[tool_num]}, self.filament_query.tool == tool)
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
     def script_hook(self, comm, script_type, script_name):

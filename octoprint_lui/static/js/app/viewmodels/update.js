@@ -7,6 +7,7 @@ $(function() {
 
     self.updateinfo = ko.observableArray([]);
 
+    self.updating = ko.observable(false);
 
     self.getUpdateText = function(data) {
       if (data.update()) {
@@ -32,9 +33,18 @@ $(function() {
       }
     };
 
-    self.sendSystemCommand = function(data) {
-      command = {'actionSource': 'custom', 'action': data.action(), 'name': data.name()};
-      self.system.triggerCommand(command);
+    self.sendUpdateCommand = function(data) {
+
+      var text = "You are about to update a component of the User Interface.";
+      var question = "Do want to update " + data.name() + "?";
+      var title = "Update: " + data.name()
+      var dialog = {'title': title, 'text': text, 'question' : question};
+
+      var command = {'actionSource': 'custom', 'action': data.action(), 'name': data.name(), confirm: dialog};
+        self.system.triggerCommand(command)
+            .done(function(){
+              self.system.systemReboot();
+            });
     };
 
     self.fromResponse = function(data) {
@@ -47,6 +57,21 @@ $(function() {
         success: self.fromResponse
       });
     };
+
+    self.refreshUpdateInfo = function () {
+      self.updating(true);
+      $('#update_spinner').addClass('fa-spin');
+      var data = {
+        command: "refresh_update_info"
+      };
+      var url = OctoPrint.getSimpleApiUrl('lui');
+      OctoPrint.postJson(url, data);
+      setTimeout(function(){
+        self.requestData();
+        self.updating(false);
+        $('#update_spinner').removeClass('fa-spin');
+      }, 10000);
+    }
 
     self.onSettingsShown = function () {
       self.requestData();

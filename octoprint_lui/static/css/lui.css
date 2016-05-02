@@ -65,6 +65,12 @@ a {
   overflow: hidden;
   white-space: nowrap; }
 
+.visibleflex {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex; }
+
 .icon-bar a {
   text-align: center;
   font-size: 1em;
@@ -1379,6 +1385,22 @@ pre code {
   width: 100%; }
   .swap_process_step.active {
     display: inline-block; }
+
+#swap-info {
+  display: none; }
+  #swap-info.active {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex; }
+
+#swap-load-unload {
+  display: none; }
+  #swap-load-unload.active {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex; }
 
 .no-border {
   border: 0 !important; }
