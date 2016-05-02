@@ -4,7 +4,12 @@
             <div>Swapping filament: <span data-bind="text: toolText"></span></div>    
         </div>
     </div>
-    <div class="Table-row">
+    <div class="Table-row " id="swap-info">
+        <div class="Table-item">
+            Heating up to swap filament and (un)loading.
+        </div>
+    </div>
+    <div class="Table-row active" id="swap-load-unload">
         <div class="Table-item">
             <div id="swap_process" data-bind="css: { disabled: !printerState.isOperational() }">
                 <div class="swap_process_step" id="unload_filament">
