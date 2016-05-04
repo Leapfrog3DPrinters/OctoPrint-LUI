@@ -28,17 +28,17 @@ $(function () {
         self.filamentLoading = ko.observable(false);
         self.filamentInProgress = ko.observable(false);
 
+        self.filamentLoadCont = ko.observable(false);
+
         self.checkRightFilamentAmount = ko.pureComputed (function(){
             if (self.printerState.filament()[0]) {
-                if (self.rightAmount() < self.printerState.filament()[0].data().length)
-                    return "file_failed"
+                return (self.rightAmount() < self.printerState.filament()[0].data().length) 
             }
         });
 
         self.checkLeftFilamentAmount = ko.pureComputed (function(){
             if (self.printerState.filament()[1]) {
-                if (self.leftAmount() < self.printerState.filament()[0].data().length)
-                    return "file_failed"
+                return (self.leftAmount() < self.printerState.filament()[0].data().length)
             }
         });
 
@@ -103,10 +103,10 @@ $(function () {
                 self.filamentInProgress(false);
             })
             .done(function () {
-
+                self.changeFilamentDone();
             })
             .fail(function () {
-                self.cancelChangeFilament();
+                self.changeFilamentCancel();
             });
         };
 
@@ -149,9 +149,15 @@ $(function () {
             });
         }
 
-        self.cancelChangeFilament = function () {
+        self.changeFilamentCancel = function () {
             self._sendApi({
-                command: "cancel_change_filament"
+                command: "change_filament_cancel"
+            });
+        }
+
+        self.changeFilamentDone = function () {
+            self._sendApi({
+                command: "change_filament_done"
             });
         }
 
@@ -184,15 +190,31 @@ $(function () {
             })
         };
 
+        self.loadFilamentCont = function() {
+            tool = self.tool();
+            direction = 1;
+
+            self._sendApi({
+                command: "load_filament_cont",
+                tool: tool,
+                direction: direction
+            });
+        };
+
+        self.loadFilamentContStop = function() {
+            self._sendApi({
+                command: "load_filament_cont_stop"
+            });
+        };
 
         // Handle plugin messages
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
                 return;
             }
-
-            var messageType = data.type;
-            var messageData = data.data;
+            
+            var messageType = data['type'];
+            var messageData = data['data'];
             switch (messageType) {
                 case "filament_in_progress":
                     self.filamentInProgress(true);
@@ -203,6 +225,7 @@ $(function () {
                 case "tool_heating":
                     self.filamentInProgress(true);
                     self.filamentLoading(true);
+                    self.filamentLoadProgress(0);
                     $('#swap-info').addClass('active')
                     $('#swap-load-unload').removeClass('active');
                     break;
@@ -213,6 +236,13 @@ $(function () {
                     self.filamentInProgress(true);
                     self.filamentLoadProgress(messageData.progress);
                     break;
+
+                case "filament_loading_cont":
+                    self.filamentLoadCont(true);
+                    break;
+                case "filament_loading_cont_stop":
+                    self.filamentLoadCont(false);
+                    break;
                 case "filament_unloading":
                     // Show unloading 
                     break;
@@ -220,13 +250,14 @@ $(function () {
                     self.filamentInProgress(false);
                     self.filamentLoading(false);
                     self.showFinished();
-                    $('#tool_loading').toggleClass('active');
+                    $('#tool_loading').removeClass('active');
                     self.filamentLoadProgress(0);
-                    $.notify({
-                        title: gettext("Filament loaded success!"),
-                        text: _.sprintf(gettext('Filament with profile .. and amount .. loaded'), {})},
-                        "success"
-                    )
+                    // Out for now TODO
+                    // $.notify({
+                    //     title: gettext("Filament loaded success!"),
+                    //     text: _.sprintf(gettext('Filament with profile .. and amount .. loaded'), {})},
+                    //     "success"
+                    // )
                     self.requestData();
                     break;
                 case "filament_cancelled":

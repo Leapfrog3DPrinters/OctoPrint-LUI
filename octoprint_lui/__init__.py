@@ -305,15 +305,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_api_commands(self):
             return dict(
-                    change_filament=["tool"],
-                    unload_filament=[],
-                    load_filament=["profile", "amount"],
-                    cancel_change_filament=[],
+                    change_filament = ["tool"],
+                    change_filament_cancel = [],
+                    change_filament_done = [],
+                    unload_filament = [],
+                    load_filament = ["profile", "amount"],
+                    load_filament_cont = ["tool", "direction"],
+                    load_filament_cont_stop = [],
                     update_filament = ["tool", "amount"],
+                    move_to_filament_load_position = [],
+                    move_to_maintenance_position = [],
                     refresh_update_info = []
             ) 
 
     def on_api_command(self, command, data):
+        # Data already has command in, so only data is needed
         self._call_api_method(**data)
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
@@ -353,7 +359,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                 self.load_filament)
         self._logger.info("Load filament called with profile {profile}, amount {amount}, {args}, {kwargs}".format(profile=profile, amount=amount, args=args, kwargs=kwargs))
 
-    def _on_api_command_cancel_change_filament(self, *args, **kwargs):
+    def _on_api_command_change_filament_cancel(self, *args, **kwargs):
         # Abort mission! Stop filament loading.
         # Cancel all heat up and reset
         # Loading has already started, so just cancel the loading 
@@ -365,73 +371,108 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             with self.callback_mutex:
                 del self.callbacks[:]
-            self._printer.set_temperature(self.filament_change_tool, 0)
+            self._printer.set_temperature(self.filament_change_tool, 0.0)
             self.send_client_cancelled()
         self._logger.info("Cancel change filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+
+    def _on_api_command_change_filament_done(self, *args, **kwargs):
+        # Still don't know if this is the best spot TODO
+        self._printer.set_temperature(self.filament_change_tool, 0.0) 
 
     def _on_api_command_update_filament(self, *args, **kwargs):
         # Update the filament amount that is logged in tha machine
         self._logger.info("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+
+    def _on_api_command_load_filament_cont(self, tool, direction, *args, **kwargs):
+        self.load_filament_cont(tool, direction)
+
+    def _on_api_command_load_filament_cont_stop(self, *args, **kwargs):
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
 
     def _on_api_command_refresh_update_info(self, *args, **kwargs):
         # Force refresh update info
         self._logger.info("Refresh update info: {kwargs}".format(kwargs=kwargs))
         self.update_info_list(force=True)
 
-    def on_api_move_to_filament_load_position(self, *args, **kwargs):
+    def _on_api_command_move_to_filament_load_position(self, *args, **kwargs):
         self.move_to_filament_load_position()
 
-    def on_api_move_to_maintenance_position(self, *args, **kwargs):
+    def _on_api_command_move_to_maintenance_position(self, *args, **kwargs):
         self.move_to_maintenance_position()
 
     ##~ Load and Unload methods
 
     def load_filament(self, tool):
-        ## This is xeed load function, TODO: Bolt! function and switch
-        self.load_amount = 0
+        ## Only start a timer when there is none running
+        if self.load_filament_timer is None:
+            ## This is xeed load function, TODO: Bolt! function and switch
+            self.load_amount = 0
 
-        # We can set one change of extrusion and speed during the timer
-        # Start with load_initial and change to load_change at load_change['start']
-        load_initial=dict(amount=16.67, speed=2000)
-        load_change=dict(start=1900, amount=2.5, speed=300)
+            # We can set one change of extrusion and speed during the timer
+            # Start with load_initial and change to load_change at load_change['start']
+            load_initial=dict(amount=16.67, speed=2000)
+            load_change=dict(start=1900, amount=2.5, speed=300)
 
-        # Total amount being loaded
-        self.load_amount_stop = 2100
-        self.move_to_filament_load_position()
-        self._printer.commands("G91")
-        load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
-        self.load_filament_timer = RepeatedTimer(0.5, 
-                                                load_filament_partial, 
-                                                run_first=True, 
-                                                condition=self._load_filament_running,
-                                                on_condition_false=self._load_filament_condition,
-                                                on_cancelled=self._load_filament_cancelled,
-                                                on_finish=self._load_filament_finished)
-        self.load_filament_timer.start()
-        self.send_client_loading()
+            # Total amount being loaded
+            self.load_amount_stop = 2100
+            self.move_to_filament_load_position()
+            self._printer.commands("G91")
+            load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
+            self.load_filament_timer = RepeatedTimer(0.5, 
+                                                    load_filament_partial, 
+                                                    run_first=True, 
+                                                    condition=self._load_filament_running,
+                                                    on_condition_false=self._load_filament_condition,
+                                                    on_cancelled=self._load_filament_cancelled,
+                                                    on_finish=self._load_filament_finished)
+            self.load_filament_timer.start()
+            self.send_client_loading()
 
     def unload_filament(self, tool):
-        ## This is xeed load function, TODO: Bolt! function and switch
-        self.load_amount = 0
+        ## Only start a timer when there is none running
+        if self.load_filament_timer is None:
+            ## This is xeed load function, TODO: Bolt! function and switch
+            self.load_amount = 0
 
-        # We can set one change of extrusion and speed during the timer
-        # Start with load_initial and change to load_change at load_change['start']
-        unload_initial=dict(amount= -2.5, speed=300)
-        unload_change=dict(start=30, amount= -16.67, speed=2000)
+            # We can set one change of extrusion and speed during the timer
+            # Start with load_initial and change to load_change at load_change['start']
+            unload_initial=dict(amount= -2.5, speed=300)
+            unload_change=dict(start=30, amount= -16.67, speed=2000)
 
-        # Total amount being loaded
-        self.load_amount_stop = 2100
-        self._printer.commands("G91")
-        unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
-        self.load_filament_timer = RepeatedTimer(0.5, 
-                                                unload_filament_partial, 
-                                                run_first=True, 
-                                                condition=self._load_filament_running,
-                                                on_condition_false=self._unload_filament_condition,
-                                                on_cancelled=self._load_filament_cancelled,
-                                                on_finish=self._unload_filament_finished)
-        self.load_filament_timer.start()
-        self.send_client_unloading()
+            # Total amount being loaded
+            self.load_amount_stop = 2100
+            self._printer.commands("G91")
+            unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
+            self.load_filament_timer = RepeatedTimer(0.5, 
+                                                    unload_filament_partial, 
+                                                    run_first=True, 
+                                                    condition=self._load_filament_running,
+                                                    on_condition_false=self._unload_filament_condition,
+                                                    on_cancelled=self._load_filament_cancelled,
+                                                    on_finish=self._unload_filament_finished)
+            self.load_filament_timer.start()
+            self.send_client_unloading()
+
+
+    def load_filament_cont(self, tool, direction):
+        ## Only start a timer when there is none running
+        if self.load_filament_timer is None:
+            
+            #This method can also be used for the Bolt!
+            self.load_amount = 0
+            self.load_amount_stop = 100 # Safety timer on continuious loading
+            load_cont_initial = dict(amount=2.5 * direction, speed=300)
+            self._printer.commands("G91")
+            load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
+            self.load_filament_timer = RepeatedTimer(0.5,
+                                                    load_cont_partial,
+                                                    run_first=True,
+                                                    condition=self._load_filament_running,
+                                                    on_finish=self._load_filament_cont_finished)
+            self.load_filament_timer.start()
+            self.send_client_loading_cont()
+
 
     def _load_filament_repeater(self, initial, change=None):
         load_extrusion_amount = initial['amount']
@@ -479,13 +520,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _load_filament_finished(self):
         # Loading is finished, turn off heaters, reset load timer and back to normal movements
         self._printer.commands("G90")
-        self._printer.set_temperature(self.filament_change_tool, 0)
         self.load_filament_timer = None
 
     def _unload_filament_finished(self):
         # Loading is finished, turn off heaters, reset load timer and back to normal movements
         self._printer.commands("G90")
         self.load_filament_timer = None
+
+    def _load_filament_cont_finished(self):
+        self._printer.commands("G90")
+        self.load_filament_timer = None
+        self.send_client_loading_cont_stop()
 
     def _load_filament_cancelled(self):
         # A load or unload action has been cancelled, turn off the heating
@@ -495,6 +540,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
+
+        self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
         self._plugin_manager.send_plugin_message(self._identifier, dict(type=message_type, data=data))
 
     def send_client_heating(self):
@@ -503,7 +550,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def send_client_loading(self):
         self._send_client_message('filament_loading')
 
-    def send_client_loading_progress(self, data):
+    def send_client_loading_cont(self):
+        self._send_client_message('filament_loading_cont')
+
+    def send_client_loading_cont_stop(self):
+        self._send_client_message('filament_loading_cont_stop')
+
+    def send_client_loading_progress(self, data=None):
         self._send_client_message('filament_load_progress', data)
 
     def send_client_unloading(self):
@@ -696,6 +749,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Heat tool up to temp and execute callback when tool is declared READY
         """
+        ## Check if target temperature is same as the current target temperature
+        ## and if the tool is already heated(READY), if so just run the callback
+        ## This feels quite hacky so it might need to be altered. This is written to 
+        ## counter loading filament with the same profile deadlock.
+
+        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool] == "READY"):
+            callback(tool)
+            self.send_client_heating()
+            return
+
         with self.callback_mutex:
             self.callbacks.append(callback)
         self._printer.set_temperature(tool, temp)
