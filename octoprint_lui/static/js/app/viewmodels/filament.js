@@ -32,21 +32,13 @@ $(function () {
 
         self.checkRightFilamentAmount = ko.pureComputed (function(){
             if (self.printerState.filament()[0]) {
-                if (self.rightAmount() < self.printerState.filament()[0].data().length) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return (self.rightAmount() < self.printerState.filament()[0].data().length) 
             }
         });
 
         self.checkLeftFilamentAmount = ko.pureComputed (function(){
             if (self.printerState.filament()[1]) {
-                if (self.leftAmount() < self.printerState.filament()[0].data().length) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return (self.leftAmount() < self.printerState.filament()[0].data().length)
             }
         });
 
