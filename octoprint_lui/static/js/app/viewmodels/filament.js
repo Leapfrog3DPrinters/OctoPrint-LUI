@@ -207,11 +207,15 @@ $(function () {
         };
 
         // Handle plugin messages
-        self.onDataUpdaterPluginMessage = function (plugin, data) {
+        self.onDataUpdaterPluginMessage = function (plugin, datastring) {
             if (plugin != "lui") {
                 return;
             }
             
+            console.log(datastring);
+            var data = JSON.parse(datastring);
+            console.log(data);
+
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
