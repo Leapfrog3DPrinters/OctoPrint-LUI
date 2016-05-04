@@ -9,6 +9,7 @@ import subprocess
 import threading
 import netaddr
 import os
+import json
 
 from pipes import quote
 from functools import partial
@@ -542,7 +543,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _send_client_message(self, message_type, data=None):
 
         self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
-        self._plugin_manager.send_plugin_message(self._identifier, dict(type=message_type, data=data))
+        self._plugin_manager.send_plugin_message(self._identifier, json.dumps(dict(type=message_type, data=data)))
 
     def send_client_heating(self):
         self._send_client_message('tool_heating')
