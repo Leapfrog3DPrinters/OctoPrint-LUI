@@ -211,9 +211,7 @@ $(function () {
             if (plugin != "lui") {
                 return;
             }
-
-            console.log(data);
-
+            
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
