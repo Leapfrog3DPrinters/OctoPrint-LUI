@@ -335,7 +335,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # No filament is loaded in this tool, directly continue to load section
             self.send_client_skip_unload();
 
-        self._logger.info("Change filament called with tool: {tool} and {args}, {kwargs}".format(tool=tool, args=args, kwargs=kwargs))
+        self._logger.debug("Change filament called with tool: {tool} and {args}, {kwargs}".format(tool=tool, args=args, kwargs=kwargs))
 
     def _on_api_command_unload_filament(self, *args, **kwargs):
         # Heat up to old profile temperature and unload filament
@@ -343,7 +343,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
                                 self.unload_filament)
-        self._logger.info("Unload filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+        self._logger.debug("Unload filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
     def _on_api_command_load_filament(self, profile, amount, *args, **kwargs):
         # Heat up to new profile temperature and load filament
@@ -357,7 +357,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
                                 self.load_filament)
-        self._logger.info("Load filament called with profile {profile}, amount {amount}, {args}, {kwargs}".format(profile=profile, amount=amount, args=args, kwargs=kwargs))
+        self._logger.debug("Load filament called with profile {profile}, amount {amount}, {args}, {kwargs}".format(profile=profile, amount=amount, args=args, kwargs=kwargs))
 
     def _on_api_command_change_filament_cancel(self, *args, **kwargs):
         # Abort mission! Stop filament loading.
@@ -373,7 +373,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 del self.callbacks[:]
             self._printer.set_temperature(self.filament_change_tool, 0.0)
             self.send_client_cancelled()
-        self._logger.info("Cancel change filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+        self._logger.debug("Cancel change filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
     def _on_api_command_change_filament_done(self, *args, **kwargs):
         # Still don't know if this is the best spot TODO
@@ -381,7 +381,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_update_filament(self, *args, **kwargs):
         # Update the filament amount that is logged in tha machine
-        self._logger.info("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+        self._logger.debug("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
     def _on_api_command_load_filament_cont(self, tool, direction, *args, **kwargs):
         self.load_filament_cont(tool, direction)
@@ -541,7 +541,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
 
-        self._logger.info("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
+        self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
         self._plugin_manager.send_plugin_message(self._identifier, dict(type=message_type, data=data))
 
     def send_client_heating(self):
