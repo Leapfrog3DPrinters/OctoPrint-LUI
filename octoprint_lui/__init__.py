@@ -541,7 +541,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
 
-        self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
+        self._logger.info("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
         self._plugin_manager.send_plugin_message(self._identifier, dict(type=message_type, data=data))
 
     def send_client_heating(self):
