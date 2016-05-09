@@ -324,7 +324,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
         # Send to the front end that we are currently changing filament.
-        self.send_client_in_progress()
+        # self.send_client_in_progress()
         # Set filament change tool and profile
         self.filament_change_tool = tool
         self.filament_loaded_profile = self.filament_database.get(self.filament_query.tool == tool)
