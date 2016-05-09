@@ -207,14 +207,12 @@ $(function () {
         };
 
         // Handle plugin messages
-        self.onDataUpdaterPluginMessage = function (plugin, datastring) {
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
                 return;
             }
             
-            console.log(datastring);
-            var data = JSON.parse(datastring);
-            console.log(data);
+           console.log(data);
 
             var messageType = data['type'];
             var messageData = data['data'];
@@ -309,10 +307,10 @@ $(function () {
         self.fromResponse = function(data) {
             var filaments = ko.mapping.fromJS(data.filaments);
             self.filaments(filaments());
-            self.leftFilament(self.filaments().find(x=> x.tool() === "tool1").material.name());
-            self.rightFilament(self.filaments().find(x=> x.tool() === "tool0").material.name());
-            self.leftAmount(self.filaments().find(x=> x.tool() === "tool1").amount());
-            self.rightAmount(self.filaments().find(x=> x.tool() === "tool0").amount());
+            self.leftFilament(self.filaments().find(function(x) { return x.tool() === "tool1"}).material.name());
+            self.rightFilament(self.filaments().find(function(x) { return x.tool() === "tool0"}).material.name());
+            self.leftAmount(self.filaments().find(function(x) { return x.tool() === "tool1"}).amount());
+            self.rightAmount(self.filaments().find(function(x) { return x.tool() === "tool0"}).amount());
         }
 
         self.requestData = function () {
