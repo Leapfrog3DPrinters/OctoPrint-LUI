@@ -33,6 +33,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def __init__(self):
 
+        ##~ Model specific variables
+        self.model = None
+
         ##~ Filament loading variables
         self.relative_extrusion = False
         self.current_print_extrusion_amount = None
@@ -122,6 +125,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def initialize(self):
+        ##~ Model
+        self.model = "Bolt"
+
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
 
@@ -255,7 +261,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_settings_defaults(self):
         return {
-            "model": "Bolt!",
+            "model": self.model,
             "zoffset": 0,
         }
 
@@ -406,16 +412,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def load_filament(self, tool):
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
-            ## This is xeed load function, TODO: Bolt! function and switch
+            # Always set load_amount to 0
             self.load_amount = 0
+            ## Switch on model for filament loading
+            if self.model == "Xeed":
+                ## This is xeed load function, TODO: Bolt! function and switch
 
-            # We can set one change of extrusion and speed during the timer
-            # Start with load_initial and change to load_change at load_change['start']
-            load_initial=dict(amount=16.67, speed=2000)
-            load_change=dict(start=1900, amount=2.5, speed=300)
+                # We can set one change of extrusion and speed during the timer
+                # Start with load_initial and change to load_change at load_change['start']
+                load_initial=dict(amount=16.67, speed=2000)
+                load_change=dict(start=1900, amount=2.5, speed=300)
 
-            # Total amount being loaded
-            self.load_amount_stop = 2100
+                # Total amount being loaded
+                self.load_amount_stop = 2100
+            else:
+                # Bolt loading
+                load_initial=dict(amount=16.67, speed=2000)
+                self.load_amount_stop = 1
             self.move_to_filament_load_position()
             self._printer.commands("G91")
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
@@ -434,14 +447,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.load_filament_timer is None:
             ## This is xeed load function, TODO: Bolt! function and switch
             self.load_amount = 0
+            if self.model == "Xeed":
+                # We can set one change of extrusion and speed during the timer
+                # Start with load_initial and change to load_change at load_change['start']
+                unload_initial=dict(amount= -2.5, speed=300)
+                unload_change=dict(start=30, amount= -16.67, speed=2000)
 
-            # We can set one change of extrusion and speed during the timer
-            # Start with load_initial and change to load_change at load_change['start']
-            unload_initial=dict(amount= -2.5, speed=300)
-            unload_change=dict(start=30, amount= -16.67, speed=2000)
-
-            # Total amount being loaded
-            self.load_amount_stop = 2100
+                # Total amount being loaded
+                self.load_amount_stop = 2100
+            else:
+                # Bolt stuff
+                unload_initial=dict(amount= -2.5, speed=300)
+                self.load_amount_stop = 45 # TODO test this
             self._printer.commands("G91")
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
             self.load_filament_timer = RepeatedTimer(0.5, 
@@ -771,9 +788,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands(["G1 X115 Y15 F6000"]) 
 
     def move_to_filament_load_position(self):
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S1"])
         # First home X and Y 
         self._printer.home(['x', 'y'])
-        self._printer.commands(["G1 X210 Y0 F6000"]) 
+        self._printer.change_tool("tool0")
+        self._printer.change_tool("tool1")
+        self._printer.change_tool("tool0")
+        if self.filament_change_tool:
+            self._printer.change_tool(self.filament_change_tool)
+        if self.model == "Xeed":
+            self._printer.commands(["G1 X210 Y0 F6000"]) 
+        elif self.model == "Bolt":
+            self._printer.commands(["G1 X1 Y1 F6000"]) 
 
 
     ##~ OctoPrint EventHandler Plugin
