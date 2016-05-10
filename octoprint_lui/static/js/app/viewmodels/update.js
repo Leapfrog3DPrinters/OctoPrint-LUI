@@ -49,8 +49,11 @@ $(function() {
 
     self.fromResponse = function(data) {
       var info = ko.mapping.fromJS(data.update);
-      self.update_needed(!_.every(info(), function(i){return !i.update()}));
-      console.log(self.update_needed());
+      var updates = 0;
+      _.each(info(), function(i){
+        if (i.update()) updates++
+      });
+      self.update_needed(updates);
       self.updateinfo(info());
     };
 
