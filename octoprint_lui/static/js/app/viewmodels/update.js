@@ -6,8 +6,8 @@ $(function() {
     self.system = parameters[1];
 
     self.updateinfo = ko.observableArray([]);
-
     self.updating = ko.observable(false);
+    self.update_needed = ko.observable(false);
 
     self.getUpdateText = function(data) {
       if (data.update()) {
@@ -49,6 +49,8 @@ $(function() {
 
     self.fromResponse = function(data) {
       var info = ko.mapping.fromJS(data.update);
+      self.update_needed(!_.every(info(), function(i){return !i.update()}));
+      console.log(self.update_needed());
       self.updateinfo(info());
     }
 
@@ -86,7 +88,7 @@ $(function() {
   OCTOPRINT_VIEWMODELS.push([
     UpdateViewModel,
     ["loginStateViewModel", "systemViewModel"],
-    ['#update']
+    ['#update', '#update_icon']
   ]);
 
 });
