@@ -126,7 +126,9 @@
                 <ul class="topic_main">
                     <li class="topic_dash">
                         <a href="">
-                            <i class="fa fa-refresh"><span class="badge">1</span></i>
+                            <!-- ko allowBindings: false -->
+                            <i id="update_icon" class="fa fa-refresh"><span data-bind="css: {badge: update_needed()}">1</span></i>
+                            <!-- /ko -->
                         </a>
                     </li>
                     <li class="topic_name">
