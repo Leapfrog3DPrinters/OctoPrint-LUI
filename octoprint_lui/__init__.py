@@ -374,6 +374,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Cancel all heat up and reset
         # Loading has already started, so just cancel the loading 
         # which will stop heating already.
+        self._printer.home(['y', 'x'])
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
         # Other wise we haven't started loading yet, so cancel the heating 
@@ -794,16 +795,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands(["G1 X115 Y15 F6000"]) 
 
     def move_to_filament_load_position(self):
-        if self.model == "Bolt":
-            self._printer.commands(["M605 S1"])
-        # First home X and Y 
         self._printer.home(['x', 'y'])
+
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S0"])
+        # First home X and Y 
         if self.model == "Bolt":
             self._printer.change_tool("tool1")
             self._printer.commands(["G1 X30 F10000"])
             self._printer.change_tool("tool0")
             self._printer.commands(["G1 X330 F10000"])
-            self._printer.commands(["G1 Y1 F15000"]) 
+            self._printer.commands(["G1 Y1 F15000"])
+            self._printer.commands(["M605 S1"])
         elif self.model == "Xeed":
             self._printer.commands(["G1 X210 Y0 F6000"]) 
         if self.filament_change_tool:
