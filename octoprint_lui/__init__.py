@@ -77,7 +77,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_info = [
             {
                 'identifier': 'lui',
-                'path': '/home/pi/OctoPrint-LUI',
+                'path': '/Users/pim/lpfrg/OctoPrint-LUI',
                 'update': False,
                 'action': 'update_lui',
                 'name': "Leapfrog UI",
@@ -85,7 +85,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'networkmanager',
-                'path': '/home/pi/OctoPrint-NetworkManager',
+                'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
                 'update': False,
                 'action': 'update_networkmanager',
                 'name': 'Network Manager',
@@ -93,7 +93,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'flasharduino',
-                'path': '/home/pi/OctoPrint-flashArduino',
+                'path': '/Users/pim/lpfrg/OctoPrint-flashArduino',
                 'update': False,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
@@ -101,7 +101,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },      
             {
                 'identifier': 'octoprint',
-                'path': '/home/pi/OctoPrint',
+                'path': '/Users/pim/lpfrg/OctoPrint',
                 'update': False,
                 'action': 'update_octoprint',
                 'name': 'OctoPrint',
@@ -154,7 +154,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_lui = {
                 "action": "update_lui",
                 "name": "Update LUI",
-                "command": "cd /home/pi/OctoPrint-LUI && git pull && /home/pi/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint-LUI && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_lui)
@@ -164,7 +164,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_networkmanager = {
                 "action": "update_networkmanager",
                 "name": "Update NetworkManager",
-                "command": "cd /home/pi/OctoPrint-NetworkManager && git pull && /home/pi/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint-NetworkManager && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_networkmanager)
@@ -174,7 +174,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_octoprint = {
                 "action": "update_octoprint",
                 "name": "Update OctoPrint",
-                "command": "cd /home/pi/OctoPrint && git pull && /home/pi/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_octoprint)
@@ -184,7 +184,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_flasharduino = {
                 "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
-                "command": "cd /home/pi/OctoPrint-flashArduino && git pull && /home/pi/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint-flashArduino && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_flasharduino)
@@ -383,6 +383,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_change_filament_done(self, *args, **kwargs):
         # Still don't know if this is the best spot TODO
+        self._printer.home(['y', 'x'])
         self._printer.set_temperature(self.filament_change_tool, 0.0) 
 
     def _on_api_command_update_filament(self, *args, **kwargs):
@@ -428,6 +429,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 # Bolt loading
                 load_initial=dict(amount=16.67, speed=2000)
+                load_change = None
                 self.load_amount_stop = 2
             self.move_to_filament_load_position()
             self._printer.commands("G91")
@@ -458,6 +460,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 # Bolt stuff
                 unload_initial=dict(amount= -2.5, speed=300)
+                unload_change = None
                 self.load_amount_stop = 45 # TODO test this
             self._printer.commands("G91")
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
@@ -792,15 +795,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["M605 S1"])
         # First home X and Y 
         self._printer.home(['x', 'y'])
-        self._printer.change_tool("tool0")
-        self._printer.change_tool("tool1")
-        self._printer.change_tool("tool0")
-        if self.filament_change_tool:
-            self._printer.change_tool(self.filament_change_tool)
+        if self.mode == "Bolt":
+            self._printer.change_tool("tool0")
+            self._printer.change_tool("tool1")
+            self._printer.change_tool("tool0")
         if self.model == "Xeed":
             self._printer.commands(["G1 X210 Y0 F6000"]) 
         elif self.model == "Bolt":
             self._printer.commands(["G1 X1 Y1 F6000"]) 
+        if self.filament_change_tool:
+            self._printer.change_tool(self.filament_change_tool)
 
 
     ##~ OctoPrint EventHandler Plugin
