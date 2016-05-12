@@ -795,7 +795,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["M605 S1"])
         # First home X and Y 
         self._printer.home(['x', 'y'])
-        if self.mode == "Bolt":
+        if self.model == "Bolt":
             self._printer.change_tool("tool0")
             self._printer.change_tool("tool1")
             self._printer.change_tool("tool0")
