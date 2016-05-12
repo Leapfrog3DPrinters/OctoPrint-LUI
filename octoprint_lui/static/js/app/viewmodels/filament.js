@@ -100,6 +100,7 @@ $(function () {
             .always(function () {
                 // If this closes we need to reset stuff
                 self.filamentLoadProgress(0);
+                self.filamentInProgress(false);
             })
             .done(function () {
                 self.changeFilamentDone();
