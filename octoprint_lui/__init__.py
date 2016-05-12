@@ -799,19 +799,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if self.model == "Bolt":
             self._printer.commands(["M605 S0"])
-        # First home X and Y 
-        if self.model == "Bolt":
             self._printer.change_tool("tool1")
             self._printer.commands(["G1 X30 F10000"])
             self._printer.change_tool("tool0")
             self._printer.commands(["G1 X330 F10000"])
             self._printer.commands(["G1 Y1 F15000"])
+            if self.filament_change_tool:
+                self._printer.change_tool(self.filament_change_tool)
             self._printer.commands(["M605 S1"])
         elif self.model == "Xeed":
             self._printer.commands(["G1 X210 Y0 F6000"]) 
-        if self.filament_change_tool:
-            self._printer.change_tool(self.filament_change_tool)
-
+            if self.filament_change_tool:
+                self._printer.change_tool(self.filament_change_tool)
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):
