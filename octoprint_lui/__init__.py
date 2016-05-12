@@ -804,9 +804,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.change_tool("tool0")
             self._printer.commands(["G1 X330 F10000"])
             self._printer.commands(["G1 Y1 F15000"]) 
-        if self.model == "Xeed":
+        elif self.model == "Xeed":
             self._printer.commands(["G1 X210 Y0 F6000"]) 
-        elif self.model == "Bolt":
         if self.filament_change_tool:
             self._printer.change_tool(self.filament_change_tool)
 
