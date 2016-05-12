@@ -336,6 +336,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_loaded_profile = self.filament_database.get(self.filament_query.tool == tool)
         self._printer.change_tool(tool)
 
+        self.move_to_filament_load_position()
+
         # Check if filament is loaded, if so report to front end. 
         if (self.filament_loaded_profile['material']['name'] == 'None'):
             # No filament is loaded in this tool, directly continue to load section
@@ -346,6 +348,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_unload_filament(self, *args, **kwargs):
         # Heat up to old profile temperature and unload filament
         temp = int(self.filament_loaded_profile['material']['extruder'])
+
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
                                 self.unload_filament)
@@ -360,6 +363,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return None
         self.filament_change_amount = amount 
         temp = int(profile['extruder'])
+
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
                                 self.load_filament)
@@ -431,7 +435,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 load_initial=dict(amount=16.67, speed=2000)
                 load_change = None
                 self.load_amount_stop = 2
-            self.move_to_filament_load_position()
             self._printer.commands("G91")
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
