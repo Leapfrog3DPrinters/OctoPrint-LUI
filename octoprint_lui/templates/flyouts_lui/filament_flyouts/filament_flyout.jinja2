@@ -74,7 +74,7 @@
     <div class="Table-row Table-header">
         <div class="Table-item">Status</div>
     </div> 
-    <div id="tool_heating" class = "Table-row"> 
+{#     <div id="tool_heating" class = "Table-row"> 
         <div class="Table-item Table-item-grow-3">
             <div class="progress progress-large">
                 <span data-bind="text: temperatureState.toolStatus()[toolNum()].text, style: { width: temperatureState.toolProgress()[toolNum()] + '%'}, css: temperatureState.toolStatus()[toolNum()].color"></span>
@@ -83,7 +83,7 @@
         </div>
         <div class="Table-item" style="text-align: right" ><span data-bind="text: temperatureState.tools()[toolNum()]['actual']"></span><span> &deg;C</span></div>
         <div class="Table-item" >/ <b data-bind="text: temperatureState.tools()[toolNum()]['target']"></b><b> &deg;C</b></div>
-    </div>
+    </div> #}
     <div id="tool_loading" class="Table-row">
         <div class="Table-item">
             <div class="progress progress-large">
