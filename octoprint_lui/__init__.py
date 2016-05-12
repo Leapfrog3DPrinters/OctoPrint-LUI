@@ -428,7 +428,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 # Bolt loading
                 load_initial=dict(amount=16.67, speed=2000)
-                self.load_amount_stop = 1
+                self.load_amount_stop = 2
             self.move_to_filament_load_position()
             self._printer.commands("G91")
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
