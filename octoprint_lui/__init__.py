@@ -793,7 +793,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # First home X and Y 
         self._printer.home(['x', 'y', 'z'])
         self._printer.commands(['G1 Z1800'])
-        if self.model = "Xeed":
+        if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
 
     def move_to_filament_load_position(self):
