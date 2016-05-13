@@ -792,7 +792,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def move_to_maintenance_position(self):
         # First home X and Y 
         self._printer.home(['x', 'y', 'z'])
-        self._printer.commands(['G1 Z1800'])
+        self._printer.commands(['G1 Z200'])
         if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
 
