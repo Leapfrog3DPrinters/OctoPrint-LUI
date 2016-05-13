@@ -791,8 +791,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Printer Control functions
     def move_to_maintenance_position(self):
         # First home X and Y 
-        self._printer.home(['x', 'y'])
-        self._printer.commands(["G1 X115 Y15 F6000"]) 
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.commands(['G1 Z1800'])
+        if self.model = "Xeed":
+            self._printer.commands(["G1 X115 Y15 F6000"]) 
 
     def move_to_filament_load_position(self):
         self._printer.home(['x', 'y'])
