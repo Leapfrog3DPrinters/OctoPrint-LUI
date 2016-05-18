@@ -6,55 +6,24 @@
         <div class="Table-item"<label class="control-label" for="settings-appearanceName">{{ _('Title') }}</label></div>
         <div class="Table-item"><input type="text" class="input-block-level" data-bind="value: appearance_name" id="settings-appearanceName"></div>
     </div>
-    <div class="Table-row Table-header" title="{{ _('Interval in which to poll for the temperature information from the printer') }}">
+    <div class="Table-row Table-header">
         <div class="Table-item">
-            <label class="control-label" for="settings-serialTimeoutTemperature">{{ _('Temperature interval') }}</label>
+            Maintenance
+        </div>
+    </div>
+    <div class="Table-row Table-header">
+        <div class="Table-item">
+            Logs
         </div>
     </div>
     <div class="Table-row">
         <div class="Table-item">
-            <span class="help-inline">{{ _('When printing or idle')}}</span>
-        </div>
-        <div class="Table-item">
-            <input type="number" step="any" min="1" class="input-mini text-right" data-bind="value: serial_timeoutTemperature()" id="settings-serialTimeoutTemperature">
-            <span class="add-on">s</span>
+            <input type="checkbox" data-bind="checked: serial_log" id="settings-serialLog"> {{ _('Log communication to serial.log') }} 
         </div>
     </div>
     <div class="Table-row">
         <div class="Table-item">
-           <span class="help-inline">{{ _('When a target temperature is set')}}</span>
-        </div>
-        <div class="Table-item">
-            <input type="number" step="any" min="1" class="input-mini text-right" data-bind="value: serial_timeoutTemperatureTargetSet" id="settings-serialTimeoutTemperatureTargetSet">
-            <span class="add-on">s</span>
-        </div>
-    </div>
-    <div class="Table-row Table-header" title="{{ _('Time after which the communication with your printer will be considered timed out if nothing was sent by your printer (and an attempt to get it talking again will be done). Increase this if your printer takes longer than this for some moves. This is also the interval in which the temperature will be polled from the printer while not printing.') }}">
-        <div class="Table-item">
-            <label class="control-label">{{ _('Communication') }}</label>
-        </div>
-    </div>
-    <div class="Table-row">
-        <div class="Table-item">
-            <label class="control-label" for="settings-serialTimeoutCommunication">{{ _('Communication timeout') }}</label>
-        </div>
-        <div class="Table-item">
-            <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: serial_timeoutCommunication" id="settings-serialTimeoutCommunication">
-            <span class="add-on">s</span>
-        </div>
-    </div>
-    <div class="Table-row">
-        <div class="Table-item">
-            <label class="control-label" for="settings-serialTimeoutConnection">{{ _('Connection timeout') }}</label>
-        </div>
-        <div class="Table-item">
-            <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: serial_timeoutConnection" id="settings-serialTimeoutConnection">
-            <span class="add-on">s</span>
-        </div>
-    </div>
-    <div class="Table-row">
-        <div class="Table-item">
-            <input type="checkbox" data-bind="checked: serial_log" id="settings-serialLog"> {{ _('Log communication to serial.log') }} <span class="label label-important">{{ _('Warning') }} (might negatively impact performance)</span>
+            <span class="label label-important">{{ _('Warning') }} (might negatively impact performance)</span>
         </div>
     </div>
 </div>

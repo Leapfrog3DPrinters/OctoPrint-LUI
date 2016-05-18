@@ -101,7 +101,6 @@ $(function() {
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 
-
         //Template observable 
         self.settingsTopic = ko.observable(undefined);
 
@@ -222,62 +221,6 @@ $(function() {
 
         self.onSettingsHidden = function() {
             self.webcam_ffmpegPathReset();
-        };
-
-        self.isDialogActive = function() {
-            return self.settingsDialog.is(":visible");
-        };
-
-        self.onStartup = function() {
-            self.settingsDialog = $('#settings_dialog');
-            self.settingsUpdatedDialog = $('#settings_dialog_update_detected');
-        };
-
-        self.onAllBound = function(allViewModels) {
-            self.allViewModels = allViewModels;
-
-            self.settingsDialog.on('show', function(event) {
-                if (event.target.id == "settings_dialog") {
-                    callViewModels(allViewModels, "onSettingsShown");
-                }
-            });
-            self.settingsDialog.on('hidden', function(event) {
-                if (event.target.id == "settings_dialog") {
-                    callViewModels(allViewModels, "onSettingsHidden");
-                }
-            });
-            self.settingsDialog.on('beforeSave', function () {
-                callViewModels(allViewModels, "onSettingsBeforeSave");
-            });
-
-            $(".reload_all", self.settingsUpdatedDialog).click(function(e) {
-                e.preventDefault();
-                self.settingsUpdatedDialog.modal("hide");
-                self.requestData();
-                return false;
-            });
-            $(".reload_nonconflicts", self.settingsUpdatedDialog).click(function(e) {
-                e.preventDefault();
-                self.settingsUpdatedDialog.modal("hide");
-                self.requestData(undefined, true);
-                return false;
-            });
-        };
-
-        self.show = function() {
-            // show settings, ensure centered position
-            self.settingsDialog.modal({
-                minHeight: function() { return Math.max($.fn.modal.defaults.maxHeight() - 80, 250); }
-            }).css({
-                width: 'auto',
-                'margin-left': function() { return -($(this).width() /2); }
-            });
-
-            return false;
-        };
-
-        self.hide = function() {
-            toggleFlyOut();
         };
 
         self.requestData = function(local) {
@@ -535,8 +478,6 @@ $(function() {
                 };
             }
 
-            self.settingsDialog.trigger("beforeSave");
-
             self.sending(data === undefined || options.sending || false);
 
             if (data === undefined) {
@@ -564,6 +505,10 @@ $(function() {
                 });
         };
 
+        self.onAllBound = function(allViewModels) {
+            self.allViewModels = allViewModels;
+        }
+
         self.onEventSettingsUpdated = function() {
             var preventSettingsRefresh = _.any(self.allViewModels, function(viewModel) {
                 if (viewModel.hasOwnProperty("onSettingsPreventRefresh")) {
@@ -582,40 +527,80 @@ $(function() {
                 // if any of our viewmodels prevented this refresh, we'll just return now
                 return;
             }
+            // TODO THIS
+            // if (self.isDialogActive()) {
+            //     // dialog is open and not currently busy...
+            //     if (self.sending() || self.receiving()) {
+            //         return;
+            //     }
 
-            if (self.isDialogActive()) {
-                // dialog is open and not currently busy...
-                if (self.sending() || self.receiving()) {
-                    return;
-                }
-
-                if (!hasDataChanged(self.getLocalData(), self.lastReceivedSettings)) {
-                    // we don't have local changes, so just fetch new data
-                    self.requestData();
-                } else {
-                    // we have local changes, show update dialog
-                    self.settingsUpdatedDialog.modal("show");
-                }
-            } else {
+            //     if (!hasDataChanged(self.getLocalData(), self.lastReceivedSettings)) {
+            //         // we don't have local changes, so just fetch new data
+            //         self.requestData();
+            //     } else {
+            //         // we have local changes, show update dialog
+            //         self.settingsUpdatedDialog.modal("show");
+            //     }
+            // } else {
                 // dialog is not open, just fetch new data
                 self.requestData();
-            }
+            // }
         };
 
         self.showSettingsTopic = function(topic) {
-            self.requestData();
             var settings_topic = "#" + topic +'_settings_flyout_content';
             var $settings_topic_content = $(settings_topic);
-            console.log(settings_topic);
             $settings_topic_content.addClass('active');
             self.settingsTopic(capitalize(topic));
-            self.flyout.showFlyout('settings', topic)
+            callViewModels(self.allViewModels, "onSettingsShown");
+            self.flyout.showFlyout('settings')
                 .done(function () {
-                    console.log("Button Clicked");
                     self.saveData();
                 })
-                .fail(function() {console.log("Close or Overlay")})
-                .always(function() {$settings_topic_content.removeClass('active')});
+                .fail(function() {})
+                .always(function() {
+                    $settings_topic_content.removeClass('active')
+                    callViewModels(self.allViewModels, "onSettingsHidden");
+
+                });
+        };
+
+        // Sending custom commands to the printer, needed for level bed for example.
+        // format is: sendCustomCommand({type:'command',command:'M106 S255'})
+        self.sendCustomCommand = function (command) {
+            if (!command) return;
+
+            var parameters = {};
+            if (command.hasOwnProperty("input")) {
+                _.each(command.input, function (input) {
+                    if (!input.hasOwnProperty("parameter") || !input.hasOwnProperty("value")) {
+                        return;
+                    }
+
+                    parameters[input.parameter] = input.value();
+                });
+            }
+
+            if (command.hasOwnProperty("command") || command.hasOwnProperty("commands")) {
+                var commands = command.commands || [command.command];
+                OctoPrint.control.sendGcodeWithParameters(commands, parameters);
+            } else if (command.hasOwnProperty("script")) {
+                var script = command.script;
+                var context = command.context || {};
+                OctoPrint.control.sendGcodeScriptWithParameters(script, context, parameters);
+            }
+            var name = command.name || "";
+            $.notify({
+                title: _.sprintf(gettext('Command "%(name)s" send'), {name: name}),
+                text: _.sprintf(gettext(''), {})},
+                "success"
+            );
+        };
+
+        self.startZoffset = function() {
+            self.flyout.closeFlyoutAccept();
+            self.flyout.showFlyout('zoffset');
+
         };
 
     }

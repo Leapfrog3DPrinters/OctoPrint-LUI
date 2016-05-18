@@ -1,20 +1,96 @@
- <div class="Table">
-    <!-- ko foreach: settings.temperature_profiles -->
-    <div class="Table-row">
-        <div class="Table-item profile_name">
-           <input type="text" class="text-right" data-bind="value: name">
+<div class="Table">
+    <div class="Table-row Table-header"> 
+        <div class="Table-item">
+            <div>Swapping filament: <span data-bind="text: toolText"></span></div>    
         </div>
-        <div class="Table-item extruder_temp">
-            <input type="text" data-bind="value: extruder">
+    </div>
+    <div class="Table-row " id="swap-info">
+        <div class="Table-item">
+            Heating up to swap filament and (un)loading.
         </div>
-        <div class="Table-item bed_temp">
-            <input type="text" data-bind="value: bed">
+    </div>
+    <div class="Table-row active" id="swap-load-unload">
+        <div class="Table-item">
+            <div id="swap_process" data-bind="css: { disabled: !printerState.isOperational() }">
+                <div class="swap_process_step" id="unload_filament">
+                    <div class="explain">Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind="text: loadedFilamentAmount" class="bold"></span> left.</div>
+                    <ul class="button-area">
+                        <li class="button ok-button" id="unload_cmd" data-bind="click: unloadFilament, css: { disabled: !loginState.loggedIn() || filamentLoading()}">
+                            <a href="#"><span><i class="fa fa-arrow-up"></i>Unload</span></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="swap_process_step" id="load_filament">
+                    Please select the new filament material
+                    <select class="select-material" data-bind="options: materialProfiles,
+                                   optionsText: 'name',
+                                   value: selectedTemperatureProfile,
+                                   optionsCaption: 'Choose material...'">
+                    </select>
+                    Select how much filament is on the spool:
+                    <div id="slider_wrapper">
+                        <div id="slider" class="noUi-extended"></div>
+                    </div>
+                    <div class="Table">
+                        <div class="Table-row">
+                            <div class="Table-item">
+                                <input id="input-format"></input>
+                            </div>
+                            <div class="Table-item">
+                                <span id="filament_percent"></span>   
+                            </div>
+                        </div>
+                    </div>
+                    <div class="explain">Insert the filament in the filament drawer past both wheels.</div>
+                    <ul class="button-area">
+                        <li class="button ok-button" id="unload_cmd" data-bind="click: loadFilament, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
+                            <a href="#"><span>Load</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="Table-row swap_process_step" id="finished_filament" >
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button" data-bind="click: loadFilamentCont, css: { disabled: filamentLoadCont()}">
+                    <a href="#"><span><i class="fa fa-arrow-down"></i>Load extra filament</span></a>
+                </li>
+                <li class="button failed-button" data-bind="click: loadFilamentContStop, css: { disabled: !filamentLoadCont()}">
+                    <a href="#"><span><i class="fa fa-close"></i>Stop loading</span></a>
+                </li>
+            </ul>
         </div>
         <div class="Table-item">
             <ul class="button-area">
-                <li class="button failed-button"><a href="#delete" data-bind="click: $parent.removeTemperatureProfile"><span>Delete</span></a></li>
+                <li class="button ok-button" data-bind="click: finishedLoading, css: { disabled: !loginState.loggedIn()}">
+                    <a href="#"><span><i class="fa fa-check"></i>Done</span></a>
+                </li>
             </ul>
         </div>
     </div>
+    <!-- ko if: filamentLoading -->
+    <div class="Table-row Table-header">
+        <div class="Table-item">Status</div>
+    </div> 
+    <div id="tool_heating" class = "Table-row"> 
+        <div class="Table-item Table-item-grow-3">
+            <div class="progress progress-large">
+                <span data-bind="text: temperatureState.toolStatus()[toolNum()].text, style: { width: temperatureState.toolProgress()[toolNum()] + '%'}, css: temperatureState.toolStatus()[toolNum()].color"></span>
+                <span class="bg-none" data-bind="text: temperatureState.loadingText, style: {width: '100%'}"></span>
+            </div>
+        </div>
+{#         <div class="Table-item" style="text-align: right" ><span data-bind="text: temperatureState.tools()[toolNum()]['actual']"></span><span> &deg;C</span></div>
+        <div class="Table-item" >/ <b data-bind="text: temperatureState.tools()[toolNum()]['target']"></b><b> &deg;C</b></div> #}
+    </div>
+    <div id="tool_loading" class="Table-row">
+        <div class="Table-item">
+            <div class="progress progress-large">
+                <span data-bind="style: { width: filamentLoadProgress() + '%'}">Loading filament...</span>
+                <span class="bg-none" data-bind="style: {width: '100%'}"></span>
+            </div>
+        </div>
+    </div>
     <!-- /ko -->
-</div>
+</div> <!-- / Table --> 

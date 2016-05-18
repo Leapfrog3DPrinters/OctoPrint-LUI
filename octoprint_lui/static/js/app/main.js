@@ -370,38 +370,6 @@ $(function() {
     viewModelMap["settingsViewModel"].requestData()
         .done(bindViewModels);
 
-    // Circle Progress stuff
-
-	$('.tool1.circle').circleProgress({
-    value: 0.75,
-    fill: { gradient: ['#A9CC3C', '#EDDB53', '#CC2B14'] },
-    thickness: 20,
-    size: 130,
-    startAngle: Math.PI*(3/4)
-	}).on('circle-animation-progress', function(event, progress, stepValue) {
-    	$(this).find('strong').text(String(stepValue.toFixed(2)).substr(2)*4 + " C°");
-	});
-
-	$('.tool2.circle').circleProgress({
-    value: 0.2,
-    fill: { gradient: ['#A9CC3C', '#EDDB53', '#CC2B14'] },
-    thickness: 20,
-    size: 130,
-    startAngle: Math.PI*(3/4)
-	}).on('circle-animation-progress', function(event, progress, stepValue) {
-    	$(this).find('strong').text(String(stepValue.toFixed(2)).substr(2)*4 + " C°");
-	});
-
-	$('.chamber.circle').circleProgress({
-    value: 0.3,
-    fill: { gradient: ['#A9CC3C', '#EDDB53', '#CC2B14'] },
-    thickness: 20,
-    size: 130,
-    startAngle: Math.PI*(3/4)
-	}).on('circle-animation-progress', function(event, progress, stepValue) {
-    	$(this).find('strong').text(String(stepValue.toFixed(2)).substr(2) + " C°");
-	});
-
 
     // Icon bar selection
     $('.icon-bar a').on('click', function() {
@@ -410,18 +378,13 @@ $(function() {
         var tabID = $(this).attr('href');
         $('.icon-bar > a.active').removeClass('active');
         $(this).addClass('active');
-        console.log(tabID);
         $(tabID).addClass('open');
-        $('.app-header h3').text(tabID);
 
     });
 
     // Open additional info print file
     $('li.file_name, li.file_info').on('click', function() {
         $(this).parent().siblings('.file_add_info').toggleClass('slide');
-        // this is retarded performance wise.
-        //$(this).siblings('.file_info').children().children('.fa').toggleClass('fa-angle-down fa-angle-up');
-        //$(this).children().children('.fa').toggleClass('fa-angle-down fa-angle-up');
     });
 
 
@@ -455,5 +418,147 @@ $(function() {
         }
     );
 
+    // jQuery overscroll
+
+    // $(".flyout-body").overscroll({
+    //         direction: 'vertical',
+    //         showThumbs: false
+    // });
+
+    // $("#tabs").overscroll({
+    //         direction: 'vertical',
+    //         showThumbs: false
+    // });
+
+    // JQuery Virtual Keyboard init
+
+    var keyboardLayouts = {
+        qwerty: {
+            display: {
+                'bksp'   :  "\u2190",
+                'accept' : 'Accept',
+                'default': 'ABC',
+                'meta1'  : '.?123',
+                'meta2'  : '#+=',
+                'clear'  : 'Clear'
+            },
+            layout: 'custom',
+            customLayout: {
+                'default': [
+                    'q w e r t y u i o p {bksp}',
+                    'a s d f g h j k l {clear}',
+                    '{s} z x c v b n m , . {s}',
+                    '{meta1} {space} {meta1} {accept}'
+                ],
+                'shift': [
+                    'Q W E R T Y U I O P {bksp}',
+                    'A S D F G H J K L {clear}',
+                    '{s} Z X C V B N M ! ? {s}',
+                    '{meta1} {space} {meta1} {accept}'
+                ],
+                'meta1': [
+                    '1 2 3 4 5 6 7 8 9 0 {bksp}',
+                    '- / : ; ( ) \u20ac & @ {clear}',
+                    '{meta2} . , ? ! \' " {meta2}',
+                    '{default} {space} {default} {accept}'
+                ],
+                'meta2': [
+                    '[ ] { } # % ^ * + = {bksp}',
+                    '_ \\ | ~ < > $ \u00a3 \u00a5 {clear}',
+                    '{meta1} . , ? ! \' " {meta1}',
+                    '{default} {space} {default} {accept}'
+                ]
+            }
+        },
+        number: {
+            layout: 'custom',
+            customLayout: {
+                normal: [
+                    '7 8 9 {clear}',
+                    '4 5 6 {cancel}',
+                    '1 2 3 {accept}',
+                    '. 0 {sp:3.1}',
+                ]
+            },
+            usePreview: true,
+            display: {
+                'accept':'Accept:Accept',
+                'clear':'Clear:Clear'
+            }
+        }
+    };
+
+    $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
+
+    $("input[type='number']").keyboard(keyboardLayouts.number);
+    
+    $("#input-format").keyboard({
+        layout: 'custom',
+        customLayout: {
+            normal: [
+                '7 8 9 {clear}',
+                '4 5 6 {cancel}',
+                '1 2 3 {accept}',
+                '. 0 {sp:3.1}',
+            ]
+        },
+        usePreview: true,
+        display: {
+            'accept':'Accept:Accept',
+            'clear':'Clear:Clear'
+        },
+        accepted: function (event, keyboard, el) {
+            slider.noUiSlider.set(keyboard.$preview.val());
+        }
+    });
+
+    ko.bindingHandlers.keyboardForeach = {
+        init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
+        },
+        update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            setTimeout(function() {
+                $(element.parentElement).find("input[type='number']").keyboard(keyboardLayouts.number);
+                $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
+
+            }, 10);
+            return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
+        }
+    };
+    ko.virtualElements.allowedBindings.keyboardForeach = true;
+
+    var slider = document.getElementById('slider');
+
+    noUiSlider.create(slider, {
+        start: 330,
+        step: 1,
+        behaviour: 'snap',
+        connect: 'lower',
+        range: {
+            'min': 0,
+            'max': 330
+        },
+        format: {
+          to: function ( value ) {
+            return value.toFixed(0);
+          },
+          from: function ( value ) {
+            return value;
+          }
+        }
+    });
+
+    var inputFormat = document.getElementById('input-format');
+    var filament_percent = document.getElementById('filament_percent');
+
+    slider.noUiSlider.on('update', function( values, handle ) {
+        inputFormat.value = values[handle];
+        percent = ((values[handle] / 330) * 100).toFixed(0);
+        filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+    });
+
+    inputFormat.addEventListener('change', function(){
+        slider.noUiSlider.set(this.value);
+    });
 
 });

@@ -11,12 +11,9 @@
     <div class="app-wrap">
         {% include 'header_lui.jinja2' %}
         {% include 'overlay_flyouts_lui.jinja2' %}
-        <section class="tabs">
-            {% include 'tabs_lui/filament_lui.jinja2' %}
-            {% include 'tabs_lui/files_lui.jinja2' %}
+        <section id="tabs" class="tabs">
             {% include 'tabs_lui/print_lui.jinja2' %}
-            {% include 'tabs_lui/status_lui.jinja2' %}
-            {% include 'tabs_lui/control_lui.jinja2' %}
+            {% include 'tabs_lui/files_lui.jinja2' %}
             {% include 'tabs_lui/settings_lui.jinja2' %}
         </section>  
         {% include 'footer_lui.jinja2' %}

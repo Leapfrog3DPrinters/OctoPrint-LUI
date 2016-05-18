@@ -14,6 +14,7 @@ $orangeborder: 1px solid $third-color;
 
 /* 
   Font face
+*/  
 
 @font-face {
   font-family: agenda-light;
@@ -21,9 +22,17 @@ $orangeborder: 1px solid $third-color;
   font-weight: light;
 }
 
+@font-face {
+  font-family: agenda-medium;
+  src: url(../fonts/agenda-medium.ttf);
+  font-weight: medium;
+}
+
+
 /* 
   Mixins
 */
+
 
 @mixin transition($item) {
     -webkit-transition: $item 0.2s ease-in-out;  
@@ -43,7 +52,7 @@ html {
 }
 
 html {
-  font-size: 0.8em;
+  font-size: 0.89em;
   user-select: none;
 }
 
@@ -60,7 +69,7 @@ ul {
 }
 
 body {
-  font-family: agenda-light, sans-serif;
+  font-family: agenda-medium, sans-serif;
   margin: 0;
   font-size: 1.5rem;
 }
@@ -85,9 +94,14 @@ a {
   line-height: 1.6;
 }
 
-.circle span {
-    color: #aaa;
-    text-align: center;
+.text_wrap {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.visibleflex {
+  display: flex;
 }
 
 .icon-bar a {
@@ -95,6 +109,9 @@ a {
   font-size: 1em;
   padding:1rem;
   background:$main-color;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .icon-bar a:first-child {
@@ -125,7 +142,7 @@ a {
   font-size: 2.5rem;
   color:$second-color;
   text-shadow:2px 2px 0 rgba(0,0,0,0.1);
-  padding-bottom: 1rem;
+  padding-right: 0.5em;
 }
 
 .app-header {
@@ -196,6 +213,10 @@ a {
   background-color: $second-color;
 }
 
+.button-area i {
+  padding-right: 0.4em;
+}
+
 .title {
   flex-basis: 100%;
   border-bottom: 2px solid $third-color;
@@ -218,9 +239,9 @@ a {
   fill: #6FFF3A
 }
 
-/*
- Flexbox + Important CSS Starts Here
-*/
+#slider_wrapper {
+  padding: 10px 0px;
+}
 
 
 /*
@@ -243,16 +264,16 @@ a {
 
 .app-header {
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-start;
   align-items: center;
   flex-basis: 45px;
   flex-shrink: 1;
   min-height: 45px;
 }
 
-.app-header h3 {
-  align-self: center;
-  font-size: 1em;
+
+.app-header .header_login {
+  margin-left: auto;
 }
 
 /*
@@ -260,8 +281,6 @@ a {
 */
 
 .tabs {
-  overflow-y:scroll;
-  -webkit-overflow-scrolling:touch;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -271,6 +290,8 @@ a {
 .tab {
   display: none;
   flex: 1 0 auto;
+  height:200px;
+  overflow-y: auto;
 }
 
 .open {
@@ -291,6 +312,7 @@ a {
 
 .content > * {
   flex: 1 1 100%;
+  min-width: 0;
 }
 
 /* 
@@ -307,6 +329,7 @@ a {
   right: 0;
   bottom: 0;
   opacity: 0;
+  z-index: 1;
   //@include transition(opacity);
   //transition: opacity .2s ease-in-out 1s;
   &.active {
@@ -370,6 +393,7 @@ a {
 
 .flyout-body > * {
   flex: 1 1 100%;
+  min-width: 0;
 }
 
 .flyout-close {
@@ -384,6 +408,7 @@ a {
 
 .hide {
   display: none;
+  // flex-grow: 0.001;
 }
 
 /* 
@@ -477,7 +502,7 @@ a {
   flex-wrap: nowrap;
   justify-content: space-between;
   border: 1px solid $dark-color;
-  font-size: 1.2rem;
+  // font-size: 1.2rem;
   margin: 10px 0px;
   line-height: 1.5;
 
@@ -491,8 +516,7 @@ a {
   &-row {
     width: 100%;
     display: flex;
-    //&:nth-of-type(even) { background-color: $dark-color; }
-    //&:nth-of-type(odd) { background-color: $light-color; }
+    min-width: 0;
   }
   // .Table-row-item
   &-item {
@@ -501,12 +525,18 @@ a {
     flex-wrap: nowrap;
     flex-grow: 1;
     flex-basis: 0;
-    padding: 0.5em;
+    min-width: 0;
+    padding: 0.3em 0.1em;
     word-break: break-word;
+    align-self:center;
     &:before {
       width: 30%;
       font-weight: 700;
     }
+  }
+  &-nested {
+    flex-direction: column;
+    padding-left: 0;
   }
 }
 
@@ -515,6 +545,28 @@ a {
   .Table-item-grow-#{$i} {
     flex-grow: $i;
   }
+}
+
+// Add badge to font awesome
+.fa {
+  position: relative;
+}
+
+.badge {
+  font-size: .25em;
+  font-family: Agenda-Medium;
+  font-weight: 700;
+  display: block;
+  position: absolute;
+  top: -1.5em;
+  right: -2.2em;
+  width: 2em;
+  height: 2em;
+  line-height: 2.2em;
+  border-radius: 50%;
+  text-align: center;
+  color: #fff;
+  background: rgba(190, 0, 0, 1);
 }
 
 /*
@@ -676,7 +728,7 @@ a {
 }
 
 .bg-main {
-  background-color: $main-color;
+  background-color: $main-color !important;
 }
 
 .bg-orange {
@@ -695,6 +747,11 @@ a {
   background-color: $color-failed !important;
 }
 
+.bg-none {
+  background-color: transparent !important;
+  color: $main-color !important;
+}
+
 
 .progress {
   background-color: #f9f9f9;
@@ -702,9 +759,9 @@ a {
   box-sizing: initial;
   position: relative;
   text-align: center;
-  width: 100%;
   font-size: 0.9em;
   height: 1.5em;
+  width: 100%;
 }
 
 .progress-small {
@@ -727,7 +784,7 @@ a {
   height: 100%;
   overflow: hidden;
   position: relative;
-  width: auto;
+  float: left;
 }
 .progress.progress-stacked > span {
   display: inline-block;
@@ -853,12 +910,45 @@ a {
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
   padding-left: 10px;
+  min-width: 0;
 }
+
+select {
+  $dark-color: #f2f2f2;
+  font-family: agenda-medium, sans-serif;
+  font-size: 1em;
+  padding: 5px;
+  min-width: 0;
+  border: 1px solid $dark-color;
+  border-radius: 3px;
+}
+
 
 /* 
   Settings Flyout
 */
 
+/*
+  Print Tab
+*/
+
+#print .content {
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+#print .content > * {
+  flex: 0 1 auto;
+  width: 100%;
+}
+
+#print .Table { 
+  margin: 0;
+}
+
+#print .filament_amount {
+  padding-left: 0.5em;
+}
 
 /* 
   Files tab
@@ -868,22 +958,32 @@ input:not([type=submit]):not([type=file]) {
   margin: 0px;
 }
 
+.file_upload {
+  flex-basis: 30%;
+}
+
+.file_search {
+  flex-basis: 60%;
+  padding-left: 0.5em;
+}
+
+.file_sort{
+  flex-basis: 5%;
+  margin-left:auto;
+}
+
 .file_area {
   display:flex;
   flex-direction:column;
   min-height: 100%;
+  padding-bottom: 10px;
 }
 
 .file_header {
   display: flex;
   border-bottom: 1px solid $third-color;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0px 10px;
-}
-
-.file_header > * {
-  padding: 0px 5px;
+  justify-content:flex-start;
 }
 
 .file_list {
@@ -947,22 +1047,25 @@ input:not([type=submit]):not([type=file]) {
   min-width: 0px; 
 }
 
-
-// .file_entry .file_add_info {
-//   display: none;
-//   transition: all 500ms linear;
-// }
-
 .file_entry .file_add_info li {
   flex-grow:1;
 }
 
 .file_add_info {
   background-color: #f2f2f2;
+  display: flex;
+  &.hide{
+    display: none;
+}
 }
 
 .file_add_info_content {
   padding:5px;
+}
+
+.file_add_info_buttons {
+  margin-left: auto;
+  align-self:center;
 }
 
 .file_info {
@@ -970,10 +1073,10 @@ input:not([type=submit]):not([type=file]) {
 }
 
 .file_ok {
-  background-color:  $color-ok;
+  color:  $color-ok;
 }
 .file_failed {
-  background-color:  $color-failed;
+  color:  $color-failed;
 }
 
 .file_ok i, .file_failed i {
@@ -997,80 +1100,11 @@ input:not([type=submit]):not([type=file]) {
   cursor: pointer;
 }
 
-/* 
-  Print Steps
-*/
-
-.print_steps {
-  min-height:100%;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.print_step:first-child{
-  border-top: 1px solid $third-color;
-  border-left: 0px;
-}
-
-.print_step {
-  flex: 1 0 100%;
-  background-color: white;
-  display: flex;
-}
-
-.step_title, .step_info, .step_action {
-  border-bottom: 1px solid $third-color;
-  bottom-right: 0px;
-}
-
-.step_status {
-  flex: 0 0 20px;
-  background-color: $off-white;
-  display: flex;
-}
-
-.step_status.step_done {
-  background-color: $color-ok;
-}
-
-.step_status.step_warning {
-  background-color: $color-warning;
-}
-
-.step_status.step_failed {
-  background-color: $color-failed;
-}
-.step_title {
-  padding: 10px;
-}
-
-.step_info {
-  flex: 1 1 auto;
-}
-
-.step_action {
-  flex: 0 1 200px;
-  background-color: white;
-  min-height: 0;
-  display:flex;
-  justify-content:space-between;
-}
-
-.print_steps .button-area {
-  flex:1 1 auto;
-  align-items:center;
-}
-
-.print_steps .button-area li {
-  margin: 0px;
-  height: 55px;
-  flex-basis:50%;
-}
 
 #term {
   .terminal {
     #terminal-output {
-      min-height: 340px;
+      min-height: 150px;
       margin-bottom: 5px;
     }
 
@@ -1114,8 +1148,49 @@ pre code {
 }
 
 .pre-scrollable {
-  max-height: 340px;
+  max-height: 150px;
   overflow-y: scroll;
+}
+
+/* Filament swap */
+
+.swap_process_step {
+  display: none;
+  width: 100%;
+  &.active {
+    display: inline-block;
+  }
+}
+
+#swap-info {
+  display:none;
+  &.active {
+    display:flex;
+  }
+}
+
+#swap-load-unload {
+  display: none;
+  &.active {
+    display:flex;
+  }
+}
+
+// #tool_heating, #tool_loading {
+//   display: none;
+//   &.active{
+//     display: flex;
+//   }
+// }
+
+.no-border
+{
+    border: 0 !important;
+}
+
+.select-material
+{
+    width: 100%;
 }
 
 /* 
@@ -1139,56 +1214,18 @@ pre code {
     flex-basis:50%;
   }
 
-  .file_entry .file_add_info .button-area {
-    flex-wrap: nowrap;
-    flex-basis:220px;
+  // .file_entry .file_add_info .button-area {
+  //   flex-wrap: nowrap;
+  //   flex-basis:220px;
+  // }
+
+  #print .content > * {
+    width:50%;
   }
 
-  .print_steps {
-    flex-wrap:nowrap;
-  }
-
-  .print_step:first-child {
-    border-left: 1px solid $third-color;
-    border-top: 0px;
-  }
-
-  .print_step {
-    flex-basis:20%;
-    flex-direction: column;
-  }
-
-  .step_title, .step_info, .step_action {
-    border-right: 1px solid $third-color;
-    border-bottom: 0px;
-  }
-
-  .step_title {
-    order: -1;
-    text-align: center;
-  }
-
-  .step_action {
-    flex-basis:auto;
-    align-self:stretch;  
-  }
-  
-  .print_steps .button-area li {
-    margin: 0px 10px;
-    margin-bottom: 0px;
-  }
-
-  #control .content > * {
-    flex-basis: 50%;
-  }
 
   .control-extrusion {
     padding-left: 10px;
-  }
-
-  .status_block {
-    flex-basis: 50%;
-    flex-wrap:wrap;
   }
 
   .spool .spool_picture {

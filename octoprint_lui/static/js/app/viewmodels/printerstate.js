@@ -4,6 +4,8 @@ $(function() {
         var self = this;
 
         self.loginState = parameters[0];
+        self.flyout = parameters[1];
+        self.temperatureState = parameters[2];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -24,7 +26,22 @@ $(function() {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
+        self.filenameNoExtension = ko.computed(function(){
+            if(self.filename())
+                return self.filename().slice(0,(self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
+        })
+
         self.busyFiles = ko.observableArray([]);
+
+        self.enablePrint = ko.computed(function() {
+            return self.isOperational() && self.isReady() && !self.isPrinting() && self.loginState.isUser() && self.filename() != undefined;
+        });
+        self.enablePause = ko.computed(function() {
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+        });
+        self.enableCancel = ko.computed(function() {
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+        });
 
         self.filament = ko.observableArray([]);
         self.estimatedPrintTime = ko.observable(undefined);
@@ -84,6 +101,46 @@ $(function() {
                 return gettext("Continue");
             else
                 return gettext("Pause");
+        });
+
+        self.leftFilament = ko.computed(function() {
+            filaments = self.filament();
+            for (var key in filaments) {
+                if (filaments[key].name() == "Tool 1") {
+                    return formatFilament(filaments[key].data());
+                }
+            }
+            return "-"
+        });
+
+        self.rightFilament = ko.computed(function() {
+            filaments = self.filament();
+            for (var key in filaments) {
+                if (filaments[key].name() == "Tool 0") {
+                    return formatFilament(filaments[key].data());
+                }
+            }
+            return "-"
+        });
+
+        self.stateStepString = ko.computed(function() {
+            if (self.temperatureState.isHeating()) return "Heating";
+            return self.stateString();
+        });
+
+        self.stateStepColor = ko.computed(function() {
+            if (self.temperatureState.isHeating()) return "bg-orange"
+            if (self.isPrinting()) return "bg-main"
+            if (self.isError()) return "bg-red"
+            return "bg-none"
+        });
+
+
+        self.fileSelected = ko.computed(function() {
+            if(self.filename()) 
+                return true
+            else 
+                return false
         });
 
         self.timelapseString = ko.computed(function() {
@@ -199,11 +256,17 @@ $(function() {
         };
 
         self.print = function() {
-            if (self.isPaused()) {
-                // Confirmation dialog TODO
-            } else {
-                OctoPrint.job.start();
-            }
+
+            // if (self.filament)
+            // var text = "You are about to update a component of the User Interface.";
+            // var question = "Do want to update " + data.name() + "?";
+            // var title = "Update: " + data.name()
+            // var dialog = {'title': title, 'text': text, 'question' : question};
+            var data = {};
+            self.flyout.showConfirmationFlyout(data)
+                .done(function(){
+                    OctoPrint.job.start();
+                });
         };
 
         self.pause = function() {
@@ -213,11 +276,24 @@ $(function() {
         self.cancel = function() {
             OctoPrint.job.cancel();
         };
+
+        self.showFileSelectFlyout =function () {
+            self.flyout.showFlyout('file')
+                .done(function (){
+            });
+        };
+
+        self.showInfoFlyout = function () {
+            self.flyout.showFlyout('info')
+                .done(function (){
+            });
+        };
+
     }
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel"],
-        ["#status"]
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel"],
+        ["#print", "#info_flyout"]
     ]);
 });

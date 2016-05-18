@@ -1,0 +1,73 @@
+<!-- ko allowBindings: false -->
+<div id="temp">
+    <div class="Table">
+        <div class="Table-row Table-header">
+            <div class="Table-item Table-item-grow-7">Temperature</div>
+{#             <div class="Table-item Table-item-grow-4"></div>
+            <div class="Table-item Table-item-grow-2">A</div>
+            <div class="Table-item Table-item-grow-2">T</div> #}
+        </div>
+        <div class="Table-row">
+            <div class="Table-item Table-item-grow-3">Left</div>
+            <div class="Table-item Table-item-grow-8">
+                <div class="progress">
+                    <span style="width: 0%" data-bind="text: toolStatus()[1].text, style: { width: toolProgress()[1] + '%'}, visible: isOperational(), css: toolStatus()[1].color"></span>
+                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
+                </div>
+            </div>
+{#             <div class="Table-item Table-item-grow-2" data-bind="text: tools()[1]['actual'], visible: isOperational()"></div>
+            <div class="Table-item Table-item-grow-2 bold" data-bind="text: tools()[1]['target'], visible: isOperational()"></div> #}
+        </div>
+        <div class="Table-row">
+            <div class="Table-item Table-item-grow-3">Right</div>
+            <div class="Table-item Table-item-grow-8">
+                <div class="progress">
+                    <span data-bind="text: toolStatus()[0].text, style: { width: toolProgress()[0] + '%'}, visible: isOperational(), css: toolStatus()[0].color"></span>
+                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
+                </div>
+            </div>
+{#             <div class="Table-item Table-item-grow-2" data-bind="text: tools()[0]['actual'], visible: isOperational()"></div>
+            <div class="Table-item  Table-item-grow-2 bold" data-bind="text: tools()[0]['target'], visible: isOperational()"></div> #}
+        </div>
+        <div class="Table-row">
+            <div class="Table-item Table-item-grow-3">Bed</div>
+            <div class="Table-item Table-item-grow-8">
+                <div class="progress">
+                    <span style="width: 0%" data-bind="text: toolStatus()[2].text, style: { width: toolProgress()[2] + '%'}, visible: isOperational(), css: toolStatus()[2].color"></span>
+                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
+                </div>
+            </div>
+{#             <div class="Table-item Table-item-grow-2" data-bind='text: bedTemp["actual"], visible: isOperational()'></div>
+            <div class="Table-item Table-item-grow-2 bold" data-bind='text: bedTemp["target"], visible: isOperational()'></div> #}
+        </div>
+    </div> 
+</div>
+<!-- /ko -->
+<!-- ko allowBindings: false -->
+<div id="term">
+    <div class="terminal">
+        <div class="Table">
+            <div class="Table-row Table-header">
+                <div class="Table-item">
+                    Terminal
+                </div>
+            </div>
+            <div class="Table-row">
+                <div class="Table-item">
+                    <pre id="terminal-output" class="pre-scrollable" data-bind="foreach: displayedLines"><span data-bind="text: line, css: {muted: type == 'filtered' || type == 'cut'}"></span><br></pre>
+                </div>
+            </div>
+            <div class="Table-row">
+                <div class="Table-item">
+                    <input type="text" id="terminal-command" data-bind="value: command, event: { keyup: function(d,e) { return handleKeyUp(e); }, keydown: function(d,e) { return handleKeyDown(e); } }, enable: isOperational() && loginState.isUser()">
+                </div>
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button" id="terminal-send" data-bind="click: sendCommand, enable: isOperational() && loginState.isUser()"><a href=""><span>Send</span></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

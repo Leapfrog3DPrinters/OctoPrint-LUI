@@ -6,8 +6,8 @@ $(function() {
         self.settings = parameters[1];
 
         self.log = ko.observableArray([]);
-        self.buffer = ko.observable(300);
-        self.upperLimit = ko.observable(3000);
+        self.buffer = ko.observable(100);
+        self.upperLimit = ko.observable(500);
 
         self.command = ko.observable(undefined);
 

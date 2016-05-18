@@ -3,22 +3,14 @@ $(function() {
         var self = this;
 
         self.loginState = parameters[0];
-        self.settings = parameters[1];
-        self.usersettings = parameters[2];
-        self.flyout = parameters[3];
+        self.usersettings = parameters[1];
+        self.flyout = parameters[2];
+        self.printerState = parameters[3];
 
         self.showLoginFlyout = function (){
             self.usersettings.show();  
             self.flyout.showFlyout('login')
                 .done(function () {
-                    if (!self.loginState.loggedIn()) {
-                        self.loginState.login();
-                        console.log("Logged In");
-                    }
-                    else {
-                        self.loginState.logout();
-                        console.log("Logged Out");
-                    }
                 })
                 .fail(function() {console.log("Close or Overlay")})
                 .always(function() {console.log("Always Login")});
@@ -31,7 +23,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
-        ["loginStateViewModel", "settingsViewModel", "userSettingsViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "userSettingsViewModel", "flyoutViewModel", "printerStateViewModel"],
         ["#header"]
     ]);
 });

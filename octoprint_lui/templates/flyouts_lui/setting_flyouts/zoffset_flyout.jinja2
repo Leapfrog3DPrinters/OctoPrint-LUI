@@ -1,0 +1,54 @@
+<div class="Table">
+    <div class="Table-row Table-header">
+        <div class="Table-item">
+            Z-offset
+        </div>
+    </div>
+    <div class="Table-row">
+        <div class="Table-item">
+            Place a 0.05 flusher between the nozzle and the bed.Press the button Start Calibration, the bed will home and then move close to the nozzle. Use the up arrow until the nozzle is against the flusher. You can use the down arrow if you think you are too close. Press 'Save' to save the new z-Offset.
+        </div>
+    </div>
+    <div class="Table-row">
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser() || startedCalibration()}, click: function() { startZcalibration()}"><a href=""><span>Start Calibration</span></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="Table-row">
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !startedCalibration()}, click: function() { increaseZ(0.05) }"><a href=""><span><i class="fa fa-arrow-up"></i></span></a></li>
+            </ul>
+        </div>
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !startedCalibration()}, click: function() { decreaseZ(0.05) }"><a href=""><span><i class="fa fa-arrow-down"></i></span></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="Table-row">
+        <div class="Table-item">
+            Former z-offset
+        </div>
+        <div class="Table-item">
+            <input type="text" class="input-mini text-right" data-bind="enable: false, value: settings.settings.plugins.lui.zoffset" id="old-zOffset">
+        </div>
+    </div>
+    <div class="Table-row">
+        <div class="Table-item">
+            Calibration z-offset
+        </div>
+        <div class="Table-item">
+            <input type="text" class="input-mini text-right" data-bind="enable: false, value: calibration_zOffset" id="calibration-zOffset">
+        </div>
+    </div>
+    <div class="Table-row">
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button" data-bind="css: {disabled: !startedCalibration()}, click: function() {saveCalibration()}"><a href=""><span>Save</span></a></li>
+            </ul>
+        </div>
+    </div>
+</div>

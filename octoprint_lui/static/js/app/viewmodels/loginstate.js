@@ -90,6 +90,15 @@ $(function() {
                 });
         };
 
+        self.loginOrOut = function() {
+            if (!self.loggedIn()) {
+                self.login();
+            }
+            else {
+                self.logout();
+            }
+        };
+
         self.onLoginUserKeyup = function(data, event) {
             if (event.keyCode == 13) {
                 self.elementPasswordInput.focus();
