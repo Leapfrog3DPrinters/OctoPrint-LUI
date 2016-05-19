@@ -66,6 +66,12 @@ $(function() {
             });
         };
 
+        self.startZoffset = function () {
+            self.flyout.closeFlyoutAccept();
+            self.flyout.showFlyout('zoffset');
+
+        };
+
 
     }
     // This is how our plugin registers itself with the application, by adding some configuration

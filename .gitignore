@@ -9,3 +9,9 @@ dist
 *.zip
 *.codekit
 *.sass-cache
+/octoprint_lui/.vs/config/applicationhost.config
+/octoprint_lui/.vs/octoprint_lui/v14/.suo
+/octoprint_lui/octoprint_lui.pyproj.user
+/octoprint_lui/octoprint_lui.sln
+/octoprint_lui/compilerconfig.json
+/octoprint_lui/compilerconfig.json.defaults

@@ -77,7 +77,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_info = [
             {
                 'identifier': 'lui',
-                'path': '/home/pi/OctoPrint-LUI',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUI\octoprint_lui',
                 'update': False,
                 'action': 'update_lui',
                 'name': "Leapfrog UI",
@@ -85,7 +85,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'networkmanager',
-                'path': '/home/pi/OctoPrint-NetworkManager',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-NetworkManager',
                 'update': False,
                 'action': 'update_networkmanager',
                 'name': 'Network Manager',
@@ -93,7 +93,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'flasharduino',
-                'path': '/home/pi/OctoPrint-flashArduino',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-flashArduino',
                 'update': False,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
@@ -101,7 +101,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },      
             {
                 'identifier': 'octoprint',
-                'path': '/home/pi/OctoPrint',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint',
                 'update': False,
                 'action': 'update_octoprint',
                 'name': 'OctoPrint',
@@ -211,7 +211,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._settings.global_set(["system", "actions"], actions)
 
-        self.update_info_list()
+        #self.update_info_list()
 
         self._logger.info(self.update_info)
 

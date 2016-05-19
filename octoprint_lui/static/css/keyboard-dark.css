@@ -21,6 +21,17 @@
 	white-space: nowrap;
 	overflow-x: auto;
 }
+
+/* Styles the text-preview on top of the keyboard */
+.ui-keyboard input
+{
+    border: none;
+    text-align: center;
+    font-size: 2.3em;
+    color: #888;
+    line-height: 2.9em;
+}
+
 .ui-keyboard-has-focus {
 	z-index: 16001;
 }
@@ -28,7 +39,7 @@
 	border: 1px solid #404040;
 	padding: 0 0.5em;
 	margin: 1px;
-	min-width: 3em;
+	min-width: 2.5em;
 	height: 4em;
 	line-height: 3em;
 	vertical-align: top;
@@ -60,7 +71,7 @@
 }
 /* make action keys extra-wide */
 .ui-keyboard-actionkey:not(.ui-keyboard-dec):not(.ui-keyboard-combo) {
-	min-width: 6em;
+	min-width: 3.3em;
 }
 .ui-keyboard-space {
 	width: 15em;
