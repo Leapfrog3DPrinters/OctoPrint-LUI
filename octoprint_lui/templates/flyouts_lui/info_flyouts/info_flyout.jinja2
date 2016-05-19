@@ -1,10 +1,10 @@
 <!-- ko allowBindings: false -->
 <div id="temp">
-  {#  <span data-bind="text: tools()[0]['actual']"></span>/<span data-bind="text: tools()[0]['target']"></span>
+ {#  <span data-bind="text: tools()[0]['actual']"></span>/<span data-bind="text: tools()[0]['target']"></span> - <span data-bind="text: toolStatus()[0].text"></span> <span data-bind="text: toolProgress()[0]"></span>
   <br />
-  <span data-bind="text: tools()[1]['actual']"></span>/<span data-bind="text: tools()[1]['target']"></span>
+  <span data-bind="text: tools()[1]['actual']"></span>/<span data-bind="text: tools()[1]['target']"></span> - <span data-bind="text: toolStatus()[1].text"></span> <span data-bind="text: toolProgress()[1]"></span>
   <br />
-  <span data-bind="text: bedTemp['actual']"></span>/<span data-bind="text: bedTemp['target']"></span>
+  <span data-bind="text: bedTemp['actual']"></span>/<span data-bind="text: bedTemp['target']"></span> - <span data-bind="text: toolStatus()[2].text"></span> <span data-bind="text: toolProgress()[2]"></span>
   <br />
   #}
     <div class="Table">

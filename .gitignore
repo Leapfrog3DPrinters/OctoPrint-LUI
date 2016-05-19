@@ -15,3 +15,5 @@ dist
 /octoprint_lui/octoprint_lui.sln
 /octoprint_lui/compilerconfig.json
 /octoprint_lui/compilerconfig.json.defaults
+/octoprint_lui/bin
+/octoprint_lui/obj

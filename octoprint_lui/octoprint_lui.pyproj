@@ -22,13 +22,6 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="bin\wfastcgi.py" />
-    <Compile Include="obj\Debug\attach_server.py" />
-    <Compile Include="obj\Debug\visualstudio_py_debugger.py" />
-    <Compile Include="obj\Debug\visualstudio_py_repl.py" />
-    <Compile Include="obj\Debug\visualstudio_py_util.py" />
-    <Compile Include="obj\Debug\__init__.py" />
-    <Compile Include="obj\Debug\__main__.py" />
     <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
@@ -37,7 +30,6 @@
       <SubType>Content</SubType>
       <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
-    <Content Include="obj\Debug\octoprint_lui.pyproj.FileListAbsolute.txt" />
     <Content Include="static\css\context.css" />
     <Content Include="static\css\font-awesome.min.css" />
     <Content Include="static\css\keyboard-dark.css" />
@@ -77,7 +69,6 @@
     <Content Include="static\js\lib\circle-progress.js" />
     <Content Include="static\js\lib\notify-lui.js" />
     <Content Include="static\js\lib\notify.js" />
-    <Content Include="static\js\viewmodel.js" />
     <Content Include="static\scss\lui.css">
       <SubType>Content</SubType>
       <DependentUpon>static\scss\lui.scss</DependentUpon>
@@ -113,9 +104,6 @@
     <Content Include="templates\tabs_lui\settings_lui.jinja2" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="bin" />
-    <Folder Include="obj\" />
-    <Folder Include="obj\Debug" />
     <Folder Include="static\" />
     <Folder Include="static\css" />
     <Folder Include="static\fonts" />
