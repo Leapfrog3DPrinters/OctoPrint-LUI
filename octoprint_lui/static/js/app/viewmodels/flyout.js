@@ -5,12 +5,15 @@ $(function() {
     self.deferred = undefined;
     self.template_flyout = undefined;
 
+    self.blocking = false;
+
     self.confirmation_title = ko.observable(undefined);
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
     
-    self.showFlyout = function(flyout) {
+    self.showFlyout = function(flyout, blocking) {
       self.deferred = $.Deferred();
+      self.blocking = blocking || false;
 
       self.template_flyout = '#'+flyout+'_flyout';
       self.toggleFlyout();
