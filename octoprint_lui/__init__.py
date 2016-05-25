@@ -6,7 +6,6 @@ import time
 import threading
 import re
 import subprocess
-import threading
 import netaddr
 import os
 
@@ -22,6 +21,7 @@ from octoprint.settings import settings
 from octoprint.util import RepeatedTimer
 from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
+
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
@@ -820,7 +820,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = 0.0
             self.save_filament_amount()
-            self._settings.save(force=True)
 
         if (event == "PrintStarted"):
             self.current_print_extrusion_amount = [0.0, 0.0]

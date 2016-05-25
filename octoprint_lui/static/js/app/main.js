@@ -400,9 +400,11 @@ $(function() {
     // Allow global click on overlay to cancel flyout
     var flyout = viewModelMap["flyoutViewModel"];
     var $overlay = $('.overlay');
-    $overlay.bind("click keypress", function(e) {
+    $overlay.bind("click", function(e) {
         e.preventDefault();
-        flyout.closeFlyout();
+        if (!flyout.blocking) {
+            flyout.closeFlyout();
+        }
     });
 
     // notifyjs init
