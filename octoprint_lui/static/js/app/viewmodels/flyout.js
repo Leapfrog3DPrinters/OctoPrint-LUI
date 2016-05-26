@@ -9,8 +9,44 @@ $(function() {
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
     
-    self.showFlyout = function(flyout) {
+    self.blocking = false;
+
+    self.warnings = ko.observableArray([]);
+
+    self.showWarning = function(title, message)
+    {
+        warningVm = {
+            warning_title: title,
+            warning_text: message
+        };
+
+        self.warnings.push(warningVm);
+        
+        $overlay = $('.overlay');
+        $overlay.addClass('active');
+
+        return warningVm;
+    }
+
+    self.closeWarning = function(warningVm)
+    {
+        self.warnings.remove(warningVm);
+    };
+
+    self.closeLastWarning = function()
+    {
+        self.warnings.pop();
+        
+        if (self.warnings().length == 0 && self.deferred === undefined)
+        {
+            $overlay.removeClass('active');
+        }
+    }
+
+    self.showFlyout = function(flyout, blocking) {
       self.deferred = $.Deferred();
+        
+      self.blocking = blocking || false;
 
       self.template_flyout = '#'+flyout+'_flyout';
       self.toggleFlyout();
@@ -72,7 +108,7 @@ $(function() {
   OCTOPRINT_VIEWMODELS.push([
     FlyoutViewModel,
     [],
-    ['#confirmation_flyout']
+    ['#confirmation_flyout', '#warnings_container'],
   ]);
 
 });

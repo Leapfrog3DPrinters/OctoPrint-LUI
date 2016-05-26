@@ -400,9 +400,13 @@ $(function() {
     // Allow global click on overlay to cancel flyout
     var flyout = viewModelMap["flyoutViewModel"];
     var $overlay = $('.overlay');
-    $overlay.bind("click keypress", function(e) {
+    $overlay.bind("click", function(e) {
         e.preventDefault();
-        flyout.closeFlyout();
+
+        if (!flyout.blocking && flyout.warnings().length == 0)
+        {
+            flyout.closeFlyout();
+        }
     });
 
     // notifyjs init
@@ -488,45 +492,48 @@ $(function() {
         }
     };
 
-    $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
+    if (IS_LOCAL) {
+        $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
 
-    $("input[type='number']").keyboard(keyboardLayouts.number);
-    
-    $("#input-format").keyboard({
-        layout: 'custom',
-        customLayout: {
-            normal: [
-                '7 8 9 {clear}',
-                '4 5 6 {cancel}',
-                '1 2 3 {accept}',
-                '. 0 {sp:3.1}',
-            ]
-        },
-        usePreview: true,
-        display: {
-            'accept':'Accept:Accept',
-            'clear':'Clear:Clear'
-        },
-        accepted: function (event, keyboard, el) {
-            slider.noUiSlider.set(keyboard.$preview.val());
-        }
-    });
+        $("input[type='number']").keyboard(keyboardLayouts.number);
 
-    ko.bindingHandlers.keyboardForeach = {
-        init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-            return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
-        },
-        update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-            setTimeout(function() {
-                $(element.parentElement).find("input[type='number']").keyboard(keyboardLayouts.number);
-                $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
+        $("#input-format").keyboard({
+            layout: 'custom',
+            customLayout: {
+                normal: [
+                    '7 8 9 {clear}',
+                    '4 5 6 {cancel}',
+                    '1 2 3 {accept}',
+                    '. 0 {sp:3.1}',
+                ]
+            },
+            usePreview: true,
+            display: {
+                'accept': 'Accept:Accept',
+                'clear': 'Clear:Clear'
+            },
+            accepted: function (event, keyboard, el) {
+                slider.noUiSlider.set(keyboard.$preview.val());
+            }
+        });
 
-            }, 10);
-            return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
-        }
-    };
-    ko.virtualElements.allowedBindings.keyboardForeach = true;
+        ko.bindingHandlers.keyboardForeach = {
+            init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
+            },
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                setTimeout(function () {
+                    $(element.parentElement).find("input[type='number']").keyboard(keyboardLayouts.number);
+                    $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
 
+                }, 10);
+                return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
+            }
+        };
+        ko.virtualElements.allowedBindings.keyboardForeach = true;
+    }
+
+    //TODO: Mend so multiple sliders can be created
     var slider = document.getElementById('slider');
 
     noUiSlider.create(slider, {

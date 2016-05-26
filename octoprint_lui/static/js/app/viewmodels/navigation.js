@@ -21,6 +21,20 @@ $(function() {
             location.reload();
         }
 
+        //TODO: Remove!
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            OctoPrint.postJson(url, data);
+        };
+
+        //TODO: Remove!
+        self.doDebuggingAction = function()
+        {
+            self._sendApi({
+                command: "trigger_debugging_action"
+            });
+        }
+
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
         ["loginStateViewModel", "userSettingsViewModel", "flyoutViewModel", "printerStateViewModel"],

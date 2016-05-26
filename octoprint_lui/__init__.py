@@ -37,7 +37,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.model = None
 
         ##~ Filament loading variables
-        self.relative_extrusion = False
+        self.extrusion_mode = "absolute"
+        self.movement_mode = "absolute"
         self.current_print_extrusion_amount = None
         self.last_print_extrusion_amount = 0.0
         self.last_send_filament_amount = None
@@ -47,6 +48,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.current_extrusion = 0
 
         self.filament_amount = None 
+        self.filament_action = False
 
         self.default_material = {
             "bed": 0,
@@ -122,6 +124,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.ready_timer = {'tool0': 0, 'tool1': 0, 'bed': 0}
         self.callback_mutex = threading.RLock()
         self.callbacks = list()
+
+        self.temp_before_filament_detection = { 'tool0' : 0, 'tool1' : 0 }
 
 
     def initialize(self):
@@ -263,6 +267,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return {
             "model": self.model,
             "zoffset": 0,
+            "action_door": True,
+            "action_filament": True
         }
 
     ##~ OctoPrint UI Plugin
@@ -321,12 +327,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     update_filament = ["tool", "amount"],
                     move_to_filament_load_position = [],
                     move_to_maintenance_position = [],
-                    refresh_update_info = []
+                    refresh_update_info = [],
+                    trigger_debugging_action = [] #TODO: Remove!
             ) 
 
     def on_api_command(self, command, data):
         # Data already has command in, so only data is needed
         self._call_api_method(**data)
+
+    #TODO: Remove
+    def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
+        """ 
+        Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
+        """
+        self._on_filament_detection_during_print()
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
         # Send to the front end that we are currently changing filament.
@@ -436,7 +450,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 load_initial=dict(amount=16.67, speed=2000)
                 load_change = None
                 self.load_amount_stop = 2
-            self._printer.commands("G91")
+            self.set_extrusion_mode("relative")
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
                                                     load_filament_partial, 
@@ -466,7 +480,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 unload_initial=dict(amount= -2.5, speed=300)
                 unload_change = None
                 self.load_amount_stop = 45 # TODO test this
-            self._printer.commands("G91")
+            self.set_extrusion_mode("relative")
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
             self.load_filament_timer = RepeatedTimer(0.5, 
                                                     unload_filament_partial, 
@@ -487,7 +501,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_amount = 0
             self.load_amount_stop = 100 # Safety timer on continuious loading
             load_cont_initial = dict(amount=2.5 * direction, speed=300)
-            self._printer.commands("G91")
+            self.set_extrusion_mode("relative")
             load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     load_cont_partial,
@@ -543,16 +557,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _load_filament_finished(self):
         # Loading is finished, turn off heaters, reset load timer and back to normal movements
-        self._printer.commands("G90")
+        self.restore_extrusion_mode()
         self.load_filament_timer = None
 
     def _unload_filament_finished(self):
         # Loading is finished, turn off heaters, reset load timer and back to normal movements
-        self._printer.commands("G90")
+        self.restore_extrusion_mode()
         self.load_filament_timer = None
 
     def _load_filament_cont_finished(self):
-        self._printer.commands("G90")
+        self.restore_extrusion_mode()
         self.load_filament_timer = None
         self.send_client_loading_cont_stop()
 
@@ -645,6 +659,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if (gcode == "G90" or gcode == "G91"):
                 self._process_G90_G91(cmd)
 
+            if (gcode == "M82" or gcode == "M83"):
+                self._process_M82_M83(cmd)
+
             # Handle zero of axis 
             if gcode == "G92":
                 self._process_G92(cmd)
@@ -654,11 +671,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._process_G0_G1(cmd, comm_instance)
 
     def _process_G90_G91(self, cmd):
-        ##~ Process G90 and G91 commands. Handle relative extrusion
+        ##~ Process G90 and G91 commands. Handle relative movement+extrusion
         if cmd == "G90":
-            self.relative_extrusion = False
+            self.movement_mode = "absolute"
         else:
-            self.relative_extrusion = True
+            self.movement_mode = "relative"
+            self.extrusion_mode = "relative" #TODO: Not entirely correct. If G90 > G91 > G90, extrusion_mode would be incorrectly set to relative
+
+        self._logger.info("Command: %s" % cmd)
+        self._logger.info("New movement mode: %s" % self.movement_mode)
+        self._logger.info("New extrusion mode: %s" % self.extrusion_mode)
+
+    def _process_M82_M83(self, cmd):
+        ##~ Process M82 and M83 commands. Handle relative extrusion
+        if cmd == "M82":
+            self.extrusion_mode = self.movement_mode
+        else:
+            self.extrusion_mode = "relative"
+
+        self._logger.info("Command: %s" % cmd)
+        self._logger.info("New movement mode: %s" % self.movement_mode)
+        self._logger.info("New extrusion mode: %s" % self.extrusion_mode)
 
     def _process_G92(self, cmd):
         ##~ Process a G92 command and handle zero-ing of extrusion distances
@@ -673,7 +706,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             tool = comm_instance.getCurrentTool()
             current_extrusion = float(extrusion_code.group(2))
             # Handle relative vs absolute extrusion
-            if self.relative_extrusion:
+            if self.extrusion_mode == "relative":
                 extrusion_amount = current_extrusion
             else:
                 extrusion_amount = current_extrusion - self.last_extrusion
@@ -692,6 +725,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.set_filament_amount("tool"+str(tool))
                 self.last_saved_filament_amount = deepcopy(self.filament_amount)
 
+    def hook_actiontrigger(self, comm, line, action_trigger):
+        """
+        Action trigger hook used for door and filament detection
+        """        
+        if action_trigger == None:
+            return
+        elif action_trigger == "door_open" and self._settings.get_boolean(["action_door"]) and comm.isPrinting():
+            self._send_client_message(action_trigger, dict(line=line))
+            # might want to put this in separate function
+            comm.setPause(True)
+            self._printer.home("x")
+        elif action_trigger == "door_closed" and self._settings.get_boolean(["action_door"]):
+            self._send_client_message(action_trigger, dict(line=line))
+            comm.setPause(False)
+        elif action_trigger == "filament" and self._settings.get_boolean(["action_filament"]) and self.filament_action == False:
+            self._on_filament_detection_during_print()
+
+    def _on_filament_detection_during_print(self):
+
+        self._send_client_message("filament_action_detected", dict(tool="tool0"))
+        #comm.setPause(True)
+        
+        self.move_to_filament_load_position()
+        self.filament_action = True
 
     def on_printer_add_temperature(self, data):
         """
@@ -790,13 +847,39 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ Printer Control functions
     def move_to_maintenance_position(self):
+        self.set_movement_mode("absolute")
         # First home X and Y 
         self._printer.home(['x', 'y', 'z'])
         self._printer.commands(['G1 Z200'])
         if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
+        self.restore_movement_mode()
+
+    def set_movement_mode(self, mode): 
+        self.last_movement_mode = self.movement_mode
+        
+        if mode == "relative":
+            self._printer.commands(["G91"]) 
+        else:
+            self._printer.commands(["G90"])           
+
+    def set_extrusion_mode(self, mode):
+        self.last_extrusion_mode = self.extrusion_mode
+
+        if(self.extrusion_mode == "relative"):
+            self._printer.commands(["M83"]) 
+        else:
+            self._printer.commands(["M82"]) 
+
+    def restore_movement_mode(self):
+        self.set_movement_mode(self.last_movement_mode)
+
+    def restore_extrusion_mode(self):
+        self.set_extrusion_mode(self.last_extrusion_mode)
 
     def move_to_filament_load_position(self):
+
+        self.set_movement_mode("absolute")
         self._printer.home(['x', 'y'])
 
         if self.model == "Bolt":
@@ -814,6 +897,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
 
+        self.restore_movement_mode()
+
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):
         if (event == "PrintFailed" or event == "PrintCancelled" or event == "PrintDone" or event == "Error"):
@@ -824,6 +909,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if (event == "PrintStarted"):
             self.current_print_extrusion_amount = [0.0, 0.0]
+
+        if(event == "PrintStarted" or event == "PrintResumed"):
+            self.filament_action = False
 
     ##~ Helper method that calls api defined functions
     def _call_api_method(self, command, *args, **kwargs):
@@ -842,5 +930,6 @@ def __plugin_load__():
     global __plugin_hooks__ 
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
-        "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook
+        "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook,
+        "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger
     }

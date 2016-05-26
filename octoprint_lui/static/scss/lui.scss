@@ -1154,7 +1154,7 @@ pre code {
 
 /* Filament swap */
 
-.swap_process_step {
+.swap_process_step, .fd_swap_process_step {
   display: none;
   width: 100%;
   &.active {
@@ -1162,17 +1162,28 @@ pre code {
   }
 }
 
-#swap-info {
+#swap-info, #fd-swap-info {
   display:none;
   &.active {
     display:flex;
   }
 }
 
-#swap-load-unload {
+#swap-load-unload, #fd-swap-load-unload {
   display: none;
   &.active {
     display:flex;
+  }
+}
+
+/* Filament Detection - Filament swap */
+
+.fd_step
+{
+    display: none;
+    width: 100%;
+  &.active {
+    display:inline-block;
   }
 }
 

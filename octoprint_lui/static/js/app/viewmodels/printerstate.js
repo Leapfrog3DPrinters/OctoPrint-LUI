@@ -26,6 +26,8 @@ $(function() {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
+        self.warningVm = undefined;
+
         self.filenameNoExtension = ko.computed(function(){
             if(self.filename())
                 return self.filename().slice(0,(self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
@@ -289,6 +291,38 @@ $(function() {
             });
         };
 
+        self.onDoorOpen = function () {
+            if (self.warningVm === undefined) {
+                self.warningVm = self.flyout.showWarning('Door open',
+                    'Please close the door before you continue printing.');
+            }
+        }
+        self.onDoorClose = function () {
+            if(self.warningVm !== undefined)
+            {
+                self.flyout.closeWarning(self.warningVm);
+                self.warningVm = undefined;
+            }
+        }
+
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
+            if (plugin != "lui") {
+                return;
+            }
+
+            console.log(data);
+
+            var messageType = data['type'];
+            var messageData = data['data'];
+            switch (messageType) {
+                case "door_open":
+                    self.onDoorOpen();
+                    break;
+                case "door_closed":
+                    self.onDoorClose();
+                    break;
+            }
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

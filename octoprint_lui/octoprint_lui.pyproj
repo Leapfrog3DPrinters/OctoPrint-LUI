@@ -51,6 +51,7 @@
     <Content Include="static\js\app\util\helpers.js" />
     <Content Include="static\js\app\viewmodels\connection.js" />
     <Content Include="static\js\app\viewmodels\filament.js" />
+    <Content Include="static\js\app\viewmodels\filamentdetection.js" />
     <Content Include="static\js\app\viewmodels\files.js" />
     <Content Include="static\js\app\viewmodels\flyout.js" />
     <Content Include="static\js\app\viewmodels\loginstate.js" />
@@ -67,8 +68,12 @@
     <Content Include="static\js\app\viewmodels\usersettings.js" />
     <Content Include="static\js\app\viewmodels\zoffset.js" />
     <Content Include="static\js\lib\circle-progress.js" />
+    <Content Include="static\js\lib\context.js" />
+    <Content Include="static\js\lib\jquery.keyboard.js" />
+    <Content Include="static\js\lib\jquery.overscroll.js" />
     <Content Include="static\js\lib\notify-lui.js" />
     <Content Include="static\js\lib\notify.js" />
+    <Content Include="static\js\lib\nouislider.min.js" />
     <Content Include="static\scss\lui.css">
       <SubType>Content</SubType>
       <DependentUpon>static\scss\lui.scss</DependentUpon>
@@ -78,6 +83,7 @@
       <DependentUpon>static\scss\lui.css</DependentUpon>
     </Content>
     <Content Include="static\scss\lui.scss" />
+    <Content Include="templates\flyouts_lui\filament_flyouts\filament_detection_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\filament_flyouts\filament_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\file_flyouts\file_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\info_flyouts\info_flyout.jinja2" />
