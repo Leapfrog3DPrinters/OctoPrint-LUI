@@ -1,0 +1,11 @@
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\bin\Microsoft.PythonTools.WebRole.dll
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\obj\Debug\attach_server.py
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\obj\Debug\visualstudio_py_debugger.py
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\obj\Debug\visualstudio_py_repl.py
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\obj\Debug\visualstudio_py_util.py
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\obj\Debug\__init__.py
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\obj\Debug\__main__.py
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\bin\AzureSetup.cfg
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\bin\Microsoft.PythonTools.AzureSetup.exe
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\bin\Microsoft.PythonTools.AzureSetup.exe.config
+C:\Users\erikh\Source\Repos\OctoPrint-LUI\octoprint_lui\bin\wfastcgi.py

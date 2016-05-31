@@ -1,155 +1,242 @@
 <div class="overlay"></div>
 <aside id="settings_flyout" class="flyout">
-    <div class="flyout-header">
-        <h4 data-bind="text: settingsTopic"></h4>
-        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  <div class="flyout-header">
+    <h4 data-bind="text: settingsTopic"></h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="printer_settings_flyout_content" class="flyout_content">
+      {% include "flyouts_lui/setting_flyouts/printer_flyout.jinja2" %}
     </div>
-    <div class="flyout-body">
-        <div id="printer_settings_flyout_content" class="flyout_content">
-            {% include "flyouts_lui/setting_flyouts/printer_flyout.jinja2" %}
-        </div>
-        <div id="materials_settings_flyout_content" class="flyout_content">
-            {% include "flyouts_lui/setting_flyouts/materials_flyout.jinja2" %}
-        </div>
-        <!-- ko allowBindings: false -->
-        <div id="wireless_settings_flyout_content" class="flyout_content">
-            {% include "flyouts_lui/setting_flyouts/wireless_flyout.jinja2" %}
-        </div>
-        <!-- /ko -->
-        <div id="users_settings_flyout_content" class="flyout_content">
-            {% include "flyouts_lui/setting_flyouts/users_flyout.jinja2" %}
-        </div>
-        <!-- ko allowBindings: false -->
-        <div id="advanced_settings_flyout_content" class="flyout_content">
-            {% include "flyouts_lui/setting_flyouts/advanced_flyout.jinja2" %}
-        </div>
-        <!-- /ko -->
-        <!-- ko allowBindings: false -->
-        <div id="update_settings_flyout_content" class="flyout_content">
-            {% include "flyouts_lui/setting_flyouts/update_flyout.jinja2" %}
-        </div>
-        <!-- /ko -->
-        <!-- ko allowBindings: false -->
-        <div id="maintenance_settings_flyout_content" class="flyout_content">
-            {% include "flyouts_lui/setting_flyouts/maintenance_flyout.jinja2" %}
-        </div>
-        <!-- /ko -->
-        <ul class="button-area" style="align-self: flex-end">
-          <li class="button secondary-button"><a href="#" data-bind="click: flyout.closeFlyout"><span>Back</span></a>
-          <li class="button"><a href="#" data-bind="click: flyout.closeFlyoutAccept"><span>Save</span></a></li>
-        </ul>
+    <div id="materials_settings_flyout_content" class="flyout_content">
+      {% include "flyouts_lui/setting_flyouts/materials_flyout.jinja2" %}
     </div>
+    <!-- ko allowBindings: false -->
+    <div id="wireless_settings_flyout_content" class="flyout_content">
+      {% include "flyouts_lui/setting_flyouts/wireless_flyout.jinja2" %}
+    </div>
+    <!-- /ko -->
+    <div id="users_settings_flyout_content" class="flyout_content">
+      {% include "flyouts_lui/setting_flyouts/users_flyout.jinja2" %}
+    </div>
+    <!-- ko allowBindings: false -->
+    <div id="advanced_settings_flyout_content" class="flyout_content">
+      {% include "flyouts_lui/setting_flyouts/advanced_flyout.jinja2" %}
+    </div>
+    <!-- /ko -->
+    <!-- ko allowBindings: false -->
+    <div id="update_settings_flyout_content" class="flyout_content">
+      {% include "flyouts_lui/setting_flyouts/update_flyout.jinja2" %}
+    </div>
+    <!-- /ko -->
+    <!-- ko allowBindings: false -->
+    <div id="maintenance_settings_flyout_content" class="flyout_content">
+      {% include "flyouts_lui/setting_flyouts/maintenance_flyout.jinja2" %}
+    </div>
+    <!-- /ko -->
+    <ul class="button-area" style="align-self: flex-end">
+      <li class="button secondary-button">
+        <a href="#" data-bind="click: flyout.closeFlyout">
+          <span>Back</span>
+        </a>
+        <li class="button">
+          <a href="#" data-bind="click: flyout.closeFlyoutAccept">
+            <span>Save</span>
+          </a>
+        </li>
+      </ul>
+  </div>
 </aside>
 <aside id="login_flyout" class="flyout">
-    <div class="flyout-header">
-        <h4>Login</h4>
-        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  <div class="flyout-header">
+    <h4>Login</h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="login_flyout_content">
+      {% include "flyouts_lui/login_flyouts/login_flyout.jinja2" %}
     </div>
-    <div class="flyout-body">
-        <div id="login_flyout_content">
-            {% include "flyouts_lui/login_flyouts/login_flyout.jinja2" %}
+    <div class="Table">
+      <div class="Table-row">
+        <div class="Table-item">
+          <ul class="button-area">
+            <li class="button secondary-button">
+              <a href="#save" data-bind="click: flyout.closeFlyout">
+                <span>Back</span>
+              </a>
+            </li>
+          </ul>
         </div>
-        <div class="Table">
-            <div class="Table-row">
-                <div class="Table-item">        
-                    <ul class="button-area">
-                      <li class="button secondary-button"><a href="#save" data-bind="click: flyout.closeFlyout"><span>Back</span></a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
+</aside>
+<aside id="filament_detection_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>Filament Detection Warning</h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="filament_flyout_content">
+      {% include "flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2" %}
+    </div>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#save" data-bind="click: flyout.closeFlyout">
+          <span data-bind="">Cancel Print</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 </aside>
 <aside id="filament_flyout" class="flyout">
-    <div class="flyout-header">
-        <h4>Filament</h4>
-        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  <div class="flyout-header">
+    <h4>Filament</h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="filament_flyout_content">
+      {% include "flyouts_lui/filament_flyouts/filament_flyout.jinja2" %}
     </div>
-    <div class="flyout-body">
-        <div id="filament_flyout_content">
-            {% include "flyouts_lui/filament_flyouts/filament_flyout.jinja2" %}
-        </div>
-        <ul class="button-area">
-          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyout"><span data-bind="">Abort</span></a></li>
-        </ul>
-    </div>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#save" data-bind="click: flyout.closeFlyout">
+          <span data-bind="">Abort</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 </aside>
 <aside id="file_flyout" class="flyout">
-    <div class="flyout-header">
-        <h4>Print jobs</h4>
-        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  <div class="flyout-header">
+    <h4>Print jobs</h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="file_flyout_content">
+      {% include "flyouts_lui/file_flyouts/file_flyout.jinja2" %}
     </div>
-    <div class="flyout-body">
-        <div id="file_flyout_content">
-            {% include "flyouts_lui/file_flyouts/file_flyout.jinja2" %}
-        </div>
-    </div>
+  </div>
 </aside>
 <aside id="info_flyout" class="flyout">
-    <div class="flyout-header">
-        <h4>Info</h4>
-        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  <div class="flyout-header">
+    <h4>Info</h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="info_flyout_content">
+      {% include "flyouts_lui/info_flyouts/info_flyout.jinja2" %}
     </div>
-    <div class="flyout-body">
-        <div id="info_flyout_content">
-            {% include "flyouts_lui/info_flyouts/info_flyout.jinja2" %}
-        </div>
-        <ul class="button-area">
-          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutAccept"><span>Close</span></a></li>
-        </ul>
-    </div>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+          <span>Close</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 </aside>
 <aside id="zoffset_flyout" class="flyout">
-    <div class="flyout-header">
-        <h4>Z-offset Wizard</h4>
-        <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  <div class="flyout-header">
+    <h4>Z-offset Wizard</h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="info_flyout_content">
+      {% include "flyouts_lui/setting_flyouts/zoffset_flyout.jinja2" %}
     </div>
-    <div class="flyout-body">
-        <div id="info_flyout_content">
-            {% include "flyouts_lui/setting_flyouts/zoffset_flyout.jinja2" %}
-        </div>
-        <ul class="button-area">
-          <li class="button"><a href="#save" data-bind="click: flyout.closeFlyoutAccept"><span>Close</span></a></li>
-        </ul>
-    </div>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+          <span>Close</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 </aside>
 <aside id="confirmation_flyout" class="flyout">
-    <div class="flyout-header">
-        <h4>Confirmation</h4>
-        <span class="flyout-close" data-bind="click: closeFlyout">x</span>
+  <div class="flyout-header">
+    <h4>Confirmation</h4>
+    <span class="flyout-close" data-bind="click: closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="info_flyout_content">
+      <div class="Table">
+        <div class="Table-row Table-header">
+          <div class="Table-item">
+            <div data-bind="text: confirmation_title"></div>
+          </div>
+        </div>
+        <div class="Table-row">
+          <div class="Table-item">
+            <div id="confirmation_text" data-bind="text: confirmation_text"></div>
+          </div>
+        </div>
+        <div class="Table-row">
+          <div class="Table-item">
+            <div id="confirmation_question" data-bind="text: confirmation_question"></div>
+          </div>
+        </div>
+        <div class="Table-row">
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button failed-button">
+                <a href="#save" data-bind="click: closeFlyout">
+                  <span>Cancel</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button ok-button">
+                <a href="#save" data-bind="click: closeFlyoutAccept">
+                  <span>Confirm</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="flyout-body">
+  </div>
+</aside>
+<div id="warnings_container">
+  <div data-bind="template: { name: 'warning-template',
+                           foreach: warnings }"> </div>
+
+  <script type="text/html" id="warning-template">
+    <aside class="flyout warning_flyout active">
+      <div class="flyout-header bg-yellow">
+        <h4>Warning</h4>
+      </div>
+      <div class="flyout-body">
         <div id="info_flyout_content">
-            <div class="Table">
-                <div class="Table-row Table-header">
-                    <div class="Table-item">
-                        <div data-bind="text: confirmation_title"></div>
-                    </div>
-                </div>
-                <div class="Table-row">
-                    <div class="Table-item">
-                        <div id="confirmation_text" data-bind="text: confirmation_text"></div>
-                    </div>
-                </div>
-                <div class="Table-row">
-                    <div class="Table-item">
-                        <div id="confirmation_question" data-bind="text: confirmation_question"></div>
-                    </div>
-                </div>
-                <div class="Table-row">
-                    <div class="Table-item">
-                        <ul class="button-area">
-                          <li class="button failed-button"><a href="#save" data-bind="click: closeFlyout"><span>Cancel</span></a></li>
-                        </ul>
-                    </div>
-                    <div class="Table-item">
-                        <ul class="button-area">
-                            <li class="button ok-button"><a href="#save" data-bind="click: closeFlyoutAccept"><span>Confirm</span></a></li>
-                        </ul>
-                    </div>
-                </div>
+          <div class="Table">
+            <div class="Table-row Table-header">
+              <div class="Table-item">
+                <div data-bind="text: warning_title"></div>
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <div id="warning_text" data-bind="text: warning_text"></div>
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <ul class="button-area">
+                  <li class="button ok-button">
+                    <a href="#save" data-bind="click: function() { $root.closeLastWarning() }">
+                      <span>OK</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
         </div>
+      </div>
     </div>
 </aside>
-
+</script>
+</div>

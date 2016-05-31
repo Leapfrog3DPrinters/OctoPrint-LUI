@@ -79,7 +79,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_info = [
             {
                 'identifier': 'lui',
+<<<<<<< HEAD
                 'path': '/Users/pim/lpfrg/OctoPrint-LUI',
+=======
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUI\octoprint_lui',
+>>>>>>> 9b6dbac0bc3e7dc5a4181f6ac135215826ca6a41
                 'update': False,
                 'action': 'update_lui',
                 'name': "Leapfrog UI",
@@ -87,7 +91,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'networkmanager',
+<<<<<<< HEAD
                 'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
+=======
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-NetworkManager',
+>>>>>>> 9b6dbac0bc3e7dc5a4181f6ac135215826ca6a41
                 'update': False,
                 'action': 'update_networkmanager',
                 'name': 'Network Manager',
@@ -95,7 +103,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'flasharduino',
+<<<<<<< HEAD
                 'path': '/Users/pim/lpfrg/OctoPrint-flashArduino',
+=======
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-flashArduino',
+>>>>>>> 9b6dbac0bc3e7dc5a4181f6ac135215826ca6a41
                 'update': False,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
@@ -103,7 +115,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },      
             {
                 'identifier': 'octoprint',
+<<<<<<< HEAD
                 'path': '/Users/pim/lpfrg/OctoPrint',
+=======
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint',
+>>>>>>> 9b6dbac0bc3e7dc5a4181f6ac135215826ca6a41
                 'update': False,
                 'action': 'update_octoprint',
                 'name': 'OctoPrint',
@@ -215,7 +231,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._settings.global_set(["system", "actions"], actions)
 
-        self.update_info_list()
+        #self.update_info_list()
 
         self._logger.info(self.update_info)
 

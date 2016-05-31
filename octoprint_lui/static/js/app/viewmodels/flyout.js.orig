@@ -11,6 +11,10 @@ $(function() {
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
     
+<<<<<<< HEAD
+    self.showFlyout = function(flyout, blocking) {
+      self.deferred = $.Deferred();
+=======
     self.blocking = false;
 
     self.warnings = ko.observableArray([]);
@@ -47,8 +51,8 @@ $(function() {
 
     self.showFlyout = function(flyout, blocking) {
       self.deferred = $.Deferred();
-      self.blocking = blocking || false;
         
+>>>>>>> 9b6dbac0bc3e7dc5a4181f6ac135215826ca6a41
       self.blocking = blocking || false;
 
       self.template_flyout = '#'+flyout+'_flyout';

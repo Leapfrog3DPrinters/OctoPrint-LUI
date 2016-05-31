@@ -15,6 +15,21 @@ $(function () {
         self.filamentLoadProgress = ko.observable(0);
 
         self.selectedTemperatureProfile = ko.observable(undefined);
+        self.currentMaterial = ko.pureComputed(function () {
+            tool = self.tool();
+            if (tool == "tool1")
+                return self.leftFilament();
+            else
+                return self.rightFilament();
+
+            //filaments = self.filaments();
+
+            //if (tool === undefined || filaments.length == 0)
+            //    return "-";
+            //else
+            //    return filaments.find(function (f) { return f.tool() == tool }).material.name();
+        });
+
         self.materialProfiles = ko.observableArray([]);
 
         self.filaments = ko.observableArray([]);
@@ -110,26 +125,38 @@ $(function () {
             });
         };
 
+        // Below functions swap views for both filament swap and filament detection swap
         self.showUnload = function () {
-            $('.swap_process_step').removeClass('active');
-            $('#unload_filament').addClass('active');
-            $('#unload_cmd').removeClass('disabled');
+            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
+            $('#unload_filament,#fd_unload_filament').addClass('active');
+            $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
         };
 
         self.showLoad = function () {
-            $('#swap-info').removeClass('active')
-            $('#swap-load-unload').addClass('active');
-            $('.swap_process_step').removeClass('active');
-            $('#load_filament').addClass('active');
+            $('#swap-info,#fd-swap-info').removeClass('active');
+            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
+            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
+            $('#load_filament,#fd_load_filament').addClass('active');
             self.filamentLoading(false);
         };
 
         self.showFinished = function () {
-            $('#swap-info').removeClass('active')
-            $('#swap-load-unload').addClass('active');
-            $('.swap_process_step').removeClass('active');
-            $('#finished_filament').addClass('active');
+            $('#swap-info,#fd-swap-info').removeClass('active')
+            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
+            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
+            $('#finished_filament,#fd_finished_filament').addClass('active');
         };
+
+        self.onToolHeating = function()
+        {
+            $('#swap-info,#fd-swap-info').addClass('active')
+            $('#swap-load-unload,#fd-swap-load-unload').removeClass('active');
+        }
+
+        self.hideToolLoading = function()
+        {
+            $('#tool_loading,#fd_tool_loading').removeClass('active');
+        }
 
         self.finishedLoading = function () {
             // We are finished close the flyout
@@ -167,17 +194,30 @@ $(function () {
             });
         }
 
-        self.loadFilament = function() {
-            if (slider.noUiSlider.get()) {
+        self.loadFilament = function (fromFilamentDetection) {
+            if (fromFilamentDetection && fd_slider.noUiSlider.get())
+            {
+                amount = fd_slider.noUiSlider.get() * 1000;
+            }
+            else if (slider.noUiSlider.get()) {
                 amount = slider.noUiSlider.get() * 1000;
             } else {
                 amount = 0;
             }
-            profile = self.selectedTemperatureProfile();
+
+            if (fromFilamentDetection)
+            {
+                profileName = "filament-detection";
+            }
+            else
+            {
+                profile = self.selectedTemperatureProfile();
+                profileName = profile.name;
+            }
 
             self._sendApi({
                 command: "load_filament",
-                profile: profile,
+                profileName: profileName,
                 amount: amount
             });
         }
@@ -228,8 +268,7 @@ $(function () {
                     self.filamentInProgress(true);
                     self.filamentLoading(true);
                     self.filamentLoadProgress(0);
-                    $('#swap-info').addClass('active')
-                    $('#swap-load-unload').removeClass('active');
+                    self.onToolHeating();
                     break;
                 case "filament_loading":
                     // Show loading info
@@ -252,7 +291,7 @@ $(function () {
                     self.filamentInProgress(false);
                     self.filamentLoading(false);
                     self.showFinished();
-                    $('#tool_loading').removeClass('active');
+                    self.hideToolLoading();
                     self.filamentLoadProgress(0);
                     // Out for now TODO
                     // $.notify({

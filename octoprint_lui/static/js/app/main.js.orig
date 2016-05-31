@@ -402,9 +402,13 @@ $(function() {
     var $overlay = $('.overlay');
     $overlay.bind("click", function(e) {
         e.preventDefault();
+<<<<<<< HEAD
+        if (!flyout.blocking) {
+=======
 
         if (!flyout.blocking && flyout.warnings().length == 0)
         {
+>>>>>>> 9b6dbac0bc3e7dc5a4181f6ac135215826ca6a41
             flyout.closeFlyout();
         }
     });
@@ -553,6 +557,7 @@ $(function() {
         ko.virtualElements.allowedBindings.keyboardForeach = true;
     }
 
+    //TODO: Mend so multiple sliders can be created
     var slider = document.getElementById('slider');
     var fdSlider = document.getElementById('fd_slider');
 
