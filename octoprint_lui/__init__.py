@@ -797,7 +797,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                                         run_first=False, 
                                                         condition=self._temperature_safety_required,
                                                         on_condition_false=self._temperature_safety_condition)
-            self.temperature_safety_timer.run()
+            self.temperature_safety_timer.start()
         
     def _temperature_safety_tick(self):
         self.temperature_safety_timer_value -= 1
