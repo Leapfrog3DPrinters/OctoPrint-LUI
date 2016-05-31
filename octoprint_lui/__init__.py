@@ -130,7 +130,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
         ##~ Model
-        self.model = "Bolt"
+        self.model = "Xeed"
 
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
@@ -321,7 +321,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     change_filament_cancel = [],
                     change_filament_done = [],
                     unload_filament = [],
-                    load_filament = ["profile", "amount"],
+                    load_filament = ["profileName", "amount"],
                     load_filament_cont = ["tool", "direction"],
                     load_filament_cont_stop = [],
                     update_filament = ["tool", "amount"],
@@ -340,7 +340,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
-        self._on_filament_detection_during_print()
+        self._on_filament_detection_during_print(self._printer._comm)
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
         # Send to the front end that we are currently changing filament.
@@ -368,20 +368,37 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                 self.unload_filament)
         self._logger.info("Unload filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
-    def _on_api_command_load_filament(self, profile, amount, *args, **kwargs):
-        # Heat up to new profile temperature and load filament
-        self.filament_change_profile = profile
-        if (profile['name'] == "None"):
+    def _on_api_command_load_filament(self, profileName, amount, *args, **kwargs):
+        
+        if (profileName == "None"):
             # The user wants to load a None profile. So we just finish the swap wizard
             self.send_client_finished()
             return None
+
+        # Find profile from key
+        profiles = self._settings.global_get(["temperature", "profiles"])
+        selectedProfile = None
+        
+        
+        if(profileName == "filament-detection"):
+            selectedProfile = self.filament_detection_profile
+        else:
+            for profile in profiles: 
+                if(profile['name'] == profileName):
+                    selectedProfile = profile
+        
+        self._logger.info(selectedProfile)
+
+        # Heat up to new profile temperature and load filament
+        self.filament_change_profile = selectedProfile
+
         self.filament_change_amount = amount 
-        temp = int(profile['extruder'])
+        temp = int(selectedProfile['extruder'])
 
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
                                 self.load_filament)
-        self._logger.info("Load filament called with profile {profile}, amount {amount}, {args}, {kwargs}".format(profile=profile, amount=amount, args=args, kwargs=kwargs))
+        self._logger.info("Load filament called with profile {profile}, amount {amount}, {args}, {kwargs}".format(profile=selectedProfile, amount=amount, args=args, kwargs=kwargs))
 
     def _on_api_command_change_filament_cancel(self, *args, **kwargs):
         # Abort mission! Stop filament loading.
@@ -430,6 +447,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Load and Unload methods
 
     def load_filament(self, tool):
+        self._logger.info("load_filament")
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
             # Always set load_amount to 0
@@ -536,6 +554,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return self.load_amount <= self.load_amount_stop
 
     def _load_filament_condition(self):
+        self._logger.info("_load_filament_condition")
+
         # When loading is complete, set new loaded filament
         new_filament = {
             "amount":  self.filament_change_amount,
@@ -556,6 +576,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_client_skip_unload()
 
     def _load_filament_finished(self):
+        self._logger.info("_load_filament_finished")
         # Loading is finished, turn off heaters, reset load timer and back to normal movements
         self.restore_extrusion_mode()
         self.load_filament_timer = None
@@ -566,6 +587,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.load_filament_timer = None
 
     def _load_filament_cont_finished(self):
+        self._logger.info("_load_filament_cont_finished")
         self.restore_extrusion_mode()
         self.load_filament_timer = None
         self.send_client_loading_cont_stop()
@@ -740,13 +762,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(action_trigger, dict(line=line))
             comm.setPause(False)
         elif action_trigger == "filament" and self._settings.get_boolean(["action_filament"]) and self.filament_action == False:
-            self._on_filament_detection_during_print()
+            self._on_filament_detection_during_print(comm)
 
-    def _on_filament_detection_during_print(self):
-
-        self._send_client_message("filament_action_detected", dict(tool="tool0"))
-        #comm.setPause(True)
+    def _on_filament_detection_during_print(self, comm):
+        tool = "tool%d" % comm.getCurrentTool()
         
+        self._send_client_message("filament_action_detected", dict(tool=tool))
+        comm.setPause(True)
+        
+        self.filament_detection_profile = self.filament_database.get(self.filament_query.tool == tool)["material"]
+
         self.move_to_filament_load_position()
         self.filament_action = True
 

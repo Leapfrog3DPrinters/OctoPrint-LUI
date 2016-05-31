@@ -14,11 +14,6 @@ $(function () {
             self.filament.tool(tool);
             self.filament.loadedFilamentAmount(self.filament.getFilamentAmount(tool));
 
-            //TODO: Fix, material is empty at this point
-            profile = self.filament.filaments().find(function (x) { return x.tool() === tool }).material;
-
-            self.filament.selectedTemperatureProfile(profile);
-
             $('.fd_step').removeClass('active');
             $('#filament_depleted').addClass('active');
 
@@ -41,15 +36,17 @@ $(function () {
             self.filament.changeFilament(self.filament.tool());
             self.filament.showUnload();
 
+            fd_slider.noUiSlider.set(330)
+
             $('.fd_step').removeClass('active');
             $('#fd_filament_swap_wizard').addClass('active');
 
-            $('#fd-swap-load-unload').addClass('active');
-            $('#fd-swap-info').removeClass('active')
+           // $('#fd-swap-load-unload').addClass('active');
+           // $('#fd-swap-info').removeClass('active')
 
-            $('.fd_swap_process_step').removeClass('active');
-            $('#fd_unload_filament').addClass('active');
-            $('#fd_unload_cmd').removeClass('disabled');
+            // $('.fd_swap_process_step').removeClass('active');
+            // $('#fd_unload_filament').addClass('active');
+           // $('#fd_unload_cmd').removeClass('disabled');
         }
 
         self.startPurgeWizard = function()

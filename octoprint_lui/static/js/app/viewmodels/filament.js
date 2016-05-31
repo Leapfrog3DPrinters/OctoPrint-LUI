@@ -15,6 +15,21 @@ $(function () {
         self.filamentLoadProgress = ko.observable(0);
 
         self.selectedTemperatureProfile = ko.observable(undefined);
+        self.currentMaterial = ko.pureComputed(function () {
+            tool = self.tool();
+            if (tool == "tool1")
+                return self.leftFilament();
+            else
+                return self.rightFilament();
+
+            //filaments = self.filaments();
+
+            //if (tool === undefined || filaments.length == 0)
+            //    return "-";
+            //else
+            //    return filaments.find(function (f) { return f.tool() == tool }).material.name();
+        });
+
         self.materialProfiles = ko.observableArray([]);
 
         self.filaments = ko.observableArray([]);
@@ -129,7 +144,7 @@ $(function () {
             $('#swap-info,#fd-swap-info').removeClass('active')
             $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
             $('.swap_process_step,.fd_swap_process_step').removeClass('active');
-            $('#finished_filament,#fd_load_filament').addClass('active');
+            $('#finished_filament,#fd_finished_filament').addClass('active');
         };
 
         self.onToolHeating = function()
@@ -179,18 +194,30 @@ $(function () {
             });
         }
 
-        self.loadFilament = function() {
-            if (slider.noUiSlider.get()) {
+        self.loadFilament = function (fromFilamentDetection) {
+            if (fromFilamentDetection && fd_slider.noUiSlider.get())
+            {
+                amount = fd_slider.noUiSlider.get() * 1000;
+            }
+            else if (slider.noUiSlider.get()) {
                 amount = slider.noUiSlider.get() * 1000;
             } else {
                 amount = 0;
             }
 
-            profile = self.selectedTemperatureProfile();
+            if (fromFilamentDetection)
+            {
+                profileName = "filament-detection";
+            }
+            else
+            {
+                profile = self.selectedTemperatureProfile();
+                profileName = profile.name;
+            }
 
             self._sendApi({
                 command: "load_filament",
-                profile: profile,
+                profileName: profileName,
                 amount: amount
             });
         }
