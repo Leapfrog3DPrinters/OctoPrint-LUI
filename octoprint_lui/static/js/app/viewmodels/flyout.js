@@ -3,6 +3,8 @@ $(function() {
     var self = this;
     
     self.deferred = undefined;
+    self.confirmationDeferred = undefined;
+
     self.template_flyout = undefined;
 
     self.blocking = false;
@@ -71,17 +73,32 @@ $(function() {
       self.confirmation_text(text);
       self.confirmation_question(question);
 
-      // Close a flyout if is one is active, use Accept for now TODO
-      if (self.deferred) {
-        self.closeFlyoutAccept();
-      }
-
       // Show the confirmation flyout
-      self.template_flyout = "#confirmation_flyout";
-      self.toggleFlyout();
-      self.deferred = $.Deferred();
+      $('#confirmation_flyout').addClass('active');
+      $('.overlay').addClass('active');
 
-      return self.deferred;
+      self.confirmationDeferred = $.Deferred()
+          .done(function ()
+      {
+          $('#confirmation_flyout').removeClass('active');
+
+          if (self.deferred !== undefined)
+              self.closeFlyoutAccept();
+          else
+              $('.overlay').removeClass('active');
+
+          console.log('confirmation confirmed');
+          })
+          .fail(function () {
+              $('#confirmation_flyout').removeClass('active');
+
+              if (self.deferred === undefined)
+                $('.overlay').removeClass('active');
+
+              console.log('confirmation rejected');
+          });
+
+      return self.confirmationDeferred;
     };
 
     self.closeFlyout = function() {

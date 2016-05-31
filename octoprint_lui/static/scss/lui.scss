@@ -28,6 +28,12 @@ $orangeborder: 1px solid $third-color;
   font-weight: medium;
 }
 
+@font-face {
+  font-family: agenda-bold;
+  src: url(../fonts/agenda-bold.ttf);
+  font-weight: bold;
+}
+
 
 /* 
   Mixins
@@ -487,6 +493,7 @@ a {
   display: block;
   flex: 1;
   text-align: center;
+  padding-bottom: 0.3em;
 }
 
 /* 
