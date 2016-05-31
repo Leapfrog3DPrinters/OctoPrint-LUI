@@ -2,7 +2,28 @@
     <div class="Table-header Table-row">
         <div class="Table-item">Maintenance</div>
     </div>
-    <div class="Table-row">
+  <div class="Table-row">
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button" data-bind="click: startLevelBed">
+          <a href="">
+            <span>Level bed</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button" data-bind="click: function() {startZoffset()}, disable: ">
+          <a href="">
+            <span>Z-offset wizard</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="Table-row">
         <div class="Table-item">
             <ul class="button-area">
                 <li class="button" data-bind="click: filamentLoadPosition"><a href=""><span>Head maintenance position</span></a></li>

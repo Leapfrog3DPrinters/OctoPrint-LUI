@@ -22,7 +22,9 @@
 	overflow-x: auto;
 }
 
-.ui-keyboard input {
+/* Styles the text-preview on top of the keyboard */
+.ui-keyboard input
+{
     border: none;
     text-align: center;
     font-size: 2.3em;

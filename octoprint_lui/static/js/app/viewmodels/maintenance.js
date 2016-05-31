@@ -66,6 +66,25 @@ $(function() {
             });
         };
 
+        self.startZoffset = function () {
+            self.flyout.closeFlyoutAccept();
+            self.flyout.showFlyout('zoffset');
+
+        };
+
+        self.startLevelBed = function ()
+        {
+            var text = "You are about to start the bed leveling sequence. This move will home all axis! Make sure there is no print on the bed.";
+            var question = "Do want to continue?";
+            var title = "Level bed"
+            var dialog = { 'title': title, 'text': text, 'question': question };
+
+            self.flyout.showConfirmationFlyout(dialog)
+                .done(function () {
+                    self.settings.sendCustomCommand({ type: 'command', command: 'G32', name: 'Level bed' });
+                });
+        }
+
 
     }
     // This is how our plugin registers itself with the application, by adding some configuration

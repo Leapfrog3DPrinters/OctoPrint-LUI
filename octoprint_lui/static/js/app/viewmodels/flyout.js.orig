@@ -3,8 +3,6 @@ $(function() {
     var self = this;
     
     self.deferred = undefined;
-    self.confirmationDeferred = undefined;
-
     self.template_flyout = undefined;
 
     self.blocking = false;
@@ -13,6 +11,10 @@ $(function() {
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
     
+<<<<<<< HEAD
+    self.showFlyout = function(flyout, blocking) {
+      self.deferred = $.Deferred();
+=======
     self.blocking = false;
 
     self.warnings = ko.observableArray([]);
@@ -49,8 +51,8 @@ $(function() {
 
     self.showFlyout = function(flyout, blocking) {
       self.deferred = $.Deferred();
-      self.blocking = blocking || false;
         
+>>>>>>> 9b6dbac0bc3e7dc5a4181f6ac135215826ca6a41
       self.blocking = blocking || false;
 
       self.template_flyout = '#'+flyout+'_flyout';
@@ -73,32 +75,17 @@ $(function() {
       self.confirmation_text(text);
       self.confirmation_question(question);
 
+      // Close a flyout if is one is active, use Accept for now TODO
+      if (self.deferred) {
+        self.closeFlyoutAccept();
+      }
+
       // Show the confirmation flyout
-      $('#confirmation_flyout').addClass('active');
-      $('.overlay').addClass('active');
+      self.template_flyout = "#confirmation_flyout";
+      self.toggleFlyout();
+      self.deferred = $.Deferred();
 
-      self.confirmationDeferred = $.Deferred()
-          .done(function ()
-      {
-          $('#confirmation_flyout').removeClass('active');
-
-          if (self.deferred !== undefined)
-              self.closeFlyoutAccept();
-          else
-              $('.overlay').removeClass('active');
-
-          console.log('confirmation confirmed');
-          })
-          .fail(function () {
-              $('#confirmation_flyout').removeClass('active');
-
-              if (self.deferred === undefined)
-                $('.overlay').removeClass('active');
-
-              console.log('confirmation rejected');
-          });
-
-      return self.confirmationDeferred;
+      return self.deferred;
     };
 
     self.closeFlyout = function() {

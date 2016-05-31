@@ -21,8 +21,8 @@
                     </ul>
                 </div>
                 <div class="swap_process_step" id="load_filament">
-                    Please select the new filament material
-                    <select class="select-material" data-bind="options: materialProfiles,
+                  Please select the new filament material
+                  <select class="select-material" data-bind="options: materialProfiles,
                                    optionsText: 'name',
                                    value: selectedTemperatureProfile,
                                    optionsCaption: 'Choose material...'">
@@ -43,7 +43,7 @@
                     </div>
                     <div class="explain">Insert the filament in the filament drawer past both wheels.</div>
                     <ul class="button-area">
-                        <li class="button ok-button" id="unload_cmd" data-bind="click: loadFilament, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
+                        <li class="button ok-button" id="unload_cmd" data-bind="click: function() { loadFilament(false); }, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
                             <a href="#"><span>Load</span></a>
                         </li>
                     </ul>
