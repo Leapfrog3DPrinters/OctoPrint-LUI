@@ -180,6 +180,8 @@ $(function () {
             self._sendApi({
                 command: "change_filament_cancel"
             });
+
+            self.requestData();
         }
 
         self.changeFilamentDone = function () {

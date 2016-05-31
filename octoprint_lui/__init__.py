@@ -67,6 +67,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.load_extrusion_speed = 0
         self.filament_in_progress = False
 
+        self.temperature_safety_timer = None
+
         ##~ TinyDB 
 
         self.filament_database_path = None
@@ -320,6 +322,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     change_filament = ["tool"],
                     change_filament_cancel = [],
                     change_filament_done = [],
+                    filament_detection_cancel = [],
                     unload_filament = [],
                     load_filament = ["profileName", "amount"],
                     load_filament_cont = ["tool", "direction"],
@@ -328,6 +331,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     move_to_filament_load_position = [],
                     move_to_maintenance_position = [],
                     refresh_update_info = [],
+                    temperature_safety_timer_cancel = [],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -341,6 +345,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
         self._on_filament_detection_during_print(self._printer._comm)
+    
+    def _on_api_command_temperature_safety_timer_cancel(self):
+        if self.temperature_safety_timer:
+            self.temperature_safety_timer.cancel()
+            self.temperature_safety_timer = None
+            self._send_client_message("temperature_safety", { "timer": self.temperature_safety_timer_value })
+
+    def _on_api_command_filament_detection_cancel(self):
+        self._printer.cancel_print()
+        #TODO: cancel temperature timer
+        
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
         # Send to the front end that we are currently changing filament.
@@ -357,7 +372,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # No filament is loaded in this tool, directly continue to load section
             self.send_client_skip_unload();
 
-        self._logger.info("Change filament called with tool: {tool} and {args}, {kwargs}".format(tool=tool, args=args, kwargs=kwargs))
+        self._logger.info("Change filament called with tool: {tool}, profile: {profile} and {args}, {kwargs}".format(tool=tool, profile=self.filament_loaded_profile['material']['name'], args=args, kwargs=kwargs))
 
     def _on_api_command_unload_filament(self, *args, **kwargs):
         # Heat up to old profile temperature and unload filament
@@ -774,7 +789,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.move_to_filament_load_position()
         self.filament_action = True
+        
+        if not self.temperature_safety_timer:
+            self.temperature_safety_timer_value = 900
+            self.temperature_safety_timer = RepeatedTimer(1, 
+                                                        self._temperature_safety_tick, 
+                                                        run_first=False, 
+                                                        condition=self._temperature_safety_required,
+                                                        on_condition_false=self._temperature_safety_condition)
+            self.temperature_safety_timer.run()
+        
+    def _temperature_safety_tick(self):
+        self.temperature_safety_timer_value -= 1
+        self._send_client_message("temperature_safety", { "timer": self.temperature_safety_timer_value })
 
+    def _temperature_safety_required(self):
+        return self.temperature_safety_timer_value > 0
+
+    def _temperature_safety_condition(self):
+        """
+        When temperature safety timer expires, heaters are turned off
+        """
+        self._printer.set_temperature("tool0", 0)
+        self._printer.set_temperature("tool1", 0)
+        self._printer.set_temperature("bed", 0)
+        
     def on_printer_add_temperature(self, data):
         """
         PrinterCallback function that is called whenever a temperature is added to

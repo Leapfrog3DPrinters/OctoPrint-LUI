@@ -37,7 +37,14 @@
     <Content Include="static\css\lui.min.css" />
     <Content Include="static\css\notifyjs-lui.css" />
     <Content Include="static\css\nouislider.css" />
+    <Content Include="static\fonts\agenda-light.ttf" />
+    <Content Include="static\fonts\agenda-medium.ttf" />
+    <Content Include="static\fonts\fontawesome-webfont.eot" />
     <Content Include="static\fonts\fontawesome-webfont.svg" />
+    <Content Include="static\fonts\fontawesome-webfont.ttf" />
+    <Content Include="static\fonts\fontawesome-webfont.woff" />
+    <Content Include="static\fonts\fontawesome-webfont.woff2" />
+    <Content Include="static\fonts\FontAwesome.otf" />
     <Content Include="static\img\filament_spool.svg" />
     <Content Include="static\img\filament_spool_up_l.svg" />
     <Content Include="static\img\filament_spool_up_r.svg" />

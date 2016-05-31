@@ -74,7 +74,7 @@
 <aside id="filament_detection_flyout" class="flyout">
   <div class="flyout-header">
     <h4>Filament Detection Warning</h4>
-    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+    <span class="flyout-close" data-bind="click: cancelFilamentDetection">x</span>
   </div>
   <div class="flyout-body">
     <div id="filament_flyout_content">
@@ -82,7 +82,7 @@
     </div>
     <ul class="button-area">
       <li class="button">
-        <a href="#save" data-bind="click: flyout.closeFlyout">
+        <a href="#save" data-bind="click: cancelFilamentDetection">
           <span data-bind="">Cancel Print</span>
         </a>
       </li>
@@ -181,7 +181,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button failed-button">
-                <a href="#save" data-bind="click: closeFlyout">
+                <a href="#save" data-bind="click: function() { confirmationDeferred.reject() }">
                   <span>Cancel</span>
                 </a>
               </li>
@@ -190,7 +190,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button ok-button">
-                <a href="#save" data-bind="click: closeFlyoutAccept">
+                <a href="#save" data-bind="click: function() { confirmationDeferred.resolve() }">
                   <span>Confirm</span>
                 </a>
               </li>
