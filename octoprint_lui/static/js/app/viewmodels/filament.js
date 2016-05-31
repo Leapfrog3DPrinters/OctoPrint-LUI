@@ -96,10 +96,11 @@ $(function () {
             $('#swap-info').removeClass('active')
             
 
-            self.flyout.showFlyout('filament')
+            self.flyout.showFlyout('filament', true)
             .always(function () {
                 // If this closes we need to reset stuff
                 self.filamentLoadProgress(0);
+                self.filamentInProgress(false);
             })
             .done(function () {
                 self.changeFilamentDone();
@@ -212,7 +213,7 @@ $(function () {
                 return;
             }
             
-           console.log(data);
+            console.log(data);
 
             var messageType = data['type'];
             var messageData = data['data'];

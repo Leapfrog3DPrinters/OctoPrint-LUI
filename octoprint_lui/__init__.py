@@ -6,7 +6,6 @@ import time
 import threading
 import re
 import subprocess
-import threading
 import netaddr
 import os
 
@@ -23,6 +22,7 @@ from octoprint.util import RepeatedTimer
 from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
 
+
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.AssetPlugin,
@@ -32,6 +32,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.printer.PrinterCallback):
 
     def __init__(self):
+
+        ##~ Model specific variables
+        self.model = None
 
         ##~ Filament loading variables
         self.relative_extrusion = False
@@ -122,6 +125,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def initialize(self):
+        ##~ Model
+        self.model = "Bolt"
+
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
 
@@ -148,7 +154,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_lui = {
                 "action": "update_lui",
                 "name": "Update LUI",
-                "command": "cd /home/lily/OctoPrint-LUI && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint-LUI && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_lui)
@@ -158,7 +164,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_networkmanager = {
                 "action": "update_networkmanager",
                 "name": "Update NetworkManager",
-                "command": "cd /home/lily/OctoPrint-NetworkManager && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint-NetworkManager && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_networkmanager)
@@ -168,7 +174,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_octoprint = {
                 "action": "update_octoprint",
                 "name": "Update OctoPrint",
-                "command": "cd /home/lily/OctoPrint && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_octoprint)
@@ -178,7 +184,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_flasharduino = {
                 "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
-                "command": "cd /home/lily/OctoPrint-flashArduino && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /Users/pim/lpfrg/OctoPrint-flashArduino && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_flasharduino)
@@ -255,7 +261,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_settings_defaults(self):
         return {
-            "model": "Xeed",
+            "model": self.model,
             "zoffset": 0,
         }
 
@@ -330,6 +336,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_loaded_profile = self.filament_database.get(self.filament_query.tool == tool)
         self._printer.change_tool(tool)
 
+        self.move_to_filament_load_position()
+
         # Check if filament is loaded, if so report to front end. 
         if (self.filament_loaded_profile['material']['name'] == 'None'):
             # No filament is loaded in this tool, directly continue to load section
@@ -340,6 +348,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_unload_filament(self, *args, **kwargs):
         # Heat up to old profile temperature and unload filament
         temp = int(self.filament_loaded_profile['material']['extruder'])
+
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
                                 self.unload_filament)
@@ -354,6 +363,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return None
         self.filament_change_amount = amount 
         temp = int(profile['extruder'])
+
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
                                 self.load_filament)
@@ -364,6 +374,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Cancel all heat up and reset
         # Loading has already started, so just cancel the loading 
         # which will stop heating already.
+        self._printer.home(['y', 'x'])
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
         # Other wise we haven't started loading yet, so cancel the heating 
@@ -377,11 +388,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_change_filament_done(self, *args, **kwargs):
         # Still don't know if this is the best spot TODO
+        self._printer.home(['y', 'x'])
         self._printer.set_temperature(self.filament_change_tool, 0.0) 
 
     def _on_api_command_update_filament(self, *args, **kwargs):
         # Update the filament amount that is logged in tha machine
-        self._logger.info("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+        self._logger.debug("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
     def _on_api_command_load_filament_cont(self, tool, direction, *args, **kwargs):
         self.load_filament_cont(tool, direction)
@@ -406,17 +418,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def load_filament(self, tool):
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
-            ## This is xeed load function, TODO: Bolt! function and switch
+            # Always set load_amount to 0
             self.load_amount = 0
+            ## Switch on model for filament loading
+            if self.model == "Xeed":
+                ## This is xeed load function, TODO: Bolt! function and switch
 
-            # We can set one change of extrusion and speed during the timer
-            # Start with load_initial and change to load_change at load_change['start']
-            load_initial=dict(amount=16.67, speed=2000)
-            load_change=dict(start=1900, amount=2.5, speed=300)
+                # We can set one change of extrusion and speed during the timer
+                # Start with load_initial and change to load_change at load_change['start']
+                load_initial=dict(amount=16.67, speed=2000)
+                load_change=dict(start=1900, amount=2.5, speed=300)
 
-            # Total amount being loaded
-            self.load_amount_stop = 2100
-            self.move_to_filament_load_position()
+                # Total amount being loaded
+                self.load_amount_stop = 2100
+            else:
+                # Bolt loading
+                load_initial=dict(amount=16.67, speed=2000)
+                load_change = None
+                self.load_amount_stop = 2
             self._printer.commands("G91")
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
@@ -434,14 +453,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.load_filament_timer is None:
             ## This is xeed load function, TODO: Bolt! function and switch
             self.load_amount = 0
+            if self.model == "Xeed":
+                # We can set one change of extrusion and speed during the timer
+                # Start with load_initial and change to load_change at load_change['start']
+                unload_initial=dict(amount= -2.5, speed=300)
+                unload_change=dict(start=30, amount= -16.67, speed=2000)
 
-            # We can set one change of extrusion and speed during the timer
-            # Start with load_initial and change to load_change at load_change['start']
-            unload_initial=dict(amount= -2.5, speed=300)
-            unload_change=dict(start=30, amount= -16.67, speed=2000)
-
-            # Total amount being loaded
-            self.load_amount_stop = 2100
+                # Total amount being loaded
+                self.load_amount_stop = 2100
+            else:
+                # Bolt stuff
+                unload_initial=dict(amount= -2.5, speed=300)
+                unload_change = None
+                self.load_amount_stop = 45 # TODO test this
             self._printer.commands("G91")
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
             self.load_filament_timer = RepeatedTimer(0.5, 
@@ -767,14 +791,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Printer Control functions
     def move_to_maintenance_position(self):
         # First home X and Y 
-        self._printer.home(['x', 'y'])
-        self._printer.commands(["G1 X115 Y15 F6000"]) 
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.commands(['G1 Z200'])
+        if self.model == "Xeed":
+            self._printer.commands(["G1 X115 Y15 F6000"]) 
 
     def move_to_filament_load_position(self):
-        # First home X and Y 
         self._printer.home(['x', 'y'])
-        self._printer.commands(["G1 X210 Y0 F6000"]) 
 
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S0"])
+            self._printer.change_tool("tool1")
+            self._printer.commands(["G1 X30 F10000"])
+            self._printer.change_tool("tool0")
+            self._printer.commands(["G1 X330 F10000"])
+            self._printer.commands(["G1 Y1 F15000"])
+            if self.filament_change_tool:
+                self._printer.change_tool(self.filament_change_tool)
+            self._printer.commands(["M605 S1"])
+        elif self.model == "Xeed":
+            self._printer.commands(["G1 X210 Y0 F6000"]) 
+            if self.filament_change_tool:
+                self._printer.change_tool(self.filament_change_tool)
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):
@@ -782,7 +820,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = 0.0
             self.save_filament_amount()
-            self._settings.save(force=True)
 
         if (event == "PrintStarted"):
             self.current_print_extrusion_amount = [0.0, 0.0]
