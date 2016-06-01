@@ -28,6 +28,15 @@ $(function () {
             $('#filament_depleted').addClass('active');
 
             self.flyout.showFlyout('filament_detection', true)
+            .done(function () {
+                self.filament.changeFilamentDone();
+                self._completeFilamentDetectionApi();
+                //TODO: Resume print
+                console.log('Filament detection flyout accepted');
+            })
+            .fail(function () {
+                self.filament.changeFilamentCancel();
+            })
             .always(function () {
                 // If this closes we need to reset stuff
                 self.filament.filamentLoadProgress(0);
@@ -38,29 +47,35 @@ $(function () {
         self.startSwapFilamentWizard = function () {
             self._cancelTempSafetyTimer();
             self.filament.filamentInProgress(true);
-            self.filament.changeFilament(self.filament.tool());
             self.filament.showUnload();
 
             fd_slider.noUiSlider.set(330)
 
             $('.fd_step').removeClass('active');
-            $('#fd_filament_swap_wizard').addClass('active');
-
-           // $('#fd-swap-load-unload').addClass('active');
-           // $('#fd-swap-info').removeClass('active')
-
-            // $('.fd_swap_process_step').removeClass('active');
-            // $('#fd_unload_filament').addClass('active');
-           // $('#fd_unload_cmd').removeClass('disabled');
+            $('#fd_filament_swap_wizard').addClass('active'); 
         }
 
         self.startPurgeWizard = function()
         {
             self._cancelTempSafetyTimer();
+
             $('.fd_step').removeClass('active');
             $('#fd_filament_swap_wizard').addClass('active');
             $('.fd_swap_process_step').removeClass('active');
-            $('#fd_finished_filament').addClass('active');
+           
+            //Will also load correct view (either heating or purge)
+            self.filament.loadFilament('filament-detection-purge');
+        }
+
+        self.showFilamentDetectionWizardComplete = function()
+        {
+            $('.fd_step').removeClass('active');
+            $('#filament_detection_wizard_complete').addClass('active');
+        }
+
+        self.completeFilamentDetection = function()
+        {
+            self.flyout.closeFlyoutAccept();
         }
 
         self.cancelFilamentDetection = function()
@@ -73,7 +88,7 @@ $(function () {
                 .done(function () {
                     //Cancel print
                     self._cancelFilamentDetectionApi();
-                    self.requestData();
+                    self.filament.requestData();
                 });
            
         }
@@ -82,6 +97,12 @@ $(function () {
         {
             self._sendApi({
                 command: "filament_detection_cancel"
+            });
+        }
+
+        self._completeFilamentDetectionApi = function () {
+            self._sendApi({
+                command: "filament_detection_complete"
             });
         }
 

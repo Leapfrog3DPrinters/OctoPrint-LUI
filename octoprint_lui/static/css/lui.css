@@ -160,7 +160,7 @@ a {
   color: #434A54;
   background-color: #ffffff; }
 
-.button-area i {
+.button-area i, h4 i, .icon-text i {
   padding-right: 0.4em; }
 
 .title {

@@ -219,9 +219,10 @@ a {
   background-color: $second-color;
 }
 
-.button-area i {
+.button-area i, h4 i, .icon-text i {
   padding-right: 0.4em;
 }
+
 
 .title {
   flex-basis: 100%;
