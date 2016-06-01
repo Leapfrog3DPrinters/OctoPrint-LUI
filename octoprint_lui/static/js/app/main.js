@@ -420,17 +420,17 @@ $(function() {
         }
     );
 
-    // jQuery overscroll
+    jQuery overscroll
 
-    // $(".flyout-body").overscroll({
-    //         direction: 'vertical',
-    //         showThumbs: false
-    // });
+    $(".flyout-body").overscroll({
+            direction: 'vertical',
+            showThumbs: false
+    });
 
-    // $("#tabs").overscroll({
-    //         direction: 'vertical',
-    //         showThumbs: false
-    // });
+    $("#tabs").overscroll({
+            direction: 'vertical',
+            showThumbs: false
+    });
 
     // JQuery Virtual Keyboard init
 
