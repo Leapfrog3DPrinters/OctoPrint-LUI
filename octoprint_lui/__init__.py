@@ -407,10 +407,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         if profileName == "filament-detection" or profileName == "filament-detection-purge":
             selectedProfile = self.filament_detection_profile
+            temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
         else:
             for profile in profiles: 
                 if(profile['name'] == profileName):
                     selectedProfile = profile
+
+            temp = int(selectedProfile['extruder'])
         
         # Heat up to new profile temperature and load filament
         self.filament_change_profile = selectedProfile
@@ -423,7 +426,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self.filament_change_amount = amount 
         
-        temp = int(selectedProfile['extruder'])
+        
 
         self.heat_to_temperature(self.filament_change_tool, 
                                 temp, 
@@ -737,6 +740,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
         if cmd == "G90":
             self.movement_mode = "absolute"
+
+            if(self.relative_extrusion_trigger):
+                self.extrusion_mode = "relative"
+            else:
+                self.extrusion_mode = "absolute"
         else:
             self.movement_mode = "relative"
             self.extrusion_mode = "relative" #TODO: Not entirely correct. If G90 > G91 > G90, extrusion_mode would be incorrectly set to relative
@@ -749,9 +757,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Process M82 and M83 commands. Handle relative extrusion
         if cmd == "M82":
             self.extrusion_mode = self.movement_mode
+            self.relative_extrusion_trigger = False
         else:
             self.extrusion_mode = "relative"
-
+            self.relative_extrusion_trigger = True
+        
         self._logger.info("Command: %s" % cmd)
         self._logger.info("New movement mode: %s" % self.movement_mode)
         self._logger.info("New extrusion mode: %s" % self.extrusion_mode)
