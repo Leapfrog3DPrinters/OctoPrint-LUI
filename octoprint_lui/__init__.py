@@ -81,7 +81,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_info = [
             {
                 'identifier': 'lui',
-                'path': '/Users/pim/lpfrg/OctoPrint-LUI',
+                'path': '/home/lily/OctoPrint-LUI',
                 'update': False,
                 'action': 'update_lui',
                 'name': "Leapfrog UI",
@@ -89,7 +89,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'networkmanager',
-                'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
+                'path': '/home/lily/OctoPrint-NetworkManager',
                 'update': False,
                 'action': 'update_networkmanager',
                 'name': 'Network Manager',
@@ -97,7 +97,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'flasharduino',
-                'path': '/Users/pim/lpfrg/OctoPrint-flashArduino',
+                'path': '/home/lily/OctoPrint-flashArduino',
                 'update': False,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
@@ -105,7 +105,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },      
             {
                 'identifier': 'octoprint',
-                'path': '/Users/pim/lpfrg/OctoPrint',
+                'path': '/home/lily/OctoPrint',
                 'update': False,
                 'action': 'update_octoprint',
                 'name': 'OctoPrint',
@@ -160,7 +160,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_lui = {
                 "action": "update_lui",
                 "name": "Update LUI",
-                "command": "cd /Users/pim/lpfrg/OctoPrint-LUI && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /home/lily/OctoPrint-LUI && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_lui)
@@ -170,7 +170,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_networkmanager = {
                 "action": "update_networkmanager",
                 "name": "Update NetworkManager",
-                "command": "cd /Users/pim/lpfrg/OctoPrint-NetworkManager && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /home/lily/OctoPrint-NetworkManager && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_networkmanager)
@@ -180,7 +180,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_octoprint = {
                 "action": "update_octoprint",
                 "name": "Update OctoPrint",
-                "command": "cd /Users/pim/lpfrg/OctoPrint && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /home/lily/OctoPrint && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_octoprint)
@@ -190,7 +190,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_flasharduino = {
                 "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
-                "command": "cd /Users/pim/lpfrg/OctoPrint-flashArduino && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
+                "command": "cd /home/lily/OctoPrint-flashArduino && git pull && /home/lily/OctoPrint/venv/bin/python setup.py install",
                 "confirm": False
             }
             actions.append(update_flasharduino)
