@@ -429,7 +429,7 @@ $(function() {
             showThumbs: false
     });
 
-    $("#tabs").overscroll({
+    $(".tabs").overscroll({
             direction: 'vertical',
             showThumbs: false
     });
