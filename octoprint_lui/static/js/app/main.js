@@ -402,7 +402,9 @@ $(function() {
     var $overlay = $('.overlay');
     $overlay.bind("click", function(e) {
         e.preventDefault();
-        if (!flyout.blocking) {
+
+        if (!flyout.blocking && flyout.warnings().length == 0)
+        {
             flyout.closeFlyout();
         }
     });
@@ -490,46 +492,69 @@ $(function() {
         }
     };
 
-    $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
+    if (IS_LOCAL) {
+        $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
 
-    $("input[type='number']").keyboard(keyboardLayouts.number);
-    
-    $("#input-format").keyboard({
-        layout: 'custom',
-        customLayout: {
-            normal: [
-                '7 8 9 {clear}',
-                '4 5 6 {cancel}',
-                '1 2 3 {accept}',
-                '. 0 {sp:3.1}',
-            ]
-        },
-        usePreview: true,
-        display: {
-            'accept':'Accept:Accept',
-            'clear':'Clear:Clear'
-        },
-        accepted: function (event, keyboard, el) {
-            slider.noUiSlider.set(keyboard.$preview.val());
-        }
-    });
+        $("input[type='number']").keyboard(keyboardLayouts.number);
 
-    ko.bindingHandlers.keyboardForeach = {
-        init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-            return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
-        },
-        update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-            setTimeout(function() {
-                $(element.parentElement).find("input[type='number']").keyboard(keyboardLayouts.number);
-                $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
+        $("#input-format").keyboard({
+            layout: 'custom',
+            customLayout: {
+                normal: [
+                    '7 8 9 {clear}',
+                    '4 5 6 {cancel}',
+                    '1 2 3 {accept}',
+                    '. 0 {sp:3.1}',
+                ]
+            },
+            usePreview: true,
+            display: {
+                'accept': 'Accept:Accept',
+                'clear': 'Clear:Clear'
+            },
+            accepted: function (event, keyboard, el) {
+                slider.noUiSlider.set(keyboard.$preview.val());
+            }
+        });
 
-            }, 10);
-            return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
-        }
-    };
-    ko.virtualElements.allowedBindings.keyboardForeach = true;
+        $("#fd-input-format").keyboard({
+            layout: 'custom',
+            customLayout: {
+                normal: [
+                    '7 8 9 {clear}',
+                    '4 5 6 {cancel}',
+                    '1 2 3 {accept}',
+                    '. 0 {sp:3.1}',
+                ]
+            },
+            usePreview: true,
+            display: {
+                'accept': 'Accept:Accept',
+                'clear': 'Clear:Clear'
+            },
+            accepted: function (event, keyboard, el) {
+                fdSlider.noUiSlider.set(keyboard.$preview.val());
+            }
+        });
+
+        ko.bindingHandlers.keyboardForeach = {
+            init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
+            },
+            update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                setTimeout(function () {
+                    $(element.parentElement).find("input[type='number']").keyboard(keyboardLayouts.number);
+                    $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
+
+                }, 10);
+                return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
+            }
+        };
+        ko.virtualElements.allowedBindings.keyboardForeach = true;
+    }
 
     var slider = document.getElementById('slider');
+    var fdSlider = document.getElementById('fd_slider');
 
     noUiSlider.create(slider, {
         start: 330,
@@ -550,8 +575,30 @@ $(function() {
         }
     });
 
+    noUiSlider.create(fdSlider, {
+        start: 330,
+        step: 1,
+        behaviour: 'snap',
+        connect: 'lower',
+        range: {
+            'min': 0,
+            'max': 330
+        },
+        format: {
+            to: function (value) {
+                return value.toFixed(0);
+            },
+            from: function (value) {
+                return value;
+            }
+        }
+    });
+
     var inputFormat = document.getElementById('input-format');
     var filament_percent = document.getElementById('filament_percent');
+
+    var fdInputFormat = document.getElementById('fd-input-format');
+    var fd_filament_percent = document.getElementById('fd_filament_percent');
 
     slider.noUiSlider.on('update', function( values, handle ) {
         inputFormat.value = values[handle];
@@ -559,8 +606,18 @@ $(function() {
         filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
     });
 
+    fdSlider.noUiSlider.on('update', function (values, handle) {
+        fdInputFormat.value = values[handle];
+        percent = ((values[handle] / 330) * 100).toFixed(0);
+        fd_filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+    });
+
     inputFormat.addEventListener('change', function(){
         slider.noUiSlider.set(this.value);
+    });
+
+    fdInputFormat.addEventListener('change', function () {
+        fdSlider.noUiSlider.set(this.value);
     });
 
 });

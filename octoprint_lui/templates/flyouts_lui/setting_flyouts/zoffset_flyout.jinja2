@@ -6,7 +6,7 @@
     </div>
     <div class="Table-row">
         <div class="Table-item">
-            Place a 0.05 flusher between the nozzle and the bed.Press the button Start Calibration, the bed will home and then move close to the nozzle. Use the up arrow until the nozzle is against the flusher. You can use the down arrow if you think you are too close. Press 'Save' to save the new z-Offset.
+            Place a 0.05 flusher between the nozzle and the bed. Press the button Start Calibration, the bed will home and then move close to the nozzle. Use the up arrow until the nozzle is against the flusher. You can use the down arrow if you think you are too close. Press 'Save' to save the new z-offset.
         </div>
     </div>
     <div class="Table-row">
@@ -19,12 +19,12 @@
     <div class="Table-row">
         <div class="Table-item">
             <ul class="button-area">
-                <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !startedCalibration()}, click: function() { increaseZ(0.05) }"><a href=""><span><i class="fa fa-arrow-up"></i></span></a></li>
+                <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !startedCalibration()}, click: function() { decreaseZ(0.05) }"><a href=""><span><i class="fa fa-arrow-up"></i></span></a></li>
             </ul>
         </div>
         <div class="Table-item">
             <ul class="button-area">
-                <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !startedCalibration()}, click: function() { decreaseZ(0.05) }"><a href=""><span><i class="fa fa-arrow-down"></i></span></a></li>
+                <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !startedCalibration()}, click: function() { increaseZ(0.05) }"><a href=""><span><i class="fa fa-arrow-down"></i></span></a></li>
             </ul>
         </div>
     </div>
