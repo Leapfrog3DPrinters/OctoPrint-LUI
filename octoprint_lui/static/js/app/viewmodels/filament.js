@@ -196,10 +196,17 @@ $(function () {
             });
         }
 
-        self.loadFilament = function (fromFilamentDetection) {
-            if (fromFilamentDetection && fd_slider.noUiSlider.get())
+        self.loadFilament = function (loadFor) {
+
+            loadFor = loadFor || "swap";
+
+            if (loadFor == "filament-detection" && fd_slider.noUiSlider.get())
             {
                 amount = fd_slider.noUiSlider.get() * 1000;
+            }
+            else if(loadFor == "filament-detection-purge")
+            {
+                amount = 0;
             }
             else if (slider.noUiSlider.get()) {
                 amount = slider.noUiSlider.get() * 1000;
@@ -207,9 +214,9 @@ $(function () {
                 amount = 0;
             }
 
-            if (fromFilamentDetection)
+            if (loadFor == "filament-detection" || loadFor == "filament-detection-purge")
             {
-                profileName = "filament-detection";
+                profileName = loadFor;
             }
             else
             {
