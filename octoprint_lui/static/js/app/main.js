@@ -422,7 +422,7 @@ $(function() {
         }
     );
 
-    jQuery overscroll
+    // jQuery overscroll
 
     $(".flyout-body").overscroll({
             direction: 'vertical',
