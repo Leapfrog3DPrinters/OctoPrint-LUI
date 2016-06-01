@@ -823,10 +823,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         self.filament_detection_profile = self.filament_database.get(self.filament_query.tool == tool)["material"]
         self.filament_detection_tool_temperatures = deepcopy(self.current_temperature_data)
-
-        self.move_to_filament_load_position()
         self.filament_action = True
 
+        #Will move to load position, set the tool, etc
         self._on_api_command_change_filament(tool)
         
         if not self.temperature_safety_timer:
