@@ -320,7 +320,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def on_api_get(self, request):
         return jsonify(dict(
             update=self.update_info,
-            filaments=self.filament_database.all()
+            filaments=self.filament_database.all(),
             is_homed=self.is_homed,
             is_homing=self.is_homing
             ))
@@ -758,7 +758,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             # Handle home command
             if (gcode == "G28"):
-                self._process_G28()
+                self._process_G28(cmd)
 
     def _process_G90_G91(self, cmd):
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
