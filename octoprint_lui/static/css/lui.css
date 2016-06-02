@@ -932,6 +932,13 @@ pre code {
   max-height: 150px;
   overflow-y: scroll; }
 
+/* Startup */
+.startup_step {
+  display: none;
+  width: 100%; }
+  .startup_step.active {
+    display: inline-block; }
+
 /* Filament swap */
 .swap_process_step, .fd_swap_process_step {
   display: none;

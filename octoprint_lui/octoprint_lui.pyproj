@@ -93,6 +93,8 @@
     <Content Include="templates\flyouts_lui\filament_flyouts\filament_detection_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\filament_flyouts\filament_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\file_flyouts\file_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\info_flyouts\startup_remote_flyout.jinja2" />
+    <Content Include="templates\flyouts_lui\info_flyouts\startup_local_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\info_flyouts\info_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\login_flyouts\login_flyout.jinja2" />
     <Content Include="templates\flyouts_lui\setting_flyouts\advanced_flyout.jinja2" />

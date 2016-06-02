@@ -1159,6 +1159,16 @@ pre code {
   overflow-y: scroll;
 }
 
+/* Startup */
+.startup_step
+{
+    display: none;
+  width: 100%;
+  &.active {
+    display: inline-block;
+  }
+}
+
 /* Filament swap */
 
 .swap_process_step, .fd_swap_process_step {
