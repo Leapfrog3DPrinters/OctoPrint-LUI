@@ -143,7 +143,7 @@
     <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
   </div>
   <div class="flyout-body">
-    <div id="info_flyout_content">
+    <div id="zoffset_flyout_content">
       {% include "flyouts_lui/setting_flyouts/zoffset_flyout.jinja2" %}
     </div>
     <ul class="button-area">
@@ -153,6 +153,20 @@
         </a>
       </li>
     </ul>
+  </div>
+</aside>
+<aside id="startup_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>Printer startup</h4>
+  </div>
+  <div class="flyout-body">
+    <div id="startup_flyout_content">
+      {%  if local_addr %}
+      {% include "flyouts_lui/info_flyouts/startup_local_flyout.jinja2" %}
+      {% else %}
+      {% include "flyouts_lui/info_flyouts/startup_remote_flyout.jinja2" %}
+      {% endif %}
+    </div>
   </div>
 </aside>
 <aside id="confirmation_flyout" class="flyout">

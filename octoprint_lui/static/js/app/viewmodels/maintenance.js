@@ -69,7 +69,6 @@ $(function() {
         self.startZoffset = function () {
             self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('zoffset');
-
         };
 
         self.startLevelBed = function ()

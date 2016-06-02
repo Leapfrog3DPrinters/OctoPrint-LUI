@@ -102,15 +102,19 @@ $(function() {
     };
 
     self.closeFlyout = function() {
-      self.toggleFlyout();     
-      self.deferred.reject();
-      self.deferred = undefined;
+        self.toggleFlyout();
+        if (self.deferred != undefined) {
+            self.deferred.reject();
+            self.deferred = undefined;
+        }
     };
     
     self.closeFlyoutAccept = function() {
-      self.toggleFlyout();
-      self.deferred.resolve();
-      self.deferred = undefined;
+        self.toggleFlyout();
+        if (self.deferred != undefined) {
+            self.deferred.resolve();
+            self.deferred = undefined;
+        }
     };
 
     self.toggleFlyout = function() {
