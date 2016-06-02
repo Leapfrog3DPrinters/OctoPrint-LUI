@@ -31,7 +31,6 @@ $(function () {
             .done(function () {
                 self.filament.changeFilamentDone();
                 self._completeFilamentDetectionApi();
-                //TODO: Resume print
                 console.log('Filament detection flyout accepted');
             })
             .fail(function () {
@@ -87,6 +86,7 @@ $(function () {
             })
                 .done(function () {
                     //Cancel print
+                    self._cancelTempSafetyTimer();
                     self._cancelFilamentDetectionApi();
                     self.filament.requestData();
                 });
