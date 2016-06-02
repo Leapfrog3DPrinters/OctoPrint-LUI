@@ -403,7 +403,7 @@ $(function() {
     $overlay.bind("click", function(e) {
         e.preventDefault();
 
-        if (!flyout.blocking && flyout.warnings().length == 0)
+        if (!flyout.blocking && flyout.warnings().length == 0 && flyout.confirmationDeferred === undefined)
         {
             flyout.closeFlyout();
         }

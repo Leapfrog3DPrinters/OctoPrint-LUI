@@ -1,7 +1,7 @@
 <div class="Table">
-    <div class="Table-header Table-row">
-        <div class="Table-item">Maintenance</div>
-    </div>
+  <div class="Table-header Table-row">
+    <div class="Table-item">Maintenance</div>
+  </div>
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
@@ -14,7 +14,7 @@
     </div>
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function() {startZoffset()}, disable: ">
+        <li class="button" data-bind="click: startZoffset ">
           <a href="">
             <span>Z-offset wizard</span>
           </a>
@@ -24,24 +24,56 @@
   </div>
 
   <div class="Table-row">
-        <div class="Table-item">
-            <ul class="button-area">
-                <li class="button" data-bind="click: filamentLoadPosition"><a href=""><span>Head maintenance position</span></a></li>
-            </ul>
-        </div>
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button" data-bind="click: filamentLoadPosition">
+          <a href="">
+            <span>Head maintenance position</span>
+          </a>
+        </li>
+      </ul>
     </div>
-    <div class="Table-row">
-        <div class="Table-item">
-            <ul class="button-area">
-                <li class="button" data-bind="click: cleanBedPosition"><a href=""><span>Clean bed position</span></a></li>
-            </ul>
-        </div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button" data-bind="click: cleanBedPosition">
+          <a href="">
+            <span>Clean bed position</span>
+          </a>
+        </li>
+      </ul>
     </div>
-    <div class="Table-row">
-        <div class="Table-item">
-            <ul class="button-area">
-                <li class="button"><a href=""><span>Set filament amount</span></a></li>
-            </ul>
-        </div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#">
+            <span>Set filament amount</span>
+          </a>
+        </li>
+      </ul>
     </div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="click: function() { beginPurgeWizard('tool1'); }, css: {disabled: filament.leftFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()} ">
+            <span>Purge left</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="click: function() { beginPurgeWizard('tool0'); }, css: {disabled: filament.rightFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()}">
+            <span>Purge right</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
