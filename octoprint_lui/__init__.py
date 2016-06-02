@@ -130,6 +130,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.temp_before_filament_detection = { 'tool0' : 0, 'tool1' : 0 }
 
 
+        ##~ Homing
+        self.home_command_send = False
+        self.is_homed = False
+        self.is_homing = False
+
+
     def initialize(self):
         ##~ Model
         self.model = "Xeed"
@@ -315,6 +321,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return jsonify(dict(
             update=self.update_info,
             filaments=self.filament_database.all()
+            is_homed=self.is_homed,
+            is_homing=self.is_homing
             ))
 
     def get_api_commands(self):
@@ -333,6 +341,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     move_to_maintenance_position = [],
                     refresh_update_info = [],
                     temperature_safety_timer_cancel = [],
+                    begin_homing = [],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -347,6 +356,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         self._on_filament_detection_during_print(self._printer._comm)
     
+    def _on_api_command_begin_homing(self):
+        self._printer.commands('G28')
+        self.send_client_is_homing()
+
+
     def _on_api_command_temperature_safety_timer_cancel(self):
         if self.temperature_safety_timer:
             self.temperature_safety_timer.cancel()
@@ -682,6 +696,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         data = {"extrusion": self.current_print_extrusion_amount, "filament": self.filament_amount}
         self._send_client_message("update_filament_amount", data)
 
+    def send_client_is_homing(self):
+        self._send_client_message('is_homing')
+
+    def send_client_is_homed(self):
+        self._send_client_message('is_homed')
+
     ## ~ Save helpers
     def set_filament_profile(self, tool, profile):
         self.filament_database.update(profile, self.filament_query.tool == tool)
@@ -735,6 +755,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             ##~ For now only handle extrusion when actually printing a job
             if (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
                 self._process_G0_G1(cmd, comm_instance)
+
+            # Handle home command
+            if (gcode == "G28"):
+                self._process_G28()
 
     def _process_G90_G91(self, cmd):
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
@@ -797,6 +821,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if (self.last_saved_filament_amount[tool] - self.filament_amount[tool] > 100):
                 self.set_filament_amount("tool"+str(tool))
                 self.last_saved_filament_amount = deepcopy(self.filament_amount)
+
+    def _process_G28(self, cmd):
+        self.home_command_send = True
+        self.is_homing = True
+
+    def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
+        if self.home_command_send: 
+            if "ok" in line:
+                self.home_command_send = False
+                self.is_homed = True
+                self.is_homing = False
+                self.send_client_is_homed()
+        return line
 
     def hook_actiontrigger(self, comm, line, action_trigger):
         """
@@ -1035,5 +1072,6 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
         "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook,
-        "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger
+        "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger,
+        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_received_hook
     }
