@@ -39,6 +39,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
         self.movement_mode = "absolute"
+        self.relative_extrusion_trigger = False
         self.current_print_extrusion_amount = None
         self.last_print_extrusion_amount = 0.0
         self.last_send_filament_amount = None
@@ -81,7 +82,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_info = [
             {
                 'identifier': 'lui',
-                'path': '/Users/pim/lpfrg/OctoPrint-LUI',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUI',
                 'update': False,
                 'action': 'update_lui',
                 'name': "Leapfrog UI",
@@ -89,7 +90,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'networkmanager',
-                'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-NetworkManager',
                 'update': False,
                 'action': 'update_networkmanager',
                 'name': 'Network Manager',
@@ -97,7 +98,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'flasharduino',
-                'path': '/Users/pim/lpfrg/OctoPrint-flashArduino',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-flashArduino',
                 'update': False,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
@@ -105,7 +106,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },      
             {
                 'identifier': 'octoprint',
-                'path': '/Users/pim/lpfrg/OctoPrint',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint',
                 'update': False,
                 'action': 'update_octoprint',
                 'name': 'OctoPrint',
@@ -380,6 +381,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("Filament detection complete. Restoring temperatures: {temps}".format(temps = self.filament_detection_tool_temperatures))
             self.filament_detection_tool_temperatures = None
 
+        self.restore_z_after_filament_load()
         self._printer.toggle_pause_print()
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
@@ -765,7 +767,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if cmd == "G90":
             self.movement_mode = "absolute"
 
-            if(self.relative_extrusion_trigger):
+            if self.relative_extrusion_trigger :
                 self.extrusion_mode = "relative"
             else:
                 self.extrusion_mode = "absolute"
@@ -1019,9 +1021,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def restore_extrusion_mode(self):
         self.set_extrusion_mode(self.last_extrusion_mode)
 
-    def move_to_filament_load_position(self):
+    def restore_z_after_filament_load(self):
+       if(self.z_before_filament_load is not None):
+            self._printer.commands(["G1 Z%f F1200" % self.z_before_filament_load]) 
 
+    def move_to_filament_load_position(self):
         self.set_movement_mode("absolute")
+        
+        self.z_before_filament_load = self._printer.currentZ
+        if self._printer.currentZ < 30:
+            self._printer.commands(["G1 Z30 F1200"])            
+
         self._printer.home(['x', 'y'])
 
         if self.model == "Bolt":
