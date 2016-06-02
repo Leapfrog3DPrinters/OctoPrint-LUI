@@ -1019,7 +1019,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def set_extrusion_mode(self, mode):
         self.last_extrusion_mode = self.extrusion_mode
 
-        if(self.extrusion_mode == "relative"):
+        if mode == "relative":
             self._printer.commands(["M83"]) 
         else:
             self._printer.commands(["M82"]) 
