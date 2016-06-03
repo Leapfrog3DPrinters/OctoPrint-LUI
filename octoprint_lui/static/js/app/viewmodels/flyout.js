@@ -8,12 +8,12 @@ $(function() {
     self.template_flyout = undefined;
 
     self.blocking = false;
+    self.flyoutName = "";
 
     self.confirmation_title = ko.observable(undefined);
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
     
-    self.blocking = false;
 
     self.warnings = ko.observableArray([]);
 
@@ -50,8 +50,8 @@ $(function() {
     self.showFlyout = function(flyout, blocking) {
       self.deferred = $.Deferred();
       self.blocking = blocking || false;
-        
-      self.blocking = blocking || false;
+      
+      self.flyoutName = flyout;
 
       self.template_flyout = '#'+flyout+'_flyout';
       self.toggleFlyout();
@@ -87,6 +87,7 @@ $(function() {
           else
               $('.overlay').removeClass('active');
 
+          self.confirmationDeferred = undefined;
           console.log('confirmation confirmed');
           })
           .fail(function () {
@@ -95,6 +96,7 @@ $(function() {
               if (self.deferred === undefined)
                 $('.overlay').removeClass('active');
 
+              self.confirmationDeferred = undefined;
               console.log('confirmation rejected');
           });
 
@@ -102,15 +104,19 @@ $(function() {
     };
 
     self.closeFlyout = function() {
-      self.toggleFlyout();     
-      self.deferred.reject();
-      self.deferred = undefined;
+        self.toggleFlyout();
+        if (self.deferred != undefined) {
+            self.deferred.reject();
+            self.deferred = undefined;
+        }
     };
     
     self.closeFlyoutAccept = function() {
-      self.toggleFlyout();
-      self.deferred.resolve();
-      self.deferred = undefined;
+        self.toggleFlyout();
+        if (self.deferred != undefined) {
+            self.deferred.resolve();
+            self.deferred = undefined;
+        }
     };
 
     self.toggleFlyout = function() {

@@ -547,13 +547,13 @@ $(function() {
             // }
         };
 
-        self.showSettingsTopic = function(topic) {
+        self.showSettingsTopic = function(topic, blocking) {
             var settings_topic = "#" + topic +'_settings_flyout_content';
             var $settings_topic_content = $(settings_topic);
             $settings_topic_content.addClass('active');
             self.settingsTopic(capitalize(topic));
             callViewModels(self.allViewModels, "onSettingsShown");
-            self.flyout.showFlyout('settings')
+            return self.flyout.showFlyout('settings', blocking)
                 .done(function () {
                     self.saveData();
                 })
