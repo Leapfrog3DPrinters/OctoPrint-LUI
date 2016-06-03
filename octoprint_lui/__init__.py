@@ -834,9 +834,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _process_G28(self, cmd):
         self._logger.info("Command: %s" % cmd)
+        ## Only check if a full home command is send
         if (all(c in cmd for c in 'XYZ') or cmd == "G28"):
             self.home_command_send = True
-        self.is_homing = True
+            self.is_homing = True
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if self.home_command_send: 
