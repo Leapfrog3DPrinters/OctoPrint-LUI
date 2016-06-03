@@ -348,6 +348,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def on_api_command(self, command, data):
         # Data already has command in, so only data is needed
+        self._logger.info("API command received: %s" % command)
         self._call_api_method(**data)
 
     #TODO: Remove
