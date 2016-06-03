@@ -1042,7 +1042,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_movement_mode("absolute")
         
         self.z_before_filament_load = self._printer._currentZ
-        if self._printer._currentZ < 30:
+        if self._printer._currentZ < 30 and self.is_homed:
             self._printer.commands(["G1 Z30 F1200"])            
 
         self._printer.home(['x', 'y'])
