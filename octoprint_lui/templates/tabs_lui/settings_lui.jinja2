@@ -21,7 +21,8 @@
                     </li>
                 </ul>
             </div><!-- Printer -->
-            <!-- Maintenance -->
+          {% if local_addr %}
+          <!-- Maintenance -->
             <div class="settings_topic" data-bind="click: function() {showSettingsTopic('maintenance')}">
                 <ul class="topic_main">
                     <li class="topic_dash">
@@ -41,6 +42,7 @@
                     </li>
                 </ul>
             </div><!-- Maintenance -->
+            {% endif %}
             <!-- Materials -->
             <div class="settings_topic" data-bind="click: function() {showSettingsTopic('materials')}">
                 <ul class="topic_main">

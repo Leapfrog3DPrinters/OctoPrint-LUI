@@ -370,7 +370,8 @@ $(function () {
             var messageData = data['data'];
             switch (messageType) {
                 case "is_homed":
-                    self.closeStartupFlyout();
+                    if(self.flyout.flyoutName == "startup")
+                        self.closeStartupFlyout();
                     break;
                 case "is_homing":
                     self.showBusyHoming();
