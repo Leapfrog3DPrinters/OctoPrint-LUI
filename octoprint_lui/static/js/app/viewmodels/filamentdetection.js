@@ -28,20 +28,19 @@ $(function () {
             $('#filament_depleted').addClass('active');
 
             self.flyout.showFlyout('filament_detection', true)
-            .done(function () {
-                self.filament.changeFilamentDone();
-                self._completeFilamentDetectionApi();
-                //TODO: Resume print
-                console.log('Filament detection flyout accepted');
-            })
-            .fail(function () {
-                self.filament.changeFilamentCancel();
-            })
-            .always(function () {
-                // If this closes we need to reset stuff
-                self.filament.filamentLoadProgress(0);
-                self.filament.filamentInProgress(false);
-            });
+                .done(function () {
+                    self.filament.changeFilamentDone();
+                    self._completeFilamentDetectionApi();
+                    console.log('Filament detection flyout accepted');
+                })
+                .fail(function () {
+                    self.filament.changeFilamentCancel();
+                })
+                .always(function () {
+                    // If this closes we need to reset stuff
+                    self.filament.filamentLoadProgress(0);
+                    self.filament.filamentInProgress(false);
+                });
         }
 
         self.startSwapFilamentWizard = function () {
@@ -87,6 +86,7 @@ $(function () {
             })
                 .done(function () {
                     //Cancel print
+                    self._cancelTempSafetyTimer();
                     self._cancelFilamentDetectionApi();
                     self.filament.requestData();
                 });
