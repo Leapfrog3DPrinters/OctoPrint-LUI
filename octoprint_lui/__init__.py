@@ -733,14 +733,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
     def script_hook(self, comm, script_type, script_name):
+        # The printer should get a positive number here. Altough for the user it might feel like - direction,
+        # Thats how the M206 works.
+        zoffset = -self._settings.get_float(["zoffset"])
+
         if not script_type == "gcode":
             return None
     
         if script_name == "beforePrintStarted":
-            return ["M206 Z%.2f" % self._settings.get_float(["zoffset"])], None
+            return ["M206 Z%.2f" % zoffset], None
 
         if script_name == "afterPrinterConnected":
-            return ["M206 Z%.2f" % self._settings.get_float(["zoffset"])], None
+            return ["M206 Z%.2f" % zoffset], None
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -1058,7 +1062,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._printer.change_tool(self.filament_change_tool)
             self._printer.commands(["M605 S1"])
         elif self.model == "Xeed":
-            self._printer.commands(["G1 X210 Y0 F6000"]) 
+            self._printer.commands(["G1 X190 Y20 F6000"]) 
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
 
