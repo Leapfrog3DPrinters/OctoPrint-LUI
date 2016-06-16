@@ -773,6 +773,10 @@ select {
 #files .content {
   margin: 0px; }
 
+#browse_modes {
+  display: flex;
+  flex: 1 1 auto; }
+
 .file_upload {
   flex-basis: 30%; }
 

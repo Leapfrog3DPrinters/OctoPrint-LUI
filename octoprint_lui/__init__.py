@@ -8,6 +8,7 @@ import re
 import subprocess
 import netaddr
 import os
+import flask
 
 from pipes import quote
 from functools import partial
@@ -29,7 +30,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.SimpleApiPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
-                octoprint.printer.PrinterCallback):
+                octoprint.printer.PrinterCallback
+):
 
     def __init__(self):
 
@@ -139,8 +141,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def initialize(self):
+        self._init_usb();
+
         ##~ Model
-        self.model = "Xeed"
+        self.model = "Bolt"
 
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
@@ -248,9 +252,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.fetch_git_repo(update['path'])
 
     def is_update_needed(self, path):
-        local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
-        remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        self._logger.info(path)
+        #local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+        #remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
+        #base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        return True
 
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
@@ -267,10 +273,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def fetch_git_repo(self, path):
-        try:
-            output = subprocess.check_output(['git', 'fetch'],cwd=path)
-        except subprocess.CalledProcessError as err:
-            self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
+        self._logger.info(path)
+        #try:
+        #    output = subprocess.check_output(['git', 'fetch'],cwd=path)
+        #except subprocess.CalledProcessError as err:
+        #    self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
         self._logger.debug("Fetched git repo: {path}".format(path=path))
 
     def get_settings_defaults(self):
@@ -319,13 +326,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return remote_address is None
 
     ##~ OctoPrint SimpleAPI Plugin  
-    def on_api_get(self, request):
-        return jsonify(dict(
-            update=self.update_info,
-            filaments=self.filament_database.all(),
-            is_homed=self.is_homed,
-            is_homing=self.is_homing
-            ))
+    def on_api_get(self, request = None):
+        if(request.values is not None and request.values["command"] == "get_files"):
+            return self._on_api_command_get_files(request.values["origin"])
+        else:
+            return jsonify(dict(
+                update=self.update_info,
+                filaments=self.filament_database.all(),
+                is_homed=self.is_homed,
+                is_homing=self.is_homing
+                ))
 
     def get_api_commands(self):
             return dict(
@@ -344,12 +354,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     refresh_update_info = [],
                     temperature_safety_timer_cancel = [],
                     begin_homing = [],
+                    get_files = ["origin"],
+                    select_usb_file = ["filename"],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
     def on_api_command(self, command, data):
         # Data already has command in, so only data is needed
-        self._call_api_method(**data)
+        return self._call_api_method(**data)
 
     #TODO: Remove
     def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
@@ -357,6 +369,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
         self._on_filament_detection_during_print(self._printer._comm)
+        #self._getUsbFileList()
     
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -499,6 +512,144 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_move_to_maintenance_position(self, *args, **kwargs):
         self.move_to_maintenance_position()
+
+    def _on_api_command_get_files(self, origin, *args, **kwargs):
+        
+        if(origin == "usb"):
+            # Read USB files pretty much like an SD card
+            files = octoprint.server.fileManager.list_files("usb", filter=None, recursive=True)["usb"].values()
+
+            def analyse_recursively(files, path=None):            
+                if path is None:
+                    path = ""
+
+                for file in files:
+                    file["origin"] = "usb"
+                    file["refs"] = { "resource": "/api/plugins/lui/" }
+
+                    if file["type"] == "folder":
+                        file["children"] = analyse_recursively(file["children"].values(), path + file["name"] + "/")
+                
+                return files
+
+            analyse_recursively(files)
+
+            return flask.jsonify(files=files)
+        else:
+            # Return original OctoPrint API response
+            return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
+
+   
+    def _on_api_command_select_usb_file(self, filename, *args, **kwargs):
+
+        target = "usb"
+            
+        if not octoprint.server.api.files._verifyFileExists(target, filename):
+            return make_response("File not found on '%s': %s" % (target, filename), 404)
+
+		# selects/loads a file
+        if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
+            return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
+
+        printAfterLoading = False
+        #if "print" in data.keys() and data["print"] in valid_boolean_trues:
+        #    if not printer.is_operational():
+        #        return make_response("Printer is not operational, cannot directly start printing", 409)
+        #    printAfterLoading = True
+
+        path = octoprint.server.fileManager.path_on_disk(target, filename)
+
+        # Now the full path is known, remove any folder names from file name
+        _, filename = octoprint.server.fileManager.split_path("usb", filename)
+
+        self._logger.info("File selected: %s" % path)
+        
+        upload = octoprint.filemanager.util.DiskFileWrapper(filename, path, move = False)
+        
+        #TODO: Find out if necessary and if so, implement using method arguments
+        userdata = None
+        if "userdata" in request.values:
+            import json
+            try:
+                userdata = json.loads(request.values["userdata"])
+            except:
+                return make_response("userdata contains invalid JSON", 400)
+
+        selectAfterUpload = True
+        printAfterSelect = False
+
+        # determine current job
+        currentPath = None
+        currentFilename = None
+        currentOrigin = None
+        currentJob = self._printer.get_current_job()
+        if currentJob is not None and "file" in currentJob.keys():
+            currentJobFile = currentJob["file"]
+            if currentJobFile is not None and "name" in currentJobFile.keys() and "origin" in currentJobFile.keys() and currentJobFile["name"] is not None and currentJobFile["origin"] is not None:
+                currentPath, currentFilename = octoprint.server.fileManager.sanitize(octoprint.filemanager.FileDestinations.LOCAL, currentJobFile["name"])
+                currentOrigin = currentJobFile["origin"]
+
+        # determine future filename of file to be uploaded, abort if it can't be uploaded
+        try:
+            futurePath, futureFilename = octoprint.server.fileManager.sanitize(octoprint.filemanager.FileDestinations.LOCAL, upload.filename)
+        except:
+            futurePath = None
+            futureFilename = None
+
+        if futureFilename is None:
+            return make_response("Can not select file %s, wrong format?" % upload.filename, 415)
+
+        if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (printer.is_printing() or printer.is_paused()):
+            return make_response("Trying to overwrite file that is currently being printed: %s" % currentFilename, 409)
+
+        def selectAndOrPrint(filename, absFilename, destination):
+            if octoprint.filemanager.valid_file_type(added_file, "gcode") and (selectAfterUpload or printAfterSelect or (currentFilename == filename and currentOrigin == destination)):
+                self._printer.select_file(absFilename, False, printAfterSelect)
+        
+        futureFullPath = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, futurePath, futureFilename)
+        
+        try:
+            added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, futureFullPath, upload, allow_overwrite=True)
+        except octoprint.filemanager.storage.StorageError as e:
+            if e.code == octoprint.filemanager.storage.StorageError.INVALID_FILE:
+                return make_response("Could not upload the file \"{}\", invalid type".format(upload.filename), 400)
+            else:
+                return make_response("Could not upload the file \"{}\"".format(upload.filename), 500)   
+
+        if octoprint.filemanager.valid_file_type(added_file, "stl"):
+            filename = added_file
+            done = True
+        else:
+            filename = selectAndOrPrint(added_file, octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file), target)
+            done = True
+
+        if userdata is not None:
+			# upload included userdata, add this now to the metadata
+            octoprint.server.fileManager.set_additional_metadata(octoprint.filemanager.FileDestinations.LOCAL, added_file, "userdata", userdata)
+
+        octoprint.server.eventManager.fire(octoprint.events.Events.UPLOAD, {"file": filename, "target": target})
+
+        files = {}
+
+        #location = flask.url_for(".readGcodeFile", target=octoprint.filemanager.FileDestinations.LOCAL, filename=filename, _external=True)
+        location = "/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(filename)
+        
+        files.update({
+			octoprint.filemanager.FileDestinations.LOCAL: {
+				"name": filename,
+				"origin": octoprint.filemanager.FileDestinations.LOCAL,
+				"refs": {
+					"resource": location,
+					#"download": flask.url_for("index", _external=True) + "downloads/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + filename
+                    "download": "downloads/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(filename)
+				}
+			}
+		})
+        
+        r = make_response(jsonify(files=files, done=done), 201)
+        r.headers["Location"] = location
+
+        return r
 
     ##~ Load and Unload methods
 
@@ -1060,6 +1211,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._printer.change_tool(self.filament_change_tool)
 
         self.restore_movement_mode()
+    
+    def _init_usb(self):
+        
+        usb_storage = octoprint.filemanager.LocalFileStorage("C:\\Tijdelijk\\usb")
+
+        octoprint.server.fileManager.add_storage("usb", usb_storage)
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):
@@ -1080,7 +1237,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         name = "_on_api_command_{}".format(command)
         method = getattr(self, name, None)
         if method is not None and callable(method):
-            method(*args, **kwargs)
+            return method(*args, **kwargs)
 
 
 __plugin_name__ = "Leapfog UI"

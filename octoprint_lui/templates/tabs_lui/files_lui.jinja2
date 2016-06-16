@@ -1,5 +1,23 @@
 <div class="tab" id="files">
     <div class="content">
+      <div id="browse_modes">
+        <div class="button-area">
+          <ul>
+            <li class="button" data-bind="click: browseLocal">
+              <a href="#browse_local">
+                <span>
+                  <i class="fa fa-hdd-o"></i>Local</span>
+              </a>
+            </li>
+            <li class="button" data-bind="click: browseUsb">
+              <a href="#browse_usb">
+                <span>
+                  <i class="fa fa-usb"></i>USB</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
         <div class="file_area">
             <div class="gcode_files">
                 <div class="file_footer">
