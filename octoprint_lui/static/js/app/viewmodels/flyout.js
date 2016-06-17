@@ -17,11 +17,13 @@ $(function() {
 
     self.warnings = ko.observableArray([]);
 
-    self.showWarning = function(title, message)
+    self.showWarning = function(title, message, blocking)
     {
+        var blocking = blocking || false;
         warningVm = {
             warning_title: title,
-            warning_text: message
+            warning_text: message,
+            blocking: blocking
         };
 
         self.warnings.push(warningVm);
@@ -35,6 +37,10 @@ $(function() {
     self.closeWarning = function(warningVm)
     {
         self.warnings.remove(warningVm);
+        if (self.warnings().length == 0 && self.deferred === undefined)
+        {
+            $overlay.removeClass('active');
+        }
     };
 
     self.closeLastWarning = function()
@@ -78,8 +84,7 @@ $(function() {
       $('.overlay').addClass('active');
 
       self.confirmationDeferred = $.Deferred()
-          .done(function ()
-      {
+          .done(function () {
           $('#confirmation_flyout').removeClass('active');
 
           if (self.deferred !== undefined)
