@@ -44,6 +44,7 @@ $(function() {
             var deferred = $.Deferred();
 
             var callback = function() {
+                var update_warning = self.flyout.showWarning("Updating", "System is updating, please wait until the updates are completed...", true);
                 OctoPrint.system.executeCommand(commandSpec.actionSource, commandSpec.action)
                     .done(function() {
                         $.notify({
@@ -65,6 +66,9 @@ $(function() {
                         } else {
                             deferred.resolve(["ignored", arguments]);
                         }
+                    })
+                    .always(function(){
+                        self.flyout.closeWarning(update_warning);
                     });
             };
 
