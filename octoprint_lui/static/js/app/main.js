@@ -422,6 +422,9 @@ $(function() {
         }
     );
 
+    // dropit
+    $('.sort_menu').dropit();
+
     // jQuery overscroll
 
     // $(".flyout-body").overscroll({
