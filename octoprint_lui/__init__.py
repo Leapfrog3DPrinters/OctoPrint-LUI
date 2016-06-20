@@ -140,7 +140,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
         ##~ Model
-        self.model = "Xeed"
+        self.model = "Bolt"
 
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
