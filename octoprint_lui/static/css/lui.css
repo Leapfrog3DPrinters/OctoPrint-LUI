@@ -12,6 +12,10 @@
   font-family: agenda-medium;
   src: url(../fonts/agenda-medium.ttf);
   font-weight: medium; }
+@font-face {
+  font-family: agenda-bold;
+  src: url(../fonts/agenda-bold.ttf);
+  font-weight: bold; }
 /* 
   Mixins
 */
@@ -183,7 +187,7 @@ a {
   color: #434A54;
   background-color: #ffffff; }
 
-.button-area i {
+.button-area i, h4 i, .icon-text i {
   padding-right: 0.4em; }
 
 .title {
@@ -885,7 +889,7 @@ a {
   color: #434A54 !important; }
 
 .progress {
-  background-color: #f9f9f9;
+  background-color: #f2f2f2;
   color: #fff;
   box-sizing: initial;
   position: relative;
@@ -990,9 +994,9 @@ a {
   display: -ms-flexbox;
   display: flex;
   -webkit-box-flex: 0;
-  -webkit-flex: 0 0 55px;
-      -ms-flex: 0 0 55px;
-          flex: 0 0 55px; }
+  -webkit-flex: 0 0 65px;
+      -ms-flex: 0 0 65px;
+          flex: 0 0 65px; }
 
 .topic_name {
   display: -webkit-box;
@@ -1152,6 +1156,8 @@ select {
       -ms-flex-preferred-size: 5%;
           flex-basis: 5%;
   margin-left: auto; }
+  .file_sort a {
+    color: #434A54; }
 
 .file_area {
   display: -webkit-box;
@@ -1379,28 +1385,42 @@ pre code {
   max-height: 150px;
   overflow-y: scroll; }
 
-/* Filament swap */
-.swap_process_step {
+/* Startup */
+.startup_step {
   display: none;
   width: 100%; }
-  .swap_process_step.active {
+  .startup_step.active {
     display: inline-block; }
 
-#swap-info {
+/* Filament swap */
+.swap_process_step, .fd_swap_process_step {
+  display: none;
+  width: 100%; }
+  .swap_process_step.active, .fd_swap_process_step.active {
+    display: inline-block; }
+
+#swap-info, #fd-swap-info {
   display: none; }
-  #swap-info.active {
+  #swap-info.active, #fd-swap-info.active {
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex; }
 
-#swap-load-unload {
+#swap-load-unload, #fd-swap-load-unload {
   display: none; }
-  #swap-load-unload.active {
+  #swap-load-unload.active, #fd-swap-load-unload.active {
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex; }
+
+/* Filament Detection - Filament swap */
+.fd_step {
+  display: none;
+  width: 100%; }
+  .fd_step.active {
+    display: inline-block; }
 
 .no-border {
   border: 0 !important; }

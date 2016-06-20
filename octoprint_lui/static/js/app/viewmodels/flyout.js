@@ -3,17 +3,61 @@ $(function() {
     var self = this;
     
     self.deferred = undefined;
+    self.confirmationDeferred = undefined;
+
     self.template_flyout = undefined;
 
     self.blocking = false;
+    self.flyoutName = "";
 
     self.confirmation_title = ko.observable(undefined);
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
     
+
+    self.warnings = ko.observableArray([]);
+
+    self.showWarning = function(title, message, blocking)
+    {
+        var blocking = blocking || false;
+        warningVm = {
+            warning_title: title,
+            warning_text: message,
+            blocking: blocking
+        };
+
+        self.warnings.push(warningVm);
+        
+        $overlay = $('.overlay');
+        $overlay.addClass('active');
+
+        return warningVm;
+    }
+
+    self.closeWarning = function(warningVm)
+    {
+        self.warnings.remove(warningVm);
+        if (self.warnings().length == 0 && self.deferred === undefined)
+        {
+            $overlay.removeClass('active');
+        }
+    };
+
+    self.closeLastWarning = function()
+    {
+        self.warnings.pop();
+        
+        if (self.warnings().length == 0 && self.deferred === undefined)
+        {
+            $overlay.removeClass('active');
+        }
+    }
+
     self.showFlyout = function(flyout, blocking) {
       self.deferred = $.Deferred();
       self.blocking = blocking || false;
+      
+      self.flyoutName = flyout;
 
       self.template_flyout = '#'+flyout+'_flyout';
       self.toggleFlyout();
@@ -35,29 +79,49 @@ $(function() {
       self.confirmation_text(text);
       self.confirmation_question(question);
 
-      // Close a flyout if is one is active, use Accept for now TODO
-      if (self.deferred) {
-        self.closeFlyoutAccept();
-      }
-
       // Show the confirmation flyout
-      self.template_flyout = "#confirmation_flyout";
-      self.toggleFlyout();
-      self.deferred = $.Deferred();
+      $('#confirmation_flyout').addClass('active');
+      $('.overlay').addClass('active');
 
-      return self.deferred;
+      self.confirmationDeferred = $.Deferred()
+          .done(function () {
+          $('#confirmation_flyout').removeClass('active');
+
+          if (self.deferred !== undefined)
+              self.closeFlyoutAccept();
+          else
+              $('.overlay').removeClass('active');
+
+          self.confirmationDeferred = undefined;
+          console.log('confirmation confirmed');
+          })
+          .fail(function () {
+              $('#confirmation_flyout').removeClass('active');
+
+              if (self.deferred === undefined)
+                $('.overlay').removeClass('active');
+
+              self.confirmationDeferred = undefined;
+              console.log('confirmation rejected');
+          });
+
+      return self.confirmationDeferred;
     };
 
     self.closeFlyout = function() {
-      self.toggleFlyout();     
-      self.deferred.reject();
-      self.deferred = undefined;
+        self.toggleFlyout();
+        if (self.deferred != undefined) {
+            self.deferred.reject();
+            self.deferred = undefined;
+        }
     };
     
     self.closeFlyoutAccept = function() {
-      self.toggleFlyout();
-      self.deferred.resolve();
-      self.deferred = undefined;
+        self.toggleFlyout();
+        if (self.deferred != undefined) {
+            self.deferred.resolve();
+            self.deferred = undefined;
+        }
     };
 
     self.toggleFlyout = function() {
@@ -75,7 +139,7 @@ $(function() {
   OCTOPRINT_VIEWMODELS.push([
     FlyoutViewModel,
     [],
-    ['#confirmation_flyout']
+    ['#confirmation_flyout', '#warnings_container'],
   ]);
 
 });

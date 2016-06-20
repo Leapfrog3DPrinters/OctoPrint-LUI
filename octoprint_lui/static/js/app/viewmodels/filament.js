@@ -13,8 +13,17 @@ $(function () {
         self.loadedFilamentAmount = ko.observable(0);
         self.tool = ko.observable(undefined);
         self.filamentLoadProgress = ko.observable(0);
+        self.forPurge = ko.observable(false);
 
         self.selectedTemperatureProfile = ko.observable(undefined);
+        self.currentMaterial = ko.pureComputed(function () {
+            tool = self.tool();
+            if (tool == "tool1")
+                return self.leftFilament();
+            else
+                return self.rightFilament();
+        });
+
         self.materialProfiles = ko.observableArray([]);
 
         self.filaments = ko.observableArray([]);
@@ -30,19 +39,19 @@ $(function () {
 
         self.filamentLoadCont = ko.observable(false);
 
-        self.checkRightFilamentAmount = ko.pureComputed (function(){
+        self.checkRightFilamentAmount = ko.pureComputed(function () {
             if (self.printerState.filament()[0]) {
-                return (self.rightAmount() < self.printerState.filament()[0].data().length) 
+                return (self.rightAmount() < self.printerState.filament()[0].data().length)
             }
         });
 
-        self.checkLeftFilamentAmount = ko.pureComputed (function(){
+        self.checkLeftFilamentAmount = ko.pureComputed(function () {
             if (self.printerState.filament()[1]) {
                 return (self.leftAmount() < self.printerState.filament()[0].data().length)
             }
         });
 
-        self.toolText = ko.pureComputed(function() {
+        self.toolText = ko.pureComputed(function () {
             if (self.tool() != undefined) {
                 if (self.tool() === "tool0")
                     return "Right"
@@ -51,14 +60,14 @@ $(function () {
             }
         });
 
-        self.leftAmountString = ko.pureComputed(function(){
+        self.leftAmountString = ko.pureComputed(function () {
             if (!self.leftAmount()) {
                 return "-";
             }
             return (self.leftAmount() / 1000).toFixed(2) + "m";
         });
 
-        self.rightAmountString = ko.pureComputed(function(){
+        self.rightAmountString = ko.pureComputed(function () {
             if (!self.rightAmount()) {
                 return "-";
             }
@@ -66,7 +75,7 @@ $(function () {
         });
 
 
-        self.toolNum = ko.pureComputed(function() {
+        self.toolNum = ko.pureComputed(function () {
             if (self.tool() != undefined) {
                 var tool = self.tool();
                 return parseInt(tool.slice(-1));
@@ -80,21 +89,39 @@ $(function () {
                 return self.leftAmountString();
         }
 
+        self.getFilamentMaterial = function (tool) {
+            tool = tool || self.tool();
+
+            if (tool == "tool1")
+                return self.leftFilament();
+            else
+                return self.rightFilament();
+        }
+
         // Views
         // ------------------
 
-        self.showFilamentChangeFlyout = function (tool) {
+        self.showFilamentChangeFlyout = function (tool, forPurge) {
             self.tool(tool);
             self.loadedFilamentAmount(self.getFilamentAmount(tool));
             self.filamentInProgress(true);
+            self.forPurge(forPurge);
 
             self.changeFilament(tool);
-            self.showUnload();
-            slider.noUiSlider.set(330)
 
-            $('#swap-load-unload').addClass('active');
-            $('#swap-info').removeClass('active')
-            
+            if (!forPurge) {
+                self.showUnload();
+                slider.noUiSlider.set(330)
+
+                $('#swap-load-unload').addClass('active');
+                $('#swap-info').removeClass('active')
+            }
+            else {
+                $('.swap_process_step').removeClass('active');
+
+                self.loadFilament('purge');
+            }
+
 
             self.flyout.showFlyout('filament', true)
             .always(function () {
@@ -110,26 +137,36 @@ $(function () {
             });
         };
 
+        // Below functions swap views for both filament swap and filament detection swap
         self.showUnload = function () {
-            $('.swap_process_step').removeClass('active');
-            $('#unload_filament').addClass('active');
-            $('#unload_cmd').removeClass('disabled');
+            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
+            $('#unload_filament,#fd_unload_filament').addClass('active');
+            $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
         };
 
         self.showLoad = function () {
-            $('#swap-info').removeClass('active')
-            $('#swap-load-unload').addClass('active');
-            $('.swap_process_step').removeClass('active');
-            $('#load_filament').addClass('active');
+            $('#swap-info,#fd-swap-info').removeClass('active');
+            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
+            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
+            $('#load_filament,#fd_load_filament').addClass('active');
             self.filamentLoading(false);
         };
 
         self.showFinished = function () {
-            $('#swap-info').removeClass('active')
-            $('#swap-load-unload').addClass('active');
-            $('.swap_process_step').removeClass('active');
-            $('#finished_filament').addClass('active');
+            $('#swap-info,#fd-swap-info').removeClass('active')
+            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
+            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
+            $('#finished_filament,#fd_finished_filament').addClass('active');
         };
+
+        self.onToolHeating = function () {
+            $('#swap-info,#fd-swap-info').addClass('active')
+            $('#swap-load-unload,#fd-swap-load-unload').removeClass('active');
+        }
+
+        self.hideToolLoading = function () {
+            $('#tool_loading,#fd_tool_loading').removeClass('active');
+        }
 
         self.finishedLoading = function () {
             // We are finished close the flyout
@@ -139,11 +176,11 @@ $(function () {
         // Api send functions
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
+            return OctoPrint.postJson(url, data);
         };
 
         self.changeFilament = function (tool) {
-            self._sendApi({
+            return self._sendApi({
                 command: "change_filament",
                 tool: tool
             });
@@ -153,6 +190,8 @@ $(function () {
             self._sendApi({
                 command: "change_filament_cancel"
             });
+
+            self.requestData();
         }
 
         self.changeFilamentDone = function () {
@@ -167,30 +206,46 @@ $(function () {
             });
         }
 
-        self.loadFilament = function() {
-            if (slider.noUiSlider.get()) {
+        self.loadFilament = function (loadFor) {
+
+            loadFor = loadFor || "swap";
+
+            if (loadFor == "filament-detection" && fd_slider.noUiSlider.get()) {
+                amount = fd_slider.noUiSlider.get() * 1000;
+            }
+            else if (loadFor == "filament-detection-purge" || loadFor == "purge") {
+                amount = 0;
+            }
+            else if (slider.noUiSlider.get()) {
                 amount = slider.noUiSlider.get() * 1000;
             } else {
                 amount = 0;
             }
-            profile = self.selectedTemperatureProfile();
+
+            if (loadFor == "filament-detection" || loadFor == "filament-detection-purge" || loadFor == "purge") {
+                profileName = loadFor;
+            }
+            else {
+                profile = self.selectedTemperatureProfile();
+                profileName = profile.name;
+            }
 
             self._sendApi({
                 command: "load_filament",
-                profile: profile,
+                profileName: profileName,
                 amount: amount
             });
         }
 
         self.updateFilament = function (tool, amount) {
             self._sendApi({
-                command: "update_filament", 
+                command: "update_filament",
                 tool: tool,
                 amount: amount
             })
         };
 
-        self.loadFilamentCont = function() {
+        self.loadFilamentCont = function () {
             tool = self.tool();
             direction = 1;
 
@@ -201,7 +256,7 @@ $(function () {
             });
         };
 
-        self.loadFilamentContStop = function() {
+        self.loadFilamentContStop = function () {
             self._sendApi({
                 command: "load_filament_cont_stop"
             });
@@ -212,7 +267,7 @@ $(function () {
             if (plugin != "lui") {
                 return;
             }
-            
+
             console.log(data);
 
             var messageType = data['type'];
@@ -220,6 +275,7 @@ $(function () {
             switch (messageType) {
                 case "filament_in_progress":
                     self.filamentInProgress(true);
+
                     break;
                 case "skip_unload":
                     self.showLoad();
@@ -228,8 +284,7 @@ $(function () {
                     self.filamentInProgress(true);
                     self.filamentLoading(true);
                     self.filamentLoadProgress(0);
-                    $('#swap-info').addClass('active')
-                    $('#swap-load-unload').removeClass('active');
+                    self.onToolHeating();
                     break;
                 case "filament_loading":
                     // Show loading info
@@ -252,7 +307,7 @@ $(function () {
                     self.filamentInProgress(false);
                     self.filamentLoading(false);
                     self.showFinished();
-                    $('#tool_loading').removeClass('active');
+                    self.hideToolLoading();
                     self.filamentLoadProgress(0);
                     // Out for now TODO
                     // $.notify({
@@ -268,7 +323,8 @@ $(function () {
                     self.filamentLoadProgress(0);
                     $.notify({
                         title: gettext("Filament loaded aborted!"),
-                        text: _.sprintf(gettext('Please re-run load filament procedure'), {})},
+                        text: _.sprintf(gettext('Please re-run load filament procedure'), {})
+                    },
                         "warning"
                     )
                     self.requestData();
@@ -277,8 +333,8 @@ $(function () {
                 case "update_filament_amount":
                     //console.log(messageData.extrusion)
                     // TODO
-                        self.rightAmount(messageData.filament[0])
-                        self.leftAmount(messageData.filament[1])
+                    self.rightAmount(messageData.filament[0])
+                    self.leftAmount(messageData.filament[1])
                     break;
 
             }
@@ -295,7 +351,7 @@ $(function () {
             });
         }
 
-        self.onBeforeBinding = function(){
+        self.onBeforeBinding = function () {
             self.requestData();
             self.tool("tool0");
             self.copyMaterialProfiles();
@@ -305,19 +361,19 @@ $(function () {
             self.copyMaterialProfiles();
         };
 
-        self.fromResponse = function(data) {
+        self.fromResponse = function (data) {
             var filaments = ko.mapping.fromJS(data.filaments);
             self.filaments(filaments());
-            self.leftFilament(self.filaments().find(function(x) { return x.tool() === "tool1"}).material.name());
-            self.rightFilament(self.filaments().find(function(x) { return x.tool() === "tool0"}).material.name());
-            self.leftAmount(self.filaments().find(function(x) { return x.tool() === "tool1"}).amount());
-            self.rightAmount(self.filaments().find(function(x) { return x.tool() === "tool0"}).amount());
+            self.leftFilament(self.filaments().find(function (x) { return x.tool() === "tool1" }).material.name());
+            self.rightFilament(self.filaments().find(function (x) { return x.tool() === "tool0" }).material.name());
+            self.leftAmount(self.filaments().find(function (x) { return x.tool() === "tool1" }).amount());
+            self.rightAmount(self.filaments().find(function (x) { return x.tool() === "tool0" }).amount());
         }
 
         self.requestData = function () {
-          OctoPrint.simpleApiGet('lui', {
-            success: self.fromResponse
-          });
+            OctoPrint.simpleApiGet('lui', {
+                success: self.fromResponse
+            });
         }
 
 

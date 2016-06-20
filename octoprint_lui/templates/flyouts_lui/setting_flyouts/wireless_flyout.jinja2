@@ -1,8 +1,11 @@
 <div id="settings_plugin_networkmanager">
 	<div id="networkmanager_connections" class="Table active">
 		<div class="Table-row Table-header">
-			<div class="Table-item Table-item-grow-8">
+			<div class="Table-item Table-item-grow-2">
 				Wifi
+			</div>
+			<div class="Table-item Table-item-grow-6">
+				<span data-bind="text: wifiIp"></span>
 			</div>
 			<div class="Table-item">
 				<i class="fa fa-wifi"></i>
@@ -27,8 +30,11 @@
 		</div>
 		<!-- /ko -->
 		<div class="Table-row Table-header">
-			<div class="Table-item">
+			<div class="Table-item Table-item-grow-2">
 				Wired
+			</div>
+			<div class="Table-item Table-item-grow-6">
+				<span data-bind="text: ethernetIp"></span>
 			</div>
 		</div>
 		<div class="Table-row">

@@ -1,27 +1,29 @@
 <script>
-    var UI_API_KEY = "{{ uiApiKey }}";
-    var BASEURL = "{{ url_for('index') }}";
-    var API_BASEURL = BASEURL + "api/";
-    var PLUGIN_BASEURL = BASEURL + "plugin/";
+  var UI_API_KEY = "{{ uiApiKey }}";
+  var BASEURL = "{{ url_for('index') }}";
+  var API_BASEURL = BASEURL + "api/";
+  var PLUGIN_BASEURL = BASEURL + "plugin/";
 
 
-    var OCTOPRINT_VIEWMODELS = [];
-    var ADDITIONAL_VIEWMODELS = [];
-    var OCTOPRINT_ADDITIONAL_BINDINGS = [];
+  var OCTOPRINT_VIEWMODELS = [];
+  var ADDITIONAL_VIEWMODELS = [];
+  var OCTOPRINT_ADDITIONAL_BINDINGS = [];
 
-    var CONFIG_DEBUG = {%  if debug -%} true; {% else %} false; {%- endif %}
-    var CONFIG_SD_SUPPORT = {% if enableSdSupport -%} true; {% else %} false; {%- endif %}
+  var CONFIG_DEBUG = {%  if debug -%} true; {% else %} false; {%- endif %}
+  var CONFIG_SD_SUPPORT = {% if enableSdSupport -%} true; {% else %} false; {%- endif %}
 
 
-    var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
-    var SOCKJS_DEBUG = CONFIG_DEBUG;
-    // sockjs should define CLOSE_NORMAL for us, but they don't (from ws spec)
-    var SOCKJS_CLOSE_NORMAL = 1000;
+  var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
+  var SOCKJS_DEBUG = CONFIG_DEBUG;
+  // sockjs should define CLOSE_NORMAL for us, but they don't (from ws spec)
+  var SOCKJS_CLOSE_NORMAL = 1000;
 
-    var VERSION = "{{ version.number|e }}";
-    var LOCALE = "{{ g.locale|e }}";
-    var AVAILABLE_LOCALES = {{ locales|tojson }};
-    var CONFIG_LOGFILESPERPAGE = 10;
-    var CONFIG_USERSPERPAGE = 5;
-    var CONFIG_ACCESS_CONTROL = true; 
+  var VERSION = "{{ version.number|e }}";
+  var LOCALE = "{{ g.locale|e }}";
+  var AVAILABLE_LOCALES = {{ locales|tojson }};
+  var CONFIG_LOGFILESPERPAGE = 10;
+  var CONFIG_USERSPERPAGE = 5;
+  var CONFIG_ACCESS_CONTROL = true;
+
+  var IS_LOCAL = {%  if local_addr -%} true; {% else %} false; {%- endif %}
 </script>

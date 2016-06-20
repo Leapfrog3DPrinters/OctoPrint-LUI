@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function PrinterStateViewModel(parameters) {
         // TODO Adapt to LUI
         var self = this;
@@ -6,6 +6,7 @@ $(function() {
         self.loginState = parameters[0];
         self.flyout = parameters[1];
         self.temperatureState = parameters[2];
+        self.settings = parameters[3];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -26,20 +27,22 @@ $(function() {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
-        self.filenameNoExtension = ko.computed(function(){
-            if(self.filename())
-                return self.filename().slice(0,(self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
+        self.warningVm = undefined;
+
+        self.filenameNoExtension = ko.computed(function () {
+            if (self.filename())
+                return self.filename().slice(0, (self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
         })
 
         self.busyFiles = ko.observableArray([]);
 
-        self.enablePrint = ko.computed(function() {
+        self.enablePrint = ko.computed(function () {
             return self.isOperational() && self.isReady() && !self.isPrinting() && self.loginState.isUser() && self.filename() != undefined;
         });
-        self.enablePause = ko.computed(function() {
+        self.enablePause = ko.computed(function () {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
         });
-        self.enableCancel = ko.computed(function() {
+        self.enableCancel = ko.computed(function () {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
         });
 
@@ -57,30 +60,30 @@ $(function() {
         self.titlePrintButton = ko.observable(self.TITLE_PRINT_BUTTON_UNPAUSED);
         self.titlePauseButton = ko.observable(self.TITLE_PAUSE_BUTTON_UNPAUSED);
 
-        self.estimatedPrintTimeString = ko.computed(function() {
+        self.estimatedPrintTimeString = ko.computed(function () {
             if (self.lastPrintTime())
                 return formatDuration(self.lastPrintTime());
             if (self.estimatedPrintTime())
                 return formatDuration(self.estimatedPrintTime());
             return "-";
         });
-        self.byteString = ko.computed(function() {
+        self.byteString = ko.computed(function () {
             if (!self.filesize())
                 return "-";
             var filepos = self.filepos() ? formatSize(self.filepos()) : "-";
             return filepos + " / " + formatSize(self.filesize());
         });
-        self.heightString = ko.computed(function() {
+        self.heightString = ko.computed(function () {
             if (!self.currentHeight())
                 return "-";
             return _.sprintf("%.02fmm", self.currentHeight());
         });
-        self.printTimeString = ko.computed(function() {
+        self.printTimeString = ko.computed(function () {
             if (!self.printTime())
                 return "-";
             return formatDuration(self.printTime());
         });
-        self.printTimeLeftString = ko.computed(function() {
+        self.printTimeLeftString = ko.computed(function () {
             if (self.printTimeLeft() == undefined) {
                 if (!self.printTime() || !(self.isPrinting() || self.isPaused())) {
                     return "-";
@@ -91,19 +94,19 @@ $(function() {
                 return formatFuzzyEstimation(self.printTimeLeft());
             }
         });
-        self.progressString = ko.computed(function() {
+        self.progressString = ko.computed(function () {
             if (!self.progress())
                 return 0;
             return self.progress();
         });
-        self.pauseString = ko.computed(function() {
+        self.pauseString = ko.computed(function () {
             if (self.isPaused())
                 return gettext("Continue");
             else
                 return gettext("Pause");
         });
 
-        self.leftFilament = ko.computed(function() {
+        self.leftFilament = ko.computed(function () {
             filaments = self.filament();
             for (var key in filaments) {
                 if (filaments[key].name() == "Tool 1") {
@@ -113,7 +116,7 @@ $(function() {
             return "-"
         });
 
-        self.rightFilament = ko.computed(function() {
+        self.rightFilament = ko.computed(function () {
             filaments = self.filament();
             for (var key in filaments) {
                 if (filaments[key].name() == "Tool 0") {
@@ -123,12 +126,12 @@ $(function() {
             return "-"
         });
 
-        self.stateStepString = ko.computed(function() {
+        self.stateStepString = ko.computed(function () {
             if (self.temperatureState.isHeating()) return "Heating";
             return self.stateString();
         });
 
-        self.stateStepColor = ko.computed(function() {
+        self.stateStepColor = ko.computed(function () {
             if (self.temperatureState.isHeating()) return "bg-orange"
             if (self.isPrinting()) return "bg-main"
             if (self.isError()) return "bg-red"
@@ -136,14 +139,14 @@ $(function() {
         });
 
 
-        self.fileSelected = ko.computed(function() {
-            if(self.filename()) 
+        self.fileSelected = ko.computed(function () {
+            if (self.filename())
                 return true
-            else 
+            else
                 return false
         });
 
-        self.timelapseString = ko.computed(function() {
+        self.timelapseString = ko.computed(function () {
             var timelapse = self.timelapse();
 
             if (!timelapse || !timelapse.hasOwnProperty("type"))
@@ -159,19 +162,19 @@ $(function() {
             }
         });
 
-        self.fromCurrentData = function(data) {
+        self.fromCurrentData = function (data) {
             self._fromData(data);
         };
 
-        self.fromHistoryData = function(data) {
+        self.fromHistoryData = function (data) {
             self._fromData(data);
         };
 
-        self.fromTimelapseData = function(data) {
+        self.fromTimelapseData = function (data) {
             self.timelapse(data);
         };
 
-        self._fromData = function(data) {
+        self._fromData = function (data) {
             self._processStateData(data.state);
             self._processJobData(data.job);
             self._processProgressData(data.progress);
@@ -179,7 +182,7 @@ $(function() {
             self._processBusyFiles(data.busyFiles);
         };
 
-        self._processStateData = function(data) {
+        self._processStateData = function (data) {
             var prevPaused = self.isPaused();
 
             self.stateString(gettext(data.text));
@@ -202,7 +205,7 @@ $(function() {
             }
         };
 
-        self._processJobData = function(data) {
+        self._processJobData = function (data) {
             if (data.file) {
                 self.filename(data.file.name);
                 self.filesize(data.file.size);
@@ -217,7 +220,7 @@ $(function() {
             self.lastPrintTime(data.lastPrintTime);
 
             var result = [];
-            if (data.filament && typeof(data.filament) == "object" && _.keys(data.filament).length > 0) {
+            if (data.filament && typeof (data.filament) == "object" && _.keys(data.filament).length > 0) {
                 for (var key in data.filament) {
                     if (!_.startsWith(key, "tool") || !data.filament[key] || !data.filament[key].hasOwnProperty("length") || data.filament[key].length <= 0) continue;
 
@@ -230,7 +233,7 @@ $(function() {
             self.filament(result);
         };
 
-        self._processProgressData = function(data) {
+        self._processProgressData = function (data) {
             if (data.completion) {
                 self.progress(data.completion);
             } else {
@@ -241,13 +244,13 @@ $(function() {
             self.printTimeLeft(data.printTimeLeft);
         };
 
-        self._processZData = function(data) {
+        self._processZData = function (data) {
             self.currentHeight(data);
         };
 
-        self._processBusyFiles = function(data) {
+        self._processBusyFiles = function (data) {
             var busyFiles = [];
-            _.each(data, function(entry) {
+            _.each(data, function (entry) {
                 if (entry.hasOwnProperty("name") && entry.hasOwnProperty("origin")) {
                     busyFiles.push(entry.origin + ":" + entry.name);
                 }
@@ -255,7 +258,7 @@ $(function() {
             self.busyFiles(busyFiles);
         };
 
-        self.print = function() {
+        self.print = function () {
 
             // if (self.filament)
             // var text = "You are about to update a component of the User Interface.";
@@ -264,36 +267,132 @@ $(function() {
             // var dialog = {'title': title, 'text': text, 'question' : question};
             var data = {};
             self.flyout.showConfirmationFlyout(data)
-                .done(function(){
+                .done(function () {
                     OctoPrint.job.start();
                 });
         };
 
-        self.pause = function() {
+        self.pause = function () {
             OctoPrint.job.pause();
         };
 
-        self.cancel = function() {
+        self.cancel = function () {
             OctoPrint.job.cancel();
         };
 
-        self.showFileSelectFlyout =function () {
+        self.showFileSelectFlyout = function () {
             self.flyout.showFlyout('file')
-                .done(function (){
-            });
+                .done(function () {
+                });
         };
 
         self.showInfoFlyout = function () {
             self.flyout.showFlyout('info')
-                .done(function (){
-            });
+                .done(function () {
+                });
         };
 
+        self.showStartupFlyout = function (isHoming) {
+            $('.startup_step').removeClass('active');
+
+            if (isHoming)
+                $('#startup_step_busy_homing').addClass('active');
+            else
+                $('#startup_step_prompt').addClass('active');
+
+            self.flyout.showFlyout('startup', true);
+        }
+
+        self.closeStartupFlyout = function () {
+            self.flyout.closeFlyoutAccept();
+        }
+
+        self.beginHoming = function () {
+            self._sendApi({ command: "begin_homing" });
+        }
+
+        self.beginMaintenance = function ()
+        {
+            self.flyout.closeFlyout();
+
+            self.settings.showSettingsTopic('maintenance', true)
+            .always(function ()
+            {
+                self.showStartupFlyout(false);
+            });
+        }
+        
+        self.showBusyHoming = function () {
+            $('.startup_step').removeClass('active');
+            $('#startup_step_busy_homing').addClass('active');
+        }
+
+        self.onDoorOpen = function () {
+            if (self.warningVm === undefined) {
+                self.warningVm = self.flyout.showWarning('Door open',
+                    'Please close the door before you continue printing.');
+            }
+        }
+        self.onDoorClose = function () {
+            if (self.warningVm !== undefined) {
+                self.flyout.closeWarning(self.warningVm);
+                self.warningVm = undefined;
+            }
+        }
+
+        self.fromResponse = function (data) {
+            if (!data.is_homed) {
+                self.showStartupFlyout(data.is_homing);
+            }
+        }
+
+        // Api send functions
+        
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            OctoPrint.postJson(url, data);
+        };
+
+        self.requestData = function () {
+            OctoPrint.simpleApiGet('lui', {
+                success: self.fromResponse
+            });
+        }
+
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
+            if (plugin != "lui") {
+                return;
+            }
+
+            console.log(data);
+
+            var messageType = data['type'];
+            var messageData = data['data'];
+            switch (messageType) {
+                case "is_homed":
+                    if(self.flyout.flyoutName == "startup")
+                        self.closeStartupFlyout();
+                    break;
+                case "is_homing":
+                    self.showBusyHoming();
+                    break;
+                case "door_open":
+                    self.onDoorOpen();
+                    break;
+                case "door_closed":
+                    self.onDoorClose();
+                    break;
+            }
+        }
+
+        self.onAfterBinding = function () {
+            self.requestData();
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel"],
-        ["#print", "#info_flyout"]
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
+        ["#print", "#info_flyout", "#startup_flyout"]
     ]);
 });

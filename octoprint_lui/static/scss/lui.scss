@@ -28,6 +28,12 @@ $orangeborder: 1px solid $third-color;
   font-weight: medium;
 }
 
+@font-face {
+  font-family: agenda-bold;
+  src: url(../fonts/agenda-bold.ttf);
+  font-weight: bold;
+}
+
 
 /* 
   Mixins
@@ -213,9 +219,10 @@ a {
   background-color: $second-color;
 }
 
-.button-area i {
+.button-area i, h4 i, .icon-text i {
   padding-right: 0.4em;
 }
+
 
 .title {
   flex-basis: 100%;
@@ -754,7 +761,7 @@ a {
 
 
 .progress {
-  background-color: #f9f9f9;
+  background-color: #f2f2f2;
   color: #fff;
   box-sizing: initial;
   position: relative;
@@ -970,6 +977,9 @@ select {
 .file_sort{
   flex-basis: 5%;
   margin-left:auto;
+  & a {
+    color: $main-color;
+  }
 }
 
 .file_area {
@@ -1152,9 +1162,19 @@ pre code {
   overflow-y: scroll;
 }
 
+/* Startup */
+.startup_step
+{
+    display: none;
+  width: 100%;
+  &.active {
+    display: inline-block;
+  }
+}
+
 /* Filament swap */
 
-.swap_process_step {
+.swap_process_step, .fd_swap_process_step {
   display: none;
   width: 100%;
   &.active {
@@ -1162,17 +1182,28 @@ pre code {
   }
 }
 
-#swap-info {
+#swap-info, #fd-swap-info {
   display:none;
   &.active {
     display:flex;
   }
 }
 
-#swap-load-unload {
+#swap-load-unload, #fd-swap-load-unload {
   display: none;
   &.active {
     display:flex;
+  }
+}
+
+/* Filament Detection - Filament swap */
+
+.fd_step
+{
+    display: none;
+    width: 100%;
+  &.active {
+    display:inline-block;
   }
 }
 
