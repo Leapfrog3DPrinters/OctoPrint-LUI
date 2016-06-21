@@ -270,7 +270,7 @@ $(function() {
                 })
                 .fail(function() {
                     var text = gettext("There was unexpected error while updating the printer profile, please consult the logs.");
-                    $notify({title: gettext("Saving failed"), text: text}, "error");
+                    $.notify({title: gettext("Saving failed"), text: text}, "error");
                 })
                 .always(function() {
                     self.requestInProgress(false);
