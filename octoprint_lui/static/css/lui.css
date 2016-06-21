@@ -787,6 +787,8 @@ select {
 .file_sort {
   flex-basis: 5%;
   margin-left: auto; }
+  .file_sort a {
+    color: #434A54; }
 
 .file_area {
   display: flex;
