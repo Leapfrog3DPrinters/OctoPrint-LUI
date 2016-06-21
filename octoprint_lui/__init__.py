@@ -264,7 +264,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
         remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
         base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
-        return True
 
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
