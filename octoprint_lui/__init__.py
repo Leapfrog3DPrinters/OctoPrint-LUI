@@ -974,7 +974,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("Extruder zero: %s" % cmd)
 
     def _process_G0_G1(self, cmd, comm_instance):
-        self._logger.info("Command: %s" % cmd)
+        #self._logger.info("Command: %s" % cmd)
 
         ##~ Process a G0/G1 command with extrusion
         extrusion_code = self.regexExtruder.search(cmd)
@@ -1002,7 +1002,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.last_saved_filament_amount = deepcopy(self.filament_amount)
 
     def _process_G28(self, cmd):
-        self._logger.info("Command: %s" % cmd)
+        #self._logger.info("Command: %s" % cmd)
         self.home_command_send = True
         self.is_homing = True
 

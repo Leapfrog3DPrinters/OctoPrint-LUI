@@ -580,6 +580,12 @@ $(function() {
                 return;
 
             available = self.isUsbAvailable();
+            
+            if (!available)
+                $.notify({
+                    title: gettext("USB drive removed"),
+                    text: gettext('A USB drive was disconnected from the printer.')
+                }, "success");
 
             if ($('#files').hasClass('open'))
             {
