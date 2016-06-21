@@ -8,6 +8,7 @@ import re
 import subprocess
 import netaddr
 import os
+import platform
 import flask
 
 from pipes import quote
@@ -16,6 +17,8 @@ from copy import deepcopy
 from flask import jsonify, make_response, render_template, request
 
 from tinydb import TinyDB, Query 
+
+import octoprint_lui.util
 
 import octoprint.plugin
 from octoprint.settings import settings
@@ -34,6 +37,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 ):
 
     def __init__(self):
+
+        ##~ Global
+        self.from_localhost = False
 
         ##~ Model specific variables
         self.model = None
@@ -139,6 +145,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homed = False
         self.is_homing = False
 
+        ##~ USB
+        self.media_folder = '/media/pi'
+        self.is_media_mounted = False
 
     def initialize(self):
         self._init_usb();
@@ -296,11 +305,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         remote_address = get_remote_address(request)
         localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
         if remote_address is None:
-            from_localhost = True
+            self.from_localhost = True
         else:
-            from_localhost = netaddr.IPAddress(remote_address) in localhost
+            self.from_localhost = netaddr.IPAddress(remote_address) in localhost
 
-        response = make_response(render_template("index_lui.jinja2", local_addr=from_localhost, **render_kwargs))
+        response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, **render_kwargs))
 
         if remote_address is None:
             from octoprint.server.util.flask import add_non_caching_response_headers
@@ -327,8 +336,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request = None):
-        if(request.values is not None and request.values["command"] == "get_files"):
+        command = None
+        
+        if("command" in request.values):
+            command = request.values["command"]        
+
+        if(command == "get_files"):
             return self._on_api_command_get_files(request.values["origin"])
+        elif(command == "is_media_mounted"):
+            return jsonify({ "is_media_mounted" : self.is_media_mounted })
         else:
             return jsonify(dict(
                 update=self.update_info,
@@ -356,6 +372,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     begin_homing = [],
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
+                    #eject_usb = [],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -369,7 +386,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
         self._on_filament_detection_during_print(self._printer._comm)
-        #self._getUsbFileList()
     
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -539,6 +555,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Return original OctoPrint API response
             return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
+    #def on_api_command_eject_usb(self,  *args, **kwargs):
+    #    if(platform.system() is not 'Windows'):
+    #        subprocess.call("udisks --detach /dev/sda1")
    
     def _on_api_command_select_usb_file(self, filename, *args, **kwargs):
 
@@ -1213,10 +1232,40 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_movement_mode()
     
     def _init_usb(self):
+
+        # Add the LocalFileStorage to allow to browse the drive's files and folders
+        if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
+            self.media_folder = "C:\\Tijdelijk\\usb"
         
-        usb_storage = octoprint.filemanager.LocalFileStorage("/media/pi/")
+        usb_storage = octoprint.filemanager.LocalFileStorage(self.media_folder)
 
         octoprint.server.fileManager.add_storage("usb", usb_storage)
+
+        # Start watching the folder for changes (i.e. mounted/unmouted)
+        from watchdog.observers import Observer
+        observer = Observer()
+        
+        event_handler = octoprint_lui.util.CallbackFileSystemWatch(self._on_media_folder_updated)
+        observer.schedule(event_handler, self.media_folder, False)
+        observer.start()
+
+        # Hit the first event in any case
+        self._on_media_folder_updated(None)
+
+
+    def _on_media_folder_updated(self, event):
+        def get_immediate_subdirectories(a_dir):
+            return [name for name in os.listdir(a_dir)
+                if os.path.isdir(os.path.join(a_dir, name))]
+
+        number_of_dirs = len(get_immediate_subdirectories(self.media_folder)) > 0;
+        
+        if(self.from_localhost): 
+            if(event is None or (number_of_dirs > 0 and not self.is_media_mounted) or (number_of_dirs == 0 and self.is_media_mounted)):
+                # If event is None, it's a forced message
+                self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
+
+        self.is_media_mounted = number_of_dirs > 0
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):

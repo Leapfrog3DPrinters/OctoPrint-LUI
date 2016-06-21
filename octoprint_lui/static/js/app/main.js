@@ -379,7 +379,6 @@ $(function() {
         $('.icon-bar > a.active').removeClass('active');
         $(this).addClass('active');
         $(tabID).addClass('open');
-
     });
 
     // Open additional info print file

@@ -18,6 +18,8 @@ $(function() {
         self.isLoading = ko.observable(undefined);
         self.isSdReady = ko.observable(undefined);
 
+        self.isUsbAvailable = ko.observable(false);
+
         self.searchQuery = ko.observable(undefined);
         self.searchQuery.subscribe(function() {
             self.performSearch();
@@ -102,6 +104,11 @@ $(function() {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
             });
         }
+
+        //self.ejectUsb = function()
+        //{
+        //    self._sendApi({ command: "eject_usb" });
+        //}
 
         self.loadFiles = function (origin) {
             return self._getApi({
@@ -567,6 +574,39 @@ $(function() {
             }
         };
 
+        self.onUsbAvailableChanged = function()
+        {
+            if(!IS_LOCAL)
+                return;
+
+            available = self.isUsbAvailable();
+
+            if ($('#files').hasClass('open'))
+            {
+                if (!available)
+                    self.browseLocal();
+                else
+                    self.browseUsb();
+            }
+            else if (available)
+            {
+                var text = "You have inserted a USB drive.";
+                var question = "Would you like to browse through the files?";
+                var title = "USB drive inserted"
+                var dialog = { 'title': title, 'text': text, 'question': question };
+
+                self.flyout.showConfirmationFlyout(dialog)
+               .done(function () {
+                   changeTabTo("files");
+                   self.browseUsb();
+               });
+            }
+            else
+            {
+                self.browseLocal();
+            }
+        }
+
         self.onStartup = function() {
             $(".accordion-toggle[data-target='#files']").click(function() {
                 var files = $("#files");
@@ -743,7 +783,16 @@ $(function() {
             });
 
             self.requestData();
+            self.checkUsbMounted();
         };
+
+        self.checkUsbMounted = function()
+        {
+            self._getApi({ "command": "is_media_mounted" }).done(function (data) {
+                self.isUsbAvailable(data.is_media_mounted);
+                // Don't call onChanged, as it is the initialization
+            });
+        }
 
         self.onEventUpdatedFiles = function (payload) {
             //TODO: Fix for USB
@@ -767,6 +816,24 @@ $(function() {
         self.onEventTransferDone = function(payload) {
             self.requestData(payload.remote, "sdcard");
         };
+
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
+            if (plugin != "lui") {
+                return;
+            }
+
+            console.log(data);
+
+            var messageType = data['type'];
+            var messageData = data['data'];
+            switch (messageType) {
+                case "media_folder_updated":
+                    self.isUsbAvailable(messageData.is_media_mounted);
+                    self.onUsbAvailableChanged();
+                    break
+
+            }
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

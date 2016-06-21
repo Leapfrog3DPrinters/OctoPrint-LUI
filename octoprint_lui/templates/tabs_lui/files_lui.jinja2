@@ -25,7 +25,7 @@
 
             <div class="button-area">
               <ul>
-                <li class="button" data-bind="click: browseUsb">
+                <li class="button" data-bind="click: browseUsb, css: {disabled: !isUsbAvailable()}">
                   <a href="#browse_usb">
                     <span>
                       <i class="fa fa-usb"></i>USB
@@ -163,5 +163,19 @@
         </div>
       </div>
     </div>
+
+    <!--<div>
+      <div class="button-area">
+        <ul>
+          <li class="button" data-bind="click: ejectUsb, css: {disabled: !isUsbAvailable()}">
+            <a href="#eject_usb">
+              <span>
+                <i class="fa fa-eject"></i>Eject USB drive
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>-->
   </div>
 </div>
