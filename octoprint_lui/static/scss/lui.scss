@@ -987,6 +987,9 @@ select {
 .file_sort{
   flex-basis: 5%;
   margin-left:auto;
+  & a {
+    color: $main-color;
+  }
 }
 
 .file_area {

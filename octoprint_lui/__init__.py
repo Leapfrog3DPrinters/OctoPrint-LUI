@@ -91,7 +91,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_info = [
             {
                 'identifier': 'lui',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUI',
+                'path': '/Users/pim/lpfrg/OctoPrint-LUI',
                 'update': False,
                 'action': 'update_lui',
                 'name': "Leapfrog UI",
@@ -99,7 +99,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'networkmanager',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-NetworkManager',
+                'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
                 'update': False,
                 'action': 'update_networkmanager',
                 'name': 'Network Manager',
@@ -107,7 +107,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'flasharduino',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-flashArduino',
+                'path': '/Users/pim/lpfrg/OctoPrint-flashArduino',
                 'update': False,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
@@ -115,7 +115,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },      
             {
                 'identifier': 'octoprint',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint',
+                'path': '/Users/pim/lpfrg/OctoPrint',
                 'update': False,
                 'action': 'update_octoprint',
                 'name': 'OctoPrint',
@@ -902,14 +902,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
     def script_hook(self, comm, script_type, script_name):
+        # The printer should get a positive number here. Altough for the user it might feel like - direction,
+        # Thats how the M206 works.
+        zoffset = -self._settings.get_float(["zoffset"])
+
         if not script_type == "gcode":
             return None
     
         if script_name == "beforePrintStarted":
-            return ["M206 Z%.2f" % self._settings.get_float(["zoffset"])], None
+            return ["M206 Z%.2f" % zoffset], None
 
         if script_name == "afterPrinterConnected":
-            return ["M206 Z%.2f" % self._settings.get_float(["zoffset"])], None
+            return ["M206 Z%.2f" % zoffset], None
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -1225,7 +1229,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._printer.change_tool(self.filament_change_tool)
             self._printer.commands(["M605 S1"])
         elif self.model == "Xeed":
-            self._printer.commands(["G1 X210 Y0 F6000"]) 
+            self._printer.commands(["G1 X190 Y20 F6000"]) 
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
 
