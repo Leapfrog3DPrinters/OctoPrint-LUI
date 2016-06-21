@@ -961,12 +961,22 @@ select {
   Files tab
 */
 
+
 #files .content {
   margin: 0px;
 }
 
-.file_upload {
+
+
+.browse_modes {
   flex-basis: 30%;
+  flex-direction:row;
+  display: flex;
+
+  div
+      {
+      margin-right: 5px;
+  }
 }
 
 .file_search {
