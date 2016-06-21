@@ -262,9 +262,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def is_update_needed(self, path):
         self._logger.info(path)
-        #local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
-        #remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        #base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+        remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
+        base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
         return True
 
         if (local == remote):
@@ -283,10 +283,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def fetch_git_repo(self, path):
         self._logger.info(path)
-        #try:
-        #    output = subprocess.check_output(['git', 'fetch'],cwd=path)
-        #except subprocess.CalledProcessError as err:
-        #    self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
+        try:
+            output = subprocess.check_output(['git', 'fetch'],cwd=path)
+        except subprocess.CalledProcessError as err:
+            self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
         self._logger.debug("Fetched git repo: {path}".format(path=path))
 
     def get_settings_defaults(self):
