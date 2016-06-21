@@ -773,12 +773,12 @@ select {
 #files .content {
   margin: 0px; }
 
-#browse_modes {
-  display: flex;
-  flex: 1 1 auto; }
-
-.file_upload {
-  flex-basis: 30%; }
+.browse_modes {
+  flex-basis: 30%;
+  flex-direction: row;
+  display: flex; }
+  .browse_modes div {
+    margin-right: 5px; }
 
 .file_search {
   flex-basis: 60%;

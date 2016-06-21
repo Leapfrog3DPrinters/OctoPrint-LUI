@@ -1214,7 +1214,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     
     def _init_usb(self):
         
-        usb_storage = octoprint.filemanager.LocalFileStorage("C:\\Tijdelijk\\usb")
+        usb_storage = octoprint.filemanager.LocalFileStorage("/media/pi/")
 
         octoprint.server.fileManager.add_storage("usb", usb_storage)
 
