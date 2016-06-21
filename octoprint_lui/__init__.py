@@ -563,7 +563,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         target = "usb"
             
-        if not octoprint.server.api.files._verifyFileExists(target, filename):
+        #TODO: Feels like it's not really secure. Fix
+        path = os.path.join(self.media_folder, filename)
+        if not (os.path.exists(path) and os.path.isfile(path)):
             return make_response("File not found on '%s': %s" % (target, filename), 404)
 
 		# selects/loads a file
@@ -575,8 +577,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #    if not printer.is_operational():
         #        return make_response("Printer is not operational, cannot directly start printing", 409)
         #    printAfterLoading = True
-
-        path = octoprint.server.fileManager.path_on_disk(target, filename)
 
         # Now the full path is known, remove any folder names from file name
         _, filename = octoprint.server.fileManager.split_path("usb", filename)
