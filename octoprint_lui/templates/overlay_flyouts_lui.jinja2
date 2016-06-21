@@ -255,3 +255,45 @@
     </aside>
   </script>
 </div>
+<div id="infos_container">
+  <div data-bind="template: { name: 'info-template', foreach: infos }">
+  </div>
+  <script type="text/html" id="info-template">
+    <aside class="flyout info_flyout active">
+      <div class="flyout-header bg-green">
+        <h4>
+          <i class="fa fa-info"></i>Information
+        </h4>
+      </div>
+      <div class="flyout-body">
+        <div id="info_flyout_content">
+          <div class="Table">
+            <div class="Table-row Table-header">
+              <div class="Table-item">
+                <div data-bind="text: info_title"></div>
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <div id="info_text" data-bind="text: info_text"></div>
+              </div>
+            </div>
+            <!-- ko if: !blocking -->
+            <div class="Table-row">
+              <div class="Table-item">
+                <ul class="button-area">
+                  <li class="button ok-button">
+                    <a href="#save" data-bind="click: function() { $root.closeLastInfo() }">
+                      <span>OK</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
+    </aside>
+  </script>
+</div>

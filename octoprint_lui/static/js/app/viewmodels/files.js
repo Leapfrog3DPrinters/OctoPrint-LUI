@@ -349,12 +349,18 @@ $(function() {
 
             if (file.origin == "usb")
             {
+                var inf = self.flyout.showInfo("Loading file...", "Please wait while the file is being transferred from your USB drive to the printer.", true);
+
                 self._sendApi({ command: "select_usb_file", filename: OctoPrint.files.pathForElement(file) }).done(function () {
+                    self.flyout.closeInfo(inf);
+
                     if (printAfterLoad) {
                         OctoPrint.job.start();
                     }
+                    
                     if (self.flyout.deferred)
                         self.flyout.closeFlyoutAccept();
+
                     changeTabTo("print");
                 });
             }
@@ -827,8 +833,6 @@ $(function() {
             if (plugin != "lui") {
                 return;
             }
-
-            console.log(data);
 
             var messageType = data['type'];
             var messageData = data['data'];
