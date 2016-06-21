@@ -146,7 +146,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homing = False
 
         ##~ USB
-        self.media_folder = '/media/pi'
+        self.media_folder = "/Volumes"
         self.is_media_mounted = False
 
     def initialize(self):
