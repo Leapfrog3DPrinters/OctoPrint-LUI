@@ -29,6 +29,18 @@
 			</div>
 		</div>
 		<!-- /ko -->
+		<div class="Table-row">
+			<div class="Table-item">
+				<ul class="button-area">
+					<li class="button" data-bind="click: function() {sendWifiRefresh(true)}, css: {disabled: working() || error() }"><a href=""><span>Rescan</span></a></li>
+				</ul>
+			</div>
+			<div class="Table-item">
+				<ul class="button-area">
+					<li class="button" data-bind="click: function(){sendWifiDisconnect()}, css: {disabled: !status.connection.wifi()}"><a href=""><span>Disconnect</span></a></li>
+				</ul>
+			</div>
+		</div>
 		<div class="Table-row Table-header">
 			<div class="Table-item Table-item-grow-2">
 				Wired
@@ -39,18 +51,6 @@
 		</div>
 		<div class="Table-row">
 			<div class="Table-item" data-bind="text: ethernetConnectionText"></div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				<ul class="button-area">
-					<li class="button" data-bind="click: function() {sendWifiRefresh(true)}, css: {disabled: working || error }"><a href=""><span>Rescan</span></a></li>
-				</ul>
-			</div>
-			<div class="Table-item">
-				<ul class="button-area">
-					<li class="button" data-bind="click: sendWifiDisconnect, css: {disabled: !status.connection.wifi}"><a href=""><span>Disconnect</span></a></li>
-				</ul>
-			</div>
 		</div>
 	</div>
 	<div id="networkmanager_connect" class="Table">
