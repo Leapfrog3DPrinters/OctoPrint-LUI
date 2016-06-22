@@ -88,40 +88,43 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update software init
         self.last_git_fetch = 0
-        self.update_info = [
-            {
-                'identifier': 'lui',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUI',
-                'update': False,
-                'action': 'update_lui',
-                'name': "Leapfrog UI",
-                'version': "testing"
-            },
-            {
-                'identifier': 'networkmanager',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-NetworkManager',
-                'update': False,
-                'action': 'update_networkmanager',
-                'name': 'Network Manager',
-                'version': "0.0.1"
-            },
-            {
-                'identifier': 'flasharduino',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-flashArduino',
-                'update': False,
-                'action': 'update_flasharduino',
-                'name': 'Flash Firmware Module',
-                'version': "0.0.1"
-            },      
-            {
-                'identifier': 'octoprint',
-                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint',
-                'update': False,
-                'action': 'update_octoprint',
-                'name': 'OctoPrint',
-                'version': VERSION
-            }
-            ]
+        if(platform.system() == "Windows"):
+            self.update_info = []
+        else:
+            self.update_info = [
+                {
+                    'identifier': 'lui',
+                    'path': '/home/pi/OctoPrint-LUI',
+                    'update': False,
+                    'action': 'update_lui',
+                    'name': "Leapfrog UI",
+                    'version': "testing"
+                },
+                {
+                    'identifier': 'networkmanager',
+                    'path': '/home/pi/OctoPrint-NetworkManager',
+                    'update': False,
+                    'action': 'update_networkmanager',
+                    'name': 'Network Manager',
+                    'version': "0.0.1"
+                },
+                {
+                    'identifier': 'flasharduino',
+                    'path': '/home/pi/OctoPrint-flashArduino',
+                    'update': False,
+                    'action': 'update_flasharduino',
+                    'name': 'Flash Firmware Module',
+                    'version': "0.0.1"
+                },      
+                {
+                    'identifier': 'octoprint',
+                    'path': '/home/pi/OctoPrint',
+                    'update': False,
+                    'action': 'update_octoprint',
+                    'name': 'OctoPrint',
+                    'version': VERSION
+                }
+                ]
 
         ##~ Temperature status 
         self.tool_status = {
