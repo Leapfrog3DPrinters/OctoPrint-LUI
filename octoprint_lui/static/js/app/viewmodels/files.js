@@ -844,8 +844,8 @@ $(function() {
                     self.onUsbAvailableChanged();
                     break;
                 case "media_file_copy_progress":
-                    console.log("media_file_copy_progress: " + percentage);
-                    self.setProgressBar(data.percentage);
+                    console.log("media_file_copy_progress: " + messageData.percentage);
+                    self.setProgressBar(messageData.percentage);
                     break;
 
             }

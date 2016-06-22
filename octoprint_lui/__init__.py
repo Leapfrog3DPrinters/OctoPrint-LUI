@@ -633,18 +633,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         futureFullPath = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, futurePath, futureFilename)
         
-        def _on_selected_usb_file_copy():
-            percentage = (os.path.getsize(path) / os.path.getsize(futureFullPath)) * 100
+        def on_selected_usb_file_copy():
+            percentage = (float(os.path.getsize(futureFullPath)) / float(os.path.getsize(path))) * 100.0
             self._logger.info("Copy progress: %f" % percentage)
             self._send_client_message("media_file_copy_progress", { "percentage" : percentage })
     
-        def _is_copying_selected_usb_file():
-            return os.path.getsize(path) > os.path.getsize(futureFullPath)
+        is_copying = True
+
+        def is_copying_selected_usb_file():
+            return is_copying
+            #return os.path.getsize(path) > os.path.getsize(futureFullPath)
+
+        def copying_finished():
+            self._send_client_message("media_file_copy_progress", { "percentage" : 0 })
 
         # Start watching the final file to monitor it's filesize
-        #kwargs = { "path": futureFullPath },
-        timer = RepeatedTimer(0.1, _on_selected_usb_file_copy, run_first = True, condition = _is_copying_selected_usb_file)
+        timer = RepeatedTimer(1, on_selected_usb_file_copy, run_first = False, condition = is_copying_selected_usb_file, on_finish = copying_finished)
         timer.start()
+
         try:
             # This will do the actual copy
             added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, futureFullPath, upload, allow_overwrite=True)
@@ -655,6 +661,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 return make_response("Could not upload the file \"{}\"".format(upload.filename), 500)   
 
+        # Stop the timer
+        is_copying = False
+        
         if octoprint.filemanager.valid_file_type(added_file, "stl"):
             filename = added_file
             done = True
