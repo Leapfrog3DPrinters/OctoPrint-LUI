@@ -625,9 +625,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         futureFullPath = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, futurePath, futureFilename)
         
+        def _on_selected_usb_file_copy():
+            percentage = (os.path.getsize(path) / os.path.getsize(futureFullPath)) * 100
+            self._logger.info("Copy progress: %f" % percentage)
+            self._send_client_message("media_file_copy_progress", { "percentage" : percentage })
+    
+        def _is_copying_selected_usb_file():
+            return os.path.getsize(path) > os.path.getsize(futureFullPath)
+
+        # Start watching the final file to monitor it's filesize
+        #kwargs = { "path": futureFullPath },
+        timer = RepeatedTimer(0.1, _on_selected_usb_file_copy, run_first = True, condition = _is_copying_selected_usb_file)
+        timer.start()
         try:
+            # This will do the actual copy
             added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, futureFullPath, upload, allow_overwrite=True)
         except octoprint.filemanager.storage.StorageError as e:
+            timer.cancel()
             if e.code == octoprint.filemanager.storage.StorageError.INVALID_FILE:
                 return make_response("Could not upload the file \"{}\", invalid type".format(upload.filename), 400)
             else:
@@ -666,7 +680,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         r = make_response(jsonify(files=files, done=done), 201)
         r.headers["Location"] = location
 
-        return r
+        return r 
 
     ##~ Load and Unload methods
 

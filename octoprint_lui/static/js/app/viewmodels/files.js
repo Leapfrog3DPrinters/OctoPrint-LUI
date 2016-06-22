@@ -58,6 +58,7 @@ $(function() {
 
         self.uploadButton = undefined;
         self.uploadSdButton = undefined;
+        self.uploadProgressBar = undefined;
 
         self.addFolderDialog = undefined;
         self.addFolderName = ko.observable(undefined);
@@ -349,10 +350,12 @@ $(function() {
 
             if (file.origin == "usb")
             {
-                var inf = self.flyout.showInfo("Loading file...", "Please wait while the file is being transferred from your USB drive to the printer.", true);
+                //var inf = self.flyout.showInfo("Loading file...", "Please wait while the file is being transferred from your USB drive to the printer.", true);
 
                 self._sendApi({ command: "select_usb_file", filename: OctoPrint.files.pathForElement(file) }).done(function () {
-                    self.flyout.closeInfo(inf);
+                    //self.flyout.closeInfo(inf);
+
+                    self.setProgressBar(0);
 
                     if (printAfterLoad) {
                         OctoPrint.job.start();
@@ -568,7 +571,7 @@ $(function() {
 
         self.onUserLoggedIn = function(user) {
             self.uploadButton.fileupload("enable");
-            if (self.uploadSdButton) {
+            if (self.uploadSdButton) { 
                 self.uploadSdButton.fileupload("enable");
             }
         };
@@ -619,6 +622,11 @@ $(function() {
             }
         }
 
+        self.setProgressBar = function (percentage) {
+            self.uploadProgressBar
+                .css("width", percentage + "%")
+        }
+
         self.onStartup = function() {
             $(".accordion-toggle[data-target='#files']").click(function() {
                 var files = $("#files");
@@ -651,16 +659,10 @@ $(function() {
             }
 
             var uploadProgress = $("#gcode_upload_progress");
-            var uploadProgressBar = uploadProgress.find(".bg-orange");
+            self.uploadProgressBar = uploadProgress.find(".bg-orange");
 
             var localTarget = CONFIG_SD_SUPPORT ? $("#drop_locally") : $("#drop");
             var sdTarget = $("#drop_sd");
-
-            function setProgressBar(percentage) {
-                uploadProgressBar
-                    .css("width", percentage + "%")
-
-            }
 
             function gcode_upload_done(e, data) {
                 var filename = undefined;
@@ -679,7 +681,7 @@ $(function() {
                 }
 
                 if (data.result.done) {
-                    setProgressBar(0, "", false);
+                    self.setProgressBar(0, "", false);
                     $.notify({
                         title: gettext("File upload succesfull"),
                         text: _.sprintf(gettext('Uploaded file: "%(filename)s"'), {filename: filename})},
@@ -694,12 +696,12 @@ $(function() {
                     text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\" or \".gco\" or that it is an STL file with the extension \".stl\"."'))},
                     "error"
                 )
-                setProgressBar(0, "", false);
+                self.setProgressBar(0, "", false);
             }
 
             function gcode_upload_progress(e, data) {
                 var progress = parseInt(data.loaded / data.total * 100, 10);
-                setProgressBar(progress);
+                self.setProgressBar(progress);
             }
 
             function setDropzone(dropzone, enable) {
@@ -840,7 +842,11 @@ $(function() {
                 case "media_folder_updated":
                     self.isUsbAvailable(messageData.is_media_mounted);
                     self.onUsbAvailableChanged();
-                    break
+                    break;
+                case "media_file_copy_progress":
+                    console.log("media_file_copy_progress: " + percentage);
+                    self.setProgressBar(data.percentage);
+                    break;
 
             }
         }
