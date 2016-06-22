@@ -773,6 +773,9 @@ select {
 #files .content {
   margin: 0px; }
 
+#gcode_upload_progress {
+  position: fixed; }
+
 .browse_modes {
   flex-basis: 30%;
   flex-direction: row;

@@ -60,6 +60,9 @@ $(function() {
         self.uploadSdButton = undefined;
         self.uploadProgressBar = undefined;
 
+        self.isLoadingFile = false;
+        self.isLoadingFileList = false;
+
         self.addFolderDialog = undefined;
         self.addFolderName = ko.observable(undefined);
         self.enableAddFolder = ko.computed(function() {
@@ -87,29 +90,31 @@ $(function() {
         };
 
         self.browseLocal = function () {
+            if (self.isLoadingFileList)
+                return;
+
+            self.isLoadingFileList = true;
             filenameToFocus = '';
             locationToFocus = '';
             switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            });
+            }).always(function () { self.isLoadingFileList = false; });
         }
 
         self.browseUsb = function ()
         {
+            if (self.isLoadingFileList)
+                return;
+
+            self.isLoadingFileList = true;
             filenameToFocus = '';
             locationToFocus = '';
             switchToPath = '';
             self.loadFiles("usb").done(preProcessList).then(function (response) {
-
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            });
+            }).always(function() { self.isLoadingFileList = false; });
         }
-
-        //self.ejectUsb = function()
-        //{
-        //    self._sendApi({ command: "eject_usb" });
-        //}
 
         self.loadFiles = function (origin) {
             return self._getApi({
@@ -344,17 +349,16 @@ $(function() {
         };
 
         self.loadFile = function(file, printAfterLoad) {
-            if (!file) {
+            if (!file || self.isLoadingFile) {
                 return;
             }
 
+            self.isLoadingFile = true;
+
             if (file.origin == "usb")
             {
-                //var inf = self.flyout.showInfo("Loading file...", "Please wait while the file is being transferred from your USB drive to the printer.", true);
-
+               
                 self._sendApi({ command: "select_usb_file", filename: OctoPrint.files.pathForElement(file) }).done(function () {
-                    //self.flyout.closeInfo(inf);
-
                     self.setProgressBar(0);
 
                     if (printAfterLoad) {
@@ -365,7 +369,8 @@ $(function() {
                         self.flyout.closeFlyoutAccept();
 
                     changeTabTo("print");
-                });
+                    
+                }).always(function () { self.isLoadingFile = false; });
             }
             else
             {
@@ -377,7 +382,7 @@ $(function() {
                             if (self.flyout.deferred)
                                 self.flyout.closeFlyoutAccept();
                             changeTabTo("print");
-                        });
+                        }).always(function () { self.isLoadingFile = false; });;
             }
            
         };
@@ -844,7 +849,6 @@ $(function() {
                     self.onUsbAvailableChanged();
                     break;
                 case "media_file_copy_progress":
-                    console.log("media_file_copy_progress: " + messageData.percentage);
                     self.setProgressBar(messageData.percentage);
                     break;
 

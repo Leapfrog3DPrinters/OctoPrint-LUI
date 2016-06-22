@@ -966,7 +966,10 @@ select {
   margin: 0px;
 }
 
-
+#gcode_upload_progress
+{
+    position: fixed;
+}
 
 .browse_modes {
   flex-basis: 30%;
