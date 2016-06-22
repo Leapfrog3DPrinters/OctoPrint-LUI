@@ -364,7 +364,7 @@ $(function () {
                 return;
             }
 
-            console.log(data);
+            //console.log(data);
 
             var messageType = data['type'];
             var messageData = data['data'];
