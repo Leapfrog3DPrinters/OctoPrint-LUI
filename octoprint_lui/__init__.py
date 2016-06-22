@@ -148,9 +148,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homed = False
         self.is_homing = False
 
-        ##~ USB
+        ##~ USB and file browser
         self.media_folder = '/media/pi'
         self.is_media_mounted = False
+        #TODO: make this more pythonic
+        self.browser_filter = lambda entry, entry_data: \
+                                ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
+                                 or octoprint.filemanager.valid_file_type(entry, type="machinecode")
 
     def initialize(self):
         self._init_usb()
@@ -536,8 +540,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(origin == "usb"):
             # Read USB files pretty much like an SD card
             # Alternative:
-            # files = self.usb_storage.list_files().values()
-            files = octoprint.server.fileManager.list_files("usb")["usb"].values()      
+            # files = self.usb_storage.list_files(recursive = True).values()
+            
+            files = octoprint.server.fileManager.list_files("usb", filter=self.browser_filter, recursive = True)["usb"].values()      
             
             # Decorate them            
             def analyse_recursively(files, path=None):            
