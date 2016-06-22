@@ -91,7 +91,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_info = [
             {
                 'identifier': 'lui',
-                'path': '/Users/pim/lpfrg/OctoPrint-LUI',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUI',
                 'update': False,
                 'action': 'update_lui',
                 'name': "Leapfrog UI",
@@ -99,7 +99,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'networkmanager',
-                'path': '/Users/pim/lpfrg/OctoPrint-NetworkManager',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-NetworkManager',
                 'update': False,
                 'action': 'update_networkmanager',
                 'name': 'Network Manager',
@@ -107,7 +107,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             {
                 'identifier': 'flasharduino',
-                'path': '/Users/pim/lpfrg/OctoPrint-flashArduino',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint-LUInew\OctoPrint-flashArduino',
                 'update': False,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
@@ -115,7 +115,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },      
             {
                 'identifier': 'octoprint',
-                'path': '/Users/pim/lpfrg/OctoPrint',
+                'path': 'C:\Users\erikh\OneDrive\Programmatuur\OctoPrint',
                 'update': False,
                 'action': 'update_octoprint',
                 'name': 'OctoPrint',
@@ -150,7 +150,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_media_mounted = False
 
     def initialize(self):
-        self._init_usb();
+        self._init_usb()
 
         ##~ Model
         self.model = "Bolt"
@@ -262,10 +262,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def is_update_needed(self, path):
         self._logger.info(path)
-        #local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
-        #remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        #base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
-        return True
+        local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+        remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
+        base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        
 
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
@@ -372,7 +372,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     begin_homing = [],
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
-                    #eject_usb = [],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -533,8 +532,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         if(origin == "usb"):
             # Read USB files pretty much like an SD card
-            files = octoprint.server.fileManager.list_files("usb", filter=None, recursive=True)["usb"].values()
-
+            # Alternative:
+            # files = self.usb_storage.list_files().values()
+            files = octoprint.server.fileManager.list_files("usb")["usb"].values()      
+            
+            # Decorate them            
             def analyse_recursively(files, path=None):            
                 if path is None:
                     path = ""
@@ -555,10 +557,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Return original OctoPrint API response
             return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
-    #def on_api_command_eject_usb(self,  *args, **kwargs):
-    #    if(platform.system() is not 'Windows'):
-    #        subprocess.call("udisks --detach /dev/sda1")
-   
     def _on_api_command_select_usb_file(self, filename, *args, **kwargs):
 
         target = "usb"
@@ -1241,9 +1239,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
             self.media_folder = "C:\\Tijdelijk\\usb"
         
-        usb_storage = octoprint.filemanager.LocalFileStorage(self.media_folder)
-
-        octoprint.server.fileManager.add_storage("usb", usb_storage)
+        self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
+        
+        octoprint.server.fileManager.add_storage("usb", self.usb_storage)
 
         # Start watching the folder for changes (i.e. mounted/unmouted)
         from watchdog.observers import Observer
