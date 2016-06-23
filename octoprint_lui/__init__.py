@@ -1309,7 +1309,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Add the LocalFileStorage to allow to browse the drive's files and folders
         if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
-            self.media_folder = "C:\\Tijdelijk\\usb"
+            self.media_folder = "D:"
         
         try:
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
@@ -1366,19 +1366,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._send_client_message("firmware_update_found", { "file": file });
 
     def _check_for_firmware(self, path):
-        for entry in os.listdir(path):
+        result = None
+        entries = os.listdir(path)
+        for entry in entries:
             entry_path = os.path.join(path, entry)
-
+            
 			# file handling
             if os.path.isfile(entry_path):
                 file_type = octoprint.filemanager.get_file_type(entry)
                 if(file_type):
-                    self._logger.info(file_type)
                     if file_type[0] is "firmware":
-                        return { entry, entry_path }
+                        result = { entry, entry_path }
 			# folder recursion
             elif os.path.isdir(entry_path):
-                return self._check_for_firmware(entry_path)
+                result = self._check_for_firmware(entry_path)
+
+            if result:
+                return result
 
     def _get_firmware_info(self):
         self._printer.commands('M115')
