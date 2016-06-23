@@ -969,6 +969,7 @@ select {
 #gcode_upload_progress
 {
     position: fixed;
+    z-index: 1000;
 }
 
 .browse_modes {

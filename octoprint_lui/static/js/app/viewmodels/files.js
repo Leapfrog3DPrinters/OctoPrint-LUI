@@ -19,6 +19,7 @@ $(function() {
         self.isSdReady = ko.observable(undefined);
 
         self.isUsbAvailable = ko.observable(false);
+        self.selectedFirmwareFile = ko.observable(undefined);
 
         self.searchQuery = ko.observable(undefined);
         self.searchQuery.subscribe(function() {
@@ -111,15 +112,41 @@ $(function() {
             filenameToFocus = '';
             locationToFocus = '';
             switchToPath = '';
-            self.loadFiles("usb").done(preProcessList).then(function (response) {
-                self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+            self.loadFiles("usb")
+                .done(preProcessList)
+                .fail(self.notifyUsbFail)
+                .then(function (response) {
+                    self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
             }).always(function() { self.isLoadingFileList = false; });
         }
 
-        self.loadFiles = function (origin) {
+        self.notifyUsbFail = function () {
+            $.notify({title: 'USB access failed', text: 'The USB drive could not be accessed. Please try again.'}, 'error');
+        };
+
+        self.browseUsbForFirmware = function()
+        {
+            if (self.isLoadingFileList)
+                return;
+
+            self.isLoadingFileList = true;
+            filenameToFocus = '';
+            locationToFocus = '';
+            switchToPath = '';
+            self.loadFiles("usb", "firmware")
+                .done(preProcessList)
+                .fail(self.notifyUsbFail)
+                .then(function (response) {
+                    self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+            }).always(function () { self.isLoadingFileList = false; });
+        }
+
+        self.loadFiles = function (origin, filter) {
+            filter = filter || "";
             return self._getApi({
                 command: "get_files",
                 origin: origin,
+                filter: filter,
                 recursive: true
             });
         }
@@ -355,25 +382,32 @@ $(function() {
 
             self.isLoadingFile = true;
 
-            if (file.origin == "usb")
-            {
-               
+            if (file.type == "firmware") {
+                //Check if we're living in a flyout
+                if(self.flyout.deferred !== undefined)
+                {
+                    self.selectedFirmwareFile(file);
+                    self.flyout.closeFlyoutAccept();
+                }
+
+                self.isLoadingFile = false;
+            }
+            else if (file.origin == "usb") {
                 self._sendApi({ command: "select_usb_file", filename: OctoPrint.files.pathForElement(file) }).done(function () {
                     self.setProgressBar(0);
 
                     if (printAfterLoad) {
                         OctoPrint.job.start();
                     }
-                    
+
                     if (self.flyout.deferred)
                         self.flyout.closeFlyoutAccept();
 
                     changeTabTo("print");
-                    
+
                 }).always(function () { self.isLoadingFile = false; });
             }
-            else
-            {
+            else {
                 OctoPrint.files.select(file.origin, OctoPrint.files.pathForElement(file))
                         .done(function () {
                             if (printAfterLoad) {
@@ -847,6 +881,12 @@ $(function() {
                 case "media_folder_updated":
                     self.isUsbAvailable(messageData.is_media_mounted);
                     self.onUsbAvailableChanged();
+
+                    if (messageData.error)
+                    {
+                        self.notifyUsbFail();
+                    }
+
                     break;
                 case "media_file_copy_progress":
                     self.setProgressBar(messageData.percentage);
@@ -859,6 +899,6 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
         ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel"],
-        ["#files", "#file_flyout"]
+        ["#files", "#firmware_file_flyout"]
     ]);
 });

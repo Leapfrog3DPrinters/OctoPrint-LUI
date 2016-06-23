@@ -148,6 +148,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homed = False
         self.is_homing = False
 
+        ##~ Firmware
+        self.firmware_info_command_sent = False
+        self.firmware_info_properties = set(["machine_type", "firmware_version"])
+
         ##~ USB and file browser
         self.media_folder = '/media/pi'
         self.is_media_mounted = False
@@ -155,6 +159,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.browser_filter = lambda entry, entry_data: \
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
                                  or octoprint.filemanager.valid_file_type(entry, type="machinecode")
+
+        self.browser_filter_firmware = lambda entry, entry_data: \
+                                ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="firmware")) \
+                                 or octoprint.filemanager.valid_file_type(entry, type="firmware")
 
     def initialize(self):
         self._init_usb()
@@ -301,7 +309,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "model": self.model,
             "zoffset": 0,
             "action_door": True,
-            "action_filament": True
+            "action_filament": True,
+            "firmware_info": 
+                {
+                    "machine_type": None,
+                    "firmware_version" : None
+                }
         }
 
     ##~ OctoPrint UI Plugin
@@ -355,6 +368,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             return jsonify(dict(
                 update=self.update_info,
+                firmware_info=self._settings.get(["firmware_info"]),
                 filaments=self.filament_database.all(),
                 is_homed=self.is_homed,
                 is_homing=self.is_homing
@@ -528,6 +542,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Force refresh update info
         self._logger.info("Refresh update info: {kwargs}".format(kwargs=kwargs))
         self.update_info_list(force=True)
+        
+        # Send another M115 to get the firmware version
+        self._get_firmware_info()
 
     def _on_api_command_move_to_filament_load_position(self, *args, **kwargs):
         self.move_to_filament_load_position()
@@ -542,7 +559,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Alternative:
             # files = self.usb_storage.list_files(recursive = True).values()
             
-            files = octoprint.server.fileManager.list_files("usb", filter=self.browser_filter, recursive = True)["usb"].values()      
+            if("filter" in request.values and request.values["filter"] == "firmware"):
+                filter = self.browser_filter_firmware
+            else:   
+                filter = self.browser_filter
+            
+            try:
+                files = octoprint.server.fileManager.list_files("usb", filter=filter, recursive = True)["usb"].values() 
+            except Exception as e:
+                return make_response("Could access the media folder", 500)
+            
             
             # Decorate them            
             def analyse_recursively(files, path=None):            
@@ -552,9 +578,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 for file in files:
                     file["origin"] = "usb"
                     file["refs"] = { "resource": "/api/plugins/lui/" }
-
+                
                     if file["type"] == "folder":
                         file["children"] = analyse_recursively(file["children"].values(), path + file["name"] + "/")
+                    elif file["type"] == "firmware":
+                        file["refs"]["local_path"] = os.path.join(self.media_folder, path + file["name"])
                 
                 return files
 
@@ -970,6 +998,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if (gcode == "G28"):
                 self._process_G28(cmd)
 
+            # Handle info command
+            if (gcode == "M115"):
+                self._process_M115(cmd)
+
     def _process_G90_G91(self, cmd):
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
         if cmd == "G90":
@@ -1039,13 +1071,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.home_command_send = True
         self.is_homing = True
 
+    def _process_M115(self, cmd):
+        #self._logger.info("Command: %s" % cmd)
+        self.firmware_info_command_sent = True
+
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
+        if self.firmware_info_command_sent:
+            if "ok" in line:
+                self._on_firmware_info_received(line)
+
         if self.home_command_send: 
             if "ok" in line:
                 self.home_command_send = False
                 self.is_homed = True
                 self.is_homing = False
                 self.send_client_is_homed()
+            
         return line
 
     def hook_actiontrigger(self, comm, line, action_trigger):
@@ -1270,10 +1311,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
             self.media_folder = "C:\\Tijdelijk\\usb"
         
-        self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
+        try:
+            self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
+            octoprint.server.fileManager.add_storage("usb", self.usb_storage)
+        except Exception as e:
+            self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
+            return
         
-        octoprint.server.fileManager.add_storage("usb", self.usb_storage)
-
         # Start watching the folder for changes (i.e. mounted/unmouted)
         from watchdog.observers import Observer
         observer = Observer()
@@ -1287,18 +1331,74 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def _on_media_folder_updated(self, event):
+        
+
+        # Check if there's something mounted in media_dir
         def get_immediate_subdirectories(a_dir):
             return [name for name in os.listdir(a_dir)
                 if os.path.isdir(os.path.join(a_dir, name))]
-
-        number_of_dirs = len(get_immediate_subdirectories(self.media_folder)) > 0;
         
+        number_of_dirs = 0
+        
+        try:
+            number_of_dirs = len(get_immediate_subdirectories(self.media_folder)) > 0;
+        except Exception as e:
+            self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
+            return
+
         if(self.from_localhost): 
             if(event is None or (number_of_dirs > 0 and not self.is_media_mounted) or (number_of_dirs == 0 and self.is_media_mounted)):
                 # If event is None, it's a forced message
                 self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
 
         self.is_media_mounted = number_of_dirs > 0
+
+        # Check if what's mounted contains a firmware (*.hex) file
+        if self.is_media_mounted:
+            firmware = self._check_for_firmware(self.media_folder)
+            if(firmware):
+                firmware_file, firmware_path = firmware
+                self._logger.info("Firmware file detected: %s" % firmware_file)
+                file = dict()
+                file["name"] = firmware_file
+                file["refs"] = dict()
+                file["refs"]["local_path"] = firmware_path
+                self._send_client_message("firmware_update_found", { "file": file });
+
+    def _check_for_firmware(self, path):
+        for entry in os.listdir(path):
+            entry_path = os.path.join(path, entry)
+
+			# file handling
+            if os.path.isfile(entry_path):
+                file_type = octoprint.filemanager.get_file_type(entry)
+                if(file_type):
+                    self._logger.info(file_type)
+                    if file_type[0] is "firmware":
+                        return { entry, entry_path }
+			# folder recursion
+            elif os.path.isdir(entry_path):
+                return self._check_for_firmware(entry_path)
+
+    def _get_firmware_info(self):
+        self._printer.commands('M115')
+
+    def _on_firmware_info_received(self, line):
+        self.firmware_info_command_sent = False
+        self._logger.info("M115 data received: %s" % line)
+        line = line[3:-1] # Remove ok and newline
+
+        if len(line) > 0:
+            all_firmware_info = dict(d.split(':') for d in line.split(' '))
+            firmware_info = { prop: all_firmware_info[prop] for prop in self.firmware_info_properties }
+        
+            self._settings.set(["firmware_info"], firmware_info)
+            self._settings.save()
+
+    def extension_tree_hook(self):
+        return dict(firmware=dict(
+			        hex=octoprint.filemanager.ContentTypeMapping(["hex"], "application/octet-stream")
+		        ))
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, playload, *args, **kwargs):
@@ -1312,6 +1412,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if(event == "PrintStarted" or event == "PrintResumed"):
             self.filament_action = False
+
+        if(event == "Connected"):
+            self._get_firmware_info()
+            
 
     ##~ Helper method that calls api defined functions
     def _call_api_method(self, command, *args, **kwargs):
@@ -1332,5 +1436,6 @@ def __plugin_load__():
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
         "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook,
         "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger,
-        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_received_hook
+        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_received_hook,
+        "octoprint.filemanager.extension_tree": __plugin_implementation__.extension_tree_hook,
     }
