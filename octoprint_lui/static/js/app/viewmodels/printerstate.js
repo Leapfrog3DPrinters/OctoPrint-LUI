@@ -280,10 +280,8 @@ $(function () {
             OctoPrint.job.cancel();
         };
 
-        self.showFileSelectFlyout = function () {
-            self.flyout.showFlyout('file')
-                .done(function () {
-                });
+        self.gotoFileSelect = function () {
+            changeTabTo("files");
         };
 
         self.showInfoFlyout = function () {
@@ -363,9 +361,6 @@ $(function () {
             if (plugin != "lui") {
                 return;
             }
-
-            //console.log(data);
-
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
