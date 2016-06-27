@@ -43,7 +43,7 @@
         <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button" data-bind="click: function(){showFileSelectFlyout()}, css: {disabled: !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select">
+              <li class="button" data-bind="click: function(){gotoFileSelect()}, css: {disabled: !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select">
                 <a href="#">
                   <span>
                     <i class="fa fa-file"></i>Select print job
