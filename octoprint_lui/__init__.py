@@ -40,9 +40,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Global
         self.from_localhost = False
+        self.debug = True
 
         ##~ Model specific variables
         self.model = None
+
+        self.paths = {
+            "Xeed" : {
+                "update": "/home/lily/" ,
+                "media": "/media/"
+                },
+            "Bolt" : {
+                "update": "/home/pi/" ,
+                "media": "/media/pi/"
+            },
+            "Debug" : {
+                "update": "/Users/pim/lpfrg/" ,
+                "media": "/Users/pim/lpfrg/GCODE/"
+            },
+        }
 
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
@@ -86,45 +102,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_database = None
 
 
-        ##~ Update software init
-        self.last_git_fetch = 0
-        if(platform.system() == "Windows"):
-            self.update_info = []
-        else:
-            self.update_info = [
-                {
-                    'identifier': 'lui',
-                    'path': '/home/pi/OctoPrint-LUI',
-                    'update': False,
-                    'action': 'update_lui',
-                    'name': "Leapfrog UI",
-                    'version': "testing"
-                },
-                {
-                    'identifier': 'networkmanager',
-                    'path': '/home/pi/OctoPrint-NetworkManager',
-                    'update': False,
-                    'action': 'update_networkmanager',
-                    'name': 'Network Manager',
-                    'version': "0.0.1"
-                },
-                {
-                    'identifier': 'flasharduino',
-                    'path': '/home/pi/OctoPrint-flashArduino',
-                    'update': False,
-                    'action': 'update_flasharduino',
-                    'name': 'Flash Firmware Module',
-                    'version': "0.0.1"
-                },      
-                {
-                    'identifier': 'octoprint',
-                    'path': '/home/pi/OctoPrint',
-                    'update': False,
-                    'action': 'update_octoprint',
-                    'name': 'OctoPrint',
-                    'version': VERSION
-                }
-                ]
 
         ##~ Temperature status 
         self.tool_status = {
@@ -153,7 +130,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_properties = set(["machine_type", "firmware_version"])
 
         ##~ USB and file browser
-        self.media_folder = '/media/pi'
+
         self.is_media_mounted = False
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
@@ -165,10 +142,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                  or octoprint.filemanager.valid_file_type(entry, type="firmware")
 
     def initialize(self):
+        ##~ Model
+        self.model = "Debug"
+        
+        ##~ USB init
         self._init_usb()
 
-        ##~ Model
-        self.model = "Bolt"
+        ##~ Init Update
+        self._init_update()
+
+        ##~ Add actions
+        self._add_actions()
 
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
@@ -181,81 +165,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("No database found creating one...")
             self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0, 
                                                     'material': self.default_material} for i in range(2))
+ 
 
-
-        ## Set update actions into the settings
-        ## This is a nifty function to check if a variable is in 
-        ## a list of dictionaries. 
-        def is_variable_in_dict(variable, dict):
-            return any(True for x in dict if x['action'] == variable)
-
-        actions = self._settings.global_get(["system", "actions"])
-
-        ## Add update LUI to the actions    
-        if not is_variable_in_dict('update_lui', actions):
-            update_lui = {
-                "action": "update_lui",
-                "name": "Update LUI",
-                "command": "cd /Users/pim/lpfrg/OctoPrint-LUI && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
-                "confirm": False
-            }
-            actions.append(update_lui)
-
-        ## Add update network manager to the actions
-        if not is_variable_in_dict('update_networkmanager', actions):
-            update_networkmanager = {
-                "action": "update_networkmanager",
-                "name": "Update NetworkManager",
-                "command": "cd /Users/pim/lpfrg/OctoPrint-NetworkManager && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
-                "confirm": False
-            }
-            actions.append(update_networkmanager)
-
-        ## Add update OctoPrint core to the actions
-        if not is_variable_in_dict('update_octoprint', actions):
-            update_octoprint = {
-                "action": "update_octoprint",
-                "name": "Update OctoPrint",
-                "command": "cd /Users/pim/lpfrg/OctoPrint && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
-                "confirm": False
-            }
-            actions.append(update_octoprint)
-
-        ## Add update flasharduino to the actions
-        if not is_variable_in_dict('update_flasharduino', actions):
-            update_flasharduino = {
-                "action": "update_flasharduino",
-                "name": "Update Flash Firmware Module",
-                "command": "cd /Users/pim/lpfrg/OctoPrint-flashArduino && git pull && /Users/pim/lpfrg/OctoPrint/venv/bin/python setup.py install",
-                "confirm": False
-            }
-            actions.append(update_flasharduino)
-
-        ## Add shutdown 
-        if not is_variable_in_dict('shutdown', actions):
-            shutdown = {
-                "action": "shutdown",
-                "name": "Shutdown",
-                "command": "sudo shutdown -h now",
-                "confirm": True
-            }
-            actions.append(shutdown)
-
-        ## Add reboot
-        if not is_variable_in_dict('reboot', actions):
-            reboot = {
-                "action": "reboot",
-                "name": "Reboot",
-                "command": "sudo shutdown -r now",
-                "confirm": True
-            }
-            actions.append(reboot)
-
-        self._settings.global_set(["system", "actions"], actions)
-
-        self.update_info_list()
-
-        self._logger.info(self.update_info)
 
         ## Get filament amount stored in config
         self.update_filament_amount()
@@ -328,7 +239,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self.from_localhost = netaddr.IPAddress(remote_address) in localhost
 
-        response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, **render_kwargs))
+        response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
         if remote_address is None:
             from octoprint.server.util.flask import add_non_caching_response_headers
@@ -1306,6 +1217,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     
     def _init_usb(self):
 
+        # Set media folder relative to printer model
+        self.media_folder = self.paths[self.model]["media"]
+
         # Add the LocalFileStorage to allow to browse the drive's files and folders
         if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
             self.media_folder = "D:"
@@ -1327,6 +1241,128 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Hit the first event in any case
         self._on_media_folder_updated(None)
+
+    def _init_update(self):
+
+        ##~ Update software init
+        self.last_git_fetch = 0
+        if(platform.system() == "Windows"):
+            self.update_info = []
+        else:
+            self.update_info = [
+                {
+                    'identifier': 'lui',
+                    'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
+                    'update': False,
+                    'action': 'update_lui',
+                    'name': "Leapfrog UI",
+                    'version': "testing"
+                },
+                {
+                    'identifier': 'networkmanager',
+                    'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
+                    'update': False,
+                    'action': 'update_networkmanager',
+                    'name': 'Network Manager',
+                    'version': "0.0.1"
+                },
+                {
+                    'identifier': 'flasharduino',
+                    'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
+                    'update': False,
+                    'action': 'update_flasharduino',
+                    'name': 'Flash Firmware Module',
+                    'version': "0.0.1"
+                },      
+                {
+                    'identifier': 'octoprint',
+                    'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
+                    'update': False,
+                    'action': 'update_octoprint',
+                    'name': 'OctoPrint',
+                    'version': VERSION
+                }
+                ]
+
+
+        self.update_info_list()
+        self._logger.info(self.update_info)
+
+
+    def _add_actions(self):
+        """ 
+        Adda actions to system settings. Might be removed if 
+        we ship custom config file.
+        """
+        ## Set update actions into the settings
+        ## This is a nifty function to check if a variable is in 
+        ## a list of dictionaries. 
+        def is_variable_in_dict(variable, dict):
+            return any(True for x in dict if x['action'] == variable)
+
+        actions = self._settings.global_get(["system", "actions"])
+
+        ## Add update LUI to the actions    
+        if not is_variable_in_dict('update_lui', actions):
+            update_lui = {
+                "action": "update_lui",
+                "name": "Update LUI",
+                "command": "cd {path}OctoPrint-LUI && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
+                "confirm": False
+            }
+            actions.append(update_lui)
+
+        ## Add update network manager to the actions
+        if not is_variable_in_dict('update_networkmanager', actions):
+            update_networkmanager = {
+                "action": "update_networkmanager",
+                "name": "Update NetworkManager",
+                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "confirm": False
+            }
+            actions.append(update_networkmanager)
+
+        ## Add update OctoPrint core to the actions
+        if not is_variable_in_dict('update_octoprint', actions):
+            update_octoprint = {
+                "action": "update_octoprint",
+                "name": "Update OctoPrint",
+                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "confirm": False
+            }
+            actions.append(update_octoprint)
+
+        ## Add update flasharduino to the actions
+        if not is_variable_in_dict('update_flasharduino', actions):
+            update_flasharduino = {
+                "action": "update_flasharduino",
+                "name": "Update Flash Firmware Module",
+                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "confirm": False
+            }
+            actions.append(update_flasharduino)
+
+        ## Add shutdown 
+        if not is_variable_in_dict('shutdown', actions):
+            shutdown = {
+                "action": "shutdown",
+                "name": "Shutdown",
+                "command": "sudo shutdown -h now",
+                "confirm": True
+            }
+            actions.append(shutdown)
+
+        ## Add reboot
+        if not is_variable_in_dict('reboot', actions):
+            reboot = {
+                "action": "reboot",
+                "name": "Reboot",
+                "command": "sudo shutdown -r now",
+                "confirm": True
+            }
+            actions.append(reboot)
+
+        self._settings.global_set(["system", "actions"], actions)
 
 
     def _on_media_folder_updated(self, event):
