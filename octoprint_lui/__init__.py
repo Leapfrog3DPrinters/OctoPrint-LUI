@@ -55,8 +55,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 "media": "/media/pi/"
             },
             "Debug" : {
-                "update": "/Users/pim/lpfrg/" ,
-                "media": "/Users/pim/lpfrg/GCODE/"
+                "update": "C:\\Users\\erikh\\OneDrive\\Programmatuur\\",
+                "media": "C:\\Tijdelijk\\usb"
             },
         }
 
@@ -143,7 +143,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
         ##~ Model
-        self.model = "Debug"
+        if not os.path.exists('/home/pi'):
+            self.model = "Debug"
+        else:
+            self.model = "Bolt"
         
         ##~ USB init
         self._init_usb()
@@ -1303,9 +1306,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.media_folder = self.paths[self.model]["media"]
 
         # Add the LocalFileStorage to allow to browse the drive's files and folders
-        if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
-            self.media_folder = "C:\\tijdelijk\\usb"
-        
+       
         try:
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
             octoprint.server.fileManager.add_storage("usb", self.usb_storage)
