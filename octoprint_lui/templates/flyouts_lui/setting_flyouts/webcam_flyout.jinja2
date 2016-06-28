@@ -67,11 +67,8 @@
       </a>
     </div>
   </div>
-  <div class="Table-row">
-    <div class="Table-item">
-      <img class="webcam-preview" data-bind="attr: {src: webcam_previewUrl }" />
-    </div>
-  </div>
+  <!-- img not in Table-row>Table-item due to chromium bug -->
+  <img class="webcam-preview" data-bind="attr: {src: webcam_previewUrl }" />
 </div>
 
 <div class="Table">
