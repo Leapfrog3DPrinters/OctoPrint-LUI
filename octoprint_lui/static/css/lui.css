@@ -1140,6 +1140,10 @@ select {
 #files .content {
   margin: 0px; }
 
+#gcode_upload_progress {
+  position: fixed;
+  z-index: 1000; }
+
 .browse_modes {
   -webkit-flex-basis: 30%;
       -ms-flex-preferred-size: 30%;

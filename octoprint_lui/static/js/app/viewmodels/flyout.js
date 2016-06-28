@@ -14,8 +14,8 @@ $(function() {
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
     
-
     self.warnings = ko.observableArray([]);
+    self.infos = ko.observableArray([]);
 
     self.showWarning = function(title, message, blocking)
     {
@@ -49,6 +49,37 @@ $(function() {
         
         if (self.warnings().length == 0 && self.deferred === undefined)
         {
+            $overlay.removeClass('active');
+        }
+    }
+
+    self.showInfo = function (title, message, blocking) {
+        var blocking = blocking || false;
+        infoVm = {
+            info_title: title,
+            info_text: message,
+            blocking: blocking
+        };
+
+        self.infos.push(infoVm);
+
+        $overlay = $('.overlay');
+        $overlay.addClass('active');
+
+        return infoVm;
+    }
+
+    self.closeInfo = function (infoVm) {
+        self.infos.remove(infoVm);
+        if (self.infos().length == 0 && self.deferred === undefined) {
+            $overlay.removeClass('active');
+        }
+    };
+
+    self.closeLastInfo = function () {
+        self.infos.pop();
+
+        if (self.infos().length == 0 && self.deferred === undefined) {
             $overlay.removeClass('active');
         }
     }
@@ -139,7 +170,7 @@ $(function() {
   OCTOPRINT_VIEWMODELS.push([
     FlyoutViewModel,
     [],
-    ['#confirmation_flyout', '#warnings_container'],
+    ['#confirmation_flyout', '#warnings_container', '#infos_container'],
   ]);
 
 });
