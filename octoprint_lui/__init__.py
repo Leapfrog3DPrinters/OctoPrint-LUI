@@ -668,7 +668,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if(platform.system() == 'Windows'):           
                 mount_bytes_available = 14000000000;
             else:
-                disk_info = os.statvfs(drive_folder)
+                disk_info = os.statvfs(mount_path)
                 mount_bytes_available = disk_info.f_frsize * disk_info.f_bavail
 
             if mount_bytes_available > bytes_available:

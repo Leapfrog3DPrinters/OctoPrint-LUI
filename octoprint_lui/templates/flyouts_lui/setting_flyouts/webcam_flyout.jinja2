@@ -93,7 +93,7 @@
       {% if local_addr %}
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function() { $parent.copyToUsb($data.name); }, css: {disabled: !$root.files.isUsbAvailable}">
+          <a href="#" data-bind="click: function() { $parent.copyToUsb($data.name); }, css: {disabled: !$root.files.isUsbAvailable()}">
             <span>
               <i class="fa fa-download"></i> USB
             </span>

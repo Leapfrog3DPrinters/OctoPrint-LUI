@@ -185,7 +185,7 @@ $(function () {
                 self.timelapseFps(self.defaultFps);
             }
 
-            self.persist(false);
+            //self.persist(false);
             self.isDirty(false);
         };
 
