@@ -130,7 +130,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_properties = set(["machine_type", "firmware_version"])
 
         ##~ USB and file browser
-
+        self.has_asked_for_firmware_upgrade = False
         self.is_media_mounted = False
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
@@ -303,6 +303,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     begin_homing = [],
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
+                    copy_timelapse_to_usb = ["filename"],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -636,6 +637,87 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         r.headers["Location"] = location
 
         return r 
+
+    def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
+        if not self.is_media_mounted:
+            return make_response("Could access the media folder", 400)
+
+        if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
+            return make_response("Not allowed to copy this file", 400)
+
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+        full_path = os.path.realpath(os.path.join(timelapse_folder, filename))
+        
+        if not full_path.startswith(timelapse_folder) or not os.path.exists(full_path):
+             return make_response("File not found", 404)   
+
+        # Loop through all directories in the media folder and find the mount with most free space
+        bytes_available = 0
+        drive_folder = None
+
+        for mount in os.listdir(self.media_folder):
+            mount_path = os.path.join(self.media_folder, mount)
+
+            if not os.path.isdir(mount_path):
+                continue
+
+            #Check disk space
+            if(platform.system() == 'Windows'):           
+                mount_bytes_available = 14000000000;
+            else:
+                disk_info = os.statvfs(drive_folder)
+                mount_bytes_available = disk_info.f_frsize * disk_info.f_bavail
+
+            if mount_bytes_available > bytes_available:
+                bytes_available = mount_bytes_available
+                drive_folder = mount_path
+        
+        # Check if it is enough free space for the video file   
+        timelapse_size = os.path.getsize(full_path)
+
+        if timelapse_size > bytes_available:
+            return make_response("Insuffient space available on USB drive", 400)
+
+        if drive_folder is None:
+            return make_response("Insuffient space available on USB drive", 400)
+     
+        timelapses_path = os.path.join(drive_folder, "Leapfrog-timelapses")
+        new_full_path = os.path.join(timelapses_path, filename)
+
+        self._logger.info("Copying timelapse to: %s" % new_full_path);
+        
+        # Helpers to check copying status
+        def on_timelapse_copy():
+            percentage = (float(os.path.getsize(new_full_path)) / float(os.path.getsize(full_path))) * 100.0
+            self._logger.info("Timelapse copy progress: %f" % percentage)
+            self._send_client_message("timelapse_copy_progress", { "percentage" : percentage })
+    
+        is_copying = True
+
+        def is_copying_timelapse():
+            return is_copying
+
+        def timelapse_copying_finished():
+            self._send_client_message("timelapse_copy_progress", { "percentage" : 0 })
+
+        # Start monitoring copy status
+        timer = RepeatedTimer(1, on_timelapse_copy, run_first = False, condition = is_copying_timelapse, on_finish = timelapse_copying_finished)
+        timer.start()
+
+        try:
+            #Create directory, if needed
+            if not os.path.isdir(timelapses_path):
+                os.mkdir(timelapses_path)
+            
+            import shutil
+            shutil.copy2(full_path, new_full_path)
+        except Exception as e:
+            timer.cancel()
+            return make_response("File error during copying: %s" % e.message, 500)
+        finally:
+             is_copying = False
+
+        make_response("OK", 200)
 
     ##~ Load and Unload methods
 
@@ -1222,7 +1304,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Add the LocalFileStorage to allow to browse the drive's files and folders
         if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
-            self.media_folder = "D:"
+            self.media_folder = "C:\\tijdelijk\\usb"
         
         try:
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
@@ -1366,7 +1448,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def _on_media_folder_updated(self, event):
-        
+        was_media_mounted = self.is_media_mounted
 
         # Check if there's something mounted in media_dir
         def get_immediate_subdirectories(a_dir):
@@ -1389,7 +1471,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_media_mounted = number_of_dirs > 0
 
         # Check if what's mounted contains a firmware (*.hex) file
-        if self.is_media_mounted:
+        if not was_media_mounted and self.is_media_mounted:
             firmware = self._check_for_firmware(self.media_folder)
             if(firmware):
                 firmware_file, firmware_path = firmware

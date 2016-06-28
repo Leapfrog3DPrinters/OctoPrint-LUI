@@ -468,6 +468,7 @@ $(function() {
         };
 
         self.saveData = function (data, successCallback, setAsSending) {
+            callViewModels(self.allViewModels, "onBeforeSaveSettings");
             var options;
             if (_.isPlainObject(successCallback)) {
                 options = successCallback;
