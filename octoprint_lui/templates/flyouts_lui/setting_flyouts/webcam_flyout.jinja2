@@ -54,8 +54,8 @@
     <div class="Table-item">
       Current view
     </div>
-    <div class="Table-item Table-item-right">
-      <a href="#" data-bind="click: refreshPreview">
+    <div class="Table-item">
+      <a href="#" data-bind="click: refreshPreview" style="margin-left: auto">
         <i class="fa fa-refresh"></i> Refresh
       </a>
     </div>
@@ -68,6 +68,11 @@
   <div class="Table-row Table-header">
     <div class="Table-item">
       Finished timelapses
+    </div>
+    <div class="Table-item">
+      <small style="margin-left: auto">
+        <span data-bind="text: storageAvailable"></span> free
+      </small>
     </div>
   </div>
   <div class="Table-row">
@@ -126,7 +131,7 @@
   </div>
   <!-- /ko -->
 </div>
-<div class="pagination pagination-mini pagination-centered" data-bind="visible: listHelper.allSize">
+<div class="pagination pagination-mini pagination-centered" data-bind="visible: listHelper.allSize() > 5">
   <ul>
     <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
       <a href="javascript:void(0)" data-bind="click: listHelper.prevPage">«</a>
@@ -146,7 +151,7 @@
 
 <div class="Table" data-bind="visible: unrenderedListHelper.allSize">
   <div class="Table-row Table-header">
-    <div class="Table-item">Unrendered timelapses</div>
+    <div class="Table-item">Unfinished timelapses</div>
   </div>
   <!-- ko foreach: unrenderedListHelper.paginatedItems-->
   <div class="Table-row">
@@ -180,7 +185,7 @@
   <!-- /ko -->
 </div>
 
-<div class="pagination pagination-mini pagination-centered"  data-bind="visible: unrenderedListHelper.allSize">
+<div class="pagination pagination-mini pagination-centered"  data-bind="visible: unrenderedListHelper.allSize() > 5">
   <ul>
     <li data-bind="css: {disabled: unrenderedListHelper.currentPage() === 0}">
       <a href="javascript:void(0)" data-bind="click: unrenderedListHelper.prevPage">«</a>

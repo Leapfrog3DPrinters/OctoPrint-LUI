@@ -54,9 +54,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 "update": "/home/pi/" ,
                 "media": "/media/pi/"
             },
-            "Debug" : {
+            "Debug" : 
+            {
+                "update": "/Users/pim/lpfrg/",
+                "media": "/Users/pim/lpfrg/GCODE/"
+            },
+            "WindowsDebug" : {
                 "update": "C:\\Users\\erikh\\OneDrive\\Programmatuur\\",
-                "media": "C:\\Tijdelijk\\usb"
+                "media": "C:\\Tijdelijk\\usb\\"
             },
         }
 
@@ -132,6 +137,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ USB and file browser
         self.has_asked_for_firmware_upgrade = False
         self.is_media_mounted = False
+
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
@@ -144,7 +150,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def initialize(self):
         ##~ Model
         if not os.path.exists('/home/pi'):
-            self.model = "Debug"
+            self.model = "WindowsDebug"
         else:
             self.model = "Bolt"
         
@@ -278,6 +284,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return self._on_api_command_get_files(request.values["origin"])
         elif(command == "is_media_mounted"):
             return jsonify({ "is_media_mounted" : self.is_media_mounted })
+        elif(command == "storage_info"):
+            import psutil
+            usage = psutil.disk_usage(self._settings.global_get_basefolder("uploads"))
+            return jsonify(free=usage.free, total=usage.total)
         else:
             return jsonify(dict(
                 update=self.update_info,
@@ -665,8 +675,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 continue
 
             #Check disk space
-            if(platform.system() == 'Windows'):           
-                mount_bytes_available = 14000000000;
+            if self.model == 'WindowsDebug': 
+                mount_bytes_available = 14 * 1024 * 1024 * 1024;
             else:
                 disk_info = os.statvfs(mount_path)
                 mount_bytes_available = disk_info.f_frsize * disk_info.f_bavail
@@ -1299,7 +1309,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._printer.change_tool(self.filament_change_tool)
 
         self.restore_movement_mode()
-    
+
     def _init_usb(self):
 
         # Set media folder relative to printer model
@@ -1329,43 +1339,41 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update software init
         self.last_git_fetch = 0
-        if(platform.system() == "Windows"):
-            self.update_info = []
-        else:
-            self.update_info = [
-                {
-                    'identifier': 'lui',
-                    'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_lui',
-                    'name': "Leapfrog UI",
-                    'version': "testing"
-                },
-                {
-                    'identifier': 'networkmanager',
-                    'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_networkmanager',
-                    'name': 'Network Manager',
-                    'version': "0.0.1"
-                },
-                {
-                    'identifier': 'flasharduino',
-                    'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_flasharduino',
-                    'name': 'Flash Firmware Module',
-                    'version': "0.0.1"
-                },      
-                {
-                    'identifier': 'octoprint',
-                    'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_octoprint',
-                    'name': 'OctoPrint',
-                    'version': VERSION
-                }
-                ]
+
+        self.update_info = [
+            {
+                'identifier': 'lui',
+                'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_lui',
+                'name': "Leapfrog UI",
+                'version': "testing"
+            },
+            {
+                'identifier': 'networkmanager',
+                'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_networkmanager',
+                'name': 'Network Manager',
+                'version': "0.0.1"
+            },
+            {
+                'identifier': 'flasharduino',
+                'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_flasharduino',
+                'name': 'Flash Firmware Module',
+                'version': "0.0.1"
+            },      
+            {
+                'identifier': 'octoprint',
+                'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_octoprint',
+                'name': 'OctoPrint',
+                'version': VERSION
+            }
+            ]
 
 
         self.update_info_list()

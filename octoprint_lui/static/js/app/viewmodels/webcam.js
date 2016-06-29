@@ -24,6 +24,7 @@ $(function () {
 
         //self.persist = ko.observable(false);
         self.isDirty = ko.observable(false);
+        self.storageAvailable = ko.observable(undefined);
 
         self.isBusy = ko.pureComputed(function () {
             return self.printerState.isPrinting() || self.printerState.isPaused();
@@ -131,10 +132,9 @@ $(function () {
             5 // Timelapse files per page
         );
 
-        self.refreshPreview = function()
-        {
+        self.refreshPreview = function () {
             previewUrl = self.settings.webcam_snapshotUrl();
-            if(previewUrl.indexOf('?') > -1)
+            if (previewUrl.indexOf('?') > -1)
                 previewUrl = previewUrl + "&timestamp=" + new Date().getTime();
             else
                 previewUrl = previewUrl + "?timestamp=" + new Date().getTime();
@@ -145,6 +145,10 @@ $(function () {
         self.requestData = function () {
             OctoPrint.timelapse.get({ data: { unrendered: true } })
                 .done(self.fromResponse);
+
+            self._getApi({ command: "storage_info" }).done(function (storage_info) {
+                self.storageAvailable(formatSize(storage_info.free));
+            });
         };
 
         self.fromResponse = function (response) {
@@ -194,17 +198,14 @@ $(function () {
                 .done(self.requestData);
         };
 
-        self.copyToUsb = function (filename)
-        {
+        self.copyToUsb = function (filename) {
             self._sendApi({
                 command: "copy_timelapse_to_usb",
                 filename: filename
-            }).done(function()
-            {
+            }).done(function () {
                 $.notify({ title: 'Timelapse copied', text: 'The timelapse has been copied to your USB drive.' }, 'success');
-            }).fail(function()
-            {
-                $.notify({title: 'Copying of timelapse failed', text: 'The timelapse could not be copied. Plese check if there is sufficient space available on the drive and try again.'}, 'error');
+            }).fail(function () {
+                $.notify({ title: 'Copying of timelapse failed', text: 'The timelapse could not be copied. Plese check if there is sufficient space available on the drive and try again.' }, 'error');
             });
         }
 
@@ -239,20 +240,17 @@ $(function () {
                 .done(self.fromResponse);
         };
 
-        self.onStartup = function()
-        {
+        self.onStartup = function () {
             var copyProgress = $("#timelapse_copy_progress");
             self.copyProgressBar = copyProgress.find(".bg-orange");
         }
 
-        self.onSettingsShown = function()
-        {
+        self.onSettingsShown = function () {
             self.requestData();
             self.refreshPreview();
         }
 
-        self.onBeforeSaveSettings = function()
-        {
+        self.onBeforeSaveSettings = function () {
             self.save();
         }
 
@@ -278,32 +276,38 @@ $(function () {
 
             $.notify({
                 title: title,
-                text: text }, "success");
+                text: text
+            }, "success");
         };
 
         self.onEventMovieRendering = function (payload) {
             $.notify({
                 title: gettext("Rendering timelapse"),
                 text: _.sprintf(gettext("Now rendering timelapse %(movie_prefix)s. Due to performance reasons it is not recommended to start a print job while a movie is still rendering."), payload),
-                }, "success");
+            }, "success");
         };
 
         self.onEventMovieFailed = function (payload) {
-            var html = "<p>" + _.sprintf(gettext("Rendering of timelapse %(movie_prefix)s failed with return code %(returncode)s"), payload) + "</p>";
-            html += pnotifyAdditionalInfo('<pre style="overflow: auto">' + payload.error + '</pre>');
 
             $.notify({
                 title: gettext("Rendering failed"),
-                text: html }, "error");
+                text: _.sprintf(gettext("Rendering of timelapse %(movie_prefix)s failed."), payload)
+            }, "error");
         };
 
         self.onEventMovieDone = function (payload) {
             $.notify({
                 title: gettext("Timelapse ready"),
-                text: _.sprintf(gettext("New timelapse %(movie_prefix)s is done rendering."), payload) },
+                text: _.sprintf(gettext("New timelapse %(movie_prefix)s is done rendering."), payload)
+            },
                 "success");
 
             self.requestData();
+        };
+
+        self._getApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            return OctoPrint.get(url, { data: data });
         };
 
         self._sendApi = function (data) {
