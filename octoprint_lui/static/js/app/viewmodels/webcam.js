@@ -30,6 +30,8 @@ $(function () {
             return self.printerState.isPrinting() || self.printerState.isPaused();
         });
 
+        self.isCopying = ko.observable(false);
+
         self.timelapseEnabled = ko.pureComputed({
             read: function () {
                 return self.timelapseType() == "timed";
@@ -199,13 +201,18 @@ $(function () {
         };
 
         self.copyToUsb = function (filename) {
+            self.isCopying(true);
+
             self._sendApi({
                 command: "copy_timelapse_to_usb",
                 filename: filename
             }).done(function () {
+                self.setProgressBar(0);
                 $.notify({ title: 'Timelapse copied', text: 'The timelapse has been copied to your USB drive.' }, 'success');
             }).fail(function () {
                 $.notify({ title: 'Copying of timelapse failed', text: 'The timelapse could not be copied. Plese check if there is sufficient space available on the drive and try again.' }, 'error');
+            }).always(function () {
+                self.isCopying(false);
             });
         }
 

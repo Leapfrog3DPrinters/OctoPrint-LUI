@@ -701,7 +701,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         # Helpers to check copying status
         def on_timelapse_copy():
-            percentage = (float(os.path.getsize(new_full_path)) / float(os.path.getsize(full_path))) * 100.0
+            newsize = float(os.path.getsize(new_full_path))
+            totalsize = float(os.path.getsize(full_path))
+            if totalsize > 0:
+                percentage = newsize/totalsize * 100.0
+            else:
+                percentage = 0
             self._logger.info("Timelapse copy progress: %f" % percentage)
             self._send_client_message("timelapse_copy_progress", { "percentage" : percentage })
     
