@@ -1,6 +1,6 @@
 <div class="tab" id="settings">
     <div class="content">
-        <div class="settings_topics">
+        <div class="settings_topics" data-bind="css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
             <!-- Printer -->
             <div class="settings_topic" data-bind="click: function() {showSettingsTopic('printer')}">
                 <ul class="topic_main">
