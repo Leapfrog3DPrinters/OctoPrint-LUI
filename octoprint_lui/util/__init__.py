@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import watchdog
 import watchdog.events
+from octoprint.filemanager import LocalFileStorage
 
 class CallbackFileSystemWatch(watchdog.events.FileSystemEventHandler):
 
@@ -11,3 +12,9 @@ class CallbackFileSystemWatch(watchdog.events.FileSystemEventHandler):
 
     def on_any_event(self, event):
         self.callback(event)
+
+class UsbFileStorage(LocalFileStorage):
+
+    @property
+    def analysis_backlog(self):
+        return []

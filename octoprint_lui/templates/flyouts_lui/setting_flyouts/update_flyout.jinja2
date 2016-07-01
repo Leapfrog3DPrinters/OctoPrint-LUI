@@ -1,72 +1,106 @@
 <div id="update">
-	<div class="Table" data-bind="css: {disabled: updating()}">
-		<div class="Table-row Table-header">
-			<div class="Table-item">
-				Version information
-			</div>
-			<div class="Table-item">
-				<span style="margin-left: auto;"><i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>Bolt</span>
-			</div>
-		</div>
-		<!-- ko foreach: updateinfo -->
-		<div class="Table-row">
-			<div class="Table-item Table-item-grow-4" data-bind="text: name">
-			</div>
-			<div class="Table-item text_wrap" data-bind="text: version">
-			</div>
-			<div class="Table-item Table-item-grow-3">
-				<ul class="button-area">
-					<li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function(){$root.sendUpdateCommand($data)}"><a href=""><span data-bind="text: $root.getUpdateText($data)"></span></a></li>
-				</ul>
-			</div>
-		</div>
-		<!-- /ko -->
-	</div>
-	<!-- ko allowBindings: false -->
-	<div id="flash_arduino">
-		<div class="Table">
-			<div class="Table-row Table-header">
-				<div class="Table-item">
-					Firmware
-				</div>
-			</div>
-			<div class="Table-row">
-				<div class="Table-item Table-item-grow-4">
-					Bolt <!-- TODO: Make model name ko.observable -->
-				</div>
-				<div class="Table-item">
-					2.4
-				</div>
-				<div class="Table-item Table-item-grow-3">
-					<ul class="button-area">
-						<li id="settings-flash-arduino-start" class="button" data-bind="css: {disabled: !flash_enable()}"><a href="#"><span><i class="fa fa-upload"></i>Flash</span></a></li>
-					</ul>
-				</div>
-			</div>
-			<div class="Table-row">
-				<div class="Table-item">
-					<ul class="button-area">
-						<li class="button secondary-button fileinput-button"><a href="#"><span>Upload firmware</span><input id="settings-flash-arduino" type="file" accept=".hex" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file") }}"></a></li>
-					</ul>
-				</div>
-			</div>
-			<div class="Table-row">
-				<div class="Table-item">
-					<div class="progress">
-						<span id="flash_read_progress" class="bg-none" style="width: 100%">Reading</span>
-					</div>
-					<div class="progress">
-						<span id="flash_write_progress" class="bg-none" style="width: 100%">Writing</span>
-					</div>
-					<div class="progress">
-						<span id="flash_verify_progress" class="bg-none" style="width: 100%">Verify</span>
-					</div>
-					<div class="progress">
-						<span id="flash_done_progress" class="bg-none" style="width: 100%">Done</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- /ko -->
+  <div class="Table" data-bind="css: {disabled: updating()}">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        Version information
+      </div>
+      <div class="Table-item">
+        <span style="margin-left: auto;">
+          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>
+          <span data-bind="text: modelName"></span>
+        </span>
+      </div>
+    </div>
+    <!-- ko foreach: updateinfo -->
+    <div class="Table-row">
+      <div class="Table-item Table-item-grow-4" data-bind="text: name" style="text-overflow: ellipsis">
+      </div>
+      <div class="Table-item text_wrap" data-bind="text: version">
+      </div>
+      <div class="Table-item Table-item-grow-3">
+        <ul class="button-area">
+          <li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function(){$root.sendUpdateCommand($data)}">
+            <a href="">
+              <span data-bind="text: $root.getUpdateText($data)"></span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!-- /ko -->
+  </div>
+  <div id="flash_arduino" data-bind="with: flashArduino">
+    <div class="Table">
+      <div class="Table-row Table-header">
+        <div class="Table-item">
+          Firmware
+        </div>
+      </div>
+      <div class="Table-row">
+        <!-- ko if: $parent.fileNameToFlash -->
+        <div class="Table-item Table-item-grow-5">
+          <span data-bind="text: $parent.fileNameToFlash"></span>
+        </div>
+        <!-- /ko -->
+        <!-- ko ifnot: $parent.fileNameToFlash -->
+        <div class="Table-item Table-item-grow-4">
+          Current version:
+        </div>
+        <div class="Table-item">
+          <span data-bind="text: $parent.firmwareVersion"></span>
+        </div>
+        <!-- /ko -->
+        <div class="Table-item Table-item-grow-3">
+          <ul class="button-area">
+            <li id="settings-flash-arduino-start" class="button" data-bind="css: {disabled: !flash_enable()}">
+              <a href="#">
+                <span>
+                  <i class="fa fa-upload"></i>Flash
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="Table-row">
+        <div class="Table-item">
+
+          {%  if local_addr -%}
+          <ul class="button-area">
+            <li class="button secondary-button fileinput-button" data-bind="click: function() { $parent.browseForFirmware() }">
+              <a href="#">
+                <span>Upload firmware</span>
+            </a>
+            </li>
+          </ul>
+          {% else %}
+          <ul class="button-area">
+            <li class="button secondary-button fileinput-button">
+              <a href="#">
+                <span>Upload firmware</span>
+                <input id="settings-flash-arduino" type="file" accept=".hex" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file", filename="")}}">
+            </a>
+            </li>
+          </ul>
+          {%- endif %}
+        </div>
+      </div>
+      <div class="Table-row">
+        <div class="Table-item">
+          <div class="progress">
+            <span id="flash_read_progress" class="bg-none" style="width: 100%">Reading</span>
+          </div>
+          <div class="progress">
+            <span id="flash_write_progress" class="bg-none" style="width: 100%">Writing</span>
+          </div>
+          <div class="progress">
+            <span id="flash_verify_progress" class="bg-none" style="width: 100%">Verify</span>
+          </div>
+          <div class="progress">
+            <span id="flash_done_progress" class="bg-none" style="width: 100%">Done</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
