@@ -16,6 +16,9 @@ $(function () {
         self.forPurge = ko.observable(false);
 
         self.selectedTemperatureProfile = ko.observable(undefined);
+        self.updateLeftTemperatureProfile = ko.observable(undefined);
+        self.updateRightTemperatureProfile = ko.observable(undefined);
+
         self.currentMaterial = ko.pureComputed(function () {
             tool = self.tool();
             if (tool == "tool1")
@@ -382,7 +385,7 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
       FilamentViewModel,
       ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel"],
-      ["#filament_status", "#filament_flyout"]
+      ["#filament_status", "#filament_flyout", "#maintenance_filament"]
     ]);
 
 });
