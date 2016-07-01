@@ -16,6 +16,7 @@ $(function () {
         self.forPurge = ko.observable(false);
 
         self.selectedTemperatureProfile = ko.observable(undefined);
+        self.updateLeft = ko.observable(undefined);
         self.updateLeftTemperatureProfile = ko.observable(undefined);
         self.updateRightTemperatureProfile = ko.observable(undefined);
 
@@ -36,6 +37,8 @@ $(function () {
 
         self.leftAmount = ko.observable(undefined);
         self.rightAmount = ko.observable(undefined);
+        self.updateLeftAmount = ko.observable(undefined);
+        self.updateRightAmount = ko.observable(undefined);
 
         self.filamentLoading = ko.observable(false);
         self.filamentInProgress = ko.observable(false);
@@ -192,9 +195,10 @@ $(function () {
         self.changeFilamentCancel = function () {
             self._sendApi({
                 command: "change_filament_cancel"
+            }).success(function(){
+                self.requestData();
             });
 
-            self.requestData();
         }
 
         self.changeFilamentDone = function () {
@@ -211,7 +215,8 @@ $(function () {
 
         self.loadFilament = function (loadFor) {
 
-            loadFor = loadFor || "swap";
+            var loadFor = loadFor || "swap";
+            var profileName = undefined;
 
             if (loadFor == "filament-detection" && fd_slider.noUiSlider.get()) {
                 amount = fd_slider.noUiSlider.get() * 1000;
@@ -238,14 +243,32 @@ $(function () {
                 profileName: profileName,
                 amount: amount
             });
-        }
+        };
 
         self.updateFilament = function (tool, amount) {
+            var profile = undefined;
+            if (tool == "tool0") {
+                profile = self.updateRightTemperatureProfile();
+            } else {
+                profile = self.updateLeftTemperatureProfile();
+            }
+
+            var profileName = profile.name;
+
             self._sendApi({
                 command: "update_filament",
                 tool: tool,
-                amount: amount
-            })
+                amount: amount * 1000,
+                profileName: profileName
+            }).success(function() {
+                self.requestData();
+                $('#maintenance_filament').removeClass('active');
+                $('#maintenance_control').addClass('active');
+
+                
+            });
+
+
         };
 
         self.loadFilamentCont = function () {
@@ -372,10 +395,20 @@ $(function () {
         }
 
         self.requestData = function () {
-            OctoPrint.simpleApiGet('lui', {
+            return OctoPrint.simpleApiGet('lui', {
                 success: self.fromResponse
             });
-        }
+        };
+
+        self.onSettingsShown = function() {
+            self.requestData().success(function(){
+                self.updateLeftAmount(self.leftAmount() / 1000);
+                self.updateRightAmount(self.rightAmount() / 1000);
+                self.updateLeft(self.leftFilament());
+                self.updateLeftTemperatureProfile(self.leftFilament());
+                self.updateRightTemperatureProfile(self.rightFilament());
+            });
+        };
 
 
     }

@@ -935,6 +935,13 @@ select {
   Settings Flyout
 */
 
+#maintenance_filament, #maintenance_control {
+  display: none;
+  &.active {
+    display: flex;
+  }
+}
+
 /*
   Print Tab
 */

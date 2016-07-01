@@ -1107,6 +1107,14 @@ select {
 /* 
   Settings Flyout
 */
+#maintenance_filament, #maintenance_control {
+  display: none; }
+  #maintenance_filament.active, #maintenance_control.active {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex; }
+
 /*
   Print Tab
 */

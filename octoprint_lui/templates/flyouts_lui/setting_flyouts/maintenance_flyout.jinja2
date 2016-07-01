@@ -1,4 +1,4 @@
-<div class="Table">
+<div id="maintenance_control" class="Table active">
   <div class="Table-header Table-row">
     <div class="Table-item">Maintenance</div>
   </div>
@@ -49,7 +49,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button">
+        <li class="button" data-bind="click: setFilamentAmount">
           <a href="#">
             <span>Set filament amount</span>
           </a>
@@ -106,15 +106,15 @@
   </div>
   <div class="Table-row">
     <div class="Table-item">Amount: </div>
-    <div class="Table-item"><input data-bind="value: leftAmount"></div>
+    <div class="Table-item"><input type="number" data-bind="value: updateLeftAmount"></div>
     <div class="Table-item">Amount: </div>
-    <div class="Table-item"><input data-bind="value: rightAmount"></div>
+    <div class="Table-item"><input type="number" data-bind="value: updateRightAmount"></div>
   </div>
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function() {}">
+          <a href="#" data-bind="click: function() {updateFilament('tool1', updateLeftAmount())}">
             <span>
               <i class="fa fa-refresh"></i>Update left</span>
           </a>
@@ -124,7 +124,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function() {}">
+          <a href="#" data-bind="click: function() {updateFilament('tool0', updateRightAmount())}">
             <span>
               <i class="fa fa-refresh"></i>Update right</span>
           </a>
