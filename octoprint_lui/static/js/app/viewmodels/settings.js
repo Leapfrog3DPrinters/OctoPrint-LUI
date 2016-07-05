@@ -6,6 +6,14 @@ $(function() {
         self.users = parameters[1];
         self.printerProfiles = parameters[2];
         self.flyout = parameters[3];
+        
+        self.isErrorOrClosed = ko.observable(undefined);
+        self.isOperational = ko.observable(undefined);
+        self.isPrinting = ko.observable(undefined);
+        self.isPaused = ko.observable(undefined);
+        self.isError = ko.observable(undefined);
+        self.isReady = ko.observable(undefined);
+        self.isLoading = ko.observable(undefined);
 
         self.allViewModels = [];
 
@@ -602,6 +610,24 @@ $(function() {
             self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('zoffset');
 
+        };
+
+        self.fromCurrentData = function (data) {
+            self._processStateData(data.state);
+        };
+
+        self.fromHistoryData = function (data) {
+            self._processStateData(data.state);
+        };
+
+        self._processStateData = function (data) {
+            self.isErrorOrClosed(data.flags.closedOrError);
+            self.isOperational(data.flags.operational);
+            self.isPaused(data.flags.paused);
+            self.isPrinting(data.flags.printing);
+            self.isError(data.flags.error);
+            self.isReady(data.flags.ready);
+            self.isLoading(data.flags.loading);
         };
 
     }

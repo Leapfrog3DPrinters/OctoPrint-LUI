@@ -318,7 +318,7 @@ a {
   opacity: 0.4; }
 
 .hide {
-  display: none; }
+  display: none !important; }
 
 /* 
   Circles

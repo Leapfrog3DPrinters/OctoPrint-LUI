@@ -4,6 +4,8 @@ $(function() {
 
         self.loginState = parameters[0];
 
+        self.reservedUsernames = [];
+
         // initialize list helper
         self.listHelper = new ItemListHelper(
             "users",
@@ -15,7 +17,9 @@ $(function() {
                     return 0;
                 }
             },
-            {},
+            {
+                
+            },
             "name",
             [],
             [],
@@ -60,12 +64,23 @@ $(function() {
         self.requestData = function() {
             if (!CONFIG_ACCESS_CONTROL) return;
 
-            OctoPrint.users.list()
-                .done(self.fromResponse);
+            OctoPrint.simpleApiGet('lui', {
+                success: function(data)
+                {
+                    self.reservedUsernames = data.reserved_usernames;
+
+                    OctoPrint.users.list().done(self.fromResponse);
+                }
+            });
         };
 
         self.fromResponse = function(response) {
-            self.listHelper.updateItems(response.users);
+            
+            self.listHelper.updateItems(response.users.filter(function(user) 
+            {
+                //Only return users not in the reserved username list
+                return self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() } ) === undefined
+            }));
         };
 
         self.showAddUserDialog = function() {
@@ -171,6 +186,17 @@ $(function() {
             if (!user) {
                 throw OctoPrint.InvalidArgumentError("user must be set");
             }
+            
+            if (self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() })) {
+                // we do not allow to delete any of the reserved users
+                $.notify({
+                    title: gettext("Not possible"),
+                    text: gettext("You cannot add a user with this username.")
+                },
+                    "error"
+                );
+                return $.Deferred().reject("You cannot add a user with this username").promise();
+            }
 
             return OctoPrint.users.add(user)
             .done(
@@ -197,6 +223,18 @@ $(function() {
                     "error"
                 );
                 return $.Deferred().reject("You may not delete your own account").promise();
+            }
+
+            if (self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() }))
+            {
+                // we do not allow to delete any of the reserved users
+                $.notify({
+                    title: gettext("Not possible"),
+                    text: gettext("You may not delete this reserved account.")
+                },
+                    "error"
+                );
+                return $.Deferred().reject("You may not delete this reserved account").promise();
             }
 
             return OctoPrint.users.delete(user.name)

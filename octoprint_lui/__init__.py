@@ -31,7 +31,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.AssetPlugin,
                 octoprint.plugin.SimpleApiPlugin,
-                #octoprint.plugin.BlueprintPlugin,
+                octoprint.plugin.BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
                 octoprint.printer.PrinterCallback
@@ -104,7 +104,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ TinyDB 
 
         self.filament_database_path = None
-        self.filament_query = None
+        self._filament_query = None
         self.filament_database = None
 
 
@@ -170,7 +170,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ TinyDB - filament
         self.filament_database_path = os.path.join(self.get_plugin_data_folder(), "filament.json")
         self.filament_database = TinyDB(self.filament_database_path)
-        self.filament_query = Query()
+        self._filament_query = Query()
         if self.filament_database.all() == []:
             self._logger.info("No filament database found creating one...")
             self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0, 
@@ -178,13 +178,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ TinyDB - firmware
         self.machine_database_path = os.path.join(self.get_plugin_data_folder(), "machine.json")
         self.machine_database = TinyDB(self.machine_database_path)
-        self.machine_query = Query()
+        self._machine_query = Query() # underscore for blueprintapi compatability
         if self.machine_database.all() == []:
             self._logger.info("No machine database found creating one...")
             self.machine_database.insert_multiple({ 'property': key, 'value': '' } for key in self.firmware_info_properties.keys())
 
         ## Get filament amount stored in config
         self.update_filament_amount()
+
+        ## Usernames that cannot be removed
+        self.reserved_usernames = ['local']
 
     def update_info_list(self, force=False):
         self.fetch_all_repos(force)
@@ -250,18 +253,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self.from_localhost = netaddr.IPAddress(remote_address) in localhost
 
-        self._logger.info("UI render");
-        self._logger.info("Request-args: %s" % request);
+        response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
-        if request.args.get("webcam"):
-            response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
-        else:
-            response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
-
-        if remote_address is None:
+        if self.from_localhost:
             from octoprint.server.util.flask import add_non_caching_response_headers
             add_non_caching_response_headers(response)
 
+        return response
+
+    def is_blueprint_protected(self):
+        # By default, the routes to LUI are not protected. SimpleAPI calls are protected though.
+        return False
+
+    @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
+    def webcamstream(self):
+        self._check_localhost()
+        response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
     def get_ui_additional_key_data_for_cache(self):
@@ -283,6 +290,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request = None):
+        # Because blueprint is not protected, manually check for API key
+        octoprint.server.util.apiKeyRequestHandler()
+
         command = None
         
         if("command" in request.values):
@@ -303,7 +313,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'machine_info': machine_info,
                 'filaments': self.filament_database.all(),
                 'is_homed': self.is_homed,
-                'is_homing': self.is_homing
+                'is_homing': self.is_homing,
+                'reserved_usernames': self.reserved_usernames
                 })
             return jsonify(result)
 
@@ -373,7 +384,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_client_in_progress()
         # Set filament change tool and profile
         self.filament_change_tool = tool
-        self.filament_loaded_profile = self.filament_database.get(self.filament_query.tool == tool)
+        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
         self._printer.change_tool(tool)
 
         self.move_to_filament_load_position()
@@ -410,7 +421,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
         elif profileName == "purge": 
             # Select current profile
-            selectedProfile = self.filament_database.get(self.filament_query.tool == self.filament_change_tool)["material"]
+            selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
             temp = int(selectedProfile['extruder'])
         else: 
             # Find profile from key
@@ -958,10 +969,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ## ~ Save helpers
     def set_filament_profile(self, tool, profile):
-        self.filament_database.update(profile, self.filament_query.tool == tool)
+        self.filament_database.update(profile, self._filament_query.tool == tool)
 
     def get_filament_amount(self):
-        filament_amount = [self.filament_database.get(self.filament_query.tool == "tool"+str(index))["amount"] for index in range(2)]
+        filament_amount = [self.filament_database.get(self._filament_query.tool == "tool"+str(index))["amount"] for index in range(2)]
         return filament_amount
 
     def save_filament_amount(self):
@@ -975,7 +986,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def set_filament_amount(self, tool):
         tool_num = int(tool[len("tool"):])
-        self.filament_database.update({'amount': self.filament_amount[tool_num]}, self.filament_query.tool == tool)
+        self.filament_database.update({'amount': self.filament_amount[tool_num]}, self._filament_query.tool == tool)
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
     def script_hook(self, comm, script_type, script_name):
@@ -1132,7 +1143,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message("filament_action_detected", dict(tool=tool))
         comm.setPause(True)
         
-        self.filament_detection_profile = self.filament_database.get(self.filament_query.tool == tool)["material"]
+        self.filament_detection_profile = self.filament_database.get(self._filament_query.tool == tool)["material"]
         self.filament_detection_tool_temperatures = deepcopy(self.current_temperature_data)
         self.filament_action = True
 
@@ -1549,9 +1560,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 value = line[idx_start:idx_end]
 
-                self.machine_database.update({'value': value }, self.machine_query.property == key)
+                self.machine_database.update({'value': value }, self._machine_query.property == key)
             else:    
-                self.machine_database.update({'value': 'Unknown' }, self.machine_query.property == key)
+                self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)
                     
 
         return properties
@@ -1588,6 +1599,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Helper method that calls api defined functions
     def _call_api_method(self, command, *args, **kwargs):
         """Call the method responding to api command"""
+
+        # Because blueprint is not protected, manually check for API key
+        octoprint.server.util.apiKeyRequestHandler()
+        
         name = "_on_api_command_{}".format(command)
         method = getattr(self, name, None)
         if method is not None and callable(method):

@@ -11,40 +11,20 @@
     </div>
     <div class="Table-item">
       <!--TODO: Make nice touch-friendly toggle button-->
-      <input type="checkbox" data-bind="checked: timelapseEnabled,  enable: printerState.isOperational() && !printerState.isPrinting() && loginState.isUser()" />
+      <input type="checkbox" data-bind="checked: timelapseEnabled,  enable: printerState.isOperational() && !printerState.isPrinting() && !printerState.isPaused() && loginState.isUser()" />
     </div>
   </div>
   <div class="Table-row">
-    <div class="Table-item">
-      <label for="webcam_timelapse_fps">Frame rate:</label>
-    </div>
-    <div class="Table-item">
-      <input type="number" class="input-mini" id="webcam_timelapse_fps" data-bind="value: timelapseFps, enable: printerState.isOperational() && !printerState.isPrinting() && loginState.isUser() && timelapseFpsEnabled" />
-    </div>
-    <div class="Table-item">
-      FPS
-    </div>
-  </div>
-  <div class="Table-row">
-    <div class="Table-item">
-      <label for="webcam_timelapse_postRoll">Post roll:</label>
-    </div>
-    <div class="Table-item">
-      <input type="number" class="input-mini" id="webcam_timelapse_postRoll" data-bind="value: timelapsePostRoll, enable: printerState.isOperational() && !printerState.isPrinting() && loginState.isUser() && timelapsePostRollEnabled" />
-    </div>
-    <div class="Table-item">
-      sec
-    </div>
-  </div>
-  <div class="Table-row">
-    <div class="Table-item">
-      <label for="webcam_timelapse_interval">Interval:</label>
-    </div>
-    <div class="Table-item">
-      <input type="number" class="input-mini" id="webcam_timelapse_interval" data-bind="value: timelapseTimedInterval, enable: printerState.isOperational() && !printerState.isPrinting() && loginState.isUser() && timelapseTimedIntervalEnabled" />
-    </div>
-    <div class="Table-item">
-      sec
+    <div class="Table-row">
+      <div class="Table-item">
+        <label for="webcam_timelapse_interval">Interval:</label>
+      </div>
+      <div class="Table-item">
+        <input type="number" class="input-mini" id="webcam_timelapse_interval" data-bind="value: timelapseTimedInterval, enable: printerState.isOperational() && !printerState.isPrinting() && loginState.isUser() && timelapseTimedIntervalEnabled" />
+      </div>
+      <div class="Table-item">
+        sec
+      </div>
     </div>
   </div>
 </div>

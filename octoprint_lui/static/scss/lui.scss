@@ -414,7 +414,7 @@ a {
 }
 
 .hide {
-  display: none;
+  display: none !important;
   // flex-grow: 0.001;
 }
 
