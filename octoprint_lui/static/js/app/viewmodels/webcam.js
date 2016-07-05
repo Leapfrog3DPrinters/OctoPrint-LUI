@@ -135,12 +135,8 @@ $(function () {
         );
 
         self.refreshPreview = function () {
-            previewUrl = self.settings.webcam_snapshotUrl();
-            if (previewUrl.indexOf('?') > -1)
-                previewUrl = previewUrl + "&timestamp=" + new Date().getTime();
-            else
-                previewUrl = previewUrl + "?timestamp=" + new Date().getTime();
-
+            previewUrl = '/webcam/?action=snapshot&timestamp=' + new Date().getTime();
+         
             self.webcam_previewUrl(previewUrl);
         }
 

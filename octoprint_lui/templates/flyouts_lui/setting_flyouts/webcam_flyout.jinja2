@@ -114,7 +114,6 @@
           </a>
         </li>
       </ul>
-
       {% endif %}
     </div>
     <div class="Table-item">
@@ -166,7 +165,7 @@
         <li class="button">
           <a href="#" data-bind="click: function() { if ($root.loginState.isUser() && !$root.isBusy()) { $parent.renderUnrendered($data.name); } else { return; } }, css: {disabled: $root.isCopying() || !$root.loginState.isUser() || processing || $root.isBusy()}">
             <span>
-              <i class="fa fa-file-video-o"></i> Render
+              <i class="fa fa-file-video-o"></i> Retry
             </span>
           </a>
         </li>

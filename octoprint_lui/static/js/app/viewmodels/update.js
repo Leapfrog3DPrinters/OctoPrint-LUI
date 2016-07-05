@@ -13,6 +13,8 @@ $(function () {
         self.updateinfo = ko.observableArray([]);
         self.updating = ko.observable(false);
         self.update_needed = ko.observable(false);
+        self.updateCounter = 0;
+        self.updateTarget = 0;
 
         self.fileNameToFlash = ko.observable(undefined); // Can either be a local (USB) file name or a filename to be uploaded
 
@@ -39,6 +41,22 @@ $(function () {
             }
         };
 
+        self.getUpdateAllText = ko.pureComputed(function() {
+            if (self.update_needed() > 0) {
+                return "Update"
+            } else {
+                return "Up-to-date"
+            }
+        });
+
+        self.getUpdateAllIcon = ko.pureComputed(function() {
+            if (self.update_needed() > 0) {
+                return "fa-refresh"
+            } else {
+                return "fa-check"
+            }
+        });
+
         self.getUpdateButtonClass = function (data) {
             if (data.update()) {
                 return ""
@@ -46,6 +64,14 @@ $(function () {
                 return "ok-button disabled"
             }
         };
+
+        self.getUpdateAllButtonClass = ko.pureComputed(function () {
+            if (self.update_needed() > 0) {
+                return ""
+            } else {
+                return "ok-button disabled"
+            }
+        });
 
         self.browseForFirmware = function () {
 
@@ -79,6 +105,57 @@ $(function () {
                 });
         };
 
+        self._updateNext = function ()
+        {
+            //TODO: Provide progress feedback to user
+            console.log('Updating' + (self.updateCounter + 1) + '/' + self.updateTarget);
+                
+            var items = self.updateinfo();
+            var data = items[self.updateCounter];
+
+            if (!data.update) {
+                self.updateCounter++;
+
+                if (self.updateCounter == self.updateTarget)
+                    self.system.systemReboot();
+                else
+                    self._updateNext();
+            }
+
+            var command = { 'actionSource': 'custom', 'action': data.action(), 'name': data.name()};
+            self.system.triggerCommand(command)
+                .done(function () {
+                    self.updateCounter++;
+
+                    if (self.updateCounter == self.updateTarget)
+                        self.system.systemReboot();
+                    else
+                        self._updateNext();
+                }).fail(function()
+                {
+                    $.notify({title: 'Software update failed', text: 'An error has occured while trying to update the software. Please try again.'}, "error");
+                });
+        }
+
+        self.updateAll = function (data) {
+
+            self.updateCounter = 0;
+            self.updateTarget = self.updateinfo().length;
+
+            if (self.updateTarget > 0) {
+                var text = "You are about to update the printer software.";
+                var question = "Do want to continue?";
+                var title = "Update software";
+
+                self.flyout.showConfirmationFlyout({ 'title': title, 'text': text, 'question': question }).done(function () {
+                    self._updateNext();
+                })
+            }
+
+            
+                
+        };
+
         self.fromResponse = function (data) {
             var info = ko.mapping.fromJS(data.update);
             var updates = 0;
@@ -88,8 +165,8 @@ $(function () {
             self.update_needed(updates);
             self.updateinfo(info());
 
-            self.modelName(data.firmware_info.machine_type);
-            self.firmwareVersion(data.firmware_info.firmware_version);
+            self.modelName(data.machine_info.machine_type);
+            self.firmwareVersion(data.machine_info.firmware_version);
         };
 
         self.requestData = function () {

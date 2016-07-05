@@ -31,13 +31,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.AssetPlugin,
                 octoprint.plugin.SimpleApiPlugin,
+                #octoprint.plugin.BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
                 octoprint.printer.PrinterCallback
 ):
 
     def __init__(self):
-
+        
         ##~ Global
         self.from_localhost = False
         self.debug = True
@@ -132,7 +133,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Firmware
         self.firmware_info_command_sent = False
-        self.firmware_info_properties = set(["machine_type", "firmware_version"])
+        self.firmware_info_properties = dict({"machine_type": "Model", "firmware_version": "Leapfrog Firmware" })
 
         ##~ USB and file browser
         self.has_asked_for_firmware_upgrade = False
@@ -166,16 +167,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
 
-        ##~ TinyDB
+        ##~ TinyDB - filament
         self.filament_database_path = os.path.join(self.get_plugin_data_folder(), "filament.json")
         self.filament_database = TinyDB(self.filament_database_path)
         self.filament_query = Query()
         if self.filament_database.all() == []:
-            self._logger.info("No database found creating one...")
+            self._logger.info("No filament database found creating one...")
             self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0, 
                                                     'material': self.default_material} for i in range(2))
- 
-
+        ##~ TinyDB - firmware
+        self.machine_database_path = os.path.join(self.get_plugin_data_folder(), "machine.json")
+        self.machine_database = TinyDB(self.machine_database_path)
+        self.machine_query = Query()
+        if self.machine_database.all() == []:
+            self._logger.info("No machine database found creating one...")
+            self.machine_database.insert_multiple({ 'property': key, 'value': '' } for key in self.firmware_info_properties.keys())
 
         ## Get filament amount stored in config
         self.update_filament_amount()
@@ -229,11 +235,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "zoffset": 0,
             "action_door": True,
             "action_filament": True,
-            "firmware_info": 
-                {
-                    "machine_type": None,
-                    "firmware_version" : None
-                }
+            
         }
 
     ##~ OctoPrint UI Plugin
@@ -248,7 +250,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self.from_localhost = netaddr.IPAddress(remote_address) in localhost
 
-        response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
+        self._logger.info("UI render");
+        self._logger.info("Request-args: %s" % request);
+
+        if request.args.get("webcam"):
+            response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
+        else:
+            response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
         if remote_address is None:
             from octoprint.server.util.flask import add_non_caching_response_headers
@@ -286,16 +294,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return jsonify({ "is_media_mounted" : self.is_media_mounted })
         elif(command == "storage_info"):
             import psutil
-            usage = psutil.disk_usage(self._settings.global_get_basefolder("uploads"))
+            usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
             return jsonify(free=usage.free, total=usage.total)
         else:
-            return jsonify(dict(
-                update=self.update_info,
-                firmware_info=self._settings.get(["firmware_info"]),
-                filaments=self.filament_database.all(),
-                is_homed=self.is_homed,
-                is_homing=self.is_homing
-                ))
+            machine_info = self._get_machine_info()
+            result = dict({
+                'update': self.update_info,
+                'machine_info': machine_info,
+                'filaments': self.filament_database.all(),
+                'is_homed': self.is_homed,
+                'is_homing': self.is_homing
+                })
+            return jsonify(result)
 
     def get_api_commands(self):
             return dict(
@@ -1087,7 +1097,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if self.firmware_info_command_sent:
-            if "ok" in line:
+            if "echo:" in line:
                 self._on_firmware_info_received(line)
 
         if self.home_command_send: 
@@ -1521,14 +1531,37 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_firmware_info_received(self, line):
         self.firmware_info_command_sent = False
         self._logger.info("M115 data received: %s" % line)
-        line = line[3:-1] # Remove ok and newline
-
-        if len(line) > 0:
-            all_firmware_info = dict(d.split(':') for d in line.split(' '))
-            firmware_info = { prop: all_firmware_info[prop] for prop in self.firmware_info_properties }
+        line = line[5:-1] # Remove echo: and newline
         
-            self._settings.set(["firmware_info"], firmware_info)
-            self._settings.save()
+        if len(line) > 0:
+           self._update_from_m115_properties(line)
+
+    def _update_from_m115_properties(self, line):
+        line = line.replace(': ', ':')
+        properties = dict()
+        for key, prop in self.firmware_info_properties.iteritems():
+            proplen = len(prop)
+            idx_start = line.find(prop) + proplen + 1
+            if idx_start > proplen:
+                idx_end = line.find(' ', idx_start)
+                if idx_end == -1:
+                    idx_end = len(line)-1
+
+                value = line[idx_start:idx_end]
+
+                self.machine_database.update({'value': value }, self.machine_query.property == key)
+            else:    
+                self.machine_database.update({'value': 'Unknown' }, self.machine_query.property == key)
+                    
+
+        return properties
+
+    def _get_machine_info(self):
+        machine_info = dict()
+        for item in self.machine_database.all():
+            machine_info.update({ item["property"] : item["value"] })
+
+        return machine_info
 
     def extension_tree_hook(self):
         return dict(firmware=dict(
