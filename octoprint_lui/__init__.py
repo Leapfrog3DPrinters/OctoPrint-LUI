@@ -153,7 +153,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
         ##~ Model
-        if not os.path.exists('/home/pi'):
+        if os.name == "posix":
+            self.model = "MacDebug"
+        elif not os.path.exists('/home/pi'):
             self.model = "WindowsDebug"
         else:
             self.model = "Bolt"
