@@ -140,7 +140,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_properties = dict({"machine_type": "Model", "firmware_version": "Leapfrog Firmware" })
 
         ##~ USB and file browser
-        self.has_asked_for_firmware_upgrade = False
         self.is_media_mounted = False
 
         #TODO: make this more pythonic
@@ -1510,7 +1509,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_media_mounted = number_of_dirs > 0
 
         # Check if what's mounted contains a firmware (*.hex) file
-        if not was_media_mounted and self.is_media_mounted:
+        if not self.debug and not was_media_mounted and self.is_media_mounted:
             firmware = self._check_for_firmware(self.media_folder)
             if(firmware):
                 firmware_file, firmware_path = firmware
