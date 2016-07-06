@@ -16,7 +16,6 @@ $(function () {
         self.forPurge = ko.observable(false);
 
         self.selectedTemperatureProfile = ko.observable(undefined);
-        self.updateLeft = ko.observable(undefined);
         self.updateLeftTemperatureProfile = ko.observable(undefined);
         self.updateRightTemperatureProfile = ko.observable(undefined);
 
@@ -253,19 +252,40 @@ $(function () {
                 profile = self.updateLeftTemperatureProfile();
             }
 
+            if (profile == undefined) {
+                return $.notify({
+                    title: gettext("Filament information updating warning"),
+                    text: _.sprintf(gettext('Please select a material to update.'))},
+                    "warning"
+                )
+            }
+
             var profileName = profile.name;
 
+            if (profileName == "None") {
+                amount = 0;
+            }
             self._sendApi({
                 command: "update_filament",
                 tool: tool,
                 amount: amount * 1000,
                 profileName: profileName
             }).success(function() {
-                self.requestData();
                 $('#maintenance_filament').removeClass('active');
                 $('#maintenance_control').addClass('active');
-
-                
+                $.notify({
+                    title: gettext("Filament information updated"),
+                    text: _.sprintf(gettext('New material: "%(material)s". New amount: "%(amount)s"'), {material: profileName, amount: amount})},
+                    "success"
+                )
+            }).error(function(){
+                $.notify({
+                    title: gettext("Filament information updated failed"),
+                    text: _.sprintf(gettext('Please check the logs for more info.'))},
+                    "error"
+                )
+            }).always(function(){
+                self.requestData();
             });
 
 
@@ -392,6 +412,8 @@ $(function () {
             self.rightFilament(self.filaments().find(function (x) { return x.tool() === "tool0" }).material.name());
             self.leftAmount(self.filaments().find(function (x) { return x.tool() === "tool1" }).amount());
             self.rightAmount(self.filaments().find(function (x) { return x.tool() === "tool0" }).amount());
+            self.updateLeftAmount(self.leftAmount() / 1000);
+            self.updateRightAmount(self.rightAmount() / 1000);
         }
 
         self.requestData = function () {
@@ -402,9 +424,6 @@ $(function () {
 
         self.onSettingsShown = function() {
             self.requestData().success(function(){
-                self.updateLeftAmount(self.leftAmount() / 1000);
-                self.updateRightAmount(self.rightAmount() / 1000);
-                self.updateLeft(self.leftFilament());
                 self.updateLeftTemperatureProfile(self.leftFilament());
                 self.updateRightTemperatureProfile(self.rightFilament());
             });

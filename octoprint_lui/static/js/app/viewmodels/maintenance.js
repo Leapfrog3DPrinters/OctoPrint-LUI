@@ -103,6 +103,7 @@ $(function() {
         self.setFilamentAmount = function() {
             $('#maintenance_control').removeClass('active');
             $('#maintenance_filament').addClass('active');
+            self.filament.requestData();
         };
 
         self.onSettingsShown = function (){ 
