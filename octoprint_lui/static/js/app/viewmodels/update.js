@@ -128,7 +128,7 @@ $(function () {
                     self.updateCounter++;
 
                     if (self.updateCounter == self.updateTarget)
-                        self.system.systemReboot();
+                        self.system.systemReboot();// TODO: Show spinner that system is rebooting
                     else
                         self._updateNext();
                 }).fail(function()

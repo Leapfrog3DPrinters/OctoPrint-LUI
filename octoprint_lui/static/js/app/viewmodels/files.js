@@ -62,7 +62,7 @@ $(function() {
         self.uploadProgressBar = undefined;
 
         self.isLoadingFile = false;
-        self.isLoadingFileList = false;
+        self.isLoadingFileList = ko.observable(false);
 
         self.addFolderDialog = undefined;
         self.addFolderName = ko.observable(undefined);
@@ -91,33 +91,33 @@ $(function() {
         };
 
         self.browseLocal = function () {
-            if (self.isLoadingFileList)
+            if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList = true;
-            filenameToFocus = '';
-            locationToFocus = '';
-            switchToPath = '';
+            self.isLoadingFileList(true)
+            var filenameToFocus = '';
+            var locationToFocus = '';
+            var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            }).always(function () { self.isLoadingFileList = false; });
+            }).always(function () { self.isLoadingFileList(false); });
         }
 
         self.browseUsb = function ()
         {
-            if (self.isLoadingFileList)
+            if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList = true;
-            filenameToFocus = '';
-            locationToFocus = '';
-            switchToPath = '';
+            self.isLoadingFileList(true);
+            var filenameToFocus = '';
+            var locationToFocus = '';
+            var switchToPath = '';
             self.loadFiles("usb")
                 .done(preProcessList)
                 .fail(self.notifyUsbFail)
                 .then(function (response) {
                     self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            }).always(function() { self.isLoadingFileList = false; });
+                }).always(function () { self.isLoadingFileList(false); });
         }
 
         self.notifyUsbFail = function () {
@@ -126,10 +126,10 @@ $(function() {
 
         self.browseUsbForFirmware = function()
         {
-            if (self.isLoadingFileList)
+            if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList = true;
+            self.isLoadingFileList(true);
             filenameToFocus = '';
             locationToFocus = '';
             switchToPath = '';
@@ -138,7 +138,7 @@ $(function() {
                 .fail(self.notifyUsbFail)
                 .then(function (response) {
                     self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            }).always(function () { self.isLoadingFileList = false; });
+            }).always(function () { self.isLoadingFileList(false); });
         }
 
         self.loadFiles = function (origin, filter) {

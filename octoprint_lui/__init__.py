@@ -55,7 +55,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 "update": "/home/pi/" ,
                 "media": "/media/pi/"
             },
-            "Debug" : 
+            "Debug" : {
+                "update": "/home/pi/" ,
+                "media": "/media/pi/"
+            },
+            "MacDebug" : 
             {
                 "update": "/Users/pim/lpfrg/",
                 "media": "/Users/pim/lpfrg/GCODE/"
