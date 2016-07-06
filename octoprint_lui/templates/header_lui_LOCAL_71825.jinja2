@@ -1,0 +1,27 @@
+<header id="header" class="app-header">
+    <div class="header_logo" data-bind="click: function() { location.reload(); }">
+        <a href="#" class="logo">
+            <img src="{{ url_for("plugin.lui.static", filename="img/logo.png") }}" width="60%" height="60%">
+        </a>
+    </div>
+{#     <div style="padding-right: 2em" data-bind="click: doDebuggingAction">
+      <a href="#">
+        Debug
+      </a>
+    </div> #}
+    <div class="header_status">
+        Status: <span data-bind="text: printerState.stateString"></span>
+    </div>
+    <!--
+    <div id="stop-light">
+        <svg x="0px" y="0px"
+             width="98px" height="30px" viewBox="0 0 98 30">
+            <circle class="light-red" fill="#983F24" cx="15" cy="15" r="9"/>
+            <circle class="light-orange" fill="#7D6E1F" cx="49" cy="15" r="9"/>
+            <circle class="light-green" fill="#35801C" cx="83" cy="15" r="9"/>
+        </svg>
+    </div>-->
+    <div class="header_login">
+        <a href="#login" data-bind="click: showLoginFlyout"><span data-bind="text: loginState.userMenuText">Login</span><i class = "fa fa-power-off" style="padding-left: 0.5em;"></i></a>
+    </div>
+</header>
