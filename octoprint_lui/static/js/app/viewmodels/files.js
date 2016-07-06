@@ -62,7 +62,7 @@ $(function() {
         self.uploadProgressBar = undefined;
 
         self.isLoadingFile = false;
-        self.isLoadingFileList = false;
+        self.isLoadingFileList = ko.observable(false);
 
         self.addFolderDialog = undefined;
         self.addFolderName = ko.observable(undefined);
@@ -91,33 +91,33 @@ $(function() {
         };
 
         self.browseLocal = function () {
-            if (self.isLoadingFileList)
+            if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList = true;
-            filenameToFocus = '';
-            locationToFocus = '';
-            switchToPath = '';
+            self.isLoadingFileList(true)
+            var filenameToFocus = '';
+            var locationToFocus = '';
+            var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            }).always(function () { self.isLoadingFileList = false; });
+            }).always(function () { self.isLoadingFileList(false); });
         }
 
         self.browseUsb = function ()
         {
-            if (self.isLoadingFileList)
+            if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList = true;
-            filenameToFocus = '';
-            locationToFocus = '';
-            switchToPath = '';
+            self.isLoadingFileList(true);
+            var filenameToFocus = '';
+            var locationToFocus = '';
+            var switchToPath = '';
             self.loadFiles("usb")
                 .done(preProcessList)
                 .fail(self.notifyUsbFail)
                 .then(function (response) {
                     self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            }).always(function() { self.isLoadingFileList = false; });
+                }).always(function () { self.isLoadingFileList(false); });
         }
 
         self.notifyUsbFail = function () {
@@ -126,10 +126,10 @@ $(function() {
 
         self.browseUsbForFirmware = function()
         {
-            if (self.isLoadingFileList)
+            if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList = true;
+            self.isLoadingFileList(true);
             filenameToFocus = '';
             locationToFocus = '';
             switchToPath = '';
@@ -138,7 +138,7 @@ $(function() {
                 .fail(self.notifyUsbFail)
                 .then(function (response) {
                     self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-            }).always(function () { self.isLoadingFileList = false; });
+            }).always(function () { self.isLoadingFileList(false); });
         }
 
         self.loadFiles = function (origin, filter) {
@@ -258,9 +258,9 @@ $(function() {
             } else {
                 self.listHelper.selectItem(function(item) {
                     if (item.type == "folder") {
-                        return _.startsWith(filename, OctoPrint.files.pathForElement(item) + "/");
+                        return _.startsWith(filename, item.path + "/");
                     } else {
-                        return OctoPrint.files.pathForElement(item) == filename;
+                        return item.path == filename;
                     }
                 });
             }
@@ -335,7 +335,7 @@ $(function() {
         };
 
         self.changeFolder = function(data) {
-            self.currentPath(OctoPrint.files.pathForElement(data));
+            self.currentPath(data.path);
             self.listHelper.updateItems(data.children);
             self.highlightCurrentFilename();
         };
@@ -347,7 +347,7 @@ $(function() {
         };
 
         self.changeFolderByPath = function(path) {
-            var element = OctoPrint.files.elementByPath(path, { children: self.allItems() });
+            var element = self.elementByPath(path);
             if (element) {
                 self.currentPath(path);
                 self.listHelper.updateItems(element.children);
@@ -356,6 +356,31 @@ $(function() {
                 self.listHelper.updateItems(self.allItems());
             }
             self.highlightCurrentFilename();
+        };
+
+        self.elementByPath = function (path, root) {
+            root = root || { children: self.allItems() };
+
+            var recursiveSearch = function (location, element) {
+                if (location.length == 0) {
+                    return element;
+                }
+
+                if (!element.hasOwnProperty("children")) {
+                    return undefined;
+                }
+
+                var name = location.shift();
+                for (var i = 0; i < element.children.length; i++) {
+                    if (name == element.children[i].name) {
+                        return recursiveSearch(location, element.children[i]);
+                    }
+                }
+
+                return undefined;
+            };
+
+            return recursiveSearch(path.split("/"), root);
         };
 
         self.showAddFolderDialog = function() {
@@ -393,7 +418,7 @@ $(function() {
                 self.isLoadingFile = false;
             }
             else if (file.origin == "usb") {
-                self._sendApi({ command: "select_usb_file", filename: OctoPrint.files.pathForElement(file) }).done(function () {
+                self._sendApi({ command: "select_usb_file", filename: file.path }).done(function () {
                     self.setProgressBar(0);
 
                     if (printAfterLoad) {
@@ -408,7 +433,7 @@ $(function() {
                 }).always(function () { self.isLoadingFile = false; });
             }
             else {
-                OctoPrint.files.select(file.origin, OctoPrint.files.pathForElement(file))
+                OctoPrint.files.select(file.origin, file.path)
                         .done(function () {
                             if (printAfterLoad) {
                                 OctoPrint.job.start();
@@ -440,9 +465,9 @@ $(function() {
                 filenameToFocus = fileToFocus.name;
             }
 
-            OctoPrint.files.delete(file.origin, OctoPrint.files.pathForElement(file))
+            OctoPrint.files.delete(file.origin, file.path)
                 .done(function() {
-                    self.requestData(undefined, filenameToFocus, OctoPrint.files.pathForElement(file.parent));
+                    self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
                     $.notify({
                         title: gettext("File removed succesfully"),
                         text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
@@ -455,7 +480,7 @@ $(function() {
             if (!file) {
                 return;
             }
-            self.slicing.show(file.origin, OctoPrint.files.pathForElement(file), true);
+            self.slicing.show(file.origin, file.path, true);
         };
 
         self.initSdCard = function() {

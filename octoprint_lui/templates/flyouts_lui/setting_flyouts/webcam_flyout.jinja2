@@ -1,0 +1,183 @@
+<!--Webcam Settings -->
+<div class="Table">
+  <div class="Table-row Table-header">
+    <div class="Table-item">
+      Timelapse settings
+    </div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-item">
+      Enabled:
+    </div>
+    <div class="Table-item">
+      <!--TODO: Make nice touch-friendly toggle button-->
+      <input type="checkbox" data-bind="checked: timelapseEnabled,  enable: printerState.isOperational() && !printerState.isPrinting() && !printerState.isPaused() && loginState.isUser()" />
+    </div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-row">
+      <div class="Table-item">
+        <label for="webcam_timelapse_interval">Interval:</label>
+      </div>
+      <div class="Table-item">
+        <input type="number" class="input-mini" id="webcam_timelapse_interval" data-bind="value: timelapseTimedInterval, enable: printerState.isOperational() && !printerState.isPrinting() && loginState.isUser() && timelapseTimedIntervalEnabled" />
+      </div>
+      <div class="Table-item">
+        sec
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="Table">
+  <div class="Table-row Table-header">
+    <div class="Table-item">
+      Current view
+    </div>
+    <div class="Table-item">
+      <a href="#" data-bind="click: refreshPreview" style="margin-left: auto">
+        <i class="fa fa-refresh"></i> Refresh
+      </a>
+    </div>
+  </div>
+  <!-- img not in Table-row>Table-item due to chromium bug -->
+  <img class="webcam-preview" data-bind="attr: {src: webcam_previewUrl }" />
+</div>
+
+<div class="Table">
+  <div class="Table-row Table-header">
+    <div class="Table-item Table-item-grow-2">
+      Finished timelapses
+    </div>
+    <div class="Table-item">
+      <small style="margin-left: auto">
+        <span data-bind="text: storageAvailable"></span> free
+      </small>
+    </div>
+  </div>
+  <div class="Table-row">
+    <div id="timelapse_copy_progress" class="progress progress-small">
+      <span class="bg-orange"></span>
+    </div>
+  </div>
+  <!-- ko if: listHelper.allSize() == 0 -->
+  <div class="Table-row">
+    <div class="Table-item">
+      No timelapses have been made yet.
+    </div>
+  </div>
+  <!-- /ko -->
+
+  <!-- ko foreach: listHelper.paginatedItems -->
+  <div class="Table-row">
+    <div class="Table-item  Table-item-grow-2">
+      <span class="Table-ellipsis" data-bind="text: name" />
+    </div>
+    <div class="Table-item">
+      {% if local_addr %}
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="click: function() { $parent.copyToUsb($data.name); }, css: {disabled: $root.isCopying() ||  !$root.files.isUsbAvailable()}">
+            <span>
+              <i class="fa fa-floppy-o"></i>
+            </span>
+          </a>
+        </li>
+      </ul>
+      {% else %}
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="attr: {href: url}">
+            <span>
+              <i class="fa fa-download"></i>
+            </span>
+          </a>
+        </li>
+      </ul>
+      {% endif %}
+    </div>
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button failed-button">
+          <a href="#delete" data-bind="click: function() { if ($root.loginState.isUser()) { $parent.removeFile($data.name); } else { return; } }, css: {disabled: $root.isCopying() || !$root.loginState.isUser()}">
+            <span>
+              <i class="fa fa-trash-o"></i>
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- /ko -->
+</div>
+<div class="pagination pagination-mini pagination-centered" data-bind="visible: listHelper.allSize() > 5">
+  <ul>
+    <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
+      <a href="javascript:void(0)" data-bind="click: listHelper.prevPage">«</a>
+    </li>
+  </ul>
+  <ul data-bind="foreach: listHelper.pages">
+    <li data-bind="css: { active: $data.number === $root.listHelper.currentPage(), disabled: $data.number === -1 }">
+      <a href="javascript:void(0)" data-bind="text: $data.text, click: function() { $root.listHelper.changePage($data.number); }"></a>
+    </li>
+  </ul>
+  <ul>
+    <li data-bind="css: {disabled: listHelper.currentPage() === listHelper.lastPage()}">
+      <a href="javascript:void(0)" data-bind="click: listHelper.nextPage">»</a>
+    </li>
+  </ul>
+</div>
+
+<div class="Table" data-bind="visible: unrenderedListHelper.allSize">
+  <div class="Table-row Table-header">
+    <div class="Table-item Table-item-grow-2">Unfinished timelapses</div>
+  </div>
+  <!-- ko foreach: unrenderedListHelper.paginatedItems-->
+  <div class="Table-row">
+    <div class="Table-item Table-item-grow-2" style="text-overflow: ellipsis">
+      <span data-bind="visible: processing">
+        <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
+      </span>
+      <span class="Table-ellipsis" data-bind="text: name"></span>
+    </div>
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="click: function() { if ($root.loginState.isUser() && !$root.isBusy()) { $parent.renderUnrendered($data.name); } else { return; } }, css: {disabled: $root.isCopying() || !$root.loginState.isUser() || processing || $root.isBusy()}">
+            <span>
+              <i class="fa fa-file-video-o"></i> Retry
+            </span>
+          </a>
+        </li>
+      </ul>
+      <ul class="button-area">
+        <li class="button failed-button">
+          <a href="#" data-bind="click: function() { if ($root.loginState.isUser()) { $parent.removeUnrendered($data.name); } else { return; } }, css: {disabled: $root.isCopying() ||  processing || !$root.loginState.isUser()}">
+            <span>
+              <i class="fa fa-trash-o"></i>
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- /ko -->
+</div>
+
+<div class="pagination pagination-mini pagination-centered"  data-bind="visible: unrenderedListHelper.allSize() > 5">
+  <ul>
+    <li data-bind="css: {disabled: unrenderedListHelper.currentPage() === 0}">
+      <a href="javascript:void(0)" data-bind="click: unrenderedListHelper.prevPage">«</a>
+    </li>
+  </ul>
+  <ul data-bind="foreach: unrenderedListHelper.pages">
+    <li data-bind="css: { active: $data.number === $root.unrenderedListHelper.currentPage(), disabled: $data.number === -1 }">
+      <a href="javascript:void(0)" data-bind="text: $data.text, click: function() { $root.unrenderedListHelper.changePage($data.number); }"></a>
+    </li>
+  </ul>
+  <ul>
+    <li data-bind="css: {disabled: unrenderedListHelper.currentPage() === unrenderedListHelper.lastPage()}">
+      <a href="javascript:void(0)" data-bind="click: unrenderedListHelper.nextPage">»</a>
+    </li>
+  </ul>
+</div>
