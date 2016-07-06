@@ -1,4 +1,4 @@
-<div class="file_area">
+<div class="file_area" data-bind="visible: !isLoadingFileList()">
   <div class="gcode_files">
     <div class="file_list">
       <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
@@ -90,4 +90,7 @@
       </script>
     </div>
   </div>
+</div>
+<div data-bind="visible: isLoadingFileList">
+  <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i> Please wait...
 </div>

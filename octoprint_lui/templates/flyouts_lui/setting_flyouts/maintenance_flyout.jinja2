@@ -1,4 +1,4 @@
-<div class="Table">
+<div id="maintenance_control" class="Table active">
   <div class="Table-header Table-row">
     <div class="Table-item">Maintenance</div>
   </div>
@@ -49,7 +49,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button">
+        <li class="button" data-bind="click: setFilamentAmount">
           <a href="#">
             <span>Set filament amount</span>
           </a>
@@ -80,3 +80,58 @@
     </div>
   </div>
 </div>
+<!-- Start Filament Settings --> 
+<!-- ko allowBindings: false -->
+<div id="maintenance_filament" class="Table">
+  <div class="Table-header Table-row">
+    <div class="Table-item">Filament settings</div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-item">
+      <select class="select-material" data-bind="options: 
+                      materialProfiles,
+                      optionsText: 'name',
+                      value: updateLeftTemperatureProfile,
+                      optionsCaption: 'Choose material...'">
+      </select>
+    </div>
+    <div class="Table-item">
+      <select class="select-material" data-bind="options: 
+                      materialProfiles,
+                      optionsText: 'name',
+                      value: updateRightTemperatureProfile,
+                      optionsCaption: 'Choose material...'">
+      </select>
+    </div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-item">Amount(m): </div>
+    <div class="Table-item"><input type="number" data-bind="value: updateLeftAmount"></div>
+    <div class="Table-item">Amoun(m): </div>
+    <div class="Table-item"><input type="number" data-bind="value: updateRightAmount"></div>
+  </div>
+  <div class="Table-row">
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="click: function() {updateFilament('tool1', updateLeftAmount())}">
+            <span>
+              <i class="fa fa-refresh"></i>Update left</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="click: function() {updateFilament('tool0', updateRightAmount())}">
+            <span>
+              <i class="fa fa-refresh"></i>Update right</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+<!-- /ko -->
+<!-- /Filament settings -->
