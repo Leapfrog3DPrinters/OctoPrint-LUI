@@ -414,7 +414,7 @@ a {
 }
 
 .hide {
-  display: none;
+  display: none !important;
   // flex-grow: 0.001;
 }
 
@@ -541,9 +541,19 @@ a {
       font-weight: 700;
     }
   }
+  &-item-right {
+      text-align: right;
+  }
   &-nested {
     flex-direction: column;
     padding-left: 0;
+  }
+  &-ellipsis {
+      width: 100%; 
+      overflow: hidden; 
+      display: block; 
+      white-space: nowrap; 
+      text-overflow: ellipsis;
   }
 }
 
@@ -1234,6 +1244,12 @@ pre code {
 }
 
 .select-material
+{
+    width: 100%;
+}
+
+/* Webcam */
+.webcam-preview
 {
     width: 100%;
 }

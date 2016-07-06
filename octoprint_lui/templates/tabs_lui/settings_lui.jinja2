@@ -1,150 +1,180 @@
 <div class="tab" id="settings">
-    <div class="content">
-        <div class="settings_topics" data-bind="css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
-            <!-- Printer -->
-            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('printer')}">
-                <ul class="topic_main">
-                    <li class="topic_dash">
-                        <a href="">
-                            <i class="fa fa-print"></i>
-                        </a>
-                    </li>
-                    <li class="topic_name">
-                        <a href="#topic">
-                            <span>Printer</span>
-                        </a>
-                    </li>
-                    <li class="topic_info">
-                        <a href="#topic_info">
-                            <i class="fa fa-2x fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div><!-- Printer -->
-          {% if local_addr %}
-          <!-- Maintenance -->
-            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('maintenance')}">
-                <ul class="topic_main">
-                    <li class="topic_dash">
-                        <a href="">
-                            <i class="fa fa-wrench"></i>
-                        </a>
-                    </li>
-                    <li class="topic_name">
-                        <a href="#topic">
-                            <span>Maintenance</span>
-                        </a>
-                    </li>
-                    <li class="topic_info">
-                        <a href="#topic_info">
-                            <i class="fa fa-2x fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div><!-- Maintenance -->
-            {% endif %}
-            <!-- Materials -->
-            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('materials')}">
-                <ul class="topic_main">
-                    <li class="topic_dash">
-                        <a href="">
-                            <i class="fa fa-sun-o"></i>
-                        </a>
-                    </li>
-                    <li class="topic_name">
-                        <a href="#topic">
-                            <span>Materials</span>
-                        </a>
-                    </li>
-                    <li class="topic_info">
-                        <a href="#topic_info">
-                            <i class="fa fa-2x fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div><!-- Materials -->
-            <!-- Users -->
-            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('users')}">
-                <ul class="topic_main">
-                    <li class="topic_dash">
-                        <a href="">
-                            <i class="fa fa-user"></i>
-                        </a>
-                    </li>
-                    <li class="topic_name">
-                        <a href="#topic">
-                            <span>Users</span>
-                        </a>
-                    </li>
-                    <li class="topic_info">
-                        <a href="#topic_info">
-                            <i class="fa fa-2x fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div><!-- Users -->
-            <!-- Wireless -->
-            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('wireless')}">
-                <ul class="topic_main">
-                    <li class="topic_dash">
-                        <a href="">
-                            <i class="fa fa-wifi"></i>
-                        </a>
-                    </li>
-                    <li class="topic_name">
-                        <a href="#topic">
-                            <span>Wireless</span>
-                        </a>
-                    </li>
-                    <li class="topic_info">
-                        <a href="#topic_info">
-                            <i class="fa fa-2x fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div><!-- Wireless -->
-            <!-- Advanced -->
-            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('advanced')}">
-                <ul class="topic_main">
-                    <li class="topic_dash">
-                        <a href="">
-                            <i class="fa fa-plus"></i>
-                        </a>
-                    </li>
-                    <li class="topic_name">
-                        <a href="#topic">
-                            <span>Advanced</span>
-                        </a>
-                    </li>
-                    <li class="topic_info">
-                        <a href="#topic_info">
-                            <i class="fa fa-2x fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div><!-- Advanced -->
-            <!-- Update -->
-            <div class="settings_topic" data-bind="click: function() {showSettingsTopic('update')}">
-                <ul class="topic_main">
-                    <li class="topic_dash">
-                        <a href="">
-                            <!-- ko allowBindings: false -->
-                            <i id="update_icon" class="fa fa-refresh"><span data-bind="text: update_needed() == 0 ? '' : update_needed, css: {badge: update_needed()}"></span></i>
-                            <!-- /ko -->
-                        </a>
-                    </li>
-                    <li class="topic_name">
-                        <a href="#topic">
-                            <span>Update</span>
-                        </a>
-                    </li>
-                    <li class="topic_info">
-                        <a href="#topic_info">
-                            <i class="fa fa-2x fa-angle-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div><!-- Advanced -->
-        </div><!-- /Topics -->
-    </div> <!-- /Content -->
+  <div class="content">
+    <div class="settings_topics">
+      <!-- Printer -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('printer')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()} ">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i class="fa fa-print"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Printer</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- Printer -->
+      {% if local_addr %}
+      <!-- Maintenance -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('maintenance')}, css: { disabled: !isOperational() || isPaused() || isPrinting() } ">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i class="fa fa-wrench"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Maintenance</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- Maintenance -->
+      {% endif %}
+      <!-- Materials -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('materials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i class="fa fa-sun-o"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Materials</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- Materials -->
+      <!-- Webcam -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('webcam')}, css: {disabled: !loginState.loggedIn()}">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i class="fa fa-video-camera"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Webcam</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- /Webcam -->
+
+      <!-- Users -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('users')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i class="fa fa-user"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Users</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- Users -->
+      {% if local_addr %}
+      <!-- Wireless -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('wireless')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i class="fa fa-wifi"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Wireless</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- Wireless -->
+      {% endif %}
+      {% if debug_lui %}
+      <!-- Advanced -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('advanced')}">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i class="fa fa-plus"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Advanced</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- /Advanced -->
+      {% endif %}
+      <!-- Update -->
+      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('update')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <!-- ko allowBindings: false -->
+              <i id="update_icon" class="fa fa-refresh">
+                <span data-bind="text: update_needed() == 0 ? '' : update_needed, css: {badge: update_needed()}"></span>
+              </i>
+              <!-- /ko -->
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Update</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- /Update -->
+
+    </div>
+    <!-- /Topics -->
+  </div>
+  <!-- /Content -->
 </div>

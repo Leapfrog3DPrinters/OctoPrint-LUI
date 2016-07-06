@@ -31,13 +31,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.AssetPlugin,
                 octoprint.plugin.SimpleApiPlugin,
+                octoprint.plugin.BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
                 octoprint.printer.PrinterCallback
 ):
 
     def __init__(self):
-
+        
         ##~ Global
         self.from_localhost = False
         self.debug = True
@@ -55,8 +56,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 "media": "/media/pi/"
             },
             "Debug" : {
-                "update": "/Users/pim/lpfrg/" ,
+                "update": "/home/pi/" ,
+                "media": "/media/pi/"
+            },
+            "MacDebug" : 
+            {
+                "update": "/Users/pim/lpfrg/",
                 "media": "/Users/pim/lpfrg/GCODE/"
+            },
+            "WindowsDebug" : {
+                "update": "C:\\Users\\erikh\\OneDrive\\Programmatuur\\",
+                "media": "C:\\Tijdelijk\\usb\\"
             },
         }
 
@@ -98,7 +108,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ TinyDB 
 
         self.filament_database_path = None
-        self.filament_query = None
+        self._filament_query = None
         self.filament_database = None
 
 
@@ -127,11 +137,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Firmware
         self.firmware_info_command_sent = False
-        self.firmware_info_properties = set(["machine_type", "firmware_version"])
+        self.firmware_info_properties = dict({"machine_type": "Model", "firmware_version": "Leapfrog Firmware" })
 
         ##~ USB and file browser
-
         self.is_media_mounted = False
+
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
@@ -143,7 +153,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
         ##~ Model
-        self.model = "Debug"
+        if not os.path.exists('/home/pi'):
+            self.model = "WindowsDebug"
+        else:
+            self.model = "Bolt"
         
         ##~ USB init
         self._init_usb()
@@ -157,19 +170,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
 
-        ##~ TinyDB
+        ##~ TinyDB - filament
         self.filament_database_path = os.path.join(self.get_plugin_data_folder(), "filament.json")
         self.filament_database = TinyDB(self.filament_database_path)
-        self.filament_query = Query()
+        self._filament_query = Query()
         if self.filament_database.all() == []:
-            self._logger.info("No database found creating one...")
+            self._logger.info("No filament database found creating one...")
             self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0, 
                                                     'material': self.default_material} for i in range(2))
- 
-
+        ##~ TinyDB - firmware
+        self.machine_database_path = os.path.join(self.get_plugin_data_folder(), "machine.json")
+        self.machine_database = TinyDB(self.machine_database_path)
+        self._machine_query = Query() # underscore for blueprintapi compatability
+        if self.machine_database.all() == []:
+            self._logger.info("No machine database found creating one...")
+            self.machine_database.insert_multiple({ 'property': key, 'value': '' } for key in self.firmware_info_properties.keys())
 
         ## Get filament amount stored in config
         self.update_filament_amount()
+
+        ## Usernames that cannot be removed
+        self.reserved_usernames = ['local']
 
     def update_info_list(self, force=False):
         self.fetch_all_repos(force)
@@ -220,11 +241,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "zoffset": 0,
             "action_door": True,
             "action_filament": True,
-            "firmware_info": 
-                {
-                    "machine_type": None,
-                    "firmware_version" : None
-                }
+            
         }
 
     ##~ OctoPrint UI Plugin
@@ -241,10 +258,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
-        if remote_address is None:
+        if self.from_localhost:
             from octoprint.server.util.flask import add_non_caching_response_headers
             add_non_caching_response_headers(response)
 
+        return response
+
+    def is_blueprint_protected(self):
+        # By default, the routes to LUI are not protected. SimpleAPI calls are protected though.
+        return False
+
+    @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
+    def webcamstream(self):
+        self._check_localhost()
+        response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
     def get_ui_additional_key_data_for_cache(self):
@@ -266,6 +293,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request = None):
+        # Because blueprint is not protected, manually check for API key
+        octoprint.server.util.apiKeyRequestHandler()
+
         command = None
         
         if("command" in request.values):
@@ -275,14 +305,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return self._on_api_command_get_files(request.values["origin"])
         elif(command == "is_media_mounted"):
             return jsonify({ "is_media_mounted" : self.is_media_mounted })
+        elif(command == "storage_info"):
+            import psutil
+            usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
+            return jsonify(free=usage.free, total=usage.total)
         else:
-            return jsonify(dict(
-                update=self.update_info,
-                firmware_info=self._settings.get(["firmware_info"]),
-                filaments=self.filament_database.all(),
-                is_homed=self.is_homed,
-                is_homing=self.is_homing
-                ))
+            machine_info = self._get_machine_info()
+            result = dict({
+                'update': self.update_info,
+                'machine_info': machine_info,
+                'filaments': self.filament_database.all(),
+                'is_homed': self.is_homed,
+                'is_homing': self.is_homing,
+                'reserved_usernames': self.reserved_usernames
+                })
+            return jsonify(result)
 
     def get_api_commands(self):
             return dict(
@@ -303,6 +340,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     begin_homing = [],
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
+                    copy_timelapse_to_usb = ["filename"],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -349,7 +387,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_client_in_progress()
         # Set filament change tool and profile
         self.filament_change_tool = tool
-        self.filament_loaded_profile = self.filament_database.get(self.filament_query.tool == tool)
+        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
         self._printer.change_tool(tool)
 
         self.move_to_filament_load_position()
@@ -386,7 +424,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
         elif profileName == "purge": 
             # Select current profile
-            selectedProfile = self.filament_database.get(self.filament_query.tool == self.filament_change_tool)["material"]
+            selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
             temp = int(selectedProfile['extruder'])
         else: 
             # Find profile from key
@@ -637,6 +675,92 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r 
 
+    def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
+        if not self.is_media_mounted:
+            return make_response("Could access the media folder", 400)
+
+        if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
+            return make_response("Not allowed to copy this file", 400)
+
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+        full_path = os.path.realpath(os.path.join(timelapse_folder, filename))
+        
+        if not full_path.startswith(timelapse_folder) or not os.path.exists(full_path):
+             return make_response("File not found", 404)   
+
+        # Loop through all directories in the media folder and find the mount with most free space
+        bytes_available = 0
+        drive_folder = None
+
+        for mount in os.listdir(self.media_folder):
+            mount_path = os.path.join(self.media_folder, mount)
+
+            if not os.path.isdir(mount_path):
+                continue
+
+            #Check disk space
+            if self.model == 'WindowsDebug': 
+                mount_bytes_available = 14 * 1024 * 1024 * 1024;
+            else:
+                disk_info = os.statvfs(mount_path)
+                mount_bytes_available = disk_info.f_frsize * disk_info.f_bavail
+
+            if mount_bytes_available > bytes_available:
+                bytes_available = mount_bytes_available
+                drive_folder = mount_path
+        
+        # Check if it is enough free space for the video file   
+        timelapse_size = os.path.getsize(full_path)
+
+        if timelapse_size > bytes_available:
+            return make_response("Insuffient space available on USB drive", 400)
+
+        if drive_folder is None:
+            return make_response("Insuffient space available on USB drive", 400)
+     
+        timelapses_path = os.path.join(drive_folder, "Leapfrog-timelapses")
+        new_full_path = os.path.join(timelapses_path, filename)
+
+        self._logger.info("Copying timelapse to: %s" % new_full_path);
+        
+        # Helpers to check copying status
+        def on_timelapse_copy():
+            newsize = float(os.path.getsize(new_full_path))
+            totalsize = float(os.path.getsize(full_path))
+            if totalsize > 0:
+                percentage = newsize/totalsize * 100.0
+            else:
+                percentage = 0
+            self._logger.info("Timelapse copy progress: %f" % percentage)
+            self._send_client_message("timelapse_copy_progress", { "percentage" : percentage })
+    
+        is_copying = True
+
+        def is_copying_timelapse():
+            return is_copying
+
+        def timelapse_copying_finished():
+            self._send_client_message("timelapse_copy_progress", { "percentage" : 0 })
+
+        # Start monitoring copy status
+        timer = RepeatedTimer(1, on_timelapse_copy, run_first = False, condition = is_copying_timelapse, on_finish = timelapse_copying_finished)
+        timer.start()
+
+        try:
+            #Create directory, if needed
+            if not os.path.isdir(timelapses_path):
+                os.mkdir(timelapses_path)
+            
+            import shutil
+            shutil.copy2(full_path, new_full_path)
+        except Exception as e:
+            timer.cancel()
+            return make_response("File error during copying: %s" % e.message, 500)
+        finally:
+             is_copying = False
+
+        make_response("OK", 200)
+
     ##~ Load and Unload methods
 
     def load_filament(self, tool):
@@ -848,10 +972,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ## ~ Save helpers
     def set_filament_profile(self, tool, profile):
-        self.filament_database.update(profile, self.filament_query.tool == tool)
+        self.filament_database.update(profile, self._filament_query.tool == tool)
 
     def get_filament_amount(self):
-        filament_amount = [self.filament_database.get(self.filament_query.tool == "tool"+str(index))["amount"] for index in range(2)]
+        filament_amount = [self.filament_database.get(self._filament_query.tool == "tool"+str(index))["amount"] for index in range(2)]
         return filament_amount
 
     def save_filament_amount(self):
@@ -865,7 +989,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def set_filament_amount(self, tool):
         tool_num = int(tool[len("tool"):])
-        self.filament_database.update({'amount': self.filament_amount[tool_num]}, self.filament_query.tool == tool)
+        self.filament_database.update({'amount': self.filament_amount[tool_num]}, self._filament_query.tool == tool)
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
     def script_hook(self, comm, script_type, script_name):
@@ -987,7 +1111,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if self.firmware_info_command_sent:
-            if "ok" in line:
+            if "echo:" in line:
                 self._on_firmware_info_received(line)
 
         if self.home_command_send: 
@@ -1022,7 +1146,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message("filament_action_detected", dict(tool=tool))
         comm.setPause(True)
         
-        self.filament_detection_profile = self.filament_database.get(self.filament_query.tool == tool)["material"]
+        self.filament_detection_profile = self.filament_database.get(self._filament_query.tool == tool)["material"]
         self.filament_detection_tool_temperatures = deepcopy(self.current_temperature_data)
         self.filament_action = True
 
@@ -1214,16 +1338,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._printer.change_tool(self.filament_change_tool)
 
         self.restore_movement_mode()
-    
+
     def _init_usb(self):
 
         # Set media folder relative to printer model
         self.media_folder = self.paths[self.model]["media"]
 
         # Add the LocalFileStorage to allow to browse the drive's files and folders
-        if(platform.system() == 'Windows'): # TODO: Remove this debugging feature
-            self.media_folder = "D:"
-        
+       
         try:
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
             octoprint.server.fileManager.add_storage("usb", self.usb_storage)
@@ -1246,43 +1368,41 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update software init
         self.last_git_fetch = 0
-        if(platform.system() == "Windows"):
-            self.update_info = []
-        else:
-            self.update_info = [
-                {
-                    'identifier': 'lui',
-                    'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_lui',
-                    'name': "Leapfrog UI",
-                    'version': "testing"
-                },
-                {
-                    'identifier': 'networkmanager',
-                    'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_networkmanager',
-                    'name': 'Network Manager',
-                    'version': "0.0.1"
-                },
-                {
-                    'identifier': 'flasharduino',
-                    'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_flasharduino',
-                    'name': 'Flash Firmware Module',
-                    'version': "0.0.1"
-                },      
-                {
-                    'identifier': 'octoprint',
-                    'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
-                    'update': False,
-                    'action': 'update_octoprint',
-                    'name': 'OctoPrint',
-                    'version': VERSION
-                }
-                ]
+
+        self.update_info = [
+            {
+                'identifier': 'lui',
+                'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_lui',
+                'name': "Leapfrog UI",
+                'version': "testing"
+            },
+            {
+                'identifier': 'networkmanager',
+                'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_networkmanager',
+                'name': 'Network Manager',
+                'version': "0.0.1"
+            },
+            {
+                'identifier': 'flasharduino',
+                'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_flasharduino',
+                'name': 'Flash Firmware Module',
+                'version': "0.0.1"
+            },      
+            {
+                'identifier': 'octoprint',
+                'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_octoprint',
+                'name': 'OctoPrint',
+                'version': VERSION
+            }
+            ]
 
 
         self.update_info_list()
@@ -1366,7 +1486,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def _on_media_folder_updated(self, event):
-        
+        was_media_mounted = self.is_media_mounted
 
         # Check if there's something mounted in media_dir
         def get_immediate_subdirectories(a_dir):
@@ -1389,7 +1509,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_media_mounted = number_of_dirs > 0
 
         # Check if what's mounted contains a firmware (*.hex) file
-        if self.is_media_mounted:
+        if not self.debug and not was_media_mounted and self.is_media_mounted:
             firmware = self._check_for_firmware(self.media_folder)
             if(firmware):
                 firmware_file, firmware_path = firmware
@@ -1425,14 +1545,37 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_firmware_info_received(self, line):
         self.firmware_info_command_sent = False
         self._logger.info("M115 data received: %s" % line)
-        line = line[3:-1] # Remove ok and newline
-
-        if len(line) > 0:
-            all_firmware_info = dict(d.split(':') for d in line.split(' '))
-            firmware_info = { prop: all_firmware_info[prop] for prop in self.firmware_info_properties }
+        line = line[5:-1] # Remove echo: and newline
         
-            self._settings.set(["firmware_info"], firmware_info)
-            self._settings.save()
+        if len(line) > 0:
+           self._update_from_m115_properties(line)
+
+    def _update_from_m115_properties(self, line):
+        line = line.replace(': ', ':')
+        properties = dict()
+        for key, prop in self.firmware_info_properties.iteritems():
+            proplen = len(prop)
+            idx_start = line.find(prop) + proplen + 1
+            if idx_start > proplen:
+                idx_end = line.find(' ', idx_start)
+                if idx_end == -1:
+                    idx_end = len(line)-1
+
+                value = line[idx_start:idx_end]
+
+                self.machine_database.update({'value': value }, self._machine_query.property == key)
+            else:    
+                self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)
+                    
+
+        return properties
+
+    def _get_machine_info(self):
+        machine_info = dict()
+        for item in self.machine_database.all():
+            machine_info.update({ item["property"] : item["value"] })
+
+        return machine_info
 
     def extension_tree_hook(self):
         return dict(firmware=dict(
@@ -1459,6 +1602,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Helper method that calls api defined functions
     def _call_api_method(self, command, *args, **kwargs):
         """Call the method responding to api command"""
+
+        # Because blueprint is not protected, manually check for API key
+        octoprint.server.util.apiKeyRequestHandler()
+        
         name = "_on_api_command_{}".format(command)
         method = getattr(self, name, None)
         if method is not None and callable(method):

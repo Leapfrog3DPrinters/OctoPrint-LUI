@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no">
+    <title>OctoPrint - LUI</title>
+        {% include '/stylesheets_lui.jinja2' %}
+        <script>
+  var UI_API_KEY = "{{ uiApiKey }}";
+  var BASEURL = "{{ url_for('index') }}";
+  var API_BASEURL = BASEURL + "api/";
+  var PLUGIN_BASEURL = BASEURL + "plugin/";
+
+  var CONFIG_DEBUG = {%  if debug -%} true; {% else %} false; {%- endif %}
+  var CONFIG_SD_SUPPORT = {% if enableSdSupport -%} true; {% else %} false; {%- endif %}
+
+  var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
+  var SOCKJS_DEBUG = CONFIG_DEBUG;
+  var SOCKJS_CLOSE_NORMAL = 1000;
+
+  var IS_LOCAL = {%  if local_addr -%} true; {% else %} false; {%- endif %}
+</script>
+
+</head>
+<body>
+    <div class="app-wrap">
+     <header id="header" class="app-header">
+			<div class="header_logo" data-bind="click: function() { location.reload(); }">
+				<a href="#" class="logo">
+					<img src="{{ url_for("plugin.lui.static", filename="img/logo.png") }}" width="60%" height="60%">
+				</a>
+			</div>
+		</header>
+        <section id="player">
+		<video width="1280" height="720" autoplay>
+			<source src="http://192.168.0.133/webcam/?action=stream">
+		</video>
+		</section>
+    </div>
+    {% include 'javascript_lui.jinja2' %}
+</body>
+</html>
