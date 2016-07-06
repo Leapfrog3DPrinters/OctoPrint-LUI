@@ -10,6 +10,7 @@ import netaddr
 import os
 import platform
 import flask
+import sys
 
 from pipes import quote
 from functools import partial
@@ -153,12 +154,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
         ##~ Model
-        if os.name == "posix":
+        if sys.platform == "darwin":
             self.model = "MacDebug"
-        elif not os.path.exists('/home/pi'):
+        elif sys.platform == "win32":
             self.model = "WindowsDebug"
-        else:
+        elif os.path.exists('/home/pi'):
             self.model = "Bolt"
+        else:
+            self.model = "Xeed"
         
         ##~ USB init
         self._init_usb()
