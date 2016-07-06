@@ -47,7 +47,9 @@
 
 
 <!-- network manager plugin viewmodel -->
+{% if model == "Xeed " or model == "Bolt" %}
 <script src="{{ url_for("plugin.networkmanager.static", filename="js/networkmanager.js") }}"></script>
+{% endif %}
 <script src="{{ url_for("plugin.flasharduino.static", filename="js/flasharduino.js") }}"></script>
 
 
