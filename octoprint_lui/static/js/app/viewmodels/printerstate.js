@@ -27,6 +27,8 @@ $(function () {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
+        self.printMode = ko.observable("normal");
+
         self.warningVm = undefined;
 
         self.filenameNoExtension = ko.computed(function () {
@@ -260,16 +262,17 @@ $(function () {
 
         self.print = function () {
 
+            self.flyout.showFlyout("mode_select");
             // if (self.filament)
             // var text = "You are about to update a component of the User Interface.";
             // var question = "Do want to update " + data.name() + "?";
             // var title = "Update: " + data.name()
             // var dialog = {'title': title, 'text': text, 'question' : question};
-            var data = {};
-            self.flyout.showConfirmationFlyout(data)
-                .done(function () {
-                    OctoPrint.job.start();
-                });
+            // var data = {};
+            // self.flyout.showConfirmationFlyout(data)
+            //     .done(function () {
+            //         OctoPrint.job.start();
+            //     });
         };
 
         self.pause = function () {

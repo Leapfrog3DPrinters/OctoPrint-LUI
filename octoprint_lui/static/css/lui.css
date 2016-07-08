@@ -273,10 +273,10 @@ input[type=radio] {
 .radio_box label {
   cursor: pointer;
   position: absolute;
-  width: 28px;
-  height: 28px;
-  left: 0px;
-  top: 0px; }
+  width: 26px;
+  height: 26px;
+  left: -2px;
+  top: -2px; }
 
 .radio_box label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
