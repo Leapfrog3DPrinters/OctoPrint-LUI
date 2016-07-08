@@ -25,16 +25,24 @@
 	</div>
 	<div class="Table-row">
 		<div class="Table-item">
-			<label class="checkbox">
-			    <input type="checkbox" id="connection_save" data-bind="checked: saveSettings, css: {disabled: !isErrorOrClosed()}, enable: isErrorOrClosed() && loginState.isUser()"> {{ _('Save connection settings') }}
-			</label>
+			Save connection settings
+		</div>
+		<div class="Table-item">
+			<div class="check_toggle">
+				<input type="checkbox" id="connection_save" data-bind="checked: saveSettings, css: {disabled: !isErrorOrClosed()}, enable: isErrorOrClosed() && loginState.isUser()">
+				<label for="connection_save"></label>
+			</div>
 		</div>
 	</div>
 	<div class="Table-row">
 		<div class="Table-item">
-			<label class="checkbox">
-			    <input type="checkbox" id="connection_autoconnect" data-bind="checked: settings.serial_autoconnect, css: {disabled: !isErrorOrClosed()}, enable: isErrorOrClosed() && loginState.isUser()"> {{ _('Auto-connect on server startup') }}
-			</label>
+			Auto-connect on server startup
+		</div>
+		<div class="Table-item">
+			<div class="check_toggle">
+			    <input type="checkbox" id="connection_autoconnect" data-bind="checked: settings.serial_autoconnect, css: {disabled: !isErrorOrClosed()}, enable: isErrorOrClosed() && loginState.isUser()">
+				<label for="connection_autoconnect"></label>
+			</div>
 		</div>
 	</div>
 	<div class="Table-row">

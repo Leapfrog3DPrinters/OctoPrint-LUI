@@ -42,7 +42,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         ##~ Global
         self.from_localhost = False
-        self.debug = False
+        self.debug = True
 
         ##~ Model specific variables
         self.model = None
@@ -275,7 +275,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
     def webcamstream(self):
-        self._check_localhost()
+        # self._check_localhost() out for now I think Erik wants to refactor the localhost check,
+        # which we indeed should do, code copy sucks
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
@@ -693,7 +694,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
         if not self.is_media_mounted:
-            return make_response("Could access the media folder", 400)
+            return make_response("Could not access the media folder", 400)
 
         if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
             return make_response("Not allowed to copy this file", 400)
@@ -1011,16 +1012,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def script_hook(self, comm, script_type, script_name):
         # The printer should get a positive number here. Altough for the user it might feel like - direction,
         # Thats how the M206 works.
-        zoffset = -self._settings.get_float(["zoffset"])
+        if self.model == "Xeed":
+            zoffset = -self._settings.get_float(["zoffset"])
 
-        if not script_type == "gcode":
-            return None
-    
-        if script_name == "beforePrintStarted":
-            return ["M206 Z%.2f" % zoffset], None
+            if not script_type == "gcode":
+                return None
+        
+            if script_name == "beforePrintStarted":
+                return ["M206 Z%.2f" % zoffset], None
 
-        if script_name == "afterPrinterConnected":
-            return ["M206 Z%.2f" % zoffset], None
+            if script_name == "afterPrinterConnected":
+                return ["M206 Z%.2f" % zoffset], None
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """

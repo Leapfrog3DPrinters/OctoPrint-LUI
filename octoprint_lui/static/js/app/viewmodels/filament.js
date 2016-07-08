@@ -92,7 +92,7 @@ $(function () {
                 return self.rightAmountString();
             else
                 return self.leftAmountString();
-        }
+        };
 
         self.getFilamentMaterial = function (tool) {
             tool = tool || self.tool();
@@ -101,7 +101,19 @@ $(function () {
                 return self.leftFilament();
             else
                 return self.rightFilament();
-        }
+        };
+
+        self.disableRemove = function(data) {
+            return (data.name == self.rightFilament() || data.name == self.leftFilament())
+        };
+
+        self.materialButtonText = function(data) {
+            if (self.disableRemove(data)) {
+                return "Loaded";
+            } else {
+                return "Delete";
+            }
+        };
 
         // Views
         // ------------------
@@ -435,7 +447,7 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
       FilamentViewModel,
       ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel"],
-      ["#filament_status", "#filament_flyout", "#maintenance_filament"]
+      ["#filament_status", "#filament_flyout", "#maintenance_filament", "#materials_settings_flyout_content"]
     ]);
 
 });

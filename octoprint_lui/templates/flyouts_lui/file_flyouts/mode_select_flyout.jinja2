@@ -1,0 +1,95 @@
+<div id="mode_select">
+    <div class="Table">
+        <div class="Table-row Table-header">
+            <div class="Table-item">
+                Start print.
+            </div>
+        </div>
+        <div class="Table-row">
+            You have selected &nbsp;<span class="bold" data-bind="text: printerState.filenameNoExtension"></span>&nbsp;to print. 
+        </div>
+    </div>
+    {% if model == "Bolt" or debug_lui %} 
+    <div class="Table">
+        <div class="Table-row Table-header">
+            Printing mode
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">
+                Please select the printing mode you want to print the job in:
+            </div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">
+                <div class="radio_box">
+                    <input type="radio" id="mode_normal" name="modeSelect" value="normal" data-bind="checked: printerState.printMode" />
+                    <label for="mode_normal"></label>
+                </div>
+            </div>
+            <div class="Table-item Table-item-grow-5">
+                Normal
+            </div>
+            <div class="Table-item Table-item-grow-2">
+                <i class="fa fa-cube fa-2x"></i>
+            </div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">
+                <div class="radio_box">
+                    <input type="radio" id="mode_sync" name="modeSelect" value="sync" data-bind="checked: printerState.printMode" />
+                    <label for="mode_sync"></label>
+                </div>
+            </div>
+            <div class="Table-item Table-item-grow-5">
+                Sync mode
+            </div>
+            <div class="Table-item Table-item-grow-2">
+                <i class="fa fa-cube fa-2x"></i>
+                <i class="fa fa-cube fa-2x"></i>
+            </div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">
+                <div class="radio_box">
+                    <input type="radio" id="mode_mirror" name="modeSelect" value="mirror" data-bind="checked: printerState.printMode" />
+                    <label for="mode_mirror"></label>
+                </div>
+            </div>
+            <div class="Table-item Table-item-grow-5">
+                Mirror mode
+            </div>
+            <div class="Table-item Table-item-grow-2">
+                <i class="fa fa-cube fa-2x"></i>
+                <i class="fa fa-cube fa-flip-horizontal fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="Table">
+    <div class="Table-row">
+        <div class="Table-item">
+        Are you sure you want to start this print?
+        </div>
+    </div>    
+    <div class="Table-row">
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button failed-button">
+                    <a href="#save" data-bind="click: function() {flyout.closeFlyout()} ">
+                        <span>Cancel</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="Table-item">
+            <ul class="button-area">
+                <li class="button ok-button">
+                    <a href="#save" data-bind="click: function() { startPrint()} ">
+                        <span>Start print</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    </div>
+</div>  

@@ -426,15 +426,17 @@ $(function() {
 
     // jQuery overscroll
 
-    // $(".flyout-body").overscroll({
-    //         direction: 'vertical',
-    //         showThumbs: false
-    // });
+    if (LPFRG_MODEL == "Xeed") {    
+        $(".flyout-body").overscroll({
+                direction: 'vertical',
+                showThumbs: false
+        });
 
-    // $("#tabs").overscroll({
-    //         direction: 'vertical',
-    //         showThumbs: false
-    // });
+        $("#tabs").overscroll({
+                direction: 'vertical',
+                showThumbs: false
+        });
+    }
 
     // JQuery Virtual Keyboard init
 
