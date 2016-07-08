@@ -275,7 +275,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
     def webcamstream(self):
-        self._check_localhost()
+        # self._check_localhost() out for now I think Erik wants to refactor the localhost check,
+        # which we indeed should do, code copy sucks
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
