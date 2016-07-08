@@ -465,15 +465,23 @@ $(function() {
                 filenameToFocus = fileToFocus.name;
             }
 
-            OctoPrint.files.delete(file.origin, file.path)
-                .done(function() {
-                    self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
-                    $.notify({
-                        title: gettext("File removed succesfully"),
-                        text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
-                        "success"
-                    )
-                })
+            var text = "You have opted to delete job: " + file.name;
+            var question = "Do you want to delete this job?";
+            var title = "Delete job"
+            var dialog = { 'title': title, 'text': text, 'question': question };
+
+            self.flyout.showConfirmationFlyout(dialog)
+            .done(function() {        
+                OctoPrint.files.delete(file.origin, file.path)
+                    .done(function() {
+                        self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
+                        $.notify({
+                            title: gettext("File removed succesfully"),
+                            text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
+                            "success"
+                        )
+                    })
+            });
         };
 
         self.sliceFile = function(file) {

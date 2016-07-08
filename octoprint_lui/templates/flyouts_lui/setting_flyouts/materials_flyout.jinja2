@@ -5,9 +5,8 @@
         <div class="Table-item">Bed</div>
         <div class="Table-item">Action</div>
     </div>
-
-    <!-- ko keyboardForeach: temperature_profiles -->
-    <div class="Table-row">
+    <!-- ko keyboardForeach: settings.temperature_profiles -->
+    <div class="Table-row" data-bind="css: {disabled: $parent.disableRemove($data)}">
         <div class="Table-item profile_name">
             <input type="text" data-bind="value: name">
         </div>
@@ -19,12 +18,12 @@
         </div>
         <div class="Table-item">
             <ul class="button-area">
-                <li class="button failed-button"><a href="#delete" data-bind="click: $parent.removeTemperatureProfile"><span>Delete</span></a></li>
+                <li class="button failed-button"><a href="#delete" data-bind="click: $parent.settings.removeTemperatureProfile"><span data-bind="text: $root.materialButtonText($data)"></span></a></li>
             </ul>
         </div>
     </div>
     <!-- /ko -->
 </div>
 <ul class="button-area">
-    <li class="button"><a href="#save" data-bind="click: addTemperatureProfile"><span><i class="fa fa-plus"></i>Add profile</span></a>
+    <li class="button"><a href="#save" data-bind="click: settings.addTemperatureProfile"><span><i class="fa fa-plus"></i>Add profile</span></a>
 </ul>   

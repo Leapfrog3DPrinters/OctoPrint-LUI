@@ -96,12 +96,18 @@
   </div>
   <div class="Table-row">
     <div class="Table-item">
-      <input type="checkbox" id="settings-usersDialogAddUserAdmin" data-bind="checked: $root.users.editorAdmin" />
-      <label for="settings-usersDialogAddUserAdmin">{{ _('Admin') }}</label>
+      <span style="flex: 1">Admin</span>
+      <div class="check_toggle">
+        <input type="checkbox" id="settings-usersDialogAddUserAdmin" data-bind="checked: $root.users.editorAdmin" />
+        <label for="settings-usersDialogAddUserAdmin"></label>
+      </div>
     </div>
     <div class="Table-item">
-      <input type="checkbox" id="settings-usersDialogAddUserActive" data-bind="checked: $root.users.editorActive" />
-      <label for="settings-usersDialogAddUserActive">{{ _('Active') }}</label>
+      <span style="flex: 1">Active</span>
+      <div class="check_toggle">      
+        <input type="checkbox" id="settings-usersDialogAddUserActive" data-bind="checked: $root.users.editorActive" />
+        <label for="settings-usersDialogAddUserActive"></label>
+      </div>
     </div>
   </div>
   <div class="Table-row">
@@ -137,14 +143,18 @@
   </div>
   <div class="Table-row">
     <div class="Table-item">
-      <input type="checkbox" id="settings-usersDialogEditUserActive" data-bind="checked: $root.users.editorActive" />
-      <label for="settings-usersDialogEditUserActive">
-        {{ _('Active') }}
-      </label>
+      <span style="flex: 1">Active</span>
+      <div class="check_toggle">      
+        <input type="checkbox" id="settings-usersDialogAddUserActive" data-bind="checked: $root.users.editorActive" />
+        <label for="settings-usersDialogAddUserActive"></label>
+      </div>
     </div>
     <div class="Table-item">
-      <input type="checkbox" id="settings-usersDialogEditUserAdmin" data-bind="checked: $root.users.editorAdmin" />
-      <label for="settings-usersDialogEditUserAdmin">{{ _('Admin') }}</label>
+      <span style="flex: 1">Admin</span>
+      <div class="check_toggle">
+        <input type="checkbox" id="settings-usersDialogAddUserAdmin" data-bind="checked: $root.users.editorAdmin" />
+        <label for="settings-usersDialogAddUserAdmin"></label>
+      </div>
     </div>
   </div>
   <div class="Table-row">
