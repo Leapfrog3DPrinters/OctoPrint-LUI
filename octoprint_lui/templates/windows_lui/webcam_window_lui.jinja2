@@ -14,9 +14,10 @@
   var CONFIG_DEBUG = {%  if debug -%} true; {% else %} false; {%- endif %}
   var CONFIG_SD_SUPPORT = {% if enableSdSupport -%} true; {% else %} false; {%- endif %}
 
+
   var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
   var SOCKJS_DEBUG = CONFIG_DEBUG;
-  var SOCKJS_CLOSE_NORMAL = 1000;
+  var SOCKJS_CLOSE_NORMAL = 1000; 
 
   var IS_LOCAL = {%  if local_addr -%} true; {% else %} false; {%- endif %}
 </script>
@@ -37,6 +38,5 @@
 		</video>
 		</section>
     </div>
-    {% include 'javascript_lui.jinja2' %}
 </body>
 </html>
