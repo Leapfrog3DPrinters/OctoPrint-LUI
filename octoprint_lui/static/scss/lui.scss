@@ -157,6 +157,13 @@ a {
   padding:1rem;
 }
 
+.app-window-header {
+  background:$main-color;
+  color:$second-color;
+  height: 45px;
+    padding-left: 1rem;
+}
+
 .button-area {
   display: flex;
   flex: 1 1 100%;

@@ -110,6 +110,12 @@ a {
   color: #ffffff;
   padding: 1rem; }
 
+.app-window-header {
+  background: #434A54;
+  color: #ffffff;
+  height: 45px;
+  padding-left: 1rem; }
+
 .button-area {
   display: flex;
   flex: 1 1 100%; }
