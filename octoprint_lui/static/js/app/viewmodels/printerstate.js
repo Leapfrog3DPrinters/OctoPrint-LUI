@@ -19,6 +19,7 @@ $(function () {
         self.isSdReady = ko.observable(undefined);
 
         self.filename = ko.observable(undefined);
+        self.filepath = ko.observable(undefined);
         self.progress = ko.observable(undefined);
         self.filesize = ko.observable(undefined);
         self.filepos = ko.observable(undefined);
@@ -210,10 +211,12 @@ $(function () {
         self._processJobData = function (data) {
             if (data.file) {
                 self.filename(data.file.name);
+                self.filepath(data.file.path);
                 self.filesize(data.file.size);
                 self.sd(data.file.origin == "sdcard");
             } else {
                 self.filename(undefined);
+                self.filepath(undefined);
                 self.filesize(undefined);
                 self.sd(undefined);
             }
