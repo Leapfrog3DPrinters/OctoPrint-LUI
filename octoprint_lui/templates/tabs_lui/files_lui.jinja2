@@ -115,6 +115,10 @@
               </li>
             </ul>
             <div class="file_add_info hide">
+              <div class="file_add_info_preview">
+                <img data-bind="attr: {src: $data.previewUrl }, visible: $data.previewUrl()" />
+                <i data-bind="visible: !$data.previewUrl()" class="fa fa-cube" style="font-size: 3em; color: lightgrey"></i>
+              </div>
               <div class="file_add_info_content" data-bind="html: $root.getAdditionalData($data)"></div>
               <div class="file_add_info_buttons">
                 <ul class="button-area">
