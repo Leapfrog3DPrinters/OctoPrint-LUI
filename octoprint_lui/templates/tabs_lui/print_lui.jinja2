@@ -28,7 +28,8 @@
 
           </div>
           <div class="Table-item Table-item-grow-2">
-            <i class="fa fa-cube" style="font-size: 4em; color: lightgrey"></i>
+            <img data-bind="attr: { src: printPreviewUrl }, visible: printPreviewUrl()" style="max-width: 100%" />
+            <i data-bind="visible: !printPreviewUrl()" class="fa fa-cube" style="font-size: 4em; color: lightgrey"></i>
           </div>
         </div>
         <div class="Table-row">

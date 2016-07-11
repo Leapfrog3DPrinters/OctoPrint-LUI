@@ -1,18 +1,8 @@
 <!-- ko allowBindings: false -->
 <div id="temp">
- {#  <span data-bind="text: tools()[0]['actual']"></span>/<span data-bind="text: tools()[0]['target']"></span> - <span data-bind="text: toolStatus()[0].text"></span> <span data-bind="text: toolProgress()[0]"></span>
-  <br />
-  <span data-bind="text: tools()[1]['actual']"></span>/<span data-bind="text: tools()[1]['target']"></span> - <span data-bind="text: toolStatus()[1].text"></span> <span data-bind="text: toolProgress()[1]"></span>
-  <br />
-  <span data-bind="text: bedTemp['actual']"></span>/<span data-bind="text: bedTemp['target']"></span> - <span data-bind="text: toolStatus()[2].text"></span> <span data-bind="text: toolProgress()[2]"></span>
-  <br />
-  #}
     <div class="Table">
         <div class="Table-row Table-header">
             <div class="Table-item Table-item-grow-7">Temperature</div>
-{#             <div class="Table-item Table-item-grow-4"></div>
-            <div class="Table-item Table-item-grow-2">A</div>
-            <div class="Table-item Table-item-grow-2">T</div> #}
         </div>
         <div class="Table-row">
             <div class="Table-item Table-item-grow-3">Left</div>
@@ -22,8 +12,6 @@
                     <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
                 </div>
             </div>
-{#             <div class="Table-item Table-item-grow-2" data-bind="text: tools()[1]['actual'], visible: isOperational()"></div>
-            <div class="Table-item Table-item-grow-2 bold" data-bind="text: tools()[1]['target'], visible: isOperational()"></div> #}
         </div>
         <div class="Table-row">
             <div class="Table-item Table-item-grow-3">Right</div>
@@ -33,8 +21,6 @@
                     <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
                 </div>
             </div>
-{#             <div class="Table-item Table-item-grow-2" data-bind="text: tools()[0]['actual'], visible: isOperational()"></div>
-            <div class="Table-item  Table-item-grow-2 bold" data-bind="text: tools()[0]['target'], visible: isOperational()"></div> #}
         </div>
         <div class="Table-row">
             <div class="Table-item Table-item-grow-3">Bed</div>
@@ -44,12 +30,11 @@
                     <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
                 </div>
             </div>
-{#             <div class="Table-item Table-item-grow-2" data-bind='text: bedTemp["actual"], visible: isOperational()'></div>
-            <div class="Table-item Table-item-grow-2 bold" data-bind='text: bedTemp["target"], visible: isOperational()'></div> #}
         </div>
     </div> 
 </div>
 <!-- /ko -->
+{% if debug_lui %}
 <!-- ko allowBindings: false -->
 <div id="term">
     <div class="terminal">
@@ -78,3 +63,4 @@
     </div>
 </div>
 <!-- /ko -->
+{% endif %}

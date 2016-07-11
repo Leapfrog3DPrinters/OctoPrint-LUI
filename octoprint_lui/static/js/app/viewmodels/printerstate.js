@@ -27,6 +27,8 @@ $(function () {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
+        self.printPreviewUrl = ko.observable(undefined);
+
         self.warningVm = undefined;
 
         self.filenameNoExtension = ko.computed(function () {
@@ -338,6 +340,32 @@ $(function () {
             }
         }
 
+        self.refreshPrintPreview = function(url)
+        {
+            var filename = self.filename();
+
+            if (url)
+            {
+                self.printPreviewUrl(url + "?timestamp=" + new Date().getTime());
+            }
+            else if (filename)
+            {
+                $.get('/plugin/gcoderender/previewstatus/' + filename + '/True')
+                    .done(function (data)
+                     {
+                        if(data.status == 'ready')
+                            self.printPreviewUrl(data.url + "?timestamp=" + new Date().getTime());
+                        else
+                            self.printPreviewUrl(undefined)
+                    }).fail(function()
+                    {
+                        self.printPreviewUrl(undefined)
+                    })
+            } 
+            else
+                self.printPreviewUrl(undefined);
+        }
+
         self.fromResponse = function (data) {
             if (!data.is_homed) {
                 self.showStartupFlyout(data.is_homing);
@@ -358,30 +386,49 @@ $(function () {
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
-            if (plugin != "lui") {
-                return;
-            }
             var messageType = data['type'];
             var messageData = data['data'];
-            switch (messageType) {
-                case "is_homed":
-                    if(self.flyout.flyoutName == "startup")
-                        self.closeStartupFlyout();
-                    break;
-                case "is_homing":
-                    self.showBusyHoming();
-                    break;
-                case "door_open":
-                    self.onDoorOpen();
-                    break;
-                case "door_closed":
-                    self.onDoorClose();
-                    break;
+
+            if(plugin == "gcoderender")
+            {
+                console.log(messageType)
+                switch (messageType) {
+                    case "gcode_preview_rendering":
+                        //TODO: Maybe show spinner?
+                        break;
+                    case "gcode_preview_ready":
+                        var currentFilename = self.filename();
+                        if (messageData.filename == currentFilename)
+                            self.refreshPrintPreview(messageData.url);
+                        break;
+                }
+            }
+            else if (plugin == "lui") {
+
+                switch (messageType) {
+                    case "is_homed":
+                        if (self.flyout.flyoutName == "startup")
+                            self.closeStartupFlyout();
+                        break;
+                    case "is_homing":
+                        self.showBusyHoming();
+                        break;
+                    case "door_open":
+                        self.onDoorOpen();
+                        break;
+                    case "door_closed":
+                        self.onDoorClose();
+                        break;
+                }
             }
         }
 
         self.onAfterBinding = function () {
             self.requestData();
+
+            self.filename.subscribe(function () { self.refreshPrintPreview(); 
+                // Important to pass no parameters 
+            });
         }
     }
 
