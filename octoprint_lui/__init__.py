@@ -270,7 +270,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
     def webcamstream(self):
-        self._check_localhost()
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
