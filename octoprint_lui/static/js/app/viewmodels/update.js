@@ -119,7 +119,7 @@ $(function () {
                 if (self.updateCounter == self.updateTarget)
                     self.system.systemReboot();
                 else
-                    self._updateNext();
+                    return self._updateNext();
             }
 
             var command = { 'actionSource': 'custom', 'action': data.action(), 'name': data.name()};
