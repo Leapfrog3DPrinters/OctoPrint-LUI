@@ -7,6 +7,8 @@ $(function () {
         self.loginState = parameters[1];
         self.printerState = parameters[2];
         self.flyout = parameters[3];
+        self.printerProfiles=parameters[4];
+
         //self.slicing = parameters[3];
 
         self.isErrorOrClosed = ko.observable(undefined);
@@ -20,6 +22,8 @@ $(function () {
 
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
+
+        self.selectedFile = undefined;
 
         self.searchQuery = ko.observable(undefined);
         self.searchQuery.subscribe(function () {
@@ -254,7 +258,12 @@ $(function () {
             self.highlightFilename(newValue);
         });
 
-        self.highlightCurrentFilename = function () {
+
+        self.listHelper.selectedItem.subscribe(function(newValue) {
+            self.selectedFile = newValue;
+        });
+
+        self.highlightCurrentFilename = function() {
             self.highlightFilename(self.printerState.filename());
         };
 
@@ -433,6 +442,8 @@ $(function () {
 
             self.isLoadingFile = true;
 
+            self.selectedFile = file;
+
             if (file.type == "firmware") {
                 //Check if we're living in a flyout
                 if (self.flyout.deferred !== undefined) {
@@ -490,19 +501,128 @@ $(function () {
                 filenameToFocus = fileToFocus.name;
             }
 
-            OctoPrint.files.delete(file.origin, file.path)
-                .done(function () {
-                    self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
-                    $.notify({
-                        title: gettext("File removed succesfully"),
-                        text: _.sprintf(gettext('Removed file: "%(filename)s"'), { filename: file.name })
-                    },
-                        "success"
-                    )
-                })
+            var text = "You have opted to delete job: " + file.name;
+            var question = "Do you want to delete this job?";
+            var title = "Delete job"
+            var dialog = { 'title': title, 'text': text, 'question': question };
+
+            self.flyout.showConfirmationFlyout(dialog)
+            .done(function() {        
+                OctoPrint.files.delete(file.origin, file.path)
+                    .done(function() {
+                        self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
+                        $.notify({
+                            title: gettext("File removed succesfully"),
+                            text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
+                            "success"
+                        )
+                    })
+            });
         };
 
-        self.sliceFile = function (file) {
+        self.startPrint = function() {
+            var mode = self.printerState.printMode();
+            var file = self.selectedFile;
+
+            var withinPrintDimensions = self.evaluatePrintDimensions(file, mode, true);
+
+            if (withinPrintDimensions) {
+                OctoPrint.job.start();
+                self.flyout.closeFlyoutAccept();
+            }
+
+
+            // do print stuff
+            // close flyout. 
+        };
+
+        self.evaluatePrintDimensions = function(data, mode, notify) {
+            if (!self.settingsViewModel.feature_modelSizeDetection()) {
+                return true;
+            }
+
+            var analysis = data["gcodeAnalysis"];
+            if (!analysis) {
+                return true;
+            }
+
+            var printingArea = data["gcodeAnalysis"]["printingArea"];
+            if (!printingArea) {
+                return true;
+            }
+
+            var printerProfile = self.printerProfiles.currentProfileData();
+            if (!printerProfile) {
+                return true;
+            }
+
+            var volumeInfo = printerProfile.volume;
+            if (!volumeInfo) {
+                return true;
+            }
+
+            // set print volume boundaries
+            var boundaries = {
+                minX : 0,
+                maxX : volumeInfo.width(),
+                minY : 0,
+                maxY : volumeInfo.depth(),
+                minZ : 0,
+                maxZ : volumeInfo.height()
+            };
+            if (volumeInfo.origin() == "center") {
+                boundaries["maxX"] = volumeInfo.width() / 2;
+                boundaries["minX"] = -1 * boundaries["maxX"];
+                boundaries["maxY"] = volumeInfo.depth() / 2;
+                boundaries["minY"] = -1 * boundaries["maxY"];
+            }
+            // We can only print half X with sync and mirror mode
+            if (mode == "sync" || mode == "mirror") {
+                boundaries["maxX"] = (volumeInfo.width() - 20) / 2;
+            }
+
+            // model not within bounds, we need to prepare a warning
+            var warning = _.sprintf(gettext("Object in %(name)s exceeds the print volume of the currently selected printer profile, be careful when printing this."), data);
+            var info = "";
+
+            var formatData = {
+                profile: boundaries,
+                object: printingArea
+            };
+
+            // find exceeded dimensions
+            if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
+                info += gettext("Object exceeds print volume in width.");
+            }
+            if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
+                info += gettext("Object exceeds print volume in depth.");
+            }
+            if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
+                info += gettext("Object exceeds print volume in height.");
+            }
+
+            //warn user
+            if (info != "") {
+                if (notify) {
+                    var title = "Object doesn't fit print volume";
+
+                    info += _.sprintf(gettext("Object's bounding box: (%(object.minX).2f, %(object.minY).2f, %(object.minZ).2f) &times; (%(object.maxX).2f, %(object.maxY).2f, %(object.maxZ).2f)"), formatData);
+                    info += _.sprintf(gettext("Print volume: (%(profile.minX).2f, %(profile.minY).2f, %(profile.minZ).2f) &times; (%(profile.maxX).2f, %(profile.maxY).2f, %(profile.maxZ).2f)"), formatData);
+
+                    warning += info;
+
+                    warning += "You can disable this check via Settings &gt; Printer &gt; \"Enable model size detection [...]\"";
+
+                    self.flyout.showWarning(title, warning, false);
+
+                }
+                return false;
+            } else {
+                return true;
+            }
+        };
+
+        self.sliceFile = function(file) {
             if (!file) {
                 return;
             }
@@ -969,7 +1089,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel"],
-        ["#files", "#firmware_file_flyout"]
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel"],
+        ["#files", "#firmware_file_flyout", "#mode_select_flyout_content"]
     ]);
 });

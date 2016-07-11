@@ -19,6 +19,7 @@ $(function () {
         self.isSdReady = ko.observable(undefined);
 
         self.filename = ko.observable(undefined);
+        self.filepath = ko.observable(undefined);
         self.progress = ko.observable(undefined);
         self.filesize = ko.observable(undefined);
         self.filepos = ko.observable(undefined);
@@ -26,6 +27,8 @@ $(function () {
         self.printTimeLeft = ko.observable(undefined);
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
+
+        self.printMode = ko.observable("normal");
 
         self.printPreviewUrl = ko.observable(undefined);
 
@@ -210,10 +213,12 @@ $(function () {
         self._processJobData = function (data) {
             if (data.file) {
                 self.filename(data.file.name);
+                self.filepath(data.file.path);
                 self.filesize(data.file.size);
                 self.sd(data.file.origin == "sdcard");
             } else {
                 self.filename(undefined);
+                self.filepath(undefined);
                 self.filesize(undefined);
                 self.sd(undefined);
             }
@@ -262,16 +267,17 @@ $(function () {
 
         self.print = function () {
 
+            self.flyout.showFlyout("mode_select");
             // if (self.filament)
             // var text = "You are about to update a component of the User Interface.";
             // var question = "Do want to update " + data.name() + "?";
             // var title = "Update: " + data.name()
             // var dialog = {'title': title, 'text': text, 'question' : question};
-            var data = {};
-            self.flyout.showConfirmationFlyout(data)
-                .done(function () {
-                    OctoPrint.job.start();
-                });
+            // var data = {};
+            // self.flyout.showConfirmationFlyout(data)
+            //     .done(function () {
+            //         OctoPrint.job.start();
+            //     });
         };
 
         self.pause = function () {

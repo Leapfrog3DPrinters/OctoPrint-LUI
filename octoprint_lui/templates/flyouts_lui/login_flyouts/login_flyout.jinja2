@@ -17,10 +17,14 @@
 		    </div>
 		</div>
 		<div class="Table-row">
+			<div class="Table-item">
+				Remember me
+			</div>
 		    <div class="Table-item">
-		    	<label class="checkbox">
-		    		<input type="checkbox" id="login_remember" data-bind="checked: loginState.loginRemember"> {{ _('Remember me') }}
-		    	</label>
+		    	<div class="check_toggle">
+		    		<input type="checkbox" id="login_remember" data-bind="checked: loginState.loginRemember">
+			    	<label for="login_remember"></label>
+		    	</div>
 		    </div>
 		</div>
 	</div>

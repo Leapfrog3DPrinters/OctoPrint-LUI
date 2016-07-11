@@ -10,6 +10,7 @@ import netaddr
 import os
 import platform
 import flask
+import sys
 
 from pipes import quote
 from functools import partial
@@ -153,10 +154,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
         ##~ Model
-        if not os.path.exists('/home/pi'):
+        if sys.platform == "darwin":
+            self.model = "MacDebug"
+        elif sys.platform == "win32":
             self.model = "WindowsDebug"
-        else:
+        elif os.path.exists('/home/pi'):
             self.model = "Bolt"
+        else:
+            self.model = "Xeed"
         
         ##~ USB init
         self._init_usb()
@@ -270,6 +275,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
     def webcamstream(self):
+        # self._check_localhost() out for now I think Erik wants to refactor the localhost check,
+        # which we indeed should do, code copy sucks
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
@@ -331,7 +338,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     load_filament = ["profileName", "amount"],
                     load_filament_cont = ["tool", "direction"],
                     load_filament_cont_stop = [],
-                    update_filament = ["tool", "amount"],
+                    update_filament = ["tool", "amount", "profileName"],
                     move_to_filament_load_position = [],
                     move_to_maintenance_position = [],
                     refresh_update_info = [],
@@ -414,7 +421,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.send_client_finished()
             return None
 
-        profiles = self._settings.global_get(["temperature", "profiles"])
         selectedProfile = None
         
         if profileName == "filament-detection" or profileName == "filament-detection-purge": 
@@ -427,9 +433,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             temp = int(selectedProfile['extruder'])
         else: 
             # Find profile from key
-            for profile in profiles: 
-                if(profile['name'] == profileName):
-                    selectedProfile = profile
+            selectedProfile = self._get_profile_from_name(profileName)
 
             temp = int(selectedProfile['extruder'])
         
@@ -474,9 +478,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.set_temperature(self.filament_change_tool, 0.0) 
         self._logger.info("Change filament done called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
-    def _on_api_command_update_filament(self, *args, **kwargs):
+    def _on_api_command_update_filament(self, tool, amount, profileName, *args, **kwargs):
+        self._logger.info("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
         # Update the filament amount that is logged in tha machine
-        self._logger.debug("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+        if profileName == "None":
+            update_profile = {
+                "amount": 0,
+                "material": self.default_material
+            }
+        else:
+            selectedProfile = self._get_profile_from_name(profileName)
+            update_profile = {
+                "amount": amount,
+                "material": selectedProfile
+            }
+        self.set_filament_profile(tool, update_profile)
+        self.update_filament_amount()
+        self.send_client_filament_amount()
 
     def _on_api_command_load_filament_cont(self, tool, direction, *args, **kwargs):
         self.load_filament_cont(tool, direction)
@@ -676,7 +694,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
         if not self.is_media_mounted:
-            return make_response("Could access the media folder", 400)
+            return make_response("Could not access the media folder", 400)
 
         if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
             return make_response("Not allowed to copy this file", 400)
@@ -994,16 +1012,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def script_hook(self, comm, script_type, script_name):
         # The printer should get a positive number here. Altough for the user it might feel like - direction,
         # Thats how the M206 works.
-        zoffset = -self._settings.get_float(["zoffset"])
+        if self.model == "Xeed":
+            zoffset = -self._settings.get_float(["zoffset"])
 
-        if not script_type == "gcode":
-            return None
-    
-        if script_name == "beforePrintStarted":
-            return ["M206 Z%.2f" % zoffset], None
+            if not script_type == "gcode":
+                return None
+        
+            if script_name == "beforePrintStarted":
+                return ["M206 Z%.2f" % zoffset], None
 
-        if script_name == "afterPrinterConnected":
-            return ["M206 Z%.2f" % zoffset], None
+            if script_name == "afterPrinterConnected":
+                return ["M206 Z%.2f" % zoffset], None
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -1482,6 +1501,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             actions.append(reboot)
 
         self._settings.global_set(["system", "actions"], actions)
+
+    def _get_profile_from_name(self, profileName):
+        profiles = self._settings.global_get(["temperature", "profiles"])
+        for profile in profiles: 
+            if(profile['name'] == profileName):
+                selectedProfile = profile
+
+        return selectedProfile
 
 
     def _on_media_folder_updated(self, event):

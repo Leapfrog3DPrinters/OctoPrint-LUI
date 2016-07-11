@@ -82,7 +82,7 @@ $(function() {
                 .done(function () {
                     self.settings.sendCustomCommand({ type: 'command', command: 'G32', name: 'Level bed' });
                 });
-        }
+        };
 
         self.beginPurgeWizard = function (tool)
         {
@@ -98,8 +98,19 @@ $(function() {
                 .done(function () {
                     self.filament.showFilamentChangeFlyout(tool, true);
                 });
-        }
+        };
 
+        self.setFilamentAmount = function() {
+            $('#maintenance_control').removeClass('active');
+            $('#maintenance_filament').addClass('active');
+            self.filament.requestData();
+        };
+
+        self.onSettingsShown = function (){ 
+            $('#maintenance_control').addClass('active');
+            $('#maintenance_filament').removeClass('active');
+
+        };
 
     }
     // This is how our plugin registers itself with the application, by adding some configuration

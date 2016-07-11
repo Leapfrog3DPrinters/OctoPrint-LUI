@@ -10,8 +10,10 @@
       Enabled:
     </div>
     <div class="Table-item">
-      <!--TODO: Make nice touch-friendly toggle button-->
-      <input type="checkbox" data-bind="checked: timelapseEnabled,  enable: printerState.isOperational() && !printerState.isPrinting() && !printerState.isPaused() && loginState.isUser()" />
+      <div class="check_toggle">
+        <input type="checkbox" id="timelapseEnable" data-bind="checked: timelapseEnabled,  enable: printerState.isOperational() && !printerState.isPrinting() && !printerState.isPaused() && loginState.isUser()" />
+        <label for="timelapseEnable"></label>
+      </div>
     </div>
   </div>
   <div class="Table-row">

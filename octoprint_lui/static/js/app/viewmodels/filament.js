@@ -16,6 +16,9 @@ $(function () {
         self.forPurge = ko.observable(false);
 
         self.selectedTemperatureProfile = ko.observable(undefined);
+        self.updateLeftTemperatureProfile = ko.observable(undefined);
+        self.updateRightTemperatureProfile = ko.observable(undefined);
+
         self.currentMaterial = ko.pureComputed(function () {
             tool = self.tool();
             if (tool == "tool1")
@@ -33,6 +36,8 @@ $(function () {
 
         self.leftAmount = ko.observable(undefined);
         self.rightAmount = ko.observable(undefined);
+        self.updateLeftAmount = ko.observable(undefined);
+        self.updateRightAmount = ko.observable(undefined);
 
         self.filamentLoading = ko.observable(false);
         self.filamentInProgress = ko.observable(false);
@@ -87,7 +92,7 @@ $(function () {
                 return self.rightAmountString();
             else
                 return self.leftAmountString();
-        }
+        };
 
         self.getFilamentMaterial = function (tool) {
             tool = tool || self.tool();
@@ -96,7 +101,19 @@ $(function () {
                 return self.leftFilament();
             else
                 return self.rightFilament();
-        }
+        };
+
+        self.disableRemove = function(data) {
+            return (data.name == self.rightFilament() || data.name == self.leftFilament())
+        };
+
+        self.materialButtonText = function(data) {
+            if (self.disableRemove(data)) {
+                return "Loaded";
+            } else {
+                return "Delete";
+            }
+        };
 
         // Views
         // ------------------
@@ -189,9 +206,10 @@ $(function () {
         self.changeFilamentCancel = function () {
             self._sendApi({
                 command: "change_filament_cancel"
+            }).success(function(){
+                self.requestData();
             });
 
-            self.requestData();
         }
 
         self.changeFilamentDone = function () {
@@ -208,7 +226,8 @@ $(function () {
 
         self.loadFilament = function (loadFor) {
 
-            loadFor = loadFor || "swap";
+            var loadFor = loadFor || "swap";
+            var profileName = undefined;
 
             if (loadFor == "filament-detection" && fd_slider.noUiSlider.get()) {
                 amount = fd_slider.noUiSlider.get() * 1000;
@@ -235,14 +254,53 @@ $(function () {
                 profileName: profileName,
                 amount: amount
             });
-        }
+        };
 
         self.updateFilament = function (tool, amount) {
+            var profile = undefined;
+            if (tool == "tool0") {
+                profile = self.updateRightTemperatureProfile();
+            } else {
+                profile = self.updateLeftTemperatureProfile();
+            }
+
+            if (profile == undefined) {
+                return $.notify({
+                    title: gettext("Filament information updating warning"),
+                    text: _.sprintf(gettext('Please select a material to update.'))},
+                    "warning"
+                )
+            }
+
+            var profileName = profile.name;
+
+            if (profileName == "None") {
+                amount = 0;
+            }
             self._sendApi({
                 command: "update_filament",
                 tool: tool,
-                amount: amount
-            })
+                amount: amount * 1000,
+                profileName: profileName
+            }).success(function() {
+                $('#maintenance_filament').removeClass('active');
+                $('#maintenance_control').addClass('active');
+                $.notify({
+                    title: gettext("Filament information updated"),
+                    text: _.sprintf(gettext('New material: "%(material)s". New amount: "%(amount)s"'), {material: profileName, amount: amount})},
+                    "success"
+                )
+            }).error(function(){
+                $.notify({
+                    title: gettext("Filament information updated failed"),
+                    text: _.sprintf(gettext('Please check the logs for more info.'))},
+                    "error"
+                )
+            }).always(function(){
+                self.requestData();
+            });
+
+
         };
 
         self.loadFilamentCont = function () {
@@ -366,13 +424,22 @@ $(function () {
             self.rightFilament(self.filaments().find(function (x) { return x.tool() === "tool0" }).material.name());
             self.leftAmount(self.filaments().find(function (x) { return x.tool() === "tool1" }).amount());
             self.rightAmount(self.filaments().find(function (x) { return x.tool() === "tool0" }).amount());
+            self.updateLeftAmount(self.leftAmount() / 1000);
+            self.updateRightAmount(self.rightAmount() / 1000);
         }
 
         self.requestData = function () {
-            OctoPrint.simpleApiGet('lui', {
+            return OctoPrint.simpleApiGet('lui', {
                 success: self.fromResponse
             });
-        }
+        };
+
+        self.onSettingsShown = function() {
+            self.requestData().success(function(){
+                self.updateLeftTemperatureProfile(self.leftFilament());
+                self.updateRightTemperatureProfile(self.rightFilament());
+            });
+        };
 
 
     }
@@ -380,7 +447,7 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
       FilamentViewModel,
       ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel"],
-      ["#filament_status", "#filament_flyout"]
+      ["#filament_status", "#filament_flyout", "#maintenance_filament", "#materials_settings_flyout_content"]
     ]);
 
 });
