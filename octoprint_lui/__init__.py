@@ -42,7 +42,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         ##~ Global
         self.from_localhost = False
-        self.debug = True
+        self.debug = False
 
         ##~ Model specific variables
         self.model = None
@@ -160,9 +160,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.model = "WindowsDebug"
         elif os.path.exists('/home/pi'):
             self.model = "Bolt"
+        elif sys.platform == "linux2":
+            self.model = "Xeed"
         else:
             self.model = "Xeed"
         
+        self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
+
         ##~ USB init
         self._init_usb()
 
