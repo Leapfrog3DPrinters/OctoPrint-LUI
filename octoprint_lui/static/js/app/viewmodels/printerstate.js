@@ -271,17 +271,8 @@ $(function () {
 
         self.print = function () {
 
+            self.printMode("normal");
             self.flyout.showFlyout("mode_select");
-            // if (self.filament)
-            // var text = "You are about to update a component of the User Interface.";
-            // var question = "Do want to update " + data.name() + "?";
-            // var title = "Update: " + data.name()
-            // var dialog = {'title': title, 'text': text, 'question' : question};
-            // var data = {};
-            // self.flyout.showConfirmationFlyout(data)
-            //     .done(function () {
-            //         OctoPrint.job.start();
-            //     });
         };
 
         self.pause = function () {
