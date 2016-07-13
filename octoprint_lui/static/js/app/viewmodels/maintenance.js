@@ -45,6 +45,17 @@ $(function() {
                 });
         };
 
+        self.calibrateExtruders = function () {
+            self.flyout.closeFlyoutAccept();
+            self.flyout.showFlyout('extrudercalibration', true);
+        }
+
+        self.calibrateBed = function()
+        {
+            self.flyout.closeFlyoutAccept();
+            self.flyout.showFlyout('bedcalibration', true);
+        }
+
         self.sendHomeCommand = function (axis) {
             OctoPrint.printer.home(axis);
         };
@@ -66,23 +77,7 @@ $(function() {
             });
         };
 
-        self.startZoffset = function () {
-            self.flyout.closeFlyoutAccept();
-            self.flyout.showFlyout('zoffset');
-        };
-
-        self.startLevelBed = function ()
-        {
-            var text = "You are about to start the bed leveling sequence. This move will home all axis! Make sure there is no print on the bed.";
-            var question = "Do want to continue?";
-            var title = "Level bed"
-            var dialog = { 'title': title, 'text': text, 'question': question };
-
-            self.flyout.showConfirmationFlyout(dialog)
-                .done(function () {
-                    self.settings.sendCustomCommand({ type: 'command', command: 'G32', name: 'Level bed' });
-                });
-        };
+        
 
         self.beginPurgeWizard = function (tool)
         {

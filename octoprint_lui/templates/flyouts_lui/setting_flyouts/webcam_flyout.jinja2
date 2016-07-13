@@ -36,11 +36,19 @@
     <div class="Table-item">
       Current view
     </div>
+
     <div class="Table-item">
       <a href="#" data-bind="click: refreshPreview" style="margin-left: auto">
         <i class="fa fa-refresh"></i> Refresh
       </a>
     </div>
+    {% if not local_addr %}
+    <div class="Table-item">
+      <a href="#"  data-bind="click: startLivestream" style="margin-left: auto">
+        <i class="fa fa-play"></i> Livestream
+      </a>
+    </div>
+    {% endif %}
   </div>
   <!-- img not in Table-row>Table-item due to chromium bug -->
   <img class="webcam-preview" data-bind="attr: {src: webcam_previewUrl }" />

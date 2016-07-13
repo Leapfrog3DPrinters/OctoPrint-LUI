@@ -599,12 +599,16 @@ $(function() {
                 var context = command.context || {};
                 OctoPrint.control.sendGcodeScriptWithParameters(script, context, parameters);
             }
-            var name = command.name || "";
-            $.notify({
-                title: _.sprintf(gettext('Command "%(name)s" send'), {name: name}),
-                text: _.sprintf(gettext(''), {})},
-                "success"
-            );
+
+            if (command.showNotification) {
+                var name = command.name || "";
+                $.notify({
+                    title: _.sprintf(gettext('Command "%(name)s" sent'), { name: name }),
+                    text: _.sprintf(gettext(''), {})
+                },
+                    "success"
+                );
+            }
         };
 
         self.startZoffset = function() {
