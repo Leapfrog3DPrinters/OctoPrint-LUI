@@ -526,6 +526,11 @@ $(function() {
                 return true;
             }
 
+            var dimensions = data["gcodeAnalysis"]["dimensions"];
+            if (!dimensions) {
+                return true;
+            }
+
             var printerProfile = self.printerProfiles.currentProfileData();
             if (!printerProfile) {
                 return true;
@@ -551,43 +556,84 @@ $(function() {
                 boundaries["maxY"] = volumeInfo.depth() / 2;
                 boundaries["minY"] = -1 * boundaries["maxY"];
             }
-            // We can only print half X with sync and mirror mode
-            if (mode == "sync" || mode == "mirror") {
-                boundaries["maxX"] = (volumeInfo.width() - 20) / 2;
-            }
 
             // model not within bounds, we need to prepare a warning
-            var warning = _.sprintf(gettext("Object in %(name)s exceeds the print volume of the currently selected printer profile, be careful when printing this."), data);
+            var warning = "";
             var info = "";
+            var title = _.sprintf(gettext("Size check %(mode)s mode failed"), {mode: mode});  
 
             var formatData = {
                 profile: boundaries,
-                object: printingArea
+                object: printingArea,
+                dimensions: dimensions
             };
 
-            // find exceeded dimensions
-            if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
-                info += gettext("Object exceeds print volume in width.");
+            // Create grid 
+            var grid = "<div class='Table-row'><div class='Table-item'>";
+            grid += _.sprintf(gettext("<div class='grid' style='width: %(profile.maxX).2fpx; height: %(profile.maxY).2fpx;'>"), formatData);
+
+            // We can only print half X with sync and mirror mode
+            if (mode == "sync" || mode == "mirror") {
+                boundaries["maxX"] = volumeInfo.width() / 2;
+                grid += "<div class='print_area'></div>"
             }
-            if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
-                info += gettext("Object exceeds print volume in depth.");
+
+            grid += _.sprintf(gettext("<div class='print_model' style='width: %(dimensions.width).2fpx; height: %(dimensions.depth).2fpx; left: %(object.minX).2fpx; bottom: %(object.minY).2fpx'></div>"),formatData);
+
+            grid += "</div></div></div>";
+
+            // First check if the size is correct for the mode.
+            var sizeTable = "";
+            if (dimensions["width"] > boundaries["maxX"]) {
+                info += "Object exceeds print area in width. ";
+                sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object width</div></div>";
+                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>"), formatData);  
             }
-            if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
-                info += gettext("Object exceeds print volume in height.");
+            if (dimensions["depth"] > boundaries["maxY"]) {
+                info += gettext("Object exceeds print area in depth.");
+                sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object depth</div></div>";
+                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxy).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>"), formatData);
             }
+            if (dimensions["height"] > boundaries["maxZ"]) {
+                info += gettext("Object exceeds print area in height.");
+                sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object height</div></div>";
+                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(dimensions.height).2f mm</div></div>"), formatData);
+            }
+
+
+            // Position check after size check do position check
+            // Size check passed so info is still empty string.
+            var positionTable = "";
+            if(info === "") {
+
+                if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
+                    info += gettext("Object positioned outside print area in width.");
+                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>";
+                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.minX).2f - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>"), formatData);  
+                }
+                if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
+                    info += gettext("Object positioned outside print area in depth.");
+                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>";
+                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.minY).2f - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>"), formatData);  
+                }
+                if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
+                    info += gettext("Object positioned outside print area in heigth.");
+                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>";
+                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.minZ).2f - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>"), formatData);  
+                }
+                
+            }
+
+
 
             //warn user
             if (info != "") {
                 if (notify) {
-                    var title = "Object doesn't fit print volume";
-
-                    info += _.sprintf(gettext("Object's bounding box: (%(object.minX).2f, %(object.minY).2f, %(object.minZ).2f) &times; (%(object.maxX).2f, %(object.maxY).2f, %(object.maxZ).2f)"), formatData);
-                    info += _.sprintf(gettext("Print volume: (%(profile.minX).2f, %(profile.minY).2f, %(profile.minZ).2f) &times; (%(profile.maxX).2f, %(profile.maxY).2f, %(profile.maxZ).2f)"), formatData);
-
+                    info += "Please fix the dimension of the job or try a different print mode."
+                    warning += grid;
                     warning += info;
-
-                    warning += "You can disable this check via Settings &gt; Printer &gt; \"Enable model size detection [...]\"";
-
+                    warning += sizeTable;
+                    warning += positionTable;
                     self.flyout.showWarning(title, warning, false);
 
                 }
