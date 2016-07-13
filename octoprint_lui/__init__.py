@@ -1543,7 +1543,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
                 'version': "0.0.1"
-            },      
+            },  
+            {
+                'identifier': 'gcoderender',
+                'path': '{path}OctoPrint-gcodeRender'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_gcoderender',
+                'name': 'G-code Render Module',
+                'version': "0.0.1"
+            },     
             {
                 'identifier': 'octoprint',
                 'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),

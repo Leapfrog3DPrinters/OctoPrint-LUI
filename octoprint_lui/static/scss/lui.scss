@@ -1208,11 +1208,18 @@ select {
 
 .file_add_info_content {
   padding:5px;
+  flex-grow: 4;
 }
 
 .file_add_info_buttons {
-  margin-left: auto;
-  align-self:center;
+  align-self: center;
+  flex-grow: 1;
+}
+
+.file_add_info_preview
+{
+    flex-grow: 1;
+     align-items: flex-start; /* Chrome aspect ratio fix */
 }
 
 .file_info {

@@ -120,7 +120,7 @@
             </ul>
             <div class="file_add_info hide">
               <div class="file_add_info_preview">
-                <img data-bind="attr: {src: $data.previewUrl }, visible: $data.previewUrl()" />
+                <img data-bind="attr: {src: $data.previewUrl }, visible: $data.previewUrl()" style="width: 100%; max-width: 150px;" />
                 <i data-bind="visible: !$data.previewUrl()" class="fa fa-cube" style="font-size: 3em; color: lightgrey"></i>
               </div>
               <div class="file_add_info_content" data-bind="html: $root.getAdditionalData($data)"></div>
