@@ -140,6 +140,20 @@ $(function () {
             self.webcam_previewUrl(previewUrl);
         }
 
+        self.startLivestream = function()
+        {
+            var width = 1280;
+            var height = 765;
+
+            if (width > screen.width || height > screen.height)
+            {
+                width = 640;
+                height = 405;
+            }
+
+            window.open('/plugin/lui/webcamstream', '_blank', 'menubar=no,status=no,toolbar=no,width='+width+'px,height='+height+'px')
+        }
+
         self.requestData = function () {
             OctoPrint.timelapse.get({ data: { unrendered: true } })
                 .done(self.fromResponse);
@@ -249,8 +263,11 @@ $(function () {
         }
 
         self.onSettingsShown = function () {
-            self.requestData();
-            self.refreshPreview();
+            // TODO: Ensure all setting flyouts have this check
+            if ($('#webcam_settings_flyout_content').hasClass('active')) {
+                self.requestData();
+                self.refreshPreview();
+            }
         }
 
         self.onBeforeSaveSettings = function () {
