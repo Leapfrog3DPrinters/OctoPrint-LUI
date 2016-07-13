@@ -131,6 +131,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.temp_before_filament_detection = { 'tool0' : 0, 'tool1' : 0 }
 
+        self.print_mode = "normal"
 
         ##~ Homing
         self.home_command_sent = False
@@ -375,6 +376,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     start_calibration = ["calibration_type"],
                     save_calibration_values = ["width_correction", "extruder_offset_y"],
                     move_to_calibration_corner = [],
+                    start_print = ["mode"],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -388,6 +390,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
         self._on_api_command_start_calibration("bed_width_large")
+
+    def _on_api_command_start_print(self, mode):
+        self.print_mode = mode
+        if mode == "sync":
+            self._printer.commands(["M605 S2"])
+        elif mode == "mirror":
+            self._printer.commands(["M605 S3"])
+        else:
+            self._printer.commands(["M605 S1"])
+
+        self._printer.start_print()
+
 
     def _on_api_command_move_to_calibration_corner(self, corner_num):
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
@@ -1228,8 +1242,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 extrusion_amount = current_extrusion - self.last_extrusion
             # Add extrusion to current printing amount and remove from available filament
-            self.current_print_extrusion_amount[tool] += extrusion_amount
-            self.filament_amount[tool] -= extrusion_amount
+            # Use both tools when in sync or mirror mode.
+            if self.print_mode == "sync" or self.print_mode == "mirror":
+                for i, tool_name in enumerate(self.filament_amount):
+                    self.filament_amount[i] -= extrusion_amount
+                    self.current_print_extrusion_amount[i] += extrusion_amount
+            # Only one tool in normal mode.
+            else:
+                self.current_print_extrusion_amount[tool] += extrusion_amount
+                self.filament_amount[tool] -= extrusion_amount
 
             # Needed for absolute extrusion printing
             self.last_extrusion = current_extrusion
@@ -1473,10 +1494,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self._printer._currentZ < 30:
             self._printer.commands(["G1 Z30 F1200"])            
 
-        self._printer.home(['x', 'y'])
 
         if self.model == "Bolt":
             self._printer.commands(["M605 S0"])
+            self._printer.home(['x', 'y'])
             self._printer.change_tool("tool1")
             self._printer.commands(["G1 X30 F10000"])
             self._printer.change_tool("tool0")
@@ -1775,6 +1796,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = 0.0
             self.save_filament_amount()
+            self._printer.commands(["M605 S1"])
         
         if (event == "PrintStarted"):
             self.current_print_extrusion_amount = [0.0, 0.0]
@@ -1784,6 +1806,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if(event == "Connected"):
             self._get_firmware_info()
+            self._printer.commands(["M605 S1"])
+
             
 
     ##~ Helper method that calls api defined functions

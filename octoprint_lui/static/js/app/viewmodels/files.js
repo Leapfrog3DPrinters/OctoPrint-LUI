@@ -527,7 +527,10 @@ $(function () {
             var withinPrintDimensions = self.evaluatePrintDimensions(file, mode, true);
 
             if (withinPrintDimensions) {
-                OctoPrint.job.start();
+                self._sendApi({
+                    command: "start_print",
+                    mode: mode
+                })
                 self.flyout.closeFlyoutAccept();
             }
 
