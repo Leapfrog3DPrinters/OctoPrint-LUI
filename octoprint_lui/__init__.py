@@ -12,6 +12,7 @@ import platform
 import flask
 import sys
 
+from collections import OrderedDict
 from pipes import quote
 from functools import partial
 from copy import deepcopy
@@ -26,7 +27,7 @@ from octoprint.settings import settings
 from octoprint.util import RepeatedTimer
 from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
-
+from octoprint.events import Events
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
@@ -132,16 +133,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         ##~ Homing
-        self.home_command_send = False
+        self.home_command_sent = False
         self.is_homed = False
         self.is_homing = False
 
         ##~ Firmware
         self.firmware_info_command_sent = False
-        self.firmware_info_properties = dict({"machine_type": "Model", "firmware_version": "Leapfrog Firmware" })
+        # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
+        self.firmware_info_properties = OrderedDict()
+        self.firmware_info_properties["firmware_version"] = "Leapfrog Firmware"
+        self.firmware_info_properties["machine_type"] = "Model"
+        self.firmware_info_properties["extruder_offset_x"] = "X"
+        self.firmware_info_properties["extruder_offset_y"] = "Y"
+        self.firmware_info_properties["bed_width_correction"] = "bed_width_correction"
 
         ##~ USB and file browser
         self.is_media_mounted = False
+
+        ##~ Calibration
+        self.calibration_type = None
+        self.levelbed_command_sent = False
 
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
@@ -188,6 +199,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0, 
                                                     'material': self.default_material} for i in range(2))
         ##~ TinyDB - firmware
+        #TODO: Do insert if property is not found (otherwise update fails later on)
         self.machine_database_path = os.path.join(self.get_plugin_data_folder(), "machine.json")
         self.machine_database = TinyDB(self.machine_database_path)
         self._machine_query = Query() # underscore for blueprintapi compatability
@@ -195,11 +207,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("No machine database found creating one...")
             self.machine_database.insert_multiple({ 'property': key, 'value': '' } for key in self.firmware_info_properties.keys())
 
-        ## Get filament amount stored in config
+        ##~ Get filament amount stored in config
         self.update_filament_amount()
 
-        ## Usernames that cannot be removed
+        ##~ Usernames that cannot be removed
         self.reserved_usernames = ['local']
+
+        ##~ Bed calibration positions
+        self.manual_bed_calibration_positions = dict()
+        self.manual_bed_calibration_positions["Bolt"] = []
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 0, 'Y': 350 }) # 0=Top left
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 365, 'Y': 350 }) # 1=Top right
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 0, 'Y': 0 }) # 2=Bottom left 
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 365, 'Y': 0 }) #3=Bottom right
+        self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
     def update_info_list(self, force=False):
         self.fetch_all_repos(force)
@@ -351,6 +372,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
                     copy_timelapse_to_usb = ["filename"],
+                    start_calibration = ["calibration_type"],
+                    save_calibration_values = ["width_correction", "extruder_offset_y"],
+                    move_to_calibration_corner = [],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -363,8 +387,94 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
-        self._on_filament_detection_during_print(self._printer._comm)
+        self._on_api_command_start_calibration("bed_width_large")
+
+    def _on_api_command_move_to_calibration_corner(self, corner_num):
+        corner = self.manual_bed_calibration_positions[self.model][corner_num]
+        
+        self.set_movement_mode("absolute")
+
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S1"])
+
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.change_tool(corner["tool"])
+        self._printer.commands(['G1 Z5'])
+        self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
+        self._printer.commands(['G1 Z0'])
+
+        self.restore_movement_mode()
+
+    def _on_api_command_start_calibration(self, calibration_type):
+        self.calibration_type = calibration_type
+
+        self._disable_timelapse()
+
+        if calibration_type == "bed_width_small":
+            calibration_src_filename = "BoltBedWidthCalibration_100um.gcode"
+        elif calibration_type == "bed_width_large":
+            calibration_src_filename = "BoltBedWidthCalibration_1mm.gcode"
+        
+        abs_path = self._copy_calibration_file(calibration_src_filename)
+
+        if abs_path:
+            self._printer.select_file(abs_path, False, True)
     
+    def _copy_calibration_file(self, calibration_src_filename):
+        calibration_src_path = None
+        calibration_dst_filename = "calibration.gcode"
+        calibration_dst_relpath = ".calibration"
+        calibration_dst_path = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_relpath, calibration_dst_filename)
+        calibration_src_path = os.path.join(self._basefolder, "gcodes", calibration_src_filename)
+
+        upload = octoprint.filemanager.util.DiskFileWrapper(calibration_src_filename, calibration_src_path, move = False)
+        
+        try:
+            # This will do the actual copy
+            added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_path, upload, allow_overwrite=True)
+        except octoprint.filemanager.storage.StorageError:
+            self._send_client_message("calibration_failed", { "calibration_type": self.calibration_type})
+            return None
+
+        return octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file)
+
+    def _disable_timelapse(self):
+        config = self._settings.global_get(["webcam", "timelapse"], merged=True)
+        config["type"] = "off"
+
+        octoprint.timelapse.configure_timelapse(config, False)
+
+    def _restore_timelapse(self):
+        config = self._settings.global_get(["webcam", "timelapse"], merged=True)
+        octoprint.timelapse.configure_timelapse(config, False)
+
+    def _on_calibration_event(self, event):
+        #TODO: Temporary disable timelapse, gcoderendering etc
+        if event == Events.PRINT_STARTED:
+            self._send_client_message("calibration_started", { "calibration_type": self.calibration_type})
+        elif event == Events.PRINT_PAUSED: # TODO: Handle these cases or disable pause/resume when calibrating
+            self._send_client_message("calibration_paused", { "calibration_type": self.calibration_type})
+        elif event == Events.PRINT_RESUMED: # TODO: Handle these cases or disable pause/resume when calibrating
+            self._send_client_message("calibration_resumed", { "calibration_type": self.calibration_type})
+        elif event == Events.PRINT_DONE:
+            self._send_client_message("calibration_completed", { "calibration_type": self.calibration_type})
+            self.calibration_type = None
+            self._restore_timelapse()
+        elif event == Events.PRINT_FAILED or event == Events.ERROR:
+            self._send_client_message("calibration_failed", { "calibration_type": self.calibration_type})
+            self.calibration_type = None
+            self._restore_timelapse()
+
+    def _on_api_command_save_calibration_values(self, width_correction, extruder_offset_y):
+        if self.model == "Bolt":
+            self._printer.commands("M219 S%d" % width_correction)
+            self._printer.commands("M50 Y%d" % extruder_offset_y)
+            self._printer.commands("M500");
+
+        # Read back from machine (which may constrain the correction value) and store
+        self._get_machine_info()
+            
+
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
         self.send_client_is_homing()
@@ -991,6 +1101,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def send_client_is_homed(self):
         self._send_client_message('is_homed')
 
+    def send_client_levelbed_complete(self):
+        self._send_client_message('levelbed_complete')
+    
+    def send_client_levelbed_progress(self, max_correction_value):
+        self._send_client_message('levelbed_progress', { "max_correction_value" : max_correction_value })
+
     ## ~ Save helpers
     def set_filament_profile(self, tool, profile):
         self.filament_database.update(profile, self._filament_query.tool == tool)
@@ -1039,24 +1155,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if (gcode == "G90" or gcode == "G91"):
                 self._process_G90_G91(cmd)
 
-            if (gcode == "M82" or gcode == "M83"):
-                self._process_M82_M83(cmd)
-
             # Handle zero of axis 
-            if gcode == "G92":
+            elif gcode == "G92":
                 self._process_G92(cmd)
 
+            elif (gcode == "M82" or gcode == "M83"):
+                self._process_M82_M83(cmd)
+
             ##~ For now only handle extrusion when actually printing a job
-            if (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
+            elif (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
                 self._process_G0_G1(cmd, comm_instance)
 
             # Handle home command
-            if (gcode == "G28"):
+            elif (gcode == "G28"):
                 self._process_G28(cmd)
 
             # Handle info command
-            if (gcode == "M115"):
+            elif (gcode == "M115"):
                 self._process_M115(cmd)
+
+            # Handle bed level command
+            elif (gcode == "G32"):
+                self._process_G32(cmd)
 
     def _process_G90_G91(self, cmd):
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
@@ -1124,25 +1244,36 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _process_G28(self, cmd):
         #self._logger.info("Command: %s" % cmd)
-        self.home_command_send = True
+        self.home_command_sent = True
         self.is_homing = True
 
     def _process_M115(self, cmd):
         #self._logger.info("Command: %s" % cmd)
         self.firmware_info_command_sent = True
 
+    def _process_G32(self, cmd):
+        self.levelbed_command_sent = True
+
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if self.firmware_info_command_sent:
             if "echo:" in line:
                 self._on_firmware_info_received(line)
 
-        if self.home_command_send: 
+        if self.home_command_sent: 
             if "ok" in line:
-                self.home_command_send = False
+                self.home_command_sent = False
                 self.is_homed = True
                 self.is_homing = False
                 self.send_client_is_homed()
             
+        if self.levelbed_command_sent:
+            if "MaxCorrectionValue" in line:
+                max_correction_value = line[19:]
+                self.send_client_levelbed_progress(max_correction_value)
+            if "ok" in line:
+                self.levelbed_command_sent = False
+                self.send_client_levelbed_complete()
+
         return line
 
     def hook_actiontrigger(self, comm, line, action_trigger):
@@ -1371,7 +1502,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         try:
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
             octoprint.server.fileManager.add_storage("usb", self.usb_storage)
-        except Exception as e:
+        except:
+            self._logger.exception("Could not add USB storage")
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
         
@@ -1415,7 +1547,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'action': 'update_flasharduino',
                 'name': 'Flash Firmware Module',
                 'version': "0.0.1"
-            },      
+            },  
+            {
+                'identifier': 'gcoderender',
+                'path': '{path}OctoPrint-gcodeRender'.format(path=self.paths[self.model]['update']),
+                'update': False,
+                'action': 'update_gcoderender',
+                'name': 'G-code Render Module',
+                'version': "0.0.1"
+            },     
             {
                 'identifier': 'octoprint',
                 'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
@@ -1527,19 +1667,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         try:
             number_of_dirs = len(get_immediate_subdirectories(self.media_folder)) > 0;
-        except Exception as e:
+        except:
+            self._logger.exception("Could not read USB")
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
 
         if(self.from_localhost): 
-            if(event is None or (number_of_dirs > 0 and not self.is_media_mounted) or (number_of_dirs == 0 and self.is_media_mounted)):
+            if(event is None or (number_of_dirs > 0 and not was_media_mounted) or (number_of_dirs == 0 and was_media_mounted)):
                 # If event is None, it's a forced message
                 self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
 
         self.is_media_mounted = number_of_dirs > 0
 
         # Check if what's mounted contains a firmware (*.hex) file
-        if not self.debug and not was_media_mounted and self.is_media_mounted:
+        if self.debug and not was_media_mounted and self.is_media_mounted:
             firmware = self._check_for_firmware(self.media_folder)
             if(firmware):
                 firmware_file, firmware_path = firmware
@@ -1575,7 +1716,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_firmware_info_received(self, line):
         self.firmware_info_command_sent = False
         self._logger.info("M115 data received: %s" % line)
-        line = line[5:-1] # Remove echo: and newline
+        line = line[5:].rstrip() # Strip echo and newline
         
         if len(line) > 0:
            self._update_from_m115_properties(line)
@@ -1583,19 +1724,32 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _update_from_m115_properties(self, line):
         line = line.replace(': ', ':')
         properties = dict()
-        for key, prop in self.firmware_info_properties.iteritems():
-            proplen = len(prop)
-            idx_start = line.find(prop) + proplen + 1
-            if idx_start > proplen:
-                idx_end = line.find(' ', idx_start)
-                if idx_end == -1:
-                    idx_end = len(line)-1
+        idx_end = 0
 
+        # Loop through properties in defined order
+        for key in self.firmware_info_properties:
+            prop = self.firmware_info_properties[key]
+            proplen = len(prop)
+
+            # Find the value position of the current property, starting at the last property's value position
+            idx_start = line.find(prop, idx_end) + proplen + 1
+
+            if idx_start > proplen:
+
+                # Find the start of the next property
+                idx_end = line.find(' ', idx_start)
+
+                # If none found, end of value is end of line
+                if idx_end == -1:
+                    idx_end = len(line)
+                
+                # Substring to get value
                 value = line[idx_start:idx_end]
 
+                self._logger.info("{}: {}".format(key, value))
                 self.machine_database.update({'value': value }, self._machine_query.property == key)
             else:    
-                self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)
+                self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)  
                     
 
         return properties
@@ -1613,12 +1767,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 		        ))
 
     ##~ OctoPrint EventHandler Plugin
-    def on_event(self, event, playload, *args, **kwargs):
+    def on_event(self, event, payload, *args, **kwargs):
+        if self.calibration_type:
+            self._on_calibration_event(event)
+
         if (event == "PrintFailed" or event == "PrintCancelled" or event == "PrintDone" or event == "Error"):
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = 0.0
             self.save_filament_amount()
-
+        
         if (event == "PrintStarted"):
             self.current_print_extrusion_amount = [0.0, 0.0]
 

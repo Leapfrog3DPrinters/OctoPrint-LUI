@@ -1,4 +1,5 @@
-$(function() {
+$(function () {
+    //TODO: Maybe refactor into bedcalibration.js?
     function ZOffsetViewModel(parameters) {
         var self = this;
 

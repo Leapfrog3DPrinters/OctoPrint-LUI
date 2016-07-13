@@ -162,6 +162,46 @@
     </ul>
   </div>
 </aside>
+<aside id="extrudercalibration_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>Extruder calibration</h4>
+    <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+  </div>
+  <div class="flyout-body">
+    <div id="extrudercalibration_flyout_content">
+      {% include "flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2" %}
+    </div>
+    <ul class="button-area">
+      <li class="button failed-button">
+        <a href="#save" data-bind="click: abort">
+          <span>Abort</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>
+<aside id="bedcalibration_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>Bed calibration</h4>
+  </div>
+  <div class="flyout-body">
+    <div id="bedcalibration_flyout_content">
+      {% include "flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2" %}
+    </div>
+    <ul class="button-area">
+      <li class="button failed-button" data-bind="visible: mayAbort">
+        <a href="#save" data-bind="click: abort, disabled: mayAbort">
+          <span>Abort</span>
+        </a>
+      </li>
+      <li class="button ok-button" data-bind="visible: mayAccept">
+        <a href="#save" data-bind="click: accept, disabled: mayAccept">
+          <span>OK</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>
 <aside id="mode_select_flyout" class="flyout">
   <div class="flyout-header">
     <h4>Start print</h4>

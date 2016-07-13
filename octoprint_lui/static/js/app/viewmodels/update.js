@@ -121,20 +121,20 @@ $(function () {
                 else
                     return self._updateNext();
             }
+            else {
+                var command = { 'actionSource': 'custom', 'action': data.action(), 'name': data.name() };
+                self.system.triggerCommand(command)
+                    .done(function () {
+                        self.updateCounter++;
 
-            var command = { 'actionSource': 'custom', 'action': data.action(), 'name': data.name()};
-            self.system.triggerCommand(command)
-                .done(function () {
-                    self.updateCounter++;
-
-                    if (self.updateCounter == self.updateTarget)
-                        self.system.systemReboot();// TODO: Show spinner that system is rebooting
-                    else
-                        self._updateNext();
-                }).fail(function()
-                {
-                    $.notify({title: 'Software update failed', text: 'An error has occured while trying to update the software. Please try again.'}, "error");
-                });
+                        if (self.updateCounter == self.updateTarget)
+                            self.system.systemReboot();// TODO: Show spinner that system is rebooting
+                        else
+                            self._updateNext();
+                    }).fail(function () {
+                        $.notify({ title: 'Software update failed', text: 'An error has occured while trying to update the software. Please try again.' }, "error");
+                    });
+            }
         }
 
         self.updateAll = function (data) {
