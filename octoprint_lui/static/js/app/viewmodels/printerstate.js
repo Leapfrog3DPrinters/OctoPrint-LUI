@@ -31,7 +31,6 @@ $(function () {
         self.printMode = ko.observable("normal");
 
         self.printPreviewUrl = ko.observable(undefined);
-
         self.warningVm = undefined;
 
         self.filenameNoExtension = ko.computed(function () {
@@ -212,7 +211,12 @@ $(function () {
 
         self._processJobData = function (data) {
             if (data.file) {
-                self.filename(data.file.name);
+                // Remove any possible hidden folder name
+                if (data.file.name && data.file.name.startsWith("."))
+                    self.filename(data.file.name.slice(data.file.name.indexOf('/')+1));
+                else
+                    self.filename(data.file.name);
+
                 self.filepath(data.file.path);
                 self.filesize(data.file.size);
                 self.sd(data.file.origin == "sdcard");

@@ -1,0 +1,121 @@
+{% if model == "Bolt" %}
+<div id="warn-before-calibration" data-bind="visible: !showManualBedCalibration()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        Bed calibration
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <p>Please make sure there is no print on the bed before you continue.</p>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function() { startManualBedCalibration()}">
+            <a href="">
+              <span>Continue calibration</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="manual-bed-calibration" data-bind="visible: showManualBedCalibration()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        Bed calibration
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <!--TODO improve explanation-->
+        <p>Select the corner you would like to calibrate. The extruder will move into this position. You may adjust the bed by turning the knob below the bed.</p>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <div class="bed-canvas">
+          <div class="bed-canvas-item top left" data-corner="0"></div>
+          <div class="bed-canvas-item top right" data-corner="1"></div>
+          <div class="bed-canvas-item bottom left" data-corner="2"></div>
+          <div class="bed-canvas-item bottom right" data-corner="3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% if model == "Xeed" %}
+<div id="warn-before-calibration" data-bind="visible: !showAutoBedCalibration()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        Bed calibration
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <p>Please make sure there is no print on the bed before you continue.</p>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="click: startAutoBedCalibration">
+            <a href="">
+              <span>Level bed</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="click: startZoffset ">
+            <a href="">
+              <span>Z-offset wizard</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="auto-bed-calibration"  data-bind="visible: showAutoBedCalibration()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        Bed leveling
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <span>The print bed is currently being leveled. Please wait for the process to complete.</span>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <div class="progress progress-striped progress-animate">
+          <span data-bind="text: autoBedCalibrationProgressString, style: {backgroundColor: autoBedCalibrationProgressColor(), width: autoBedCalibrationProgress() + '%'}"></span>
+        </div>
+        <!--<div class="gauge">
+          <div class="mask">
+            <div class="semi-circle" data-bind="style: { background: autoBedCalibrationProgressColor }"></div>
+            <div class="semi-circle--mask" data-bind="style: { webkitTransform: 'rotate(' + autoBedCalibrationProgress() + ')', mozTransform: 'rotate(' + autoBedCalibrationProgress() + ')', transform: 'rotate(' + autoBedCalibrationProgress() + ')' }"></div>
+          </div>
+        </div>-->
+      </div>
+    </div>
+    <div class="Table-row" data-bind="visible: autoBedCalibrationComplete()">
+      <div class="Table-item">
+        <span>Bed levelling has completed</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+

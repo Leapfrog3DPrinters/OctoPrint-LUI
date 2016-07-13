@@ -263,8 +263,11 @@ $(function () {
         }
 
         self.onSettingsShown = function () {
-            self.requestData();
-            self.refreshPreview();
+            // TODO: Ensure all setting flyouts have this check
+            if ($('#webcam_settings_flyout_content').hasClass('active')) {
+                self.requestData();
+                self.refreshPreview();
+            }
         }
 
         self.onBeforeSaveSettings = function () {

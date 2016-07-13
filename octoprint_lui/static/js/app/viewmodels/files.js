@@ -86,7 +86,7 @@ $(function () {
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
                 if (!element.hasOwnProperty("previewUrl")) {
-                    if (self.gcodePreviews.indexOf(element["name"].toLowerCase()) > -1)
+                    if (self.gcodePreviews.find(function (item) { return item.toLowerCase() == element["name"].toLowerCase(); }))
                         element.previewUrl = ko.observable("/plugin/gcoderender/preview/" + element["name"]);
                     else
                         element.previewUrl = ko.observable("");

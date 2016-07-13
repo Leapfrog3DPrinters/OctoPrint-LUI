@@ -5,6 +5,7 @@
   <div class="content">
 
     <div class="file_area">
+
       <div class="gcode_files">
         <div class="file_footer">
          
@@ -71,13 +72,16 @@
                         </ul>
                     </div>
                 </div>
-                <div class="file_list">
-                    <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
-                        <ul class="file_main" style="background-color: #f2f2f2">
-                            <li class="file_status file_neutral"><a href="#file_status"><i class="fa fa-arrow-left"></i></a></li>
-                            <li class="file_name"><a href="#file_name"><span>...</span></a></li>
-                        </ul>
-                    </div>
+        <div class="loading"  data-bind="visible: isLoadingFileList()">
+          <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i> Loading files...
+        </div>
+        <div class="file_list"  data-bind="visible: !isLoadingFileList()">
+            <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
+                <ul class="file_main" style="background-color: #f2f2f2">
+                    <li class="file_status file_neutral"><a href="#file_status"><i class="fa fa-arrow-left"></i></a></li>
+                    <li class="file_name"><a href="#file_name"><span>...</span></a></li>
+                </ul>
+            </div>
                     
           <!-- ko foreach: filesAndFolders -->
           <div class="file_entry" data-bind="attr: { id: $root.getEntryId($data) }, template: { name: $root.templateFor($data), data: $data }"></div>
