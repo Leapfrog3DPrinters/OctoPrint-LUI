@@ -1,4 +1,4 @@
-{% if model == "Bolt" %}
+{% if model == "Bolt" or model.endswith("Debug") %}
 <div id="warn-before-calibration" data-bind="visible: !showManualBedCalibration()">
   <div class="Table">
     <div class="Table-row Table-header">
@@ -50,7 +50,7 @@
   </div>
 </div>
 {% endif %}
-{% if model == "Xeed" %}
+{% if model == "Xeed" or model.endswith("Debug") %}
 <div id="warn-before-calibration" data-bind="visible: !showAutoBedCalibration()">
   <div class="Table">
     <div class="Table-row Table-header">

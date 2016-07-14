@@ -377,6 +377,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     save_calibration_values = ["width_correction", "extruder_offset_y"],
                     move_to_calibration_corner = [],
                     start_print = ["mode"],
+                    unselect_file = [],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -390,6 +391,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
         self._on_api_command_start_calibration("bed_width_large")
+
+    def _on_api_command_unselect_file(self):
+        self._printer.unselect_file()
 
     def _on_api_command_start_print(self, mode):
         self.print_mode = mode
