@@ -59,7 +59,12 @@ $(function () {
 
         self.startLargeExtruderCalibration = function () {
             //TODO: Check if both extruders are loaded
-            self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
+
+            // First set calibration at 0, 0
+            setCalibration(0, 0, false).done(function () {
+                self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
+            });
+            
         };
 
         self.prepareSmallExtruderCalibration = function () {
@@ -68,7 +73,12 @@ $(function () {
 
         self.startSmallExtruderCalibration = function () {
             self.smallCalibrationPrepared(true);
-            self._sendApi({ command: "start_calibration", calibration_type: "bed_width_small" });
+
+            // Send the large bed width correction to the printer and print the small calibration
+            self.setCalibration(self.largeBedWidthCorrection(), 0, false).done(function () {
+                self._sendApi({ command: "start_calibration", calibration_type: "bed_width_small" });
+            });
+
         };
 
         self.showSmallYCalibration = function()
@@ -107,22 +117,33 @@ $(function () {
             $.notify({ title: 'Calibration failed', text: 'An error has occured while printing the calibration patterns. Please try again.' }, "error");
         }
 
+        self.restoreCalibration = function () {
+            return self._sendApi({
+                command: "restore_calibration_values"
+            });
+        }
+
+        self.setCalibration = function(width_correction, extruder_offset_y, persist)
+        {
+            return self._sendApi({
+                command: "set_calibration_values",
+                width_correction: width_correction,
+                extruder_offset_y: extruder_offset_y,
+                persist: persist
+            });
+        }
+
         self.saveCalibration = function () {
-            self._sendApi({
-                command: "save_calibration_values",
-                width_correction: self.bedWidthCorrection(),
-                extruder_offset_y: self.smallYAxisCorrection()
-            }).done(function ()
-            {
-                self.flyout.closeFlyoutAccept();
-                $.notify({ title: 'Calibration stored', text: 'The printer has been calibrated successfully.' }, "success");
+            self.setCalibration(self.bedWidthCorrection(), self.smallYAxisCorrection(), true)
+                .done(function ()
+                {
+                    self.flyout.closeFlyoutAccept();
+                    $.notify({ title: 'Calibration stored', text: 'The printer has been calibrated successfully.' }, "success");
                 
-            }).fail(function()
-            {
-                $.notify({ title: 'Calibration failed', text: 'An error has occured while storing the calibration settings. Please try again.' }, "error");
-            }).always(function () { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
-
-
+                }).fail(function()
+                {
+                    $.notify({ title: 'Calibration failed', text: 'An error has occured while storing the calibration settings. Please try again.' }, "error");
+                }).always(function () { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
         };
 
         self.abort = function ()
@@ -144,6 +165,8 @@ $(function () {
             self.smallXCalibrationCompleted(false);
             self.smallYCalibrationCompleted(false);
             self.smallCalibrationPrepared(false);
+
+            self.restoreCalibration();
         }
 
         self.onExtrudercalibrationFlyoutShown = function () {

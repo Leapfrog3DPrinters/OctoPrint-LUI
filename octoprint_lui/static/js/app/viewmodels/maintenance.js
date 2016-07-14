@@ -26,7 +26,7 @@ $(function() {
             var title = "Maintenance position"
             var dialog = {'title': title, 'text': text, 'question' : question};
 
-            self.flyout.showConfirmationFlyout(dialog)
+            self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){
                     self.moveToFilamentLoadPosition();
                 });
@@ -39,9 +39,9 @@ $(function() {
             var title = "Clean bed position"
             var dialog = {'title': title, 'text': text, 'question' : question};
 
-            self.flyout.showConfirmationFlyout(dialog)
+            self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){
-                    self.moveToMaintenancePosition();
+                    self.moveToCleanBedPosition();
                 });
         };
 
@@ -62,18 +62,23 @@ $(function() {
 
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
+            return OctoPrint.postJson(url, data);
         };
 
-        self.moveToMaintenancePosition = function() {
+        self.moveToCleanBedPosition = function() {
             self._sendApi({
                 command: 'move_to_maintenance_position'
+            }).done(function () {
+                $.notify({ title: "Clean bed", text: "The printer is moving towards the clean bed position." }, "success");
             });
         };
 
         self.moveToFilamentLoadPosition = function() {
             self._sendApi({
                 command: 'move_to_filament_load_position'
+            }).done(function () {
+                $.notify({ title: "Head maintenance", text: "The printhead is moving towards the maintenance position." }, "success");
+                
             });
         };
 
@@ -96,9 +101,11 @@ $(function() {
         };
 
         self.setFilamentAmount = function() {
-            $('#maintenance_control').removeClass('active');
-            $('#maintenance_filament').addClass('active');
             self.filament.requestData();
+            self.flyout.closeFlyoutAccept();
+            self.flyout.showFlyout('filament_override').done(function () {
+                self.settings.showSettingsTopic('maintenance');
+            });
         };
 
         self.onSettingsShown = function (){ 
