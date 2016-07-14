@@ -8,6 +8,7 @@ $(function () {
         self.printerState = parameters[2];
         self.flyout = parameters[3];
         self.printerProfiles=parameters[4];
+        self.filament = parameters[5];
 
         //self.slicing = parameters[3];
 
@@ -1138,7 +1139,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout_content"]
     ]);
 });

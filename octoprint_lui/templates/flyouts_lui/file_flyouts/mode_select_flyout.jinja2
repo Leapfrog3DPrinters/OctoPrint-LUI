@@ -6,7 +6,9 @@
             </div>
         </div>
         <div class="Table-row">
-            You have selected &nbsp;<span class="bold" data-bind="text: printerState.filenameNoExtension"></span>&nbsp;to print. 
+            <div class="Table-item">
+                <span>You have selected <span class="bold" data-bind="text: printerState.filenameNoExtension"></span> to print.</span>
+            </div>
         </div>
     </div>
     {% if model == "Bolt" or debug_lui %} 

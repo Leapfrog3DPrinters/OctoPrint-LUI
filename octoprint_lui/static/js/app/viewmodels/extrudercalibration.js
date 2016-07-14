@@ -116,18 +116,24 @@ $(function () {
             {
                 self.flyout.closeFlyoutAccept();
                 $.notify({ title: 'Calibration stored', text: 'The printer has been calibrated successfully.' }, "success");
+                
             }).fail(function()
             {
                 $.notify({ title: 'Calibration failed', text: 'An error has occured while storing the calibration settings. Please try again.' }, "error");
-            }).always(self.restoreState);
+            }).always(function () { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
 
 
         };
 
         self.abort = function ()
         {
-            if(self.isPrintingCalibration())
+            if (self.isPrintingCalibration()) {
                 OctoPrint.job.cancel();
+                self._sendApi({ command: "unselect_file" });
+            }
+
+            if (!self.calibrationProcessStarted())
+                self.flyout.closeFlyoutAccept();
         }
 
         self.restoreState = function()
