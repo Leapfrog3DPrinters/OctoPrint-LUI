@@ -1678,6 +1678,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             }
             actions.append(update_flasharduino)
 
+        ## Add update gcodeRender to the actions
+        if not is_variable_in_dict('update_gcoderender', actions):
+            update_gcoderender = {
+                "action": "update_gcoderender",
+                "name": "Update Gcode Render Module",
+                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "confirm": False
+            }
+            actions.append(update_gcoderender)
+
         ## Add shutdown 
         if not is_variable_in_dict('shutdown', actions):
             shutdown = {
