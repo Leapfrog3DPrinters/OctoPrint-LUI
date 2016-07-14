@@ -60,7 +60,9 @@
                     <li>
                         <a href="#"><i class="fa fa-list"></i></a>
                         <ul>
-                            <li><span>Sort by:</span></li>
+                            <li><span>
+                              <strong>Sort by:</strong>
+                            </span></li>
                             <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('name'); }">Name</a></li>
                             <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('upload'); }">Upload date</a></li>
                             <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a></li>
@@ -144,7 +146,6 @@
               <div class="file_add_info_content" data-bind="html: $root.getAdditionalData($data)"></div>
               <div class="file_add_info_buttons">
                 <ul class="button-area">
-                  <!-- Need to make this copy to USB for local -->
                   {% if local_addr %}
                   <li class="button">
                     <a data-bind="click: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
