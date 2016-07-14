@@ -6,42 +6,43 @@
           <div class="Table-item">Print Job</div>
         </div>
         <div class="Table-row">
-          <div class="Table-item Table-item-grow-1">Job name</div>
+          <div class="Table-item">Job name</div>
           <div class="Table-item Table-item-grow-3">
             <span data-bind="text: filename" class="text_wrap"></span>
           </div>
         </div>
         <div class="Table-row">
-          <div class="Table-item Table-item-grow-6 Table-nested">
+          <div class="Table-item Table-item-grow-3 Table-nested">
 
             <div class="Table-row">
-              <div class="Table-item">Estimated</div>
-              <div class="Table-item Table-item-grow-2" data-bind="text: estimatedPrintTimeString">1h</div>
+              <div class="Table-item Table-item-grow-2">Estimated</div>
+              <div class="Table-item Table-item-grow-4" data-bind="text: estimatedPrintTimeString">1h</div>
             </div>
             <div class="Table-row">
-              <div class="Table-item">Time left</div>
-              <div class="Table-item Table-item-grow-2" data-bind="text: printTimeLeftString">59m</div>
+              <div class="Table-item Table-item-grow-2">Time left</div>
+              <div class="Table-item Table-item-grow-4" data-bind="text: printTimeLeftString">59m</div>
             </div>
             <div class="Table-row">
-              <div class="Table-item">Print time</div>
-              <div class="Table-item Table-item-grow-2" data-bind="text: printTimeString">1m</div>
+              <div class="Table-item Table-item-grow-2">Print time</div>
+              <div class="Table-item Table-item-grow-4" data-bind="text: printTimeString">1m</div>
             </div>
-            <div class="Table-row">
-              <div class="Table-item">Filament Required</div>
-              <div class="Table-item">
-                L<span class="filament_amount" data-bind="text: leftFilament"></span>
-              </div>
-              <div class="Table-item">
-                R<span class="filament_amount" data-bind="text: rightFilament"></span>
-              </div>
-            </div>
+            
           </div>
-          <div class="Table-item Table-item-grow-2" style="align-items: flex-start">
+          <div class="Table-item Table-item-grow-1" style="align-items: flex-start">
             <img data-bind="attr: { src: printPreviewUrl }, visible: printPreviewUrl()" style="width: 100%; max-width: 175px;" />
             <i data-bind="visible: !printPreviewUrl()" class="fa fa-cube" style="font-size: 4em; color: lightgrey"></i>
           </div>
+
         </div>
-        
+        <div class="Table-row">
+          <div class="Table-item">Filament</div>
+          <div class="Table-item">
+            L<span class="filament_amount" data-bind="text: leftFilament"></span>
+          </div>
+          <div class="Table-item Table-item-grow-2">
+            R<span class="filament_amount" data-bind="text: rightFilament"></span>
+          </div>
+        </div>
         <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">
