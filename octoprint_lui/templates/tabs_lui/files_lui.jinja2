@@ -5,79 +5,93 @@
   <div class="content">
 
     <div class="file_area">
+
       <div class="gcode_files">
         <div class="file_footer">
          
         </div>
         <div class="file_header">
-          <div class="browse_modes">
-            {%  if local_addr -%}
-            <div class="button-area">
-              <ul>
-                <li class="button" data-bind="click: browseLocal">
-                  <a href="#browse_local">
-                    <span>
-                      <i class="fa fa-hdd-o"></i>Local
-                    </span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div class="button-area">
-              <ul>
-                <li class="button" data-bind="click: browseUsb, css: {disabled: !isUsbAvailable()}">
-                  <a href="#browse_usb">
-                    <span>
-                      <i class="fa fa-usb"></i>USB
-                    </span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            
-            {% else %}
-            <div class="button-area">
-            <ul>
-              <li class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
-                <a href="#upload_file">
-                  <span>
-                    <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
-                  </span>
-                  <input id="gcode_upload" type="file" name="file" class="fileinput-button">
-                    </a>
-              </li>
-            </ul>
-          </div>
-            {%- endif %}
-          </div>
-
-          <div class="file_search">
-            <form class="form-search" data-bind="submit: performSearch">
-              <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;">
-                        </form>
-                    </div>
-                    <div id="sort" class="file_sort">
-                        <ul class="sort_menu">
-                            <li>
-                                <a href="#"><i class="fa fa-list"></i></a>
-                                <ul>
-                                    <li><span>Sort by:</span></li>
-                                    <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('name'); }">Name</a></li>
-                                    <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('upload'); }">Upload date</a></li>
-                                    <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
+            <div class="browse_modes">
+                {%  if local_addr -%}
+                <div class="button-area">
+                    <ul>
+                        <li class="button" data-bind="click: browseLocal">
+                            <a href="#browse_local">
+                                <span>
+                                    <i class="fa fa-hdd-o"></i>Local
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-                <div class="file_list">
-                    <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
-                        <ul class="file_main" style="background-color: #f2f2f2">
-                            <li class="file_status file_neutral"><a href="#file_status"><i class="fa fa-arrow-left"></i></a></li>
-                            <li class="file_name"><a href="#file_name"><span>...</span></a></li>
+                <div class="button-area">
+                    <ul>
+                        <li class="button" data-bind="click: browseUsb, css: {disabled: !isUsbAvailable()}">
+                            <a href="#browse_usb">
+                                <span>
+                                    <i class="fa fa-usb"></i>USB
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="button-area">
+                    <ul>
+                        <li class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
+                            <a href="#upload_file">
+                                <span>
+                                    <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
+                                </span>
+                                <input id="gcode_upload" type="file" name="file" class="fileinput-button">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {%- endif %}
+            </div>
+            <div class="file_search">
+            <form class="form-search" data-bind="submit: performSearch">
+                <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;">
+            </form>
+            </div>
+            <div id="sort" class="file_sort">
+                <ul class="sort_menu">
+                    <li>
+                        <a href="#"><i class="fa fa-list"></i></a>
+                        <ul>
+                            <li><span>Sort by:</span></li>
+                            <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('name'); }">Name</a></li>
+                            <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('upload'); }">Upload date</a></li>
+                            <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a></li>
                         </ul>
-                    </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="loading" data-bind="visible: isLoadingFileList()">
+            <div class="file_entry">
+                <ul class="file_main">
+                    <li class="file_name">
+                        <a href="#file_name">
+                            <span>Loading files...</span>
+                        </a>
+                    </li>
+                    <li class="file_status">
+                        <a style="padding: 0;">
+                            <i class="fa fa-spinner fa-pulse"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="file_list"  data-bind="visible: !isLoadingFileList()">
+            <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
+                <ul class="file_main" style="background-color: #f2f2f2">
+                    <li class="file_status file_neutral"><a href="#file_status"><i class="fa fa-arrow-left"></i></a></li>
+                    <li class="file_name"><a href="#file_name"><span>...</span></a></li>
+                </ul>
+            </div>
                     
           <!-- ko foreach: filesAndFolders -->
           <div class="file_entry" data-bind="attr: { id: $root.getEntryId($data) }, template: { name: $root.templateFor($data), data: $data }"></div>
@@ -115,6 +129,10 @@
               </li>
             </ul>
             <div class="file_add_info hide">
+              <div class="file_add_info_preview">
+                <img data-bind="attr: {src: $data.previewUrl }, visible: $data.previewUrl()" style="width: 100%; max-width: 150px;" />
+                <i data-bind="visible: !$data.previewUrl()" class="fa fa-cube" style="font-size: 3em; color: lightgrey"></i>
+              </div>
               <div class="file_add_info_content" data-bind="html: $root.getAdditionalData($data)"></div>
               <div class="file_add_info_buttons">
                 <ul class="button-area">
