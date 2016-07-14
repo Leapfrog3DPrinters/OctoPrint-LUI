@@ -1701,7 +1701,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_media_mounted = number_of_dirs > 0
 
         # Check if what's mounted contains a firmware (*.hex) file
-        if self.debug and not was_media_mounted and self.is_media_mounted:
+        if not self.debug and not was_media_mounted and self.is_media_mounted:
             firmware = self._check_for_firmware(self.media_folder)
             if(firmware):
                 firmware_file, firmware_path = firmware
