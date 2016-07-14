@@ -377,6 +377,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     save_calibration_values = ["width_correction", "extruder_offset_y"],
                     move_to_calibration_corner = [],
                     start_print = ["mode"],
+                    unselect_file = [],
                     trigger_debugging_action = [] #TODO: Remove!
             ) 
 
@@ -390,6 +391,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
         self._on_api_command_start_calibration("bed_width_large")
+
+    def _on_api_command_unselect_file(self):
+        self._printer.unselect_file()
 
     def _on_api_command_start_print(self, mode):
         self.print_mode = mode
@@ -1701,7 +1705,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_media_mounted = number_of_dirs > 0
 
         # Check if what's mounted contains a firmware (*.hex) file
-        if self.debug and not was_media_mounted and self.is_media_mounted:
+        if not self.debug and not was_media_mounted and self.is_media_mounted:
             firmware = self._check_for_firmware(self.media_folder)
             if(firmware):
                 firmware_file, firmware_path = firmware
