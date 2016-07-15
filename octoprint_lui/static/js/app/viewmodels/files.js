@@ -599,7 +599,7 @@ $(function () {
 
             // Create grid 
             var grid = "<div class='Table-row'><div class='Table-item'>";
-            grid += _.sprintf(gettext("<div class='grid' style='width: %(profile.maxX).2fpx; height: %(profile.maxY).2fpx;'>"), formatData);
+            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(profile.maxX).2fpx; height: %(profile.maxY).2fpx;'>"), formatData);
 
             // We can only print half X with sync and mirror mode
             if (mode == "sync" || mode == "mirror") {

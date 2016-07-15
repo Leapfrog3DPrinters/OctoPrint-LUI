@@ -1,6 +1,8 @@
 $(function() {
-    function LoginStateViewModel() {
+    function LoginStateViewModel(parameters) {
         var self = this;
+
+        self.flyout = parameters[0];
 
         self.loginUser = ko.observable();
         self.loginPass = ko.observable();
@@ -76,6 +78,7 @@ $(function() {
                 .done(function(response) {
                     $.notify({title: gettext("Login successful"), text: _.sprintf(gettext('You are now logged in as "%(username)s"'), {username: response.name})}, "success");
                     self.fromResponse(response);
+                    self.flyout.closeFlyoutAccept();
                 })
                 .fail(function() {
                     $.notify({title: gettext("Login failed"), text: gettext("User unknown or wrong password")}, "error");
@@ -87,6 +90,7 @@ $(function() {
                 .done(function(response) {
                     $.notify({title: gettext("Logout successful"), text: gettext("You are now logged out")}, "success");
                     self.fromResponse(response);
+                    self.flyout.closeFlyoutAccept();
                 });
         };
 
@@ -138,7 +142,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         LoginStateViewModel,
-        [],
+        ["flyoutViewModel"],
         []
     ]);
 });
