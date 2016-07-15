@@ -520,7 +520,10 @@ input[type=radio] {
 
 .flyout-close {
   cursor: pointer;
-  float: right; }
+  float: right;
+  font-size: 1.1em;
+  font-weight: 700;
+  padding-left: 30px; }
 
 .disabled {
   pointer-events: none;
@@ -1543,6 +1546,7 @@ pre code {
 .grid {
   margin-left: calc(50% - 150px);
   position: relative;
+  background-image: -webkit-repeating-linear-gradient(bottom, transparent, transparent 40px, #CCC 40px, #CCC 41px), -webkit-repeating-linear-gradient(right, transparent, transparent 20px, #CCC 20px, #CCC 21px);
   background-image: repeating-linear-gradient(0deg, transparent, transparent 40px, #CCC 40px, #CCC 41px), repeating-linear-gradient(-90deg, transparent, transparent 20px, #CCC 20px, #CCC 21px);
   background-size: 41px 41px;
   width: 100%; }
@@ -1638,7 +1642,7 @@ ul.height-calibrator {
   margin-left: 40px; }
   ul.height-calibrator li {
     text-align: left;
-    width: 350px;
+    width: 300px;
     height: 30px;
     list-style-type: none;
     background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 40%, #434A54 40%, #434A54 60%, rgba(255, 255, 255, 0) 60%);

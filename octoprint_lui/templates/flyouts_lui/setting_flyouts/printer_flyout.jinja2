@@ -35,6 +35,7 @@
         </div>
     </div>
     {% endif %}
+    {% if debug_lui %}
     <div class="Table-row">
         <div class="Table-item">
             Log communication to serial.log
@@ -51,4 +52,5 @@
             <span class="label label-important">{{ _('Warning') }} (might negatively impact performance)</span>
         </div>
     </div>
+    {% endif %}
 </div>
