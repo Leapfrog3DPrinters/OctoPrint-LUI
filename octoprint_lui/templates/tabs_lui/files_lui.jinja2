@@ -8,7 +8,7 @@
 
       <div class="gcode_files">
         <div class="file_footer">
-         
+
         </div>
         <div class="file_header">
             <div class="browse_modes">
@@ -60,7 +60,9 @@
                     <li>
                         <a href="#"><i class="fa fa-list"></i></a>
                         <ul>
-                            <li><span>Sort by:</span></li>
+                            <li><span>
+                              <strong>Sort by:</strong>
+                            </span></li>
                             <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('name'); }">Name</a></li>
                             <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('upload'); }">Upload date</a></li>
                             <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a></li>
@@ -86,13 +88,21 @@
             </div>
         </div>
         <div class="file_list"  data-bind="visible: !isLoadingFileList()">
-            <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
-                <ul class="file_main" style="background-color: #f2f2f2">
-                    <li class="file_status file_neutral"><a href="#file_status"><i class="fa fa-arrow-left"></i></a></li>
-                    <li class="file_name"><a href="#file_name"><span>...</span></a></li>
-                </ul>
-            </div>
-                    
+          <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
+            <ul class="file_main" style="background-color: #f2f2f2">
+              <li class="file_status file_neutral">
+                <a href="#file_status">
+                  <i class="fa fa-arrow-left"></i>
+                </a>
+              </li>
+              <li class="file_name">
+                <a href="#file_name">
+                  <span>...</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
           <!-- ko foreach: filesAndFolders -->
           <div class="file_entry" data-bind="attr: { id: $root.getEntryId($data) }, template: { name: $root.templateFor($data), data: $data }"></div>
           <!-- /ko -->
@@ -130,20 +140,25 @@
             </ul>
             <div class="file_add_info hide">
               <div class="file_add_info_preview">
-                <img data-bind="attr: {src: $data.previewUrl }, visible: $data.previewUrl()" style="width: 100%; max-width: 150px;" />
+                <img data-bind="attr: {src: $data.previewUrl() }, visible: $data.previewUrl()" style="width: 100%; max-width: 150px;" />
                 <i data-bind="visible: !$data.previewUrl()" class="fa fa-cube" style="font-size: 3em; color: lightgrey"></i>
               </div>
               <div class="file_add_info_content" data-bind="html: $root.getAdditionalData($data)"></div>
               <div class="file_add_info_buttons">
                 <ul class="button-area">
-                <!-- Need to make this copy to USB for local -->
-                {# {% if not local_addr %} #}
+                  {% if local_addr %}
+                  <li class="button">
+                    <a data-bind="click: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
+                      <span>Copy to USB</span>
+                    </a>
+                  </li>
+                  {% else %}
                   <li class="button">
                     <a data-bind="attr: {href: $root.downloadLink($data), css: {disabled: !$root.downloadLink($data)}}">
                       <span>Download</span>
                     </a>
                   </li>
-                {# {% endif %} #}
+                  {% endif %}
                   <li class="button failed-button">
                     <a data-bind="click: function() { if ($root.enableRemove($data)) { $root.removeFile($data); } else { return; } }, css: {disabled: !$root.enableRemove($data)}">
                       <span>Delete</span>

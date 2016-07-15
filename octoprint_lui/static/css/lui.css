@@ -372,11 +372,12 @@ input[type=radio] {
   .flyout a {
     color: #434A54; }
 
-.flyout_content {
-  display: none; }
-  .flyout_content.active {
-    display: inline-block; }
-
+/*.flyout_content {
+  display: none;
+  &.active {
+    display: inline-block;
+  }
+}*/
 .flyout-header {
   background-color: #434A54;
   color: white;
@@ -1055,7 +1056,6 @@ pre code {
 .grid {
   margin-left: calc(50% - 150px);
   position: relative;
-  background-image: -webkit-repeating-linear-gradient(bottom, transparent, transparent 40px, #CCC 40px, #CCC 41px), -webkit-repeating-linear-gradient(right, transparent, transparent 20px, #CCC 20px, #CCC 21px);
   background-image: repeating-linear-gradient(0deg, transparent, transparent 40px, #CCC 40px, #CCC 41px), repeating-linear-gradient(-90deg, transparent, transparent 20px, #CCC 20px, #CCC 21px);
   background-size: 41px 41px; }
 
@@ -1156,8 +1156,8 @@ ul.height-calibrator {
 
 /* Bed calibration */
 .bed-canvas {
-  width: 180px;
-  height: 175px;
+  width: 220px;
+  height: 180px;
   background-color: #F6F7F7;
   border: 3px solid #8c96a4;
   border-radius: 10px;
@@ -1173,6 +1173,9 @@ ul.height-calibrator {
   height: 25px; }
   .bed-canvas-item:hover, .bed-canvas-item.active {
     border-color: #A9CC3C; }
+  .bed-canvas-item.center {
+    top: 75px;
+    left: 95px; }
   .bed-canvas-item.top {
     top: 1em; }
   .bed-canvas-item.left {

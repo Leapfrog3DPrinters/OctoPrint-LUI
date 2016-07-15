@@ -83,10 +83,10 @@ $(function () {
                 .done(function () {
                     file = self.files.selectedFirmwareFile();
                     self.flashArduino.onLocalFileSelected(file);
-                    self.settings.showSettingsTopic('update');
                 })
                 .fail(function () { })
                 .always(function () {
+                    self.settings.showSettingsTopic('update');
                     self.files.browseLocal(); // Reset file list to local gcodes
                 });
         };

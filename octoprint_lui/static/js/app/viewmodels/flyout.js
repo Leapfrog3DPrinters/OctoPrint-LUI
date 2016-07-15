@@ -100,7 +100,7 @@ $(function() {
       return self.deferred;
     };
     
-    self.showConfirmationFlyout = function(data) {
+    self.showConfirmationFlyout = function(data, leaveFlyout) {
       // Set flyout ko.observables
       var title = data.title || "Are you sure?";
       var text = data.text || "";
@@ -117,14 +117,13 @@ $(function() {
       self.confirmationDeferred = $.Deferred()
           .done(function () {
           $('#confirmation_flyout').removeClass('active');
-
-          if (self.deferred !== undefined)
+            
+          if (self.deferred !== undefined && !leaveFlyout)
               self.closeFlyoutAccept();
-          else
+          else if (self.deferred === undefined)
               $('.overlay').removeClass('active');
 
           self.confirmationDeferred = undefined;
-          console.log('confirmation confirmed');
           })
           .fail(function () {
               $('#confirmation_flyout').removeClass('active');
@@ -133,7 +132,6 @@ $(function() {
                 $('.overlay').removeClass('active');
 
               self.confirmationDeferred = undefined;
-              console.log('confirmation rejected');
           });
 
       return self.confirmationDeferred;

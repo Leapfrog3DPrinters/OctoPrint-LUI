@@ -360,6 +360,6 @@ $(function () {
     ADDITIONAL_VIEWMODELS.push([
         WebcamViewModel,
         ["flyoutViewModel", "loginStateViewModel", "printerStateViewModel", "settingsViewModel", "gcodeFilesViewModel"],
-        ["#webcam_settings_flyout_content"]
+        ["#webcam_settings_flyout_content", "#info_livestream"]
     ]);
 });
