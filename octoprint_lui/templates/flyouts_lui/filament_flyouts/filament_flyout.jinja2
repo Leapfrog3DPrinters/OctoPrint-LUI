@@ -6,7 +6,7 @@
     </div>
     <div class="Table-row " id="swap-info">
         <div class="Table-item">
-            Heating up to swap filament and (un)loading.
+            Please wait while the printer is heating and until the command has been executed.
         </div>
     </div>
     <div class="Table-row active" id="swap-load-unload">
@@ -43,7 +43,7 @@
                     </div>
                     <div class="explain">Insert the filament in the filament drawer past both wheels.</div>
                     <ul class="button-area">
-                        <li class="button ok-button" id="unload_cmd" data-bind="click: function() { loadFilament(false); }, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
+                        <li class="button ok-button" id="load_cmd" data-bind="click: function() { loadFilament(false); }, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
                             <a href="#"><span>Load</span></a>
                         </li>
                     </ul>

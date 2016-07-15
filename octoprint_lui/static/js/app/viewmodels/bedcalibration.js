@@ -72,7 +72,7 @@ $(function () {
 
         self.moveToCorner = function(cornerNum)
         {
-            self._sendApi({ "command": "move_to_calibration_corner", "corner_num": cornerNum });
+            self._sendApi({ "command": "move_to_calibration_position", "corner_num": cornerNum });
         }
 
         $('.bed-canvas-item').click(function () {
