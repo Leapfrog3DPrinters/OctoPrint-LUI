@@ -48,6 +48,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Model specific variables
         self.model = None
 
+        mac_path = os.path.expanduser('~')
+
         self.paths = {
             "Xeed" : {
                 "update": "/home/lily/" ,
@@ -63,8 +65,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             "MacDebug" : 
             {
-                "update": "/Users/pim/lpfrg/",
-                "media": "/Users/pim/lpfrg/GCODE/"
+                "update": "{mac_path}/lpfrg/".format(mac_path=mac_path),
+                "media": "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path),
             },
             "WindowsDebug" : {
                 "update": "C:\\Users\\erikh\\OneDrive\\Programmatuur\\",
@@ -942,25 +944,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Load and Unload methods
 
     def load_filament(self, tool):
-      
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
             # Always set load_amount to 0
             self.load_amount = 0
+            self.set_extrusion_mode("relative")
            
             if self.loading_for_purging:
                 self._logger.info("load_filament for purging")
-                load_initial=dict(amount=16.67, speed=2000)
+                load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
                 self.load_amount_stop = 2
                 self.loading_for_purging = False
             elif self.model == "Xeed": ## Switch on model for filament loading
                 self._logger.info("load_filament for Xeed")
-                ## This is xeed load function, TODO: Bolt! function and switch
-
                 # We can set one change of extrusion and speed during the timer
                 # Start with load_initial and change to load_change at load_change['start']
-                load_initial=dict(amount=16.67, speed=2000)
+                load_initial=dict(amount=17.0, speed=2000)
                 load_change=dict(start=1900, amount=2.5, speed=300)
 
                 # Total amount being loaded
@@ -968,11 +968,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.info("load_filament for Bolt")
                 # Bolt loading
-                load_initial=dict(amount=16.67, speed=2000)
+                load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
-                self.load_amount_stop = 2
+                self.load_amount_stop = 50
 
-            self.set_extrusion_mode("relative")
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
                                                     load_filament_partial, 
@@ -989,6 +988,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.load_filament_timer is None:
             ## This is xeed load function, TODO: Bolt! function and switch
             self.load_amount = 0
+            self.set_extrusion_mode("relative")
+
             if self.model == "Xeed":
                 # We can set one change of extrusion and speed during the timer
                 # Start with load_initial and change to load_change at load_change['start']
@@ -1001,8 +1002,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Bolt stuff
                 unload_initial=dict(amount= -2.5, speed=300)
                 unload_change = None
-                self.load_amount_stop = 45 # TODO test this
-            self.set_extrusion_mode("relative")
+                self.load_amount_stop = 80 # 
+
+            # Before unloading, always purge the machine 4 mm 
+            self._printer.commands(["G1 E4 F300"])
+
+            # Start unloading
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
             self.load_filament_timer = RepeatedTimer(0.5, 
                                                     unload_filament_partial, 
@@ -1653,7 +1658,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_networkmanager = {
                 "action": "update_networkmanager",
                 "name": "Update NetworkManager",
-                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_networkmanager)
@@ -1663,7 +1668,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_octoprint = {
                 "action": "update_octoprint",
                 "name": "Update OctoPrint",
-                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_octoprint)
@@ -1673,7 +1678,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_flasharduino = {
                 "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
-                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_flasharduino)
@@ -1683,7 +1688,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_gcoderender = {
                 "action": "update_gcoderender",
                 "name": "Update Gcode Render Module",
-                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_gcoderender)

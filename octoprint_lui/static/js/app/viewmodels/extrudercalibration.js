@@ -61,7 +61,7 @@ $(function () {
             //TODO: Check if both extruders are loaded
 
             // First set calibration at 0, 0
-            setCalibration(0, 0, false).done(function () {
+            self.setCalibration(0, 0, false).done(function () {
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
             });
             
