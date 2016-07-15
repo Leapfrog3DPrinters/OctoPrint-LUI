@@ -482,12 +482,13 @@ input[type=radio] {
   }
 }
 
-.flyout_content {
+/*.flyout_content {
   display: none;
   &.active {
     display: inline-block;
   }
-}
+}*/
+
 
 .flyout-header {
   background-color: $main-color;
@@ -1479,10 +1480,12 @@ ul.height-calibrator
 /* Bed calibration */
 $bed-padding: 1em;
 $corner-size: 25px;
+$bed-width: 220px;
+$bed-height: 180px;
 .bed-canvas
 {
-  width: 180px;
-  height: 175px;
+  width: $bed-width;
+  height: $bed-height;
   background-color: $off-white;
   border: 3px solid lighten($main-color, 30%);
   border-radius: 10px;
@@ -1502,6 +1505,12 @@ $corner-size: 25px;
   &:hover, &.active
   {
     border-color: $color-ok;
+  }
+
+  &.center
+  {
+    top: ($bed-height - $corner-size - 5px)/2;
+    left: ($bed-width - $corner-size - 5px)/2;
   }
   
   &.top

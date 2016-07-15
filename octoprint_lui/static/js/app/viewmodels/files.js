@@ -483,6 +483,15 @@ $(function () {
 
         };
 
+        self.copyToUsb = function(file)
+        {
+            if (!file) {
+                return;
+            }
+
+            self._sendApi({ command: "copy_gcode_to_usb", filename: file.name });
+        }
+
         self.removeFile = function (file) {
             if (!file) {
                 return;
@@ -1113,6 +1122,7 @@ $(function () {
                 console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_ready":
+                        self.gcodePreviews.push(messageData.filename.toLowerCase());
                         self.refreshPrintPreview(messageData.filename, messageData.url);
                         break;
                 }
@@ -1129,6 +1139,10 @@ $(function () {
 
                         break;
                     case "media_file_copy_progress":
+                        self.setProgressBar(messageData.percentage);
+                        break;
+
+                    case "gcode_copy_progress":
                         self.setProgressBar(messageData.percentage);
                         break;
 

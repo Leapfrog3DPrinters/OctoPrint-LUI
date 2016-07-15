@@ -557,22 +557,33 @@ $(function() {
             // }
         };
 
-        self.showSettingsTopic = function(topic, blocking) {
-            var settings_topic = "#" + topic +'_settings_flyout_content';
-            var $settings_topic_content = $(settings_topic);
-            $settings_topic_content.addClass('active');
+        self.showSettingsTopic = function (topic, blocking) {
             self.settingsTopic(capitalize(topic));
             callViewModels(self.allViewModels, "onSettingsShown");
-            return self.flyout.showFlyout('settings', blocking)
+            return self.flyout.showFlyout(topic + '_settings', blocking)
                 .done(function () {
                     self.saveData();
                 })
                 .fail(function() {})
-                .always(function() {
-                    $settings_topic_content.removeClass('active')
+                .always(function () {
                     callViewModels(self.allViewModels, "onSettingsHidden");
-
                 });
+
+            //var settings_topic = "#" + topic +'_settings_flyout_content';
+            //var $settings_topic_content = $(settings_topic);
+            //$settings_topic_content.addClass('active');
+            //self.settingsTopic(capitalize(topic));
+            //callViewModels(self.allViewModels, "onSettingsShown");
+            //return self.flyout.showFlyout('settings', blocking)
+            //    .done(function () {
+            //        self.saveData();
+            //    })
+            //    .fail(function() {})
+            //    .always(function() {
+            //        $settings_topic_content.removeClass('active')
+            //        callViewModels(self.allViewModels, "onSettingsHidden");
+
+            //    });
         };
 
         // Sending custom commands to the printer, needed for level bed for example.
@@ -640,6 +651,6 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
         ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel", "flyoutViewModel"],
-        ["#settings", "#settings_flyout"]
+        ["#settings", "#settings_flyouts"]
     ]);
 });
