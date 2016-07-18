@@ -73,9 +73,20 @@ function DataUpdater(allViewModels) {
             return true;
         }
 
+        var title = "";
+        var message = "";
+
+        if (IS_LOCAL) {
+            title = gettext("Service restarting");
+            message = gettext("The background service of the printer is restarting. This is common after a software update. Printer will be available in a couple of minutes.")
+        } else {
+            title = gettext("Server disconnected");
+            message = gettext("The browser has been disconnected from the printer. Either the printer is turned off or the network connection failed. Trying to reconnect in the coming minutes.")
+        }
+
         showOfflineFlyout(
-            gettext("Server is offline"),
-            gettext("The server appears to be offline, at least the software is not getting any response from it. This is normal behaviour after a software update. Trying to reconnect automatically <strong>over the next couple of minutes</strong>."),
+            title,
+            message,
             self.reconnect
         );
 

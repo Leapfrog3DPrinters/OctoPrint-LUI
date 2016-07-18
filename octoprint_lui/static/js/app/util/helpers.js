@@ -622,6 +622,8 @@ function changeTabTo(tab){
 }
 
 function showOfflineFlyout(title, text, reconnectCallback) {
+    offline_blocking = true;
+
     if (title == undefined) {
         title = gettext("Server is offline");
     }
@@ -639,6 +641,7 @@ function showOfflineFlyout(title, text, reconnectCallback) {
 };
 
 function hideOfflineFlyout() {
+    offline_blocking = false;
     $('.overlay').removeClass('active');
     $('#offline_flyout').removeClass('active');
 };
