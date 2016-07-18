@@ -101,6 +101,12 @@ $(function() {
             self.triggerCommand(command);
         };
 
+        self.systemServiceRestart = function() {
+            var dialog = {'title': 'Restart system service', 'text': 'You are about to restart the background printer services.', 'question' : 'Do you want to continue?'};
+            var command = {'actionSource': 'custom', 'action': 'restart_service', 'name': 'Restart service', confirm: dialog};
+            self.triggerCommand(command);
+        };
+
         self.onUserLoggedIn = function(user) {
             if (user.admin) {
                 self.requestData();
