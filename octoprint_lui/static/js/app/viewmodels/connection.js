@@ -130,6 +130,10 @@ $(function() {
                 }
             });
         };
+
+        self.onDataUpdaterReconnect = function () {
+            location.reload();
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
