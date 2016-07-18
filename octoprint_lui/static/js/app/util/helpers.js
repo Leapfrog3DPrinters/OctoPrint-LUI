@@ -620,3 +620,25 @@ function changeTabTo(tab){
     var icon_link =$('#' + icon );
     $(icon_link).addClass('active');
 }
+
+function showOfflineFlyout(title, text, reconnectCallback) {
+    if (title == undefined) {
+        title = gettext("Server is offline");
+    }
+
+    $('#offline_title').text(title);
+    $('#offline_text').html(text);
+    $('#offline_reload').click(reconnectCallback);
+
+
+    // We might need a seperate overlay for this due to warnings
+    // Being in the back and screwing with it. Great explanation Pim.
+    $('.overlay').addClass('active');
+    $('#offline_flyout').addClass('active');
+
+};
+
+function hideOfflineFlyout() {
+    $('.overlay').removeClass('active');
+    $('#offline_flyout').removeClass('active');
+};
