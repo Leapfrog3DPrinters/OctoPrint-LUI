@@ -283,8 +283,6 @@ $(function () {
                 amount: amount * 1000,
                 profileName: profileName
             }).success(function() {
-                $('#maintenance_filament').removeClass('active');
-                $('#maintenance_control').addClass('active');
                 $.notify({
                     title: gettext("Filament information updated"),
                     text: _.sprintf(gettext('New material: "%(material)s". New amount: "%(amount)s"'), {material: profileName, amount: amount})},
@@ -424,8 +422,8 @@ $(function () {
             self.rightFilament(self.filaments().find(function (x) { return x.tool() === "tool0" }).material.name());
             self.leftAmount(self.filaments().find(function (x) { return x.tool() === "tool1" }).amount());
             self.rightAmount(self.filaments().find(function (x) { return x.tool() === "tool0" }).amount());
-            self.updateLeftAmount(self.leftAmount() / 1000);
-            self.updateRightAmount(self.rightAmount() / 1000);
+            self.updateLeftAmount(Math.round(self.leftAmount() / 1000));
+            self.updateRightAmount(Math.round(self.rightAmount() / 1000));
         }
 
         self.requestData = function () {
@@ -435,9 +433,16 @@ $(function () {
         };
 
         self.onSettingsShown = function() {
-            self.requestData().success(function(){
-                self.updateLeftTemperatureProfile(self.leftFilament());
-                self.updateRightTemperatureProfile(self.rightFilament());
+            self.requestData().success(function () {
+
+                var leftName = self.leftFilament();
+                var left = self.materialProfiles().find(function (x) { return x.name == leftName; });
+                self.updateLeftTemperatureProfile(left);
+
+                var rightName = self.rightFilament();
+                var right = self.materialProfiles().find(function (x) { return x.name == rightName; });
+                self.updateRightTemperatureProfile(right);
+
             });
         };
 
@@ -447,7 +452,7 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
       FilamentViewModel,
       ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel"],
-      ["#filament_status", "#filament_flyout", "#maintenance_filament", "#materials_settings_flyout_content"]
+      ["#filament_status", "#filament_flyout", "#filament_override_flyout", "#materials_settings_flyout_content"]
     ]);
 
 });

@@ -48,6 +48,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Model specific variables
         self.model = None
 
+        mac_path = os.path.expanduser('~')
+
         self.paths = {
             "Xeed" : {
                 "update": "/home/lily/" ,
@@ -63,8 +65,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             "MacDebug" : 
             {
-                "update": "/Users/pim/lpfrg/",
-                "media": "/Users/pim/lpfrg/GCODE/"
+                "update": "{mac_path}/lpfrg/".format(mac_path=mac_path),
+                "media": "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path),
             },
             "WindowsDebug" : {
                 "update": "C:\\Users\\erikh\\OneDrive\\Programmatuur\\",
@@ -212,15 +214,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_filament_amount()
 
         ##~ Usernames that cannot be removed
-        self.reserved_usernames = ['local']
+        self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel']
 
         ##~ Bed calibration positions
+        ## TODO: Make these dynamic. Maybe extend with Z and use it as generic positions table?
         self.manual_bed_calibration_positions = dict()
         self.manual_bed_calibration_positions["Bolt"] = []
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 0, 'Y': 350 }) # 0=Top left
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 365, 'Y': 350 }) # 1=Top right
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 0, 'Y': 0 }) # 2=Bottom left 
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 365, 'Y': 0 }) #3=Bottom right
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 50, 'Y': 300, 'mode': 'normal' }) # 0=Top left
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 315, 'Y': 300, 'mode': 'normal' }) # 1=Top right
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 50, 'Y': 50, 'mode': 'normal' }) # 2=Bottom left 
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 315, 'Y': 50, 'mode': 'normal' }) #3=Bottom right
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 175, 'mode': 'mirror' }) #4=Center
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
     def update_info_list(self, force=False):
@@ -372,10 +376,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     begin_homing = [],
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
+                    copy_gcode_to_usb = ["filename"],
                     copy_timelapse_to_usb = ["filename"],
                     start_calibration = ["calibration_type"],
-                    save_calibration_values = ["width_correction", "extruder_offset_y"],
-                    move_to_calibration_corner = [],
+                    set_calibration_values = ["width_correction", "extruder_offset_y"],
+                    restore_calibration_values = [],
+                    move_to_calibration_position = [],
                     start_print = ["mode"],
                     unselect_file = [],
                     trigger_debugging_action = [] #TODO: Remove!
@@ -407,19 +413,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.start_print()
 
 
-    def _on_api_command_move_to_calibration_corner(self, corner_num):
+    def _on_api_command_move_to_calibration_position(self, corner_num):
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
         
         self.set_movement_mode("absolute")
 
         if self.model == "Bolt":
-            self._printer.commands(["M605 S1"])
+            if corner["mode"] == 'normal':
+                self._printer.commands(["M605 S0"])
+            elif corner["mode"] == 'mirror':
+                self._printer.commands(["M605 S3"])
 
         self._printer.home(['x', 'y', 'z'])
         self._printer.change_tool(corner["tool"])
         self._printer.commands(['G1 Z5'])
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
         self._printer.commands(['G1 Z0'])
+
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S1"])
 
         self.restore_movement_mode()
 
@@ -483,15 +495,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.calibration_type = None
             self._restore_timelapse()
 
-    def _on_api_command_save_calibration_values(self, width_correction, extruder_offset_y):
+    def _on_api_command_set_calibration_values(self, width_correction, extruder_offset_y, persist = False):
         if self.model == "Bolt":
             self._printer.commands("M219 S%d" % width_correction)
             self._printer.commands("M50 Y%d" % extruder_offset_y)
-            self._printer.commands("M500");
+
+        if persist:
+            self._printer.commands("M500")
 
         # Read back from machine (which may constrain the correction value) and store
         self._get_machine_info()
-            
+
+    def _on_api_command_restore_calibration_values(self):
+        self._printer.commands("M501")
+        # Read back from machine (which may constrain the correction value) and store
+        self._get_machine_info()
 
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -824,19 +842,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r 
 
-    def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
-        if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
-
-        if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
-            return make_response("Not allowed to copy this file", 400)
-
-        timelapse_folder = self._settings.global_get_basefolder("timelapse")
-        full_path = os.path.realpath(os.path.join(timelapse_folder, filename))
-        
-        if not full_path.startswith(timelapse_folder) or not os.path.exists(full_path):
-             return make_response("File not found", 404)   
-
+    def _copy_file_to_usb(self, filename, src_path, dst_folder, message_progress):
         # Loop through all directories in the media folder and find the mount with most free space
         bytes_available = 0
         drive_folder = None
@@ -859,79 +865,102 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 drive_folder = mount_path
         
         # Check if it is enough free space for the video file   
-        timelapse_size = os.path.getsize(full_path)
+        filesize = os.path.getsize(src_path)
 
-        if timelapse_size > bytes_available:
+        if filesize > bytes_available:
             return make_response("Insuffient space available on USB drive", 400)
 
         if drive_folder is None:
             return make_response("Insuffient space available on USB drive", 400)
      
-        timelapses_path = os.path.join(drive_folder, "Leapfrog-timelapses")
-        new_full_path = os.path.join(timelapses_path, filename)
+        folder_path = os.path.join(drive_folder, dst_folder)
+        new_full_path = os.path.join(folder_path, filename)
 
-        self._logger.info("Copying timelapse to: %s" % new_full_path);
+        self._logger.info("Copying file to: %s" % new_full_path);
         
         # Helpers to check copying status
-        def on_timelapse_copy():
+        def on_file_copy():
             newsize = float(os.path.getsize(new_full_path))
-            totalsize = float(os.path.getsize(full_path))
+            totalsize = float(os.path.getsize(src_path))
             if totalsize > 0:
                 percentage = newsize/totalsize * 100.0
             else:
                 percentage = 0
-            self._logger.info("Timelapse copy progress: %f" % percentage)
-            self._send_client_message("timelapse_copy_progress", { "percentage" : percentage })
+            self._logger.info("File copy progress: %f" % percentage)
+            self._send_client_message(message_progress, { "percentage" : percentage })
     
         is_copying = True
 
-        def is_copying_timelapse():
+        def is_copying_file():
             return is_copying
 
-        def timelapse_copying_finished():
-            self._send_client_message("timelapse_copy_progress", { "percentage" : 0 })
+        def file_copying_finished():
+            self._send_client_message(message_progress, { "percentage" : 0 })
 
         # Start monitoring copy status
-        timer = RepeatedTimer(1, on_timelapse_copy, run_first = False, condition = is_copying_timelapse, on_finish = timelapse_copying_finished)
+        timer = RepeatedTimer(1, on_file_copy, run_first = False, condition = is_copying_file, on_finish = file_copying_finished)
         timer.start()
 
         try:
             #Create directory, if needed
-            if not os.path.isdir(timelapses_path):
-                os.mkdir(timelapses_path)
+            if not os.path.isdir(folder_path):
+                os.mkdir(folder_path)
             
             import shutil
-            shutil.copy2(full_path, new_full_path)
+            shutil.copy2(src_path, new_full_path)
         except Exception as e:
             timer.cancel()
             return make_response("File error during copying: %s" % e.message, 500)
         finally:
              is_copying = False
 
-        make_response("OK", 200)
+        return make_response("OK", 200)
+
+
+    def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
+        if not self.is_media_mounted:
+            return make_response("Could not access the media folder", 400)
+
+        if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
+            return make_response("Not allowed to copy this file", 400)
+
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+        src_path = os.path.join(timelapse_folder, filename)
+
+        self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress")
+
+    def _on_api_command_copy_gcode_to_usb(self, filename, *args, **kwargs):
+        if not self.is_media_mounted:
+            return make_response("Could not access the media folder", 400)
+
+        if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
+            return make_response("Not allowed to copy this file", 400)
+
+        uploads_folder = self._settings.global_get_basefolder("uploads")
+        src_path = os.path.join(uploads_folder, filename)
+
+        self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", "gcode_copy_progress")
 
     ##~ Load and Unload methods
 
     def load_filament(self, tool):
-      
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
             # Always set load_amount to 0
             self.load_amount = 0
+            self.set_extrusion_mode("relative")
            
             if self.loading_for_purging:
                 self._logger.info("load_filament for purging")
-                load_initial=dict(amount=16.67, speed=2000)
+                load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
                 self.load_amount_stop = 2
                 self.loading_for_purging = False
             elif self.model == "Xeed": ## Switch on model for filament loading
                 self._logger.info("load_filament for Xeed")
-                ## This is xeed load function, TODO: Bolt! function and switch
-
                 # We can set one change of extrusion and speed during the timer
                 # Start with load_initial and change to load_change at load_change['start']
-                load_initial=dict(amount=16.67, speed=2000)
+                load_initial=dict(amount=17.0, speed=2000)
                 load_change=dict(start=1900, amount=2.5, speed=300)
 
                 # Total amount being loaded
@@ -939,11 +968,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.info("load_filament for Bolt")
                 # Bolt loading
-                load_initial=dict(amount=16.67, speed=2000)
+                load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
-                self.load_amount_stop = 2
+                self.load_amount_stop = 50
 
-            self.set_extrusion_mode("relative")
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
                                                     load_filament_partial, 
@@ -960,6 +988,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.load_filament_timer is None:
             ## This is xeed load function, TODO: Bolt! function and switch
             self.load_amount = 0
+            self.set_extrusion_mode("relative")
+
             if self.model == "Xeed":
                 # We can set one change of extrusion and speed during the timer
                 # Start with load_initial and change to load_change at load_change['start']
@@ -972,8 +1002,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Bolt stuff
                 unload_initial=dict(amount= -2.5, speed=300)
                 unload_change = None
-                self.load_amount_stop = 45 # TODO test this
-            self.set_extrusion_mode("relative")
+                self.load_amount_stop = 80 # 
+
+            # Before unloading, always purge the machine 4 mm 
+            self._printer.commands(["G1 E4 F300"])
+
+            # Start unloading
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
             self.load_filament_timer = RepeatedTimer(0.5, 
                                                     unload_filament_partial, 
@@ -1624,7 +1658,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_networkmanager = {
                 "action": "update_networkmanager",
                 "name": "Update NetworkManager",
-                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_networkmanager)
@@ -1634,7 +1668,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_octoprint = {
                 "action": "update_octoprint",
                 "name": "Update OctoPrint",
-                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_octoprint)
@@ -1644,7 +1678,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_flasharduino = {
                 "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
-                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_flasharduino)
@@ -1654,7 +1688,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_gcoderender = {
                 "action": "update_gcoderender",
                 "name": "Update Gcode Render Module",
-                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py install",
+                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_gcoderender)

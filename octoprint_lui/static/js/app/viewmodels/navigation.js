@@ -12,8 +12,6 @@ $(function() {
             self.flyout.showFlyout('login')
                 .done(function () {
                 })
-                .fail(function() {console.log("Close or Overlay")})
-                .always(function() {console.log("Always Login")});
             };
         }
 

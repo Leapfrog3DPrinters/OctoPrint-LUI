@@ -295,20 +295,27 @@ input[type=checkbox] {
 
 .check_toggle label {
   display: block;
-  width: 50%;
+  width: 100%;
   height: 100%;
-
-  transition: all .4s ease;
   cursor: pointer;
   position: absolute;
   top: 0px;
-  left: 3px;
+  left: 0px;
   z-index: 1;
-  background: $main-color;
-
 }
 
-.check_toggle input[type=checkbox]:checked + label {
+.check_toggle label:before {
+  background-color: $main-color;
+  content: '';
+  display: block;
+  width: 50%;
+  height: 100%;
+  left: 0px;
+  transition: all .4s ease;
+  position: absolute;
+}
+
+.check_toggle input[type=checkbox]:checked + label:before {
   left: 43px;
 }
 
@@ -475,12 +482,13 @@ input[type=radio] {
   }
 }
 
-.flyout_content {
+/*.flyout_content {
   display: none;
   &.active {
     display: inline-block;
   }
-}
+}*/
+
 
 .flyout-header {
   background-color: $main-color;
@@ -512,6 +520,9 @@ input[type=radio] {
 .flyout-close {
   cursor: pointer;
   float: right;
+  font-size: 1.1em;
+  font-weight: 700;
+  padding-left: 30px;
 }
 
 .disabled {
@@ -1034,6 +1045,7 @@ input:not([type=submit]):not([type=file]) {
   font-size: 1em;
   padding-left: 10px;
   min-width: 0;
+  user-select: none;
 }
 
 select {
@@ -1313,6 +1325,7 @@ pre code {
   position:relative;
   background-image: repeating-linear-gradient(0deg,transparent,transparent 40px,#CCC 40px,#CCC 41px),repeating-linear-gradient(-90deg,transparent,transparent 20px,#CCC 20px,#CCC 21px);
   background-size: 41px 41px;
+  width: 100%;
 }
 
 .print_area {
@@ -1328,6 +1341,10 @@ pre code {
   z-index: 1;
   position: absolute;
   opacity: 0.4;
+}
+
+.fa-main-color {
+  color: $main-color;
 }
 
 /* Startup */
@@ -1439,7 +1456,7 @@ ul.height-calibrator
   li
   {
     text-align: left;
-    width: 350px;
+    width: 300px;
     height: 30px;
     list-style-type: none;
     background: linear-gradient(to bottom, rgba(255,255,255,0) 40%, $main-color 40%, $main-color 60%, rgba(255,255,255,0) 60%);
@@ -1466,10 +1483,12 @@ ul.height-calibrator
 /* Bed calibration */
 $bed-padding: 1em;
 $corner-size: 25px;
+$bed-width: 220px;
+$bed-height: 180px;
 .bed-canvas
 {
-  width: 180px;
-  height: 175px;
+  width: $bed-width;
+  height: $bed-height;
   background-color: $off-white;
   border: 3px solid lighten($main-color, 30%);
   border-radius: 10px;
@@ -1489,6 +1508,12 @@ $corner-size: 25px;
   &:hover, &.active
   {
     border-color: $color-ok;
+  }
+
+  &.center
+  {
+    top: ($bed-height - $corner-size - 5px)/2;
+    left: ($bed-width - $corner-size - 5px)/2;
   }
   
   &.top

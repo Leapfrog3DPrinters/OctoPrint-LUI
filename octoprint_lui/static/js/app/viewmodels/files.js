@@ -483,6 +483,15 @@ $(function () {
 
         };
 
+        self.copyToUsb = function(file)
+        {
+            if (!file) {
+                return;
+            }
+
+            self._sendApi({ command: "copy_gcode_to_usb", filename: file.name });
+        }
+
         self.removeFile = function (file) {
             if (!file) {
                 return;
@@ -599,7 +608,7 @@ $(function () {
 
             // Create grid 
             var grid = "<div class='Table-row'><div class='Table-item'>";
-            grid += _.sprintf(gettext("<div class='grid' style='width: %(profile.maxX).2fpx; height: %(profile.maxY).2fpx;'>"), formatData);
+            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(profile.maxX).2fpx; height: %(profile.maxY).2fpx;'>"), formatData);
 
             // We can only print half X with sync and mirror mode
             if (mode == "sync" || mode == "mirror") {
@@ -1113,6 +1122,7 @@ $(function () {
                 console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_ready":
+                        self.gcodePreviews.push(messageData.filename.toLowerCase());
                         self.refreshPrintPreview(messageData.filename, messageData.url);
                         break;
                 }
@@ -1129,6 +1139,10 @@ $(function () {
 
                         break;
                     case "media_file_copy_progress":
+                        self.setProgressBar(messageData.percentage);
+                        break;
+
+                    case "gcode_copy_progress":
                         self.setProgressBar(messageData.percentage);
                         break;
 
