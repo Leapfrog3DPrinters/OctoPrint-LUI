@@ -1713,6 +1713,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             }
             actions.append(reboot)
 
+        ## Add restart service
+        if not is_variable_in_dict('restart_service', actions):
+            restart_service = {
+                "action": "restart_service",
+                "name": "Restart service",
+                "command": "sudo service octoprint restart",
+                "confirm": True
+            }
+            actions.append(restart_service)
+
         self._settings.global_set(["system", "actions"], actions)
 
     def _get_profile_from_name(self, profileName):
