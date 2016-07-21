@@ -568,7 +568,7 @@ $(function() {
     noUiSlider.create(slider, {
         start: 330,
         step: 1,
-        behaviour: 'snap',
+        behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,
@@ -587,7 +587,7 @@ $(function() {
     noUiSlider.create(fdSlider, {
         start: 330,
         step: 1,
-        behaviour: 'snap',
+        behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,

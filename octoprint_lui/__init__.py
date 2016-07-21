@@ -1492,8 +1492,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def move_to_maintenance_position(self):
         self.set_movement_mode("absolute")
         # First home X and Y 
-        self._printer.home(['x', 'y', 'z'])
-        self._printer.commands(['G1 Z200'])
+        self._printer.home(['x', 'y'])
+        self._printer.commands(['G1 Z200 F4000'])
         if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
         self.restore_movement_mode()
