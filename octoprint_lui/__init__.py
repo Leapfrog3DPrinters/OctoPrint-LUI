@@ -381,7 +381,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
                     restore_calibration_values = [],
-                    move_to_calibration_position = [],
+                    move_to_calibration_position = ["corner_num"],
+                    restore_from_calibration_position = [],
                     start_print = ["mode"],
                     unselect_file = [],
                     trigger_debugging_action = [] #TODO: Remove!
@@ -424,6 +425,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             elif corner["mode"] == 'mirror':
                 self._printer.commands(["M605 S3"])
 
+        self._printer.commands(["M84 S300"]) # Set stepper disable timeout to 5min
         self._printer.home(['x', 'y', 'z'])
         self._printer.change_tool(corner["tool"])
         self._printer.commands(['G1 Z5'])
@@ -434,6 +436,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["M605 S1"])
 
         self.restore_movement_mode()
+
+    def _on_api_command_restore_from_calibration_position(self):
+        self._printer.home(['y', 'x'])
+
+        if self.model == "Bolt":
+            self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
+            self._printer.commands(["M84"]) # And disable them right away for now
 
     def _on_api_command_start_calibration(self, calibration_type):
         self.calibration_type = calibration_type

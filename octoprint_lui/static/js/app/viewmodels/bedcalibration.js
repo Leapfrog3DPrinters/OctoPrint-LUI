@@ -47,12 +47,12 @@ $(function () {
         self.accept = function()
         {
             if (self.autoBedCalibrationComplete()) {
-                OctoPrint.printer.home(['x', 'y']);
+                self.restoreFromCalibrationPosition();
                 self.resetState(); // Return to main screen, so user may start z-offset
             }
             else {
                 if (self.showManualBedCalibration())
-                    OctoPrint.printer.home(['x', 'y']);
+                    self.restoreFromCalibrationPosition();
                 self.flyout.closeFlyoutAccept();
             }
         }
@@ -78,6 +78,10 @@ $(function () {
         self.moveToCorner = function(cornerNum)
         {
             self._sendApi({ "command": "move_to_calibration_position", "corner_num": cornerNum });
+        }
+
+        self.restoreFromCalibrationPosition = function (cornerNum) {
+            self._sendApi({ "command": "restore_from_calibration_position"});
         }
 
         $('.bed-canvas-item').click(function () {

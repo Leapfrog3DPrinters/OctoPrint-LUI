@@ -27,7 +27,7 @@ $(function() {
             var dialog = {'title': title, 'text': text, 'question' : question};
 
             self.flyout.showConfirmationFlyout(dialog, true)
-                .always(function(){
+                .done(function () {
                     self.moveToFilamentLoadPosition();
 
                     self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterMaintenance);
@@ -42,7 +42,7 @@ $(function() {
             var dialog = {'title': title, 'text': text, 'question' : question};
 
             self.flyout.showConfirmationFlyout(dialog, true)
-                .always(function(){
+                .done(function(){
                     self.moveToCleanBedPosition();
 
                     self.flyout.showInfo('Maintenance position', 'Press OK when you are done with cleaning the bed. This will home the printer.', false, self.afterMaintenance);

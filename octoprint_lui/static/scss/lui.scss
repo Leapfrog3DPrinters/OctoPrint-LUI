@@ -1192,9 +1192,15 @@ select {
   min-height:55px;
 }
 
-.file_status, .file_info, .file_print {
+.file_status, .file_info {
   display:flex;
   flex: 0 0 55px;
+  text-align: right;
+}
+
+.file_print {
+  display:flex;
+  flex: 0 0 150px;
   text-align: right;
 }
 

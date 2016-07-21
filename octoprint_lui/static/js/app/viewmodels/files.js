@@ -731,7 +731,10 @@ $(function () {
         };
 
         self.templateFor = function (data) {
-            return "files_template_" + data.type;
+            if (data.origin == "usb" && data.type == "machinecode")
+                return "files_template_usb_" + data.type;
+            else
+                return "files_template_" + data.type;
         };
 
         self.templateForSelect = function (data) {
