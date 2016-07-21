@@ -1112,6 +1112,25 @@ select {
   padding-left: 0.5em;
 }
 
+.file-search-input-container
+{
+    display: flex;
+
+    .button-area
+    {
+        flex: auto;
+        i
+        {
+            padding-left: 0.4em;
+        }
+    }
+    input
+    {
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+}
+
 .file_sort{
   flex-basis: 5%;
   margin-left:auto;
@@ -1210,6 +1229,7 @@ select {
 .file_add_info_content {
   padding:5px;
   flex-grow: 4;
+  font-size: 90%;
 }
 
 .file_add_info_buttons {

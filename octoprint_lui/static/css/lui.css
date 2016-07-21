@@ -892,6 +892,16 @@ select {
   flex-basis: 60%;
   padding-left: 0.5em; }
 
+.file-search-input-container {
+  display: flex; }
+  .file-search-input-container .button-area {
+    flex: auto; }
+    .file-search-input-container .button-area i {
+      padding-left: 0.4em; }
+  .file-search-input-container input {
+    padding-top: 7px;
+    padding-bottom: 7px; }
+
 .file_sort {
   flex-basis: 5%;
   margin-left: auto; }
@@ -972,7 +982,8 @@ select {
 
 .file_add_info_content {
   padding: 5px;
-  flex-grow: 4; }
+  flex-grow: 4;
+  font-size: 90%; }
 
 .file_add_info_buttons {
   align-self: center;

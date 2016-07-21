@@ -789,21 +789,21 @@ $(function () {
                 if (data["gcodeAnalysis"]["filament"] && typeof (data["gcodeAnalysis"]["filament"]) == "object") {
                     var filament = data["gcodeAnalysis"]["filament"];
                     if (_.keys(filament).length == 1) {
-                        output += gettext("Filament") + ": " + formatFilament(data["gcodeAnalysis"]["filament"]["tool" + 0]) + "<br>";
+                        output += "<strong>" + gettext("Filament") + ":</strong><br/>" + formatFilament(data["gcodeAnalysis"]["filament"]["tool" + 0]) + "<br>";
                     } else if (_.keys(filament).length > 1) {
                         for (var toolKey in filament) {
                             if (!_.startsWith(toolKey, "tool") || !filament[toolKey] || !filament[toolKey].hasOwnProperty("length") || filament[toolKey]["length"] <= 0) continue;
 
-                            output += gettext("Filament") + " (" + gettext("Tool") + " " + toolKey.substr("tool".length) + "): " + formatFilament(filament[toolKey]) + "<br>";
+                            output += "<strong>" + gettext("Filament ") + "</strong> (" + (toolKey == 'tool0' ? 'Right' : 'Left') + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
                         }
                     }
                 }
-                output += gettext("Estimated Print Time") + ": " + formatDuration(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
+                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatDuration(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
             }
             if (data["prints"] && data["prints"]["last"]) {
-                output += gettext("Last Printed") + ": " + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
+                output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
                 if (data["prints"]["last"]["lastPrintTime"]) {
-                    output += gettext("Last Print Time") + ": " + formatDuration(data["prints"]["last"]["lastPrintTime"]);
+                    output += "<strong>">gettext("Last Print Time") + ":</strong><br/>" + formatDuration(data["prints"]["last"]["lastPrintTime"]);
                 }
             }
             return output;
@@ -824,6 +824,11 @@ $(function () {
                     return item.path.toLowerCase() == filename.toLowerCase();
                 }
             }, false);
+        }
+
+        self.clearQuery = function()
+        {
+            self.searchQuery(undefined);
         }
 
         self.performSearch = function (e) {
