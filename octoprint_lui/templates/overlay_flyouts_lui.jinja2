@@ -3,7 +3,7 @@
   <aside id="printer_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="printer_settings_flyout_content" class="flyout_content">
@@ -27,7 +27,7 @@
   <aside id="materials_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -52,7 +52,7 @@
   <aside id="wireless_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
 
@@ -73,7 +73,7 @@
   <aside id="users_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="users_settings_flyout_content" class="flyout_content">
@@ -92,7 +92,7 @@
   <aside id="advanced_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -117,7 +117,7 @@
   <aside id="update_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -137,7 +137,7 @@
   <aside id="maintenance_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -157,7 +157,7 @@
   <aside id="webcam_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -182,8 +182,8 @@
 </div> <!-- end settings flyouts -->
   <aside id="login_flyout" class="flyout">
     <div class="flyout-header">
-      <h4>Login</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+    <h4>System</h4>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="login_flyout_content">
@@ -226,15 +226,15 @@
   <aside id="filament_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Filament</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="filament_flyout_content">
         {% include "flyouts_lui/filament_flyouts/filament_flyout.jinja2" %}
       </div>
       <ul class="button-area">
-        <li class="button">
-          <a href="#save" data-bind="click: flyout.closeFlyout">
+        <li class="button failed-button">
+          <a href="#abort" data-bind="click: flyout.closeFlyout">
             <span data-bind="">Abort</span>
           </a>
         </li>
@@ -244,7 +244,7 @@
   <aside id="firmware_file_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Firmware files</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="firmware_file_flyout_content">
@@ -262,7 +262,7 @@
   <aside id="info_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Info</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="info_flyout_content">
@@ -280,7 +280,7 @@
   <aside id="zoffset_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Z-offset Wizard</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="zoffset_flyout_content">
@@ -337,7 +337,7 @@
   <aside id="mode_select_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Start print</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">x</span>
+      <span class="flyout-close" data-bind="click: flyout.closeFlyout">&times;</span>
     </div>
     <div class="flyout-body">
       <div id="mode_select_flyout_content">
@@ -429,135 +429,167 @@
       </li>
     </ul>
   </div>
-  
 </aside>
-  <aside id="confirmation_flyout" class="flyout">
-    <div class="flyout-header">
-      <h4>Confirmation</h4>
-    </div>
-    <div class="flyout-body">
-      <div id="info_flyout_content">
-        <div class="Table">
-          <div class="Table-row Table-header">
-            <div class="Table-item">
-              <div data-bind="text: confirmation_title"></div>
-            </div>
+<aside id="confirmation_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>Confirmation</h4>
+  </div>
+  <div class="flyout-body">
+    <div id="info_flyout_content">
+      <div class="Table">
+        <div class="Table-row Table-header">
+          <div class="Table-item">
+            <div data-bind="text: confirmation_title"></div>
           </div>
-          <div class="Table-row">
-            <div class="Table-item">
-              <div id="confirmation_text" data-bind="text: confirmation_text"></div>
-            </div>
+        </div>
+        <div class="Table-row">
+          <div class="Table-item">
+            <div id="confirmation_text" data-bind="text: confirmation_text"></div>
           </div>
-          <div class="Table-row">
-            <div class="Table-item">
-              <div id="confirmation_question" data-bind="text: confirmation_question"></div>
-            </div>
+        </div>
+        <div class="Table-row">
+          <div class="Table-item">
+            <div id="confirmation_question" data-bind="text: confirmation_question"></div>
           </div>
-          <div class="Table-row">
-            <div class="Table-item">
-              <ul class="button-area">
-                <li class="button failed-button">
-                  <a href="#save" data-bind="click: function() { confirmationDeferred.reject() }">
-                    <span>Cancel</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="Table-item">
-              <ul class="button-area">
-                <li class="button ok-button">
-                  <a href="#save" data-bind="click: function() { confirmationDeferred.resolve() }">
-                    <span>Confirm</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
+        </div>
+        <div class="Table-row">
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button failed-button">
+                <a href="#save" data-bind="click: function() { confirmationDeferred.reject() }">
+                  <span>Cancel</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button ok-button">
+                <a href="#save" data-bind="click: function() { confirmationDeferred.resolve() }">
+                  <span>Confirm</span>
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
-  </aside>
-  <div id="warnings_container">
-    <div data-bind="template: { name: 'warning-template', foreach: warnings }">
-    </div>
-    <script type="text/html" id="warning-template">
-      <aside class="flyout warning_flyout active">
-        <div class="flyout-header bg-yellow">
-          <h4>
-            <i class="fa fa-exclamation-triangle"></i>Warning
-          </h4>
-        </div>
-        <div class="flyout-body">
-          <div id="info_flyout_content">
-            <div class="Table">
-              <div class="Table-row Table-header">
-                <div class="Table-item">
-                  <div data-bind="text: warning_title"></div>
-                </div>
-              </div>
-              <div class="Table-row">
-                <div class="Table-item">
-                  <div id="warning_text" data-bind="html: warning_text"></div>
-                </div>
-              </div>
-              <!-- ko if: !blocking -->
-              <div class="Table-row">
-                <div class="Table-item">
-                  <ul class="button-area">
-                    <li class="button ok-button">
-                      <a href="#save" data-bind="click: function() { $root.closeLastWarning() }">
-                        <span>OK</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <!-- /ko -->
-            </div>
+  </div>
+</aside>
+<aside id="offline_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4><i class="fa fa-exclamation-triangle"></i>Service Offline</h4>
+  </div>
+  <div class="flyout-body">
+    <div id="offline_flyout_content">
+      <div class="Table">
+        <div class="Table-row Table-header">
+          <div class="Table-item">
+            <div id="offline_title"></div>
           </div>
         </div>
-      </aside>
-    </script>
-  </div>
-  <div id="infos_container">
-    <div data-bind="template: { name: 'info-template', foreach: infos }">
-    </div>
-    <script type="text/html" id="info-template">
-      <aside class="flyout info_flyout active">
-        <div class="flyout-header bg-green">
-          <h4>
-            <i class="fa fa-info"></i>Information
-          </h4>
-        </div>
-        <div class="flyout-body">
-          <div id="info_flyout_content">
-            <div class="Table">
-              <div class="Table-row Table-header">
-                <div class="Table-item">
-                  <div data-bind="text: info_title"></div>
-                </div>
-              </div>
-              <div class="Table-row">
-                <div class="Table-item">
-                  <div id="info_text" data-bind="text: info_text"></div>
-                </div>
-              </div>
-              <!-- ko if: !blocking -->
-              <div class="Table-row">
-                <div class="Table-item">
-                  <ul class="button-area">
-                    <li class="button ok-button">
-                      <a href="#save" data-bind="click: function() { $root.closeLastInfo() }">
-                        <span>OK</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <!-- /ko -->
-            </div>
+        <div class="Table-row">
+          <div class="Table-item">
+            <div id="offline_text"></div>
           </div>
         </div>
-      </aside>
-    </script>
+{#      Out for now   
+        <div class="Table-row">
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button ok-button">
+                <a id="#offline_reload"">
+                  <span>Reload</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div> #}
+      </div>
+    </div>
   </div>
+</aside>
+<div id="warnings_container">
+  <div data-bind="template: { name: 'warning-template', foreach: warnings }">
+  </div>
+  <script type="text/html" id="warning-template">
+    <aside class="flyout warning_flyout active">
+      <div class="flyout-header bg-yellow">
+        <h4>
+          <i class="fa fa-exclamation-triangle"></i>Warning
+        </h4>
+      </div>
+      <div class="flyout-body">
+        <div id="info_flyout_content">
+          <div class="Table">
+            <div class="Table-row Table-header">
+              <div class="Table-item">
+                <div data-bind="text: warning_title"></div>
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <div id="warning_text" data-bind="html: warning_text"></div>
+              </div>
+            </div>
+            <!-- ko if: !blocking -->
+            <div class="Table-row">
+              <div class="Table-item">
+                <ul class="button-area">
+                  <li class="button ok-button">
+                    <a href="#save" data-bind="click: function() { $root.closeLastWarning() }">
+                      <span>OK</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
+    </aside>
+  </script>
+</div>
+<div id="infos_container">
+  <div data-bind="template: { name: 'info-template', foreach: infos }">
+  </div>
+  <script type="text/html" id="info-template">
+    <aside class="flyout info_flyout active">
+      <div class="flyout-header bg-green">
+        <h4>
+          <i class="fa fa-info"></i>Information
+        </h4>
+      </div>
+      <div class="flyout-body">
+        <div id="info_flyout_content">
+          <div class="Table">
+            <div class="Table-row Table-header">
+              <div class="Table-item">
+                <div data-bind="text: info_title"></div>
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <div id="info_text" data-bind="text: info_text"></div>
+              </div>
+            </div>
+            <!-- ko if: !blocking -->
+            <div class="Table-row">
+              <div class="Table-item">
+                <ul class="button-area">
+                  <li class="button ok-button">
+                    <a href="#save" data-bind="click: function() { $root.closeLastInfo() }">
+                      <span>OK</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
+    </aside>
+  </script>
+</div>

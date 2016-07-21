@@ -101,7 +101,7 @@ $(function () {
             var command = { 'actionSource': 'custom', 'action': data.action(), 'name': data.name(), confirm: dialog };
             self.system.triggerCommand(command)
                 .done(function () {
-                    self.system.systemReboot();
+                    self.system.systemServiceRestart();
                 });
         };
 
@@ -117,7 +117,7 @@ $(function () {
                 self.updateCounter++;
 
                 if (self.updateCounter == self.updateTarget)
-                    self.system.systemReboot();
+                    self.system.systemServiceRestart();
                 else
                     return self._updateNext();
             }
@@ -128,7 +128,7 @@ $(function () {
                         self.updateCounter++;
 
                         if (self.updateCounter == self.updateTarget)
-                            self.system.systemReboot();// TODO: Show spinner that system is rebooting
+                            self.system.systemServiceRestart();// TODO: Show spinner that system is rebooting
                         else
                             self._updateNext();
                     }).fail(function () {
