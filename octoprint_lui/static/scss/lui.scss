@@ -1251,12 +1251,12 @@ select {
 
 .file_add_info_buttons {
   align-self: center;
-  flex-grow: 1;
+  flex-basis: 150px;
 }
 
 .file_add_info_preview
 {
-    flex-grow: 1;
+    flex-basis: 150px;
      align-items: flex-start; /* Chrome aspect ratio fix */
 }
 
