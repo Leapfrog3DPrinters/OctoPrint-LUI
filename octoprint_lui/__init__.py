@@ -620,6 +620,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Loading has already started, so just cancel the loading 
         # which will stop heating already.
         self._printer.home(['y', 'x'])
+        self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
+        self._printer.commands(["M84"]) # And disable them right away for now
+
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
         # Other wise we haven't started loading yet, so cancel the heating 
@@ -634,6 +637,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_change_filament_done(self, *args, **kwargs):
         # Still don't know if this is the best spot TODO
         self._printer.home(['y', 'x'])
+        self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
+        self._printer.commands(["M84"]) # And disable them right away for now
         self._printer.set_temperature(self.filament_change_tool, 0.0) 
         self._logger.info("Change filament done called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
@@ -1504,7 +1509,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_movement_mode("absolute")
         # First home X and Y 
         self._printer.home(['x', 'y'])
-        self._printer.commands(['G1 Z200 F4000'])
+        self._printer.commands(['G1 Z180 F3000'])
         if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
         self.restore_movement_mode()
@@ -1536,7 +1541,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["G1 Z%f F1200" % self.z_before_filament_load]) 
 
     def move_to_filament_load_position(self):
-        self._logger.info('move_to_filament_load_position')        
+        self._logger.debug('move_to_filament_load_position')        
         self.set_movement_mode("absolute")
         
         self.z_before_filament_load = self._printer._currentZ
@@ -1545,12 +1550,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         if self.model == "Bolt":
-            self._printer.commands(["M605 S0"])
+            self._printer.commands(["M605 S3"]) # That reads: more awesomeness.
+            self._printer.commands(["M84 S300"]) # Set stepper disable timeout to 5min
             self._printer.home(['x', 'y'])
-            self._printer.change_tool("tool1")
             self._printer.commands(["G1 X30 F10000"])
-            self._printer.change_tool("tool0")
-            self._printer.commands(["G1 X330 F10000"])
             self._printer.commands(["G1 Y1 F15000"])
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)

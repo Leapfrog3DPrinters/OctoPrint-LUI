@@ -1,7 +1,16 @@
 <div class="Table">
     <div class="Table-row Table-header"> 
         <div class="Table-item">
-            <div>Swapping filament: <span data-bind="text: toolText"></span></div>    
+          <!-- ko if: forPurge() -->
+          <div>
+            Purging: <span data-bind="text: toolText"></span>
+          </div>
+          <!-- /ko-->
+          <!-- ko if: !forPurge() -->
+          <div>
+            Swapping filament: <span data-bind="text: toolText"></span>
+          </div>    
+          <!-- /ko-->
         </div>
     </div>
     <div class="Table-row " id="swap-info">

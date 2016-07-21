@@ -17,13 +17,15 @@ $(function() {
     self.warnings = ko.observableArray([]);
     self.infos = ko.observableArray([]);
 
-    self.showWarning = function(title, message, blocking)
+    self.showWarning = function(title, message, blocking, callback)
     {
         var blocking = blocking || false;
+        var callback = callback || function () { };
         warningVm = {
             warning_title: title,
             warning_text: message,
-            blocking: blocking
+            blocking: blocking,
+            callback: callback
         };
 
         self.warnings.push(warningVm);
@@ -53,12 +55,15 @@ $(function() {
         }
     }
 
-    self.showInfo = function (title, message, blocking) {
+    self.showInfo = function (title, message, blocking, callback) {
         var blocking = blocking || false;
+        var callback = callback || function () { };
+
         infoVm = {
             info_title: title,
             info_text: message,
-            blocking: blocking
+            blocking: blocking,
+            callback: callback
         };
 
         self.infos.push(infoVm);

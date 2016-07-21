@@ -498,7 +498,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button ok-button">
-                <a id="#offline_reload"">
+                <a id="#offline_reload">
                   <span>Reload</span>
                 </a>
               </li>
@@ -537,7 +537,7 @@
               <div class="Table-item">
                 <ul class="button-area">
                   <li class="button ok-button">
-                    <a href="#save" data-bind="click: function() { $root.closeLastWarning() }">
+                    <a href="#save" data-bind="click: function() { callback(); $root.closeLastWarning() }">
                       <span>OK</span>
                     </a>
                   </li>
@@ -579,7 +579,7 @@
               <div class="Table-item">
                 <ul class="button-area">
                   <li class="button ok-button">
-                    <a href="#save" data-bind="click: function() { $root.closeLastInfo() }">
+                    <a href="#save" data-bind="click: function() { callback(); $root.closeLastInfo() }">
                       <span>OK</span>
                     </a>
                   </li>
