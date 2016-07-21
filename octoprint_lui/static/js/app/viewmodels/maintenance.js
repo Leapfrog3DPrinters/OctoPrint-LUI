@@ -29,6 +29,9 @@ $(function() {
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){
                     self.moveToFilamentLoadPosition();
+
+                    self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false)
+                        .done(self.afterMaintenance);
                 });
         };
 
@@ -42,8 +45,16 @@ $(function() {
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){
                     self.moveToCleanBedPosition();
+
+                    self.flyout.showInfo('Maintenance position', 'Press OK when you are done with cleaning the bed. This will home the printer.', false)
+                        .done(self.afterMaintenance);
                 });
         };
+
+        self.afterMaintenance = function()
+        {
+            OctoPrint.printer.home(['x', 'y']);
+        }
 
         self.calibrateExtruders = function () {
             self.flyout.closeFlyoutAccept();

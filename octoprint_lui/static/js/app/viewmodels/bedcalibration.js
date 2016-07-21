@@ -46,10 +46,15 @@ $(function () {
 
         self.accept = function()
         {
-            if (self.autoBedCalibrationComplete())
+            if (self.autoBedCalibrationComplete()) {
+                OctoPrint.printer.home(['x', 'y']);
                 self.resetState(); // Return to main screen, so user may start z-offset
-            else
+            }
+            else {
+                if (self.showManualBedCalibration())
+                    OctoPrint.printer.home(['x', 'y']);
                 self.flyout.closeFlyoutAccept();
+            }
         }
 
         self.startManualBedCalibration = function()

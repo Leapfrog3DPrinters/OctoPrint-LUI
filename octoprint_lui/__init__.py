@@ -446,8 +446,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         abs_path = self._copy_calibration_file(calibration_src_filename)
 
         if abs_path:
+            self._printer.commands(["M605 S1"])
+            self._preheat_for_calibration()
             self._printer.select_file(abs_path, False, True)
     
+    def _preheat_for_calibration(self):
+        
+        for tool in ["tool0", "tool1"]:
+            temp = self.filament_database.get(self._filament_query.tool == tool)["material"]["extruder"]
+            self.heat_to_temperature(tool, temp)
+            
+
     def _copy_calibration_file(self, calibration_src_filename):
         calibration_src_path = None
         calibration_dst_filename = "calibration.gcode"
@@ -1461,7 +1470,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     except: self._logger.exception("Something went horribly wrong on reaching the target temperature")
                 del self.callbacks[:]
 
-    def heat_to_temperature(self, tool, temp, callback):
+    def heat_to_temperature(self, tool, temp, callback = None):
         """
         Heat tool up to temp and execute callback when tool is declared READY
         """
@@ -1473,12 +1482,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.info("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
         if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool] == "READY"):
-            callback(tool)
+            if callback:
+                callback(tool)
             self.send_client_heating()
             return
 
-        with self.callback_mutex:
-            self.callbacks.append(callback)
+        if callback:
+            with self.callback_mutex:
+                self.callbacks.append(callback)
 
         self._printer.set_temperature(tool, temp)
         self.send_client_heating()
@@ -1557,7 +1568,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
             octoprint.server.fileManager.add_storage("usb", self.usb_storage)
         except:
-            self._logger.exception("Could not add USB storage")
+            self._logger.warning("Could not add USB storage")
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
         
@@ -1732,7 +1743,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         try:
             number_of_dirs = len(get_immediate_subdirectories(self.media_folder)) > 0;
         except:
-            self._logger.exception("Could not read USB")
+            self._logger.warning("Could not read USB")
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
 

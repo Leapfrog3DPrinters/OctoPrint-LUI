@@ -264,7 +264,7 @@ $(function () {
 
         self.onSettingsShown = function () {
             // TODO: Ensure all setting flyouts have this check
-            if ($('#webcam_settings_flyout_content').hasClass('active')) {
+            if (self.settings.settingsTopic() == "Webcam") {
                 self.requestData();
                 self.refreshPreview();
             }

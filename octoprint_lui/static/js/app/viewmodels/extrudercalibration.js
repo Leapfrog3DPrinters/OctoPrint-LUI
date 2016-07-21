@@ -7,6 +7,11 @@ $(function () {
         self.settings = parameters[2];
         self.flyout = parameters[3];
         self.printerState = parameters[4];
+        self.filament = parameters[5];
+
+        self.mayStartLargeCalibration = ko.pureComputed(function () {
+            return self.filament.leftFilament() != "None" && self.filament.rightFilament() != "None"
+        });
 
         self.smallYAxisCorrection = ko.observable(0);
 
@@ -58,10 +63,10 @@ $(function () {
         });
 
         self.startLargeExtruderCalibration = function () {
-            //TODO: Check if both extruders are loaded
+            deferEventNotifications = true;
 
             // First set calibration at 0, 0
-            setCalibration(0, 0, false).done(function () {
+            self.setCalibration(0, 0, false).done(function () {
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
             });
             
@@ -114,7 +119,7 @@ $(function () {
         self.onCalibrationPrintFailed = function (calibration_type) {
             self.restoreState();
 
-            $.notify({ title: 'Calibration failed', text: 'An error has occured while printing the calibration patterns. Please try again.' }, "error");
+            //$.notify({ title: 'Calibration failed', text: 'An error has occured while printing the calibration patterns. Please try again.' }, "error");
         }
 
         self.restoreCalibration = function () {
@@ -134,6 +139,8 @@ $(function () {
         }
 
         self.saveCalibration = function () {
+            OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
+
             self.setCalibration(self.bedWidthCorrection(), self.smallYAxisCorrection(), true)
                 .done(function ()
                 {
@@ -148,13 +155,17 @@ $(function () {
 
         self.abort = function ()
         {
+            OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
+
             if (self.isPrintingCalibration()) {
-                OctoPrint.job.cancel();
+                OctoPrint.job.cancel();    
+            }
+            
+            if (self.calibrationProcessStarted()) {
                 self._sendApi({ command: "unselect_file" });
             }
 
-            if (!self.calibrationProcessStarted())
-                self.flyout.closeFlyoutAccept();
+            self.flyout.closeFlyoutAccept();
         }
 
         self.restoreState = function()
@@ -166,12 +177,15 @@ $(function () {
             self.smallYCalibrationCompleted(false);
             self.smallCalibrationPrepared(false);
 
+            deferEventNotifications = false;
+
             self.restoreCalibration();
         }
 
         self.onExtrudercalibrationFlyoutShown = function () {
             self.restoreState();
             self.requestData();
+
         }
 
         self.requestData = function () {
@@ -246,7 +260,7 @@ $(function () {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "filamentViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#extrudercalibration_flyout"]

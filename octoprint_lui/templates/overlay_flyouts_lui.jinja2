@@ -36,9 +36,14 @@
       </div>
       <!-- /ko -->
       <ul class="button-area">
+        <li class="button secondary-button">
+          <a href="#cancel" data-bind="click: flyout.closeFlyout">
+            <span>Cancel</span>
+          </a>
+        </li>
         <li class="button">
-          <a href="#close" data-bind="click: flyout.closeFlyout">
-            <span>Close</span>
+          <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+            <span>Save</span>
           </a>
         </li>
       </ul>
@@ -321,9 +326,9 @@
             <span>Abort</span>
           </a>
         </li>
-        <li class="button ok-button" data-bind="visible: mayAccept">
+        <li class="button" data-bind="visible: mayAccept">
           <a href="#save" data-bind="click: accept, disabled: mayAccept">
-            <span>OK</span>
+            <span>Close</span>
           </a>
         </li>
       </ul>

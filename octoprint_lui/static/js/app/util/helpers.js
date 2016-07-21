@@ -267,6 +267,11 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
         // set result list
         self.items(result);
+
+        // If not at the first page and the resulting page would be empty, move one page backwards
+        var currentPage = self.currentPage();
+        if (self.paginatedItems().length == 0 && currentPage > 0)
+            self.changePage(currentPage--);
     };
 
     //~~ local storage

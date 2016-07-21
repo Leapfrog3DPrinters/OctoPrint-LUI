@@ -568,22 +568,6 @@ $(function() {
                 .always(function () {
                     callViewModels(self.allViewModels, "onSettingsHidden");
                 });
-
-            //var settings_topic = "#" + topic +'_settings_flyout_content';
-            //var $settings_topic_content = $(settings_topic);
-            //$settings_topic_content.addClass('active');
-            //self.settingsTopic(capitalize(topic));
-            //callViewModels(self.allViewModels, "onSettingsShown");
-            //return self.flyout.showFlyout('settings', blocking)
-            //    .done(function () {
-            //        self.saveData();
-            //    })
-            //    .fail(function() {})
-            //    .always(function() {
-            //        $settings_topic_content.removeClass('active')
-            //        callViewModels(self.allViewModels, "onSettingsHidden");
-
-            //    });
         };
 
         // Sending custom commands to the printer, needed for level bed for example.
