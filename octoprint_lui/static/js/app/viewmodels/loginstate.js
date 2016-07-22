@@ -119,7 +119,7 @@ $(function() {
             self.allViewModels = allViewModels;
         };
 
-        self.onDataUpdaterReconnect = function() {
+        self.onServerReconnect = function () {
             self.requestData();
         };
 

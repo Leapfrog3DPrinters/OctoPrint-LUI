@@ -7,15 +7,13 @@ $(function() {
         self.flyout = parameters[2];
         self.printerState = parameters[3];
 
-        self.showLoginFlyout = function (){
-            self.usersettings.show();  
-            self.flyout.showFlyout('login')
-                .done(function () {
-                })
-            };
+
+        self.showLoginFlyout = function () {
+            self.usersettings.show();
+            self.flyout.showFlyout('login');
         }
 
-        self.onUserLoggedOut = function() {
+        self.onUserLoggedOut = function () {
             location.reload();
         }
 
@@ -23,15 +21,16 @@ $(function() {
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
             OctoPrint.postJson(url, data);
-        };
+        }
 
         //TODO: Remove!
-        self.doDebuggingAction = function()
-        {
+        self.doDebuggingAction = function () {
             self._sendApi({
                 command: "trigger_debugging_action"
             });
         }
+
+    }
 
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,

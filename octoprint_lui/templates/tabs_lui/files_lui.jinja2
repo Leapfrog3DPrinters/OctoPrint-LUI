@@ -108,6 +108,21 @@
             </ul>
           </div>
         </div>
+        <div class="loading" data-bind="visible: !isLoadingFileList() && currentOrigin() == 'local' && listHelper.allSize() == 0">
+          <div class="file_entry">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#file_name">
+                  {% if local_addr %}
+                  <span class="no_files">There are no files on your printer yet. You can load files from a USB drive.</span>
+                  {% else %}
+                  <span class="no_files">There are no files on your printer yet. Click upload to load a file from your computer..</span>
+                  {% endif %}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
         <div class="file_list"  data-bind="visible: !isLoadingFileList()">
           <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
             <ul class="file_main" style="background-color: #f2f2f2">

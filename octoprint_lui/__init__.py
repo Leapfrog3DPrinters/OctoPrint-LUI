@@ -705,7 +705,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             try:
                 files = octoprint.server.fileManager.list_files("usb", filter=filter, recursive = True)["usb"].values() 
             except Exception as e:
-                return make_response("Could access the media folder", 500)
+                return make_response("Could not access the media folder", 500)
             
             
             # Decorate them            
@@ -801,17 +801,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         def on_selected_usb_file_copy():
             percentage = (float(os.path.getsize(futureFullPath)) / float(os.path.getsize(path))) * 100.0
-            self._logger.info("Copy progress: %f" % percentage)
+            self._logger.debug("Copy progress: %f" % percentage)
             self._send_client_message("media_file_copy_progress", { "percentage" : percentage })
     
         is_copying = True
 
         def is_copying_selected_usb_file():
             return is_copying
-            #return os.path.getsize(path) > os.path.getsize(futureFullPath)
 
         def copying_finished():
-            self._send_client_message("media_file_copy_progress", { "percentage" : 0 })
+            self._send_client_message("media_file_copy_complete")
 
         # Start watching the final file to monitor it's filesize
         timer = RepeatedTimer(1, on_selected_usb_file_copy, run_first = False, condition = is_copying_selected_usb_file, on_finish = copying_finished)
@@ -826,6 +825,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 return make_response("Could not upload the file \"{}\", invalid type".format(upload.filename), 400)
             else:
                 return make_response("Could not upload the file \"{}\"".format(upload.filename), 500)   
+        finally:
+             self._send_client_message("media_file_copy_failed")
 
         # Stop the timer
         is_copying = False
@@ -854,7 +855,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 				"origin": octoprint.filemanager.FileDestinations.LOCAL,
 				"refs": {
 					"resource": location,
-					#"download": flask.url_for("index", _external=True) + "downloads/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + filename
                     "download": "downloads/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(filename)
 				}
 			}
@@ -865,7 +865,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r 
 
-    def _copy_file_to_usb(self, filename, src_path, dst_folder, message_progress):
+    def _copy_file_to_usb(self, filename, src_path, dst_folder, message_progress, message_complete, message_failed):
         # Loop through all directories in the media folder and find the mount with most free space
         bytes_available = 0
         drive_folder = None
@@ -909,7 +909,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 percentage = newsize/totalsize * 100.0
             else:
                 percentage = 0
-            self._logger.info("File copy progress: %f" % percentage)
+            self._logger.debug("File copy progress: %f" % percentage)
             self._send_client_message(message_progress, { "percentage" : percentage })
     
         is_copying = True
@@ -918,7 +918,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return is_copying
 
         def file_copying_finished():
-            self._send_client_message(message_progress, { "percentage" : 0 })
+            self._send_client_message(message_complete)
 
         # Start monitoring copy status
         timer = RepeatedTimer(1, on_file_copy, run_first = False, condition = is_copying_file, on_finish = file_copying_finished)
@@ -933,9 +933,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             shutil.copy2(src_path, new_full_path)
         except Exception as e:
             timer.cancel()
+            
             return make_response("File error during copying: %s" % e.message, 500)
         finally:
-             is_copying = False
+            is_copying = False
+            self._send_client_message(message_failed)
 
         return make_response("OK", 200)
 
@@ -950,7 +952,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         timelapse_folder = self._settings.global_get_basefolder("timelapse")
         src_path = os.path.join(timelapse_folder, filename)
 
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress")
+        self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress", "timelapse_copy_complete", "timelapse_copy_failed")
 
     def _on_api_command_copy_gcode_to_usb(self, filename, *args, **kwargs):
         if not self.is_media_mounted:
@@ -962,7 +964,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         uploads_folder = self._settings.global_get_basefolder("uploads")
         src_path = os.path.join(uploads_folder, filename)
 
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", "gcode_copy_progress")
+        self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", "gcode_copy_progress", "gcode_copy_complete", "gcode_copy_failed")
 
     ##~ Load and Unload methods
 
@@ -1795,7 +1797,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _check_for_firmware(self, path):
         result = None
-        entries = os.listdir(path)
+        try: #TODO: Check if this has a big impact on performance
+            entries = os.listdir(path)
+        except:
+            return result
+
         for entry in entries:
             entry_path = os.path.join(path, entry)
             

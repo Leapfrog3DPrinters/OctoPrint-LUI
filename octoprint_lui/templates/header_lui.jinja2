@@ -14,6 +14,10 @@
     <div class="header_status">
         Status: <span data-bind="text: printerState.stateString"></span>
     </div>
+    <div class="header_activity" data-bind="visible: printerState.currentActivity()">
+      <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
+      <span data-bind="text: printerState.currentActivity()"></span>
+    </div>
     <!--
     <div id="stop-light">
         <svg x="0px" y="0px"

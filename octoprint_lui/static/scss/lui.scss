@@ -396,6 +396,11 @@ input[type=radio] {
   margin-left: auto;
 }
 
+.header_status
+{
+    padding-right: 2em;
+}
+
 /*
   Tabs
 */
@@ -1229,6 +1234,11 @@ select {
   overflow: hidden;
   white-space: nowrap;
   min-width: 0px; 
+}
+
+.file_entry  span.no_files
+{
+    white-space: normal;
 }
 
 .file_entry .file_add_info li {

@@ -29,7 +29,24 @@
 			</div>
 		</div>
 		<!-- /ko -->
-		<div class="Table-row">
+    <div class="pagination pagination-mini pagination-centered"  data-bind="visible: listHelper.allSize() > 5">
+      <ul>
+        <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
+          <a href="javascript:void(0)" data-bind="click: listHelper.prevPage">«</a>
+        </li>
+      </ul>
+      <ul data-bind="foreach: listHelper.pages">
+        <li data-bind="css: { active: $data.number === $root.listHelper.currentPage(), disabled: $data.number === -1 }">
+          <a href="javascript:void(0)" data-bind="text: $data.text, click: function() { $root.listHelper.changePage($data.number); }"></a>
+        </li>
+      </ul>
+      <ul>
+        <li data-bind="css: {disabled: listHelper.currentPage() === listHelper.lastPage()}">
+          <a href="javascript:void(0)" data-bind="click: listHelper.nextPage">»</a>
+        </li>
+      </ul>
+    </div>
+    <div class="Table-row">
 			<div class="Table-item">
 				<ul class="button-area">
 					<li class="button" data-bind="click: function() {sendWifiRefresh(true)}, css: {disabled: working() || error() }"><a href=""><span>Rescan</span></a></li>

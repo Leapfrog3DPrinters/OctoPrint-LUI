@@ -23,6 +23,7 @@ $(function () {
 
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
+        self.currentOrigin = ko.observable("local");
 
         self.selectedFile = undefined;
 
@@ -113,6 +114,7 @@ $(function () {
             var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+                self.currentOrigin("local");
             }).always(function () { self.isLoadingFileList(false); });
         }
 
@@ -129,6 +131,7 @@ $(function () {
                 .fail(self.notifyUsbFail)
                 .then(function (response) {
                     self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+                    self.currentOrigin("usb");
                 }).always(function () { self.isLoadingFileList(false); });
         }
 
@@ -895,7 +898,7 @@ $(function () {
                 else
                     self.browseUsb();
             }
-            else if (available) {
+            else if (available && (!self.flyout.isOpen() || !self.flyout.blocking)) {
                 var text = "You have inserted a USB drive.";
                 var question = "Would you like to browse through the files?";
                 var title = "USB drive inserted"
@@ -906,6 +909,13 @@ $(function () {
                    changeTabTo("files");
                    self.browseUsb();
                });
+            }
+            else if (available)
+            {
+                $.notify({
+                    title: gettext("USB drive inserted"),
+                    text: gettext('A USB drive was found. Go to the files tab to load your files.')
+                }, "success");
             }
             else {
                 self.browseLocal();
@@ -1110,7 +1120,16 @@ $(function () {
             self.requestData(undefined, undefined, self.currentPath());
         };
 
+        self.onEventMetadataAnalysisStarted = function (payload) {
+            if (payload.name == self.printerState.filename()) {
+                self.printerState.activities.push('Analyzing');
+            }
+        };
+
         self.onEventMetadataAnalysisFinished = function (payload) {
+            if (payload.name == self.printerState.filename()) {
+                self.printerState.activities.pop('Analyzing');
+            }
             self.requestData(undefined, undefined, self.currentPath());
         };
 
@@ -1127,7 +1146,6 @@ $(function () {
             var messageData = data['data'];
 
             if (plugin == "gcoderender") {
-                console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_ready":
                         self.gcodePreviews.push(messageData.filename.toLowerCase());
@@ -1148,10 +1166,39 @@ $(function () {
                         break;
                     case "media_file_copy_progress":
                         self.setProgressBar(messageData.percentage);
+
+                        if (messageData.percentage < 100)
+                            self.printerState.activities.push('Copying');
+                        else
+                            self.printerState.activities.pop('Copying');
+
+                        break;
+                    case "media_file_copy_complete":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
+                        break;
+                    case "media_file_copy_failed":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
                         break;
 
                     case "gcode_copy_progress":
                         self.setProgressBar(messageData.percentage);
+
+                        if (messageData.percentage < 100)
+                            self.printerState.activities.push('Copying');
+                        else
+                            self.printerState.activities.pop('Copying');
+
+                        break;
+
+                    case "gcode_copy_complete":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
+                        break;
+                    case "gcode_copy_failed":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
                         break;
 
                 }
@@ -1162,6 +1209,6 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
         ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel"],
-        ["#files", "#firmware_file_flyout", "#mode_select_flyout_content"]
+        ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });
