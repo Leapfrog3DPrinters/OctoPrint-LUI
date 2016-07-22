@@ -568,7 +568,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         if (profileName == "None"):
             # The user wants to load a None profile. So we just finish the swap wizard
-            self.send_client_finished()
+            self.send_client_finished(dict(profile=None))
             return None
 
         selectedProfile = None
@@ -624,6 +624,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_change_filament_done(self, *args, **kwargs):
         # Still don't know if this is the best spot TODO
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
         self._printer.home(['y', 'x'])
         self._printer.set_temperature(self.filament_change_tool, 0.0) 
         self._logger.info("Change filament done called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
@@ -970,7 +972,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Bolt loading
                 load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
-                self.load_amount_stop = 50
+                self.load_amount_stop = 100
 
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
@@ -1002,10 +1004,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Bolt stuff
                 unload_initial=dict(amount= -2.5, speed=300)
                 unload_change = None
-                self.load_amount_stop = 80 # 
+                self.load_amount_stop = 150 # 
 
-            # Before unloading, always purge the machine 4 mm 
-            self._printer.commands(["G1 E4 F300"])
+            # Before unloading, always purge the machine 10 mm 
+            self._printer.commands(["G1 E10 F300"])
 
             # Start unloading
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
@@ -1072,7 +1074,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         }
         self.set_filament_profile(self.filament_change_tool, new_filament)
         self.update_filament_amount()
-        self.send_client_finished()
+        self.send_client_finished(dict(profile=new_filament))
 
     def _unload_filament_condition(self):
         # When unloading finished, set standard None filament.
@@ -1184,17 +1186,35 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def script_hook(self, comm, script_type, script_name):
         # The printer should get a positive number here. Altough for the user it might feel like - direction,
         # Thats how the M206 works.
+        if not script_type == "gcode":
+            return None
+
         if self.model == "Xeed":
             zoffset = -self._settings.get_float(["zoffset"])
 
-            if not script_type == "gcode":
-                return None
         
             if script_name == "beforePrintStarted":
                 return ["M206 Z%.2f" % zoffset], None
 
             if script_name == "afterPrinterConnected":
                 return ["M206 Z%.2f" % zoffset], None
+
+        if self.model == "Bolt":
+            if script_name == "beforePrintResumed":
+                return ["G1 F6000"], None
+
+            if script_name == "afterPrintPaused":
+                return ["G28 X0 Y0"], None
+
+    def gcode_queuing_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+        """
+        Removes X0, Y0 and Z0 from G92 commands
+        These commands are problamatic with different print modes.
+        """
+        if gcode and gcode == "G92":
+            cmd = re.sub('[XYZ]0 ', '', cmd)
+            return cmd,
+
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -1303,8 +1323,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _process_G28(self, cmd):
         #self._logger.info("Command: %s" % cmd)
-        self.home_command_sent = True
-        self.is_homing = True
+        if (all(c in cmd for c in 'XYZ') or cmd == "G28"):
+            self.home_command_sent = True
+            self.is_homing = True
 
     def _process_M115(self, cmd):
         #self._logger.info("Command: %s" % cmd)
@@ -1850,23 +1871,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.calibration_type:
             self._on_calibration_event(event)
 
-        if (event == "PrintFailed" or event == "PrintCancelled" or event == "PrintDone" or event == "Error"):
+        if (event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = 0.0
             self.save_filament_amount()
             self._printer.commands(["M605 S1"])
+            self._printer.home(['x', 'y'])
         
-        if (event == "PrintStarted"):
+        if (event == Events.PRINT_STARTED):
             self.current_print_extrusion_amount = [0.0, 0.0]
 
-        if(event == "PrintStarted" or event == "PrintResumed"):
+        if(event == Events.PRINT_STARTED or event == Events.PRINT_RESUMED):
             self.filament_action = False
 
-        if(event == "Connected"):
+        if(event == Events.CONNECTED):
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
 
-            
 
     ##~ Helper method that calls api defined functions
     def _call_api_method(self, command, *args, **kwargs):
@@ -1888,6 +1909,7 @@ def __plugin_load__():
 
     global __plugin_hooks__ 
     __plugin_hooks__ = {
+        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_queuing_hook,
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
         "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook,
         "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger,

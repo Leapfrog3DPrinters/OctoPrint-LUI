@@ -63,6 +63,19 @@ $(function() {
         gettext("Transfering file to SD")
     ];
 
+    //~ Initialise is touch device:
+    function isTouchDevice() {
+        return 'ontouchstart' in document.documentElement;
+    }
+
+    //~ Set menu hover css rules for non touch devices
+    if (!isTouchDevice()){
+        var style_sheet = $('link[href="/plugin/lui/static/css/lui.css"]')[0].sheet
+        addCSSRule(style_sheet, ".icon-bar a:hover", "color: #434A54; background-color: #FFFFFF;");
+        addCSSRule(style_sheet, ".icon-bar a:hover i", "color: #434A54;");
+    }
+
+
     //~~ Initialize view models
 
     // the view model map is our basic look up table for dependencies that may be injected into other view models
@@ -605,14 +618,19 @@ $(function() {
 
     var inputFormat = document.getElementById('input-format');
     var filament_percent = document.getElementById('filament_percent');
+    var newFilamentAmount = document.getElementById('new_filament_amount');
+    var newFilamentPercent = document.getElementById('new_filament_percent');
+
 
     var fdInputFormat = document.getElementById('fd-input-format');
     var fd_filament_percent = document.getElementById('fd_filament_percent');
 
     slider.noUiSlider.on('update', function( values, handle ) {
         inputFormat.value = values[handle];
+        new_filament_amount.innerText = values[handle];
         percent = ((values[handle] / 330) * 100).toFixed(0);
         filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+        new_filament_percent.innerText = percent + "%";
     });
 
     fdSlider.noUiSlider.on('update', function (values, handle) {

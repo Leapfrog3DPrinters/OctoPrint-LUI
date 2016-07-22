@@ -124,14 +124,14 @@ a {
   border-left: 0;
 }
 
-.icon-bar a:hover {
-  background-color: $second-color;
-  color: $main-color;
-}
+// .icon-bar a:hover {
+//   background-color: $second-color;
+//   color: $main-color;
+// }
 
-.icon-bar a:hover i {
-  color: $main-color;
-}
+// .icon-bar a:hover i {
+//   color: $main-color;
+// }
 
 .icon-bar .active, .icon-bar .active i  {
   background-color: $second-color;
@@ -625,7 +625,7 @@ input[type=radio] {
   flex-direction: column;
   flex-wrap: nowrap;
   justify-content: space-between;
-  border: 1px solid $dark-color;
+  border-bottom: 1px solid $dark-color;
   // font-size: 1.2rem;
   margin: 10px 0px;
   line-height: 1.5;

@@ -96,13 +96,6 @@ a {
 .icon-bar a:first-child {
   border-left: 0; }
 
-.icon-bar a:hover {
-  background-color: #ffffff;
-  color: #434A54; }
-
-.icon-bar a:hover i {
-  color: #434A54; }
-
 .icon-bar .active, .icon-bar .active i {
   background-color: #ffffff;
   color: #434A54; }
@@ -678,7 +671,7 @@ input[type=radio] {
   -webkit-justify-content: space-between;
       -ms-flex-pack: justify;
           justify-content: space-between;
-  border: 1px solid #f2f2f2;
+  border-bottom: 1px solid #f2f2f2;
   margin: 10px 0px;
   line-height: 1.5; }
   .Table-header {

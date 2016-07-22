@@ -65,6 +65,8 @@ $(function () {
             }
         });
 
+        self.filamentActionText = ko.observable(undefined);
+
         self.leftAmountString = ko.pureComputed(function () {
             if (!self.leftAmount()) {
                 return "-";
@@ -127,6 +129,7 @@ $(function () {
             self.changeFilament(tool);
 
             if (!forPurge) {
+                self.filamentActionText("Swap");
                 self.showUnload();
                 slider.noUiSlider.set(330)
 
@@ -135,7 +138,7 @@ $(function () {
             }
             else {
                 $('.swap_process_step').removeClass('active');
-
+                self.filamentActionText("Purge");
                 self.loadFilament('purge');
             }
 
@@ -145,6 +148,7 @@ $(function () {
                 // If this closes we need to reset stuff
                 self.filamentLoadProgress(0);
                 self.filamentInProgress(false);
+                self.selectedTemperatureProfile(undefined);
             })
             .done(function () {
                 self.changeFilamentDone();
@@ -363,6 +367,9 @@ $(function () {
                     self.showFinished();
                     self.hideToolLoading();
                     self.filamentLoadProgress(0);
+                    if (!messageData.profile) {
+                        self.flyout.closeFlyoutAccept();
+                    }
                     // Out for now TODO
                     // $.notify({
                     //     title: gettext("Filament loaded success!"),

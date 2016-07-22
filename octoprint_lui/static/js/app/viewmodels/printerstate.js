@@ -276,11 +276,18 @@ $(function () {
         };
 
         self.pause = function () {
-            OctoPrint.job.pause();
+            OctoPrint.job.togglePause();
         };
 
         self.cancel = function () {
-            OctoPrint.job.cancel();
+            var title = gettext("Cancel print");
+            var message = _.sprintf(gettext("You are about to cancel %(filename)s."), {filename: self.filenameNoExtension()});
+            var question = gettext("Are you sure you want to cancel this print?");
+            var dialog = {title: title, text: message, question: question};
+            self.flyout.showConfirmationFlyout(dialog)
+                .done(function(){ 
+                    OctoPrint.job.cancel()
+                });
         };
 
         self.gotoFileSelect = function () {
