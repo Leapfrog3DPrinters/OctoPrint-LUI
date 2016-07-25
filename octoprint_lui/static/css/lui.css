@@ -304,10 +304,21 @@ input[type=radio] {
   min-height: 45px; }
 
 .app-header .header_login {
-  margin-left: auto; }
+  /*margin-left: auto;*/ }
 
 .header_status {
   padding-right: 2em; }
+
+.network-status {
+  margin-right: 60px; }
+
+#ethernet_connectivity {
+  margin-left: auto; }
+
+.wifi-status {
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 5px; }
 
 /*
   Tabs
@@ -523,6 +534,8 @@ input[type=radio] {
       font-weight: 700; }
   .Table-item-right {
     text-align: right; }
+  .Table-item-right span {
+    width: 100%; }
   .Table-nested {
     flex-direction: column;
     padding-left: 0; }
@@ -1150,6 +1163,34 @@ pre code {
 /* Webcam */
 .webcam-preview {
   width: 100%; }
+
+/* Wireless */
+.clickable {
+  cursor: pointer; }
+
+.fa-signal-0 {
+  width: 0px;
+  overflow: hidden; }
+
+.fa-signal-1 {
+  width: 4px;
+  overflow: hidden; }
+
+.fa-signal-2 {
+  width: 8px;
+  overflow: hidden; }
+
+.fa-signal-3 {
+  width: 13px;
+  overflow: hidden; }
+
+.fa-signal-4 {
+  width: 17px;
+  overflow: hidden; }
+
+.fa-signal-5 {
+  width: 22px;
+  overflow: hidden; }
 
 /* Extruder calibration */
 ul.width-calibrator {

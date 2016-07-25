@@ -6,6 +6,7 @@ $(function() {
         self.usersettings = parameters[1];
         self.flyout = parameters[2];
         self.printerState = parameters[3];
+        self.settings = parameters[4];
 
 
         self.showLoginFlyout = function () {
@@ -30,11 +31,16 @@ $(function() {
             });
         }
 
+        self.onStartup = function()
+        {
+            $('.network-status a').click(function () { self.settings.showSettingsTopic('wireless') });
+        }
+
     }
 
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
-        ["loginStateViewModel", "userSettingsViewModel", "flyoutViewModel", "printerStateViewModel"],
+        ["loginStateViewModel", "userSettingsViewModel", "flyoutViewModel", "printerStateViewModel", "settingsViewModel"],
         ["#header"]
     ]);
 });

@@ -1,34 +1,30 @@
 <div id="settings_plugin_networkmanager">
-	<div id="networkmanager_connections" class="Table active">
-		<div class="Table-row Table-header">
-			<div class="Table-item Table-item-grow-2">
-				Wifi
-			</div>
-			<div class="Table-item Table-item-grow-6">
-				<span data-bind="text: wifiIp"></span>
-			</div>
-			<div class="Table-item">
-				<i class="fa fa-wifi"></i>
-			</div>
-			<div class="Table-item">
-				<i class="fa fa-signal"></i>
-			</div>
-			<div class="Table-item">
-				<i class="fa fa-key"></i>
-			</div>
-		</div>
-		<!-- ko foreach: listHelper.paginatedItems -->
-		<div class="Table-row" data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
-			<div class="Table-item Table-item-grow-8 text_wrap" data-bind="text: ssid"></div>
-			<div class="Table-item">
-				<i class="fa" data-bind="css: $root.isActive($data)"></i>
-			</div>
-			<div class="Table-item" data-bind="text: signal"></div>
-			<div class="Table-item">
-				<i class="fa" data-bind="css: $root.isEncrypted($data)"></i>
-			</div>
-		</div>
-		<!-- /ko -->
+  <div id="networkmanager_connections" class="Table active">
+    <div class="Table-row Table-header">
+      <div class="Table-item Table-item-grow-2">
+        Wifi
+      </div>
+      <div class="Table-item Table-item-right">
+        <span data-bind="text: wifiIp"></span>
+        <span data-bind="visible: working">
+          <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
+        </span>
+      </div>
+    </div>
+    <!-- ko foreach: listHelper.paginatedItems -->
+    <div class="Table-row clickable" data-bind="click: function() { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
+      <div class="Table-item Table-item-grow-8 text_wrap" data-bind="text: ssid"></div>
+      <div class="Table-item">
+        <i class="fa" data-bind="css: $root.isActive($data)"></i>
+      </div>
+      <div class="Table-item">
+        <i data-bind="attr: { class: $root.getSignalClasses($data) }"></i>
+      </div>
+      <div class="Table-item">
+        <i class="fa" data-bind="css: $root.isEncrypted($data)"></i>
+      </div>
+    </div>
+    <!-- /ko -->
     <div class="pagination pagination-mini pagination-centered"  data-bind="visible: listHelper.allSize() > 5">
       <ul>
         <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
@@ -47,62 +43,83 @@
       </ul>
     </div>
     <div class="Table-row">
-			<div class="Table-item">
-				<ul class="button-area">
-					<li class="button" data-bind="click: function() {sendWifiRefresh(true)}, css: {disabled: working() || error() }"><a href=""><span>Rescan</span></a></li>
-				</ul>
-			</div>
-			<div class="Table-item">
-				<ul class="button-area">
-					<li class="button" data-bind="click: function(){sendWifiDisconnect()}, css: {disabled: !status.connection.wifi()}"><a href=""><span>Disconnect</span></a></li>
-				</ul>
-			</div>
-		</div>
-		<div class="Table-row Table-header">
-			<div class="Table-item Table-item-grow-2">
-				Wired
-			</div>
-			<div class="Table-item Table-item-grow-6">
-				<span data-bind="text: ethernetIp"></span>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item" data-bind="text: ethernetConnectionText"></div>
-		</div>
-	</div>
-	<div id="networkmanager_connect" class="Table">
-		<div class="Table-row Table-header">
-			<div class="Table-item">
-				Connect to Wifi Network
-			</div>
-		</div>
-		<div class="Table-row ">
-			<div class="Table-item">
-				SSID:
-			</div>
-			<div class="Table-item">
-				<input type="text" placeholder="Leapfrog" data-bind="value: editorWifiSsid"></input>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				Password:
-			</div>
-			<div class="Table-item">
-				<input type="text" data-bind="value: editorWifiPassphrase1"></input>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				<ul class="button-area">
-					<li class="button secondary-button" data-bind="click: cancelWifiConfiguration"><a href=""><span>Back</span></a></li>
-				</ul>
-			</div>
-			<div class="Table-item">
-				<ul class="button-area">
-					<li class="button" data-bind="click: confirmWifiConfiguration"><a href=""><span>Connect</span></a></li>
-				</ul>
-			</div>
-		</div>
-	</div>
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="click: function() {sendWifiRefresh(true)}, css: {disabled: working() || error() }">
+            <a href="">
+              <span>Rescan</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="click: function(){sendWifiDisconnect()}, css: {disabled: working() || !status.connection.wifi()}">
+            <a href="">
+              <span>Disconnect</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="Table-row Table-header">
+      <div class="Table-item Table-item-grow-2">
+        Wired
+      </div>
+      <div class="Table-item Table-item-right">
+        <span data-bind="text: ethernetIp"></span>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item" data-bind="text: ethernetConnectionText"></div>
+    </div>
+  </div>
+  <div id="networkmanager_connect" class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item Table-item-grow-8">
+        Connect to Wifi Network
+      </div>
+      <div class="Table-item Table-item-right"  data-bind="visible: working">
+        <span>
+          <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
+        </span>
+      </div>
+    </div>
+    <div class="Table-row ">
+      <div class="Table-item">
+        SSID:
+      </div>
+      <div class="Table-item">
+        <input type="text" placeholder="Leapfrog" data-bind="value: editorWifiSsid"></input>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        Password:
+      </div>
+      <div class="Table-item">
+        <input type="text" data-bind="value: editorWifiPassphrase1"></input>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button secondary-button" data-bind="click: cancelWifiConfiguration">
+            <a href="">
+              <span>Back</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="click: confirmWifiConfiguration, css: {disabled: working() || !editorWifiPassphrase1() || editorWifiPassphrase1() == '' }">
+            <a href="">
+              <span>Connect</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>
