@@ -130,17 +130,17 @@ $(function () {
             return "-"
         });
 
-        self.stateStepString = ko.computed(function () {
-            if (self.temperatureState.isHeating()) return "Heating";
-            return self.stateString();
-        });
+        // self.stateStepString = ko.computed(function () {
+        //     if (self.temperatureState.isHeating()) return "Heating";
+        //     return self.stateString();
+        // });
 
-        self.stateStepColor = ko.computed(function () {
-            if (self.temperatureState.isHeating()) return "bg-orange"
-            if (self.isPrinting()) return "bg-main"
-            if (self.isError()) return "bg-red"
-            return "bg-none"
-        });
+        // self.stateStepColor = ko.computed(function () {
+        //     if (self.temperatureState.isHeating()) return "bg-orange"
+        //     if (self.isPrinting()) return "bg-main"
+        //     if (self.isError()) return "bg-red"
+        //     return "bg-none"
+        // });
 
 
         self.fileSelected = ko.computed(function () {

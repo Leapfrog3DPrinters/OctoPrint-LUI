@@ -118,11 +118,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         ##~ Temperature status 
-        self.tool_status = {
-            'tool0': 'IDLE',
-            'tool1': 'IDLE',
-            'bed':'IDLE'
-        }
+        self.tool_status = [
+            {'name': 'Right', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
+            {'name': 'Left', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
+            {'name': 'Bed', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
+        ]
+
         self.old_temperature_data = None
         self.current_temperature_data = None
         self.temperature_window = 3
@@ -353,7 +354,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'filaments': self.filament_database.all(),
                 'is_homed': self.is_homed,
                 'is_homing': self.is_homing,
-                'reserved_usernames': self.reserved_usernames
+                'reserved_usernames': self.reserved_usernames,
+                'tool_status': self.tool_status
                 })
             return jsonify(result)
 
@@ -1161,6 +1163,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def send_client_levelbed_progress(self, max_correction_value):
         self._send_client_message('levelbed_progress', { "max_correction_value" : max_correction_value })
 
+    def send_client_tool_status(self):
+        self._send_client_message('tool_status', {"tool_status": self.tool_status})
+
     ## ~ Save helpers
     def set_filament_profile(self, tool, profile):
         self.filament_database.update(profile, self._filament_query.tool == tool)
@@ -1179,7 +1184,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.last_saved_filament_amount = deepcopy(self.filament_amount)
 
     def set_filament_amount(self, tool):
-        tool_num = int(tool[len("tool"):])
+        tool_num = self._get_tool_num(tool)
         self.filament_database.update({'amount': self.filament_amount[tool_num]}, self._filament_query.tool == tool)
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
@@ -1466,15 +1471,29 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # process the status
             if not heating and data["actual"] <= 35:
                    status = "IDLE"
+                   text = "Idle"
+                   css_class = "bg-main"
             elif stable:
                    status = "READY"
-            elif delta > 0:
+                   text = "Ready"
+                   css_class = "bg-green"
+            elif abs_delta > 0:
                    status = "HEATING"
+                   text = "Heating"
+                   css_class = "bg-orange"
             else:
                    status = "COOLING"
+                   text = "Cooling"
+                   css_class = "bg-yellow"
 
-            self.tool_status[tool] = status           
+            tool_num = self._get_tool_num(tool)
+
+            self.tool_status[tool_num]['status'] = status
+            self.tool_status[tool_num]['text'] = text
+            self.tool_status[tool_num]['css_class'] = css_class         
             self.change_status(tool, status)
+            self.send_client_tool_status()
+
 
     def change_status(self, tool, new_status):
         """
@@ -1498,7 +1517,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         self._logger.info("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
-        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool] == "READY"):
+        tool_num = self._get_tool_num(tool)
+
+        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool_num]['status'] == "READY"):
             callback(tool)
             self.send_client_heating()
             return
@@ -1508,6 +1529,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._printer.set_temperature(tool, temp)
         self.send_client_heating()
+
+    def _get_tool_num(self, tool):
+        if tool == "bed":
+            tool_num = 2
+        else:
+            tool_num = int(tool[len("tool"):])
+
+        return tool_num
 
     ##~ Printer Control functions
     def move_to_maintenance_position(self):

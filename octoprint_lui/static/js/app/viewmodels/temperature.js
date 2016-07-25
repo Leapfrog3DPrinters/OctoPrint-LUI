@@ -35,32 +35,16 @@ $(function() {
         self.temperature_cutoff = self.settingsViewModel.temperature_cutoff;
 
         self.heaterOptions = ko.observable({});
-        self.toolStatus = ko.observableArray([
-            {status: ko.observable(),
-            text: ko.observable(),
-            color: ko.observable()
-            },
-            {status: ko.observable(),
-            text: ko.observable(),
-            color: ko.observable()
-            },
-            {status: ko.observable(),
-            text: ko.observable(),
-            color: ko.observable()
-            }
-            ]);
+        self.toolStatus = ko.mapping.fromJS([]);
         self.tempLoaded = ko.observable(false);
 
-        self.toolProgress = ko.observableArray([]);
 
         self.rightProgress = ko.observable(undefined);
         self.leftProgress = ko.observable(undefined);
         self.bedProgress = ko.observable(undefined);
+        self.totalProgress = ko.observable(undefined)
 
-        self.rightStatusString = ko.observable(undefined);
-        self.leftStatusString = ko.observable(undefined);
-        self.bedStatusString = ko.observable(undefined);
-
+        self.isHeating = ko.observable(false);
 
         self.loadingText = ko.computed(function() {
             if (self.tempLoaded()) 
@@ -148,6 +132,10 @@ $(function() {
                 return;
 
             var lastData = data[data.length - 1];
+            var totalActual = 0;
+            var totalTarget = 0;
+
+
 
             var tools = self.tools();
             for (var i = 0; i < tools.length; i++) {
@@ -155,23 +143,36 @@ $(function() {
                     tools[i]["actual"](lastData["tool" + i].actual);
                     tools[i]["target"](lastData["tool" + i].target);
                 }
+                if (i === 0) {
+                    self.rightProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["actual"]()));
+                } else if (i === 1) {
+                    self.leftProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["actual"]()));
+                }
+                if (tools[i]["target"] !== 0) {
+                    totalTarget += tools[i]["target"]();
+                    totalActual += tools[i]["actual"]();
+                }
             }
 
             if (lastData.hasOwnProperty("bed")) {
                 self.bedTemp["actual"](lastData.bed.actual);
                 self.bedTemp["target"](lastData.bed.target);
+                self.bedProgress(self.heatingProgress(lastData.bed.actual, lastData.bed.target));
             }
 
+            if (self.bedTemp["target"]() !== 0) {
+                totalTarget += self.bedTemp["target"]();
+                totalActual += self.bedTemp["actual"]();
+            }
+
+            self.totalProgress(self.heatingProgress(totalActual, totalTarget));
+
             self.temperatures = self._processTemperatureData(serverTime, data, self.temperatures);
-            //self.updatePlot();
-            self.setToolStatus();
             self.tempLoaded(true);
         };
 
         self._processTemperatureHistoryData = function(serverTime, data) {
             self.temperatures = self._processTemperatureData(serverTime, data);
-            //updatePlot
-            self.setToolStatus();
         };
 
         self._processOffsetData = function(data) {
@@ -227,29 +228,17 @@ $(function() {
             return result;
         };
 
-        self.isToolCooling = function (actual, target) {
-            if (actual > 50 && target < actual - 10) 
-                return true
-        };
-
-        self.isToolHeating = function (actual, target) {
-            if (actual < target - 2 && target > 40)
-                return true
-        }
-
-        self.isToolReady = function(actual, target) {
-            if(Math.abs(actual - target) < 3 && target > 40)
-                 return true
-        };
-
-        self.isToolSwapReady = function (actual, target) {
-            if (target - actual < 3)
-                return true
-        };
-
-        self.isToolIdle = function (actual, target) {
-            if (target === 0 && actual < 50)
-                return true
+        self.returnProgressString = function(data) {
+            switch (data.name()){
+                case "Left":
+                    return self.leftProgress();
+                case "Right":
+                    return self.rightProgress();
+                case "Bed":
+                    return self.bedProgress();
+                default:
+                    return 0;
+            };
         }
 
         self.heatingProgress = function(actual, target) {
@@ -260,58 +249,6 @@ $(function() {
             var result = (progress <= 100) ? progress : 100;
             return result;
         }
-
-        self.returnToolTemperature = function(tool, type) {
-            if (tool < self.tools().length) 
-                return self.tools()[tool][type]();
-            return self.bedTemp[type]();
-        }
-
-        self.setToolStatus = function() {
-            var tools = self.tools();
-            var toolStatus = self.toolStatus();
-            var toolProgress = self.toolProgress();
-
-            for (var i = 0; i < tools.length + 1; i++) {
-                var actual = self.returnToolTemperature(i, "actual");
-                var target = self.returnToolTemperature(i, "target");
-
-                if (self.isToolCooling(actual, target) ) {
-                    toolStatus[i].status("COOLING");
-                    toolStatus[i].text("Cooling...");
-                    toolStatus[i].color("bg-yellow");
-                }
-                else if ( self.isToolHeating(actual, target) ) {
-                    toolStatus[i].status("HEATING");
-                    toolStatus[i].text("Heating...");
-                    toolStatus[i].color("bg-orange");
-                }
-                else if (self.isToolReady(actual, target) ) {
-                    toolStatus[i].status("READY");
-                    toolStatus[i].text("");
-                    toolStatus[i].color("bg-green");
-                }
-                else if (self.isToolIdle(actual, target)){
-                    toolStatus[i].status("IDLE");
-                    toolStatus[i].text("");
-                    toolStatus[i].color("bg-main");
-                }
-               toolProgress[i] = self.heatingProgress(actual, target);
-            }
-            self.toolProgress(toolProgress);
-            self.toolStatus(toolStatus);
-        };
-
-
-        self.isHeating = ko.pureComputed(function(){
-                var toolStatus = self.toolStatus()
-                for (var i = 0; i < toolStatus.length; i++) {
-                    if (toolStatus[i].status() == "HEATING") {
-                        return true
-                    }
-                }
-                return false
-        });
 
 
         self.setTarget = function(item) {
@@ -413,10 +350,46 @@ $(function() {
             }
         };
 
+        self._processHeatingStatus = function(tool_status){
+            self.isHeating(_.some(tool_status, {'status': 'HEATING'}));         
+        };
+
         self.onAfterTabChange = function(current, previous) {
             if (current != "#temp") {
                 return;
             }
+        }
+
+        self.onDataUpdaterPluginMessage = function(plugin, data) {
+            if (plugin != "lui") {
+                return;
+            }
+
+            var messageType = data['type'];
+            var messageData = data['data'];
+
+            switch (messageType) {
+                case "tool_status":
+                    ko.mapping.fromJS(messageData.tool_status, self.toolStatus); 
+                    self._processHeatingStatus(messageData.tool_status);
+                    break;
+            }
+        };
+
+        self.requestData = function () {
+            OctoPrint.simpleApiGet('lui', {
+                success: self.fromResponse
+            });
+        };
+
+        self.fromResponse = function(data) {
+            ko.mapping.fromJS(data.tool_status, self.toolStatus);
+            self._processHeatingStatus(data.tool_status);
+
+        };
+
+        self.onAfterBinding = function(){
+            self.requestData();
         }
 
     }

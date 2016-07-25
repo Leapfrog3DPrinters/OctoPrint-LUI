@@ -4,33 +4,16 @@
         <div class="Table-row Table-header">
             <div class="Table-item Table-item-grow-7">Temperature</div>
         </div>
+        <!-- ko foreach: toolStatus -->
         <div class="Table-row">
-            <div class="Table-item Table-item-grow-3">Left</div>
+            <div class="Table-item Table-item-grow-3" data-bind="text: name"></div>
             <div class="Table-item Table-item-grow-8">
                 <div class="progress">
-                    <span style="width: 0%" data-bind="text: toolStatus()[1].text, style: { width: toolProgress()[1] + '%'}, visible: isOperational(), css: toolStatus()[1].color"></span>
-                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
-                </div>
+                    <span style="width: 0%" data-bind="text: text, style: { width: $parent.returnProgressString($data) + '%'}, visible: $parent.isOperational(), css: css_class"></span>
+              </div>
             </div>
         </div>
-        <div class="Table-row">
-            <div class="Table-item Table-item-grow-3">Right</div>
-            <div class="Table-item Table-item-grow-8">
-                <div class="progress">
-                    <span data-bind="text: toolStatus()[0].text, style: { width: toolProgress()[0] + '%'}, visible: isOperational(), css: toolStatus()[0].color"></span>
-                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
-                </div>
-            </div>
-        </div>
-        <div class="Table-row">
-            <div class="Table-item Table-item-grow-3">Bed</div>
-            <div class="Table-item Table-item-grow-8">
-                <div class="progress">
-                    <span style="width: 0%" data-bind="text: toolStatus()[2].text, style: { width: toolProgress()[2] + '%'}, visible: isOperational(), css: toolStatus()[2].color"></span>
-                    <span class="bg-none" data-bind="text: loadingText, style: {width: '100%'}"></span>
-                </div>
-            </div>
-        </div>
+        <!-- /ko -->
     </div> 
 </div>
 {% if not local_addr %}
