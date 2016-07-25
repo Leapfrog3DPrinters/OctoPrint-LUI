@@ -514,6 +514,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._restore_timelapse()
 
     def _on_api_command_set_calibration_values(self, width_correction, extruder_offset_y, persist = False):
+        self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
+        
         if self.model == "Bolt":
             self._printer.commands("M219 S%d" % width_correction)
             self._printer.commands("M50 Y%d" % extruder_offset_y)

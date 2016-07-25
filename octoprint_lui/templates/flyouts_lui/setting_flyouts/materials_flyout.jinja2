@@ -1,9 +1,15 @@
 <div class="Table">
     <div class="Table-row Table-header">
-        <div class="Table-item">Material</div>
-        <div class="Table-item">Extruder</div>
-        <div class="Table-item">Bed</div>
-        <div class="Table-item">Action</div>
+        <div class="Table-item">
+          <span style="width: 100%; text-align: left;">Material</span>
+        </div>
+        <div class="Table-item">
+          <span style="width: 100%; text-align: center;">Extruder (&deg;C)</span>
+        </div>
+        <div class="Table-item">
+          <span style="width: 100%; text-align: center;">Bed (&deg;C)</span>
+        </div>
+        <div class="Table-item"></div>
     </div>
     <!-- ko keyboardForeach: settings.temperature_profiles -->
     <div class="Table-row" data-bind="css: {disabled: $parent.disableRemove($data)}">

@@ -67,6 +67,7 @@ $(function () {
 
             // First set calibration at 0, 0
             self.setCalibration(0, 0, false).done(function () {
+                console.log("Calibration set to 0, 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
             });
             
@@ -81,6 +82,7 @@ $(function () {
 
             // Send the large bed width correction to the printer and print the small calibration
             self.setCalibration(self.largeBedWidthCorrection(), 0, false).done(function () {
+                console.log("Calibration set to " + self.largeBedWidthCorrection() + ", 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_small" });
             });
 
@@ -162,6 +164,7 @@ $(function () {
             }
             
             if (self.calibrationProcessStarted()) {
+                console.log("Unselecting file");
                 self._sendApi({ command: "unselect_file" });
             }
 
