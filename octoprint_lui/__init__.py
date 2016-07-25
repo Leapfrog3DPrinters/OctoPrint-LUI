@@ -118,11 +118,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         ##~ Temperature status 
-        self.tool_status = {
-            'tool0': 'IDLE',
-            'tool1': 'IDLE',
-            'bed':'IDLE'
-        }
+        self.tool_status = [
+            {'name': 'Right', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
+            {'name': 'Left', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
+            {'name': 'Bed', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
+        ]
+
         self.old_temperature_data = None
         self.current_temperature_data = None
         self.temperature_window = 3
@@ -353,7 +354,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'filaments': self.filament_database.all(),
                 'is_homed': self.is_homed,
                 'is_homing': self.is_homing,
-                'reserved_usernames': self.reserved_usernames
+                'reserved_usernames': self.reserved_usernames,
+                'tool_status': self.tool_status
                 })
             return jsonify(result)
 
@@ -588,7 +590,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         if (profileName == "None"):
             # The user wants to load a None profile. So we just finish the swap wizard
-            self.send_client_finished()
+            self.send_client_finished(dict(profile=None))
             return None
 
         selectedProfile = None
@@ -647,6 +649,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_change_filament_done(self, *args, **kwargs):
         # Still don't know if this is the best spot TODO
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
         self._printer.home(['y', 'x'])
         self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
         self._printer.commands(["M84"]) # And disable them right away for now
@@ -997,7 +1001,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Bolt loading
                 load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
-                self.load_amount_stop = 50
+                self.load_amount_stop = 100
 
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
@@ -1029,10 +1033,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Bolt stuff
                 unload_initial=dict(amount= -2.5, speed=300)
                 unload_change = None
-                self.load_amount_stop = 80 # 
+                self.load_amount_stop = 150 # 
 
-            # Before unloading, always purge the machine 4 mm 
-            self._printer.commands(["G1 E4 F300"])
+            # Before unloading, always purge the machine 10 mm 
+            self._printer.commands(["G1 E10 F300"])
 
             # Start unloading
             unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
@@ -1099,7 +1103,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         }
         self.set_filament_profile(self.filament_change_tool, new_filament)
         self.update_filament_amount()
-        self.send_client_finished()
+        self.send_client_finished(dict(profile=new_filament))
 
     def _unload_filament_condition(self):
         # When unloading finished, set standard None filament.
@@ -1186,6 +1190,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def send_client_levelbed_progress(self, max_correction_value):
         self._send_client_message('levelbed_progress', { "max_correction_value" : max_correction_value })
 
+    def send_client_tool_status(self):
+        self._send_client_message('tool_status', {"tool_status": self.tool_status})
+
     ## ~ Save helpers
     def set_filament_profile(self, tool, profile):
         self.filament_database.update(profile, self._filament_query.tool == tool)
@@ -1204,24 +1211,42 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.last_saved_filament_amount = deepcopy(self.filament_amount)
 
     def set_filament_amount(self, tool):
-        tool_num = int(tool[len("tool"):])
+        tool_num = self._get_tool_num(tool)
         self.filament_database.update({'amount': self.filament_amount[tool_num]}, self._filament_query.tool == tool)
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
     def script_hook(self, comm, script_type, script_name):
         # The printer should get a positive number here. Altough for the user it might feel like - direction,
         # Thats how the M206 works.
+        if not script_type == "gcode":
+            return None
+
         if self.model == "Xeed":
             zoffset = -self._settings.get_float(["zoffset"])
 
-            if not script_type == "gcode":
-                return None
         
             if script_name == "beforePrintStarted":
                 return ["M206 Z%.2f" % zoffset], None
 
             if script_name == "afterPrinterConnected":
                 return ["M206 Z%.2f" % zoffset], None
+
+        if self.model == "Bolt":
+            if script_name == "beforePrintResumed":
+                return ["G1 F6000"], None
+
+            if script_name == "afterPrintPaused":
+                return ["G28 X0 Y0"], None
+
+    def gcode_queuing_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+        """
+        Removes X0, Y0 and Z0 from G92 commands
+        These commands are problamatic with different print modes.
+        """
+        if gcode and gcode == "G92":
+            cmd = re.sub('[XYZ]0 ', '', cmd)
+            return cmd,
+
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -1330,8 +1355,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _process_G28(self, cmd):
         #self._logger.info("Command: %s" % cmd)
-        self.home_command_sent = True
-        self.is_homing = True
+        if (all(c in cmd for c in 'XYZ') or cmd == "G28"):
+            self.home_command_sent = True
+            self.is_homing = True
 
     def _process_M115(self, cmd):
         #self._logger.info("Command: %s" % cmd)
@@ -1472,15 +1498,29 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # process the status
             if not heating and data["actual"] <= 35:
                    status = "IDLE"
+                   text = "Idle"
+                   css_class = "bg-main"
             elif stable:
                    status = "READY"
-            elif delta > 0:
+                   text = "Ready"
+                   css_class = "bg-green"
+            elif abs_delta > 0:
                    status = "HEATING"
+                   text = "Heating"
+                   css_class = "bg-orange"
             else:
                    status = "COOLING"
+                   text = "Cooling"
+                   css_class = "bg-yellow"
 
-            self.tool_status[tool] = status           
+            tool_num = self._get_tool_num(tool)
+
+            self.tool_status[tool_num]['status'] = status
+            self.tool_status[tool_num]['text'] = text
+            self.tool_status[tool_num]['css_class'] = css_class         
             self.change_status(tool, status)
+            self.send_client_tool_status()
+
 
     def change_status(self, tool, new_status):
         """
@@ -1504,9 +1544,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         self._logger.info("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
-        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool] == "READY"):
-            if callback:
-                callback(tool)
+        tool_num = self._get_tool_num(tool)
+
+        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool_num]['status'] == "READY"):
+            callback(tool)
             self.send_client_heating()
             return
 
@@ -1516,6 +1557,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._printer.set_temperature(tool, temp)
         self.send_client_heating()
+
+    def _get_tool_num(self, tool):
+        if tool == "bed":
+            tool_num = 2
+        else:
+            tool_num = int(tool[len("tool"):])
+
+        return tool_num
 
     ##~ Printer Control functions
     def move_to_maintenance_position(self):
@@ -1881,23 +1930,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.calibration_type:
             self._on_calibration_event(event)
 
-        if (event == "PrintFailed" or event == "PrintCancelled" or event == "PrintDone" or event == "Error"):
+        if (event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = 0.0
             self.save_filament_amount()
             self._printer.commands(["M605 S1"])
+            self._printer.home(['x', 'y'])
         
-        if (event == "PrintStarted"):
+        if (event == Events.PRINT_STARTED):
             self.current_print_extrusion_amount = [0.0, 0.0]
 
-        if(event == "PrintStarted" or event == "PrintResumed"):
+        if(event == Events.PRINT_STARTED or event == Events.PRINT_RESUMED):
             self.filament_action = False
 
-        if(event == "Connected"):
+        if(event == Events.CONNECTED):
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
 
-            
 
     ##~ Helper method that calls api defined functions
     def _call_api_method(self, command, *args, **kwargs):
@@ -1919,6 +1968,7 @@ def __plugin_load__():
 
     global __plugin_hooks__ 
     __plugin_hooks__ = {
+        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_queuing_hook,
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
         "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook,
         "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger,

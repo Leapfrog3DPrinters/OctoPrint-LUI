@@ -650,3 +650,13 @@ function hideOfflineFlyout() {
     $('.overlay').removeClass('active');
     $('#offline_flyout').removeClass('active');
 };
+
+function addCSSRule(sheet, selector, rules, index) {
+    index = index || sheet.cssRules.length;
+    if("insertRule" in sheet) {
+        sheet.insertRule(selector + "{" + rules + "}", index);
+    }
+    else if("addRule" in sheet) {
+        sheet.addRule(selector, rules, index);
+    }
+}
