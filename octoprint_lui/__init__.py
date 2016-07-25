@@ -1547,7 +1547,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         tool_num = self._get_tool_num(tool)
 
         if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool_num]['status'] == "READY"):
-            callback(tool)
+            if callback:
+                callback(tool)
             self.send_client_heating()
             return
 
