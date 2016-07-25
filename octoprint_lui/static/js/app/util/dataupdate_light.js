@@ -178,82 +178,91 @@ function DataUpdater(allViewModels) {
 
         log.debug("Got event " + type + " with payload: " + JSON.stringify(payload));
 
-        if (type == "SettingsUpdated") {
-            if (payload && payload.hasOwnProperty("config_hash")) {
-                self._configHash = payload.config_hash;
-            }
-        } else if (type == "MovieRendering") {
-        } else if (type == "MovieDone") {
-        } else if (type == "MovieFailed") {
-        } else if (type == "PostRollStart") {
-        } else if (type == "SlicingStarted") {
-            gcodeUploadProgress.addClass("progress-striped").addClass("active");
-            gcodeUploadProgressBar.css("width", "100%");
-            if (payload.progressAvailable) {
-                gcodeUploadProgressBar.text(_.sprintf(gettext("Slicing ... (%(percentage)d%%)"), {percentage: 0}));
-            } else {
-                gcodeUploadProgressBar.text(gettext("Slicing ..."));
-            }
-        } else if (type == "SlicingDone") {
-            gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-            gcodeUploadProgressBar.css("width", "0%");
-            gcodeUploadProgressBar.text("");
-        } else if (type == "SlicingCancelled") {
-            gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-            gcodeUploadProgressBar.css("width", "0%");
-            gcodeUploadProgressBar.text("");
-        } else if (type == "SlicingFailed") {
-            gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-            gcodeUploadProgressBar.css("width", "0%");
-            gcodeUploadProgressBar.text("");
+        if (!deferEventNotifications) {
+            if (type == "SettingsUpdated") {
+                if (payload && payload.hasOwnProperty("config_hash")) {
+                    self._configHash = payload.config_hash;
+                }
+            } else if (type == "MovieRendering") {
+            } else if (type == "MovieDone") {
+            } else if (type == "MovieFailed") {
+            } else if (type == "PostRollStart") {
+            } else if (type == "SlicingStarted") {
+                gcodeUploadProgress.addClass("progress-striped").addClass("active");
+                gcodeUploadProgressBar.css("width", "100%");
+                if (payload.progressAvailable) {
+                    gcodeUploadProgressBar.text(_.sprintf(gettext("Slicing ... (%(percentage)d%%)"), { percentage: 0 }));
+                } else {
+                    gcodeUploadProgressBar.text(gettext("Slicing ..."));
+                }
+            } else if (type == "SlicingDone") {
+                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
+                gcodeUploadProgressBar.css("width", "0%");
+                gcodeUploadProgressBar.text("");
+            } else if (type == "SlicingCancelled") {
+                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
+                gcodeUploadProgressBar.css("width", "0%");
+                gcodeUploadProgressBar.text("");
+            } else if (type == "SlicingFailed") {
+                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
+                gcodeUploadProgressBar.css("width", "0%");
+                gcodeUploadProgressBar.text("");
 
-            html = _.sprintf(gettext("Could not slice %(stl)s to %(gcode)s: %(reason)s"), payload);
-        } else if (type == "TransferStarted") {
-            gcodeUploadProgress.addClass("progress-striped").addClass("active");
-            gcodeUploadProgressBar.css("width", "100%");
-            gcodeUploadProgressBar.text(gettext("Streaming ..."));
-        } else if (type == "TransferDone") {
-            gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-            gcodeUploadProgressBar.css("width", "0%");
-            gcodeUploadProgressBar.text("");
-            gcodeFilesViewModel.requestData(payload.remote, "sdcard");
-        } else if (type == "PrintStarted") {
-            $.notify({
-                title: gettext("Print job started"),
-                text: _.sprintf(gettext(' Printing file: "%(filename)s"'), {filename: payload.filename})},
-                "success"
-            )
-        } else if (type == "PrintPaused") {
-            $.notify({
-                title: gettext("Print job paused"),
-                text: _.sprintf(gettext('Pausing file: "%(filename)s"'), {filename: payload.filename})},
-                "warning"
-            )
-        } else if (type == "PrintCancelled") {
-            $.notify({
-                title: gettext("Print job canceled"),
-                text: _.sprintf(gettext('Canceled file: "%(filename)s"'), {filename: payload.filename})},
-                "error"
-            )
-        } else if (type == "PrintDone") {
-            $.notify({
-                title: gettext("Print job finished"),
-                text: _.sprintf(gettext(' Finished file: "%(filename)s"'), {filename: payload.filename})},
-                "success"
-            )
-        } else if (type == "PrintResumed") {
-            $.notify({
-                title: gettext("Print job resumed"),
-                text: _.sprintf(gettext(' Resuming file: "%(filename)s"'), {filename: payload.filename})},
-                "success"
-            )
-        } else if (type == "FileSelected") {
-            $.notify({
-                title: gettext("File selected succesfully"),
-                text: _.sprintf(gettext('Selected file: "%(filename)s"'), {filename: payload.filename})},
-                "success"
-            )
+                html = _.sprintf(gettext("Could not slice %(stl)s to %(gcode)s: %(reason)s"), payload);
+            } else if (type == "TransferStarted") {
+                gcodeUploadProgress.addClass("progress-striped").addClass("active");
+                gcodeUploadProgressBar.css("width", "100%");
+                gcodeUploadProgressBar.text(gettext("Streaming ..."));
+            } else if (type == "TransferDone") {
+                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
+                gcodeUploadProgressBar.css("width", "0%");
+                gcodeUploadProgressBar.text("");
+                gcodeFilesViewModel.requestData(payload.remote, "sdcard");
+            } else if (type == "PrintStarted") {
+                $.notify({
+                    title: gettext("Print job started"),
+                    text: _.sprintf(gettext(' Printing file: "%(filename)s"'), { filename: payload.filename })
+                },
+                    "success"
+                )
+            } else if (type == "PrintPaused") {
+                $.notify({
+                    title: gettext("Print job paused"),
+                    text: _.sprintf(gettext('Pausing file: "%(filename)s"'), { filename: payload.filename })
+                },
+                    "warning"
+                )
+            } else if (type == "PrintCancelled") {
+                $.notify({
+                    title: gettext("Print job canceled"),
+                    text: _.sprintf(gettext('Canceled file: "%(filename)s"'), { filename: payload.filename })
+                },
+                    "error"
+                )
+            } else if (type == "PrintDone") {
+                $.notify({
+                    title: gettext("Print job finished"),
+                    text: _.sprintf(gettext(' Finished file: "%(filename)s"'), { filename: payload.filename })
+                },
+                    "success"
+                )
+            } else if (type == "PrintResumed") {
+                $.notify({
+                    title: gettext("Print job resumed"),
+                    text: _.sprintf(gettext(' Resuming file: "%(filename)s"'), { filename: payload.filename })
+                },
+                    "success"
+                )
+            } else if (type == "FileSelected") {
+                $.notify({
+                    title: gettext("File selected succesfully"),
+                    text: _.sprintf(gettext('Selected file: "%(filename)s"'), { filename: payload.filename })
+                },
+                    "success"
+                )
+            }
         }
+
         var legacyEventHandlers = {
             "UpdatedFiles": "onUpdatedFiles",
             "MetadataStatisticsUpdated": "onMetadataStatisticsUpdated",

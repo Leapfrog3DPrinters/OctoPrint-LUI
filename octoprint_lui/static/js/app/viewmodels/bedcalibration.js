@@ -46,10 +46,15 @@ $(function () {
 
         self.accept = function()
         {
-            if (self.autoBedCalibrationComplete())
+            if (self.autoBedCalibrationComplete()) {
+                self.restoreFromCalibrationPosition();
                 self.resetState(); // Return to main screen, so user may start z-offset
-            else
+            }
+            else {
+                if (self.showManualBedCalibration())
+                    self.restoreFromCalibrationPosition();
                 self.flyout.closeFlyoutAccept();
+            }
         }
 
         self.startManualBedCalibration = function()
@@ -73,6 +78,10 @@ $(function () {
         self.moveToCorner = function(cornerNum)
         {
             self._sendApi({ "command": "move_to_calibration_position", "corner_num": cornerNum });
+        }
+
+        self.restoreFromCalibrationPosition = function (cornerNum) {
+            self._sendApi({ "command": "restore_from_calibration_position"});
         }
 
         $('.bed-canvas-item').click(function () {

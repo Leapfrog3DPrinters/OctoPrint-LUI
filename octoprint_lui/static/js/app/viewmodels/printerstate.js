@@ -33,6 +33,15 @@ $(function () {
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
 
+        self.currentActivity = ko.pureComputed(function () {
+            if (self.activities().length > 0)
+                return self.activities()[0];
+            else
+                return undefined;
+        });
+
+        self.activities = ko.observableArray([]);
+
         self.filenameNoExtension = ko.computed(function () {
             if (self.filename())
                 return self.filename().slice(0, (self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
@@ -402,12 +411,14 @@ $(function () {
                 console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_rendering":
-                        //TODO: Maybe show spinner?
+                        if (messageData.filename == self.filename())
+                            self.activities.push('Creating preview');
                         break;
                     case "gcode_preview_ready":
-                        var currentFilename = self.filename();
-                        if (messageData.filename == currentFilename)
+                        if (messageData.filename == self.filename()) {
                             self.refreshPrintPreview(messageData.url);
+                            self.activities.pop('Creating preview');
+                        }
                         break;
                 }
             }
@@ -434,7 +445,10 @@ $(function () {
         self.onAfterBinding = function () {
             self.requestData();
 
-            self.filename.subscribe(function () { self.refreshPrintPreview(); 
+            self.filename.subscribe(function () {
+                self.activities.pop('Creating preview');
+                self.activities.pop('Analyzing');
+                self.refreshPrintPreview();
                 // Important to pass no parameters 
             });
         }

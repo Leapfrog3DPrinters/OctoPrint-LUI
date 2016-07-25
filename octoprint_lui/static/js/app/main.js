@@ -420,7 +420,10 @@ $(function() {
             return;
         }
 
-        if (!flyout.blocking && flyout.warnings().length == 0 && flyout.confirmationDeferred === undefined)
+        if (!flyout.blocking &&
+            flyout.warnings().length == 0 &&
+            flyout.infos().length == 0 &&
+            flyout.confirmationDeferred === undefined)
         {
             flyout.closeFlyout();
         }
@@ -438,6 +441,9 @@ $(function() {
             gap: 0
         }
     );
+
+    // Global variable to defer print event notifications, e.g. during calibration
+    deferEventNotifications = false;
 
     // dropit
     $('.sort_menu').dropit();

@@ -11,81 +11,117 @@
 
         </div>
         <div class="file_header">
-            <div class="browse_modes">
-                {%  if local_addr -%}
-                <div class="button-area">
-                    <ul>
-                        <li class="button" data-bind="click: browseLocal">
-                            <a href="#browse_local">
-                                <span>
-                                    <i class="fa fa-hdd-o"></i>Local
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="button-area">
-                    <ul>
-                        <li class="button" data-bind="click: browseUsb, css: {disabled: !isUsbAvailable()}">
-                            <a href="#browse_usb">
-                                <span>
-                                    <i class="fa fa-usb"></i>USB
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                {% else %}
-                <div class="button-area">
-                    <ul>
-                        <li class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
-                            <a href="#upload_file">
-                                <span>
-                                    <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
-                                </span>
-                                <input id="gcode_upload" type="file" name="file" class="fileinput-button">
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                {%- endif %}
+          <div class="browse_modes">
+            {%  if local_addr -%}
+            <div class="button-area">
+              <ul>
+                <li class="button" data-bind="click: browseLocal">
+                  <a href="#browse_local">
+                    <span>
+                      <i class="fa fa-hdd-o"></i>Local
+                    </span>
+                  </a>
+                </li>
+              </ul>
             </div>
-            <div class="file_search">
+            <div class="button-area">
+              <ul>
+                <li class="button" data-bind="click: browseUsb, css: {disabled: !isUsbAvailable()}">
+                  <a href="#browse_usb">
+                    <span>
+                      <i class="fa fa-usb"></i>USB
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            {% else %}
+            <div class="button-area">
+              <ul>
+                <li class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
+                  <a href="#upload_file">
+                    <span>
+                      <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
+                    </span>
+                    <input id="gcode_upload" type="file" name="file" class="fileinput-button">
+                            </a>
+                </li>
+              </ul>
+            </div>
+            {%- endif %}
+          </div>
+          <div class="file_search">
             <form class="form-search" data-bind="submit: performSearch">
+              <div class="file-search-input-container">
                 <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;">
+                  <div class="button-area" data-bind="visible: searchQuery()">
+                    <ul>
+                      <li class="button">
+                        <a href="#" data-bind="click: clearQuery">
+                          <i class="fa fa-remove">  </i>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
             </form>
-            </div>
-            <div id="sort" class="file_sort">
-                <ul class="sort_menu">
-                    <li>
-                        <a href="#"><i class="fa fa-list"></i></a>
-                        <ul>
-                            <li><span>
-                              <strong>Sort by:</strong>
-                            </span></li>
-                            <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('name'); }">Name</a></li>
-                            <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('upload'); }">Upload date</a></li>
-                            <li><a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a></li>
-                        </ul>
-                    </li>
+          </div>
+          <div id="sort" class="file_sort">
+            <ul class="sort_menu">
+              <li>
+                <a href="#">
+                  <i class="fa fa-list"></i>
+                </a>
+                <ul>
+                  <li>
+                    <span>
+                      <strong>Sort by:</strong>
+                    </span>
+                  </li>
+                  <li>
+                    <a href="" data-bind="click: function() { $root.listHelper.changeSorting('name'); }">Name</a>
+                  </li>
+                  <li>
+                    <a href="" data-bind="click: function() { $root.listHelper.changeSorting('upload'); }">Upload date</a>
+                  </li>
+                  <li>
+                    <a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a>
+                  </li>
                 </ul>
-            </div>
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="loading" data-bind="visible: isLoadingFileList()">
-            <div class="file_entry">
-                <ul class="file_main">
-                    <li class="file_name">
-                        <a href="#file_name">
-                            <span>Loading files...</span>
-                        </a>
-                    </li>
-                    <li class="file_status">
-                        <a style="padding: 0;">
-                            <i class="fa fa-spinner fa-pulse"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+          <div class="file_entry">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#file_name">
+                  <span>Loading files...</span>
+                </a>
+              </li>
+              <li class="file_status">
+                <a style="padding: 0;">
+                  <i class="fa fa-spinner fa-pulse"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="loading" data-bind="visible: !isLoadingFileList() && currentOrigin() == 'local' && listHelper.allSize() == 0">
+          <div class="file_entry">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#file_name">
+                  {% if local_addr %}
+                  <span class="no_files">There are no files on your printer yet. You can load files from a USB drive.</span>
+                  {% else %}
+                  <span class="no_files">There are no files on your printer yet. Click upload to load a file from your computer..</span>
+                  {% endif %}
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="file_list"  data-bind="visible: !isLoadingFileList()">
           <div class="file_entry" data-bind="visible: currentPath() != '', click: function() { $root.navigateUp(); }" style="display: none">
@@ -133,9 +169,13 @@
                 </a>
               </li>
               <li class="file_print">
-                <a href="#print_file" data-bind="click: function() { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
-                  <i class="fa fa-print"></i>
-                </a>
+                <ul class="button-area">
+                  <li class="button ok-button">
+                    <a href="#" data-bind="click: function() { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
+                      <span data-bind="text: $root.listHelper.isSelected($data) ? 'Selected' : 'Select'"></span>
+                    </a>
+                  </li>
+                </ul>
               </li>
             </ul>
             <div class="file_add_info hide">
@@ -148,25 +188,43 @@
                 <ul class="button-area">
                   {% if local_addr %}
                   <li class="button">
-                    <a data-bind="click: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
+                    <a href="#" data-bind="click: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
                       <span>Copy to USB</span>
                     </a>
                   </li>
                   {% else %}
                   <li class="button">
-                    <a data-bind="attr: {href: $root.downloadLink($data), css: {disabled: !$root.downloadLink($data)}}">
+                    <a href="#" data-bind="attr: {href: $root.downloadLink($data), css: {disabled: !$root.downloadLink($data)}}">
                       <span>Download</span>
                     </a>
                   </li>
                   {% endif %}
                   <li class="button failed-button">
-                    <a data-bind="click: function() { if ($root.enableRemove($data)) { $root.removeFile($data); } else { return; } }, css: {disabled: !$root.enableRemove($data)}">
+                    <a href="#" data-bind="click: function() { if ($root.enableRemove($data)) { $root.removeFile($data); } else { return; } }, css: {disabled: !$root.enableRemove($data)}">
                       <span>Delete</span>
                     </a>
                   </li>
                 </ul>
               </div>
             </div>
+          </script>
+          <script type="text/html" id="files_template_usb_machinecode">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#">
+                  <span data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }, text: name"></span>
+                </a>
+              </li>
+              <li class="file_print">
+                <ul class="button-area">
+                  <li class="button ok-button">
+                    <a href="#" data-bind="click: function() { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
+                      <span data-bind="text: $root.listHelper.isSelected($data) ? 'Selected' : 'Load &amp; select'"></span>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
           </script>
 
           <script type="text/html" id="files_template_model">

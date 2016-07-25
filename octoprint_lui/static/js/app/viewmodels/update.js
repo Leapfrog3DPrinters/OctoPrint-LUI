@@ -176,17 +176,20 @@ $(function () {
         };
 
         self.onFirmwareUpdateFound = function (file) {
-            var title = "Firmware update found"
-            var text = _.sprintf(gettext('The USB drive you inserted contains a firmware update with filename "%(filename)s".'), { filename: file["name"] });
-            var question = "Would you like to install this update?";
 
-            var dialog = { 'title': title, 'text': text, 'question': question };
+            if ((!self.flyout.isOpen() || !self.flyout.blocking)) {
+                var title = "Firmware update found"
+                var text = _.sprintf(gettext('The USB drive you inserted contains a firmware update with filename "%(filename)s".'), { filename: file["name"] });
+                var question = "Would you like to install this update?";
 
-            self.flyout.showConfirmationFlyout(dialog)
-                .done(function () {
-                    self.settings.showSettingsTopic('update');
-                    self.flashArduino.onLocalFileSelected(file);
-                });
+                var dialog = { 'title': title, 'text': text, 'question': question };
+
+                self.flyout.showConfirmationFlyout(dialog)
+                    .done(function () {
+                        self.settings.showSettingsTopic('update');
+                        self.flashArduino.onLocalFileSelected(file);
+                    });
+            }
         };
 
         self.refreshUpdateInfo = function () {

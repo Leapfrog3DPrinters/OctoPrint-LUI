@@ -382,12 +382,15 @@ $(function () {
                     self.filamentInProgress(false);
                     self.filamentLoading(false);
                     self.filamentLoadProgress(0);
-                    $.notify({
-                        title: gettext("Filament loaded aborted!"),
-                        text: _.sprintf(gettext('Please re-run load filament procedure'), {})
-                    },
-                        "warning"
-                    )
+
+                    if (!self.forPurge()) {
+                        $.notify({
+                            title: gettext("Filament loaded aborted!"),
+                            text: _.sprintf(gettext('Please re-run load filament procedure'), {})
+                        },
+                            "warning"
+                        );
+                    }
                     self.requestData();
                     // Do cancel action
                     break;

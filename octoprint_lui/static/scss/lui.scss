@@ -164,6 +164,7 @@ a {
     padding-left: 1rem;
 }
 
+
 .button-area {
   display: flex;
   flex: 1 1 100%;
@@ -393,7 +394,26 @@ input[type=radio] {
 
 
 .app-header .header_login {
-  margin-left: auto;
+  /*margin-left: auto;*/
+}
+
+.header_status
+{
+    padding-right: 2em;
+}
+
+.network-status
+{
+    margin-right: 60px;
+}
+#ethernet_connectivity{
+    margin-left: auto;
+}
+.wifi-status
+{
+    width: 1.2em;
+    height:  1.2em;
+    margin-top: 5px;
 }
 
 /*
@@ -660,6 +680,9 @@ input[type=radio] {
   }
   &-item-right {
       text-align: right;
+  }
+  &-item-right span {
+      width: 100%;
   }
   &-nested {
     flex-direction: column;
@@ -1123,6 +1146,25 @@ select {
   padding-left: 0.5em;
 }
 
+.file-search-input-container
+{
+    display: flex;
+
+    .button-area
+    {
+        flex: auto;
+        i
+        {
+            padding-left: 0.4em;
+        }
+    }
+    input
+    {
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+}
+
 .file_sort{
   flex-basis: 5%;
   margin-left:auto;
@@ -1173,9 +1215,15 @@ select {
   min-height:55px;
 }
 
-.file_status, .file_info, .file_print {
+.file_status, .file_info {
   display:flex;
   flex: 0 0 55px;
+  text-align: right;
+}
+
+.file_print {
+  display:flex;
+  flex: 0 0 150px;
   text-align: right;
 }
 
@@ -1206,6 +1254,11 @@ select {
   min-width: 0px; 
 }
 
+.file_entry  span.no_files
+{
+    white-space: normal;
+}
+
 .file_entry .file_add_info li {
   flex-grow:1;
 }
@@ -1221,16 +1274,17 @@ select {
 .file_add_info_content {
   padding:5px;
   flex-grow: 4;
+  font-size: 90%;
 }
 
 .file_add_info_buttons {
   align-self: center;
-  flex-grow: 1;
+  flex-basis: 150px;
 }
 
 .file_add_info_preview
 {
-    flex-grow: 1;
+    flex-basis: 150px;
      align-items: flex-start; /* Chrome aspect ratio fix */
 }
 
@@ -1413,6 +1467,46 @@ pre code {
 .webcam-preview
 {
     width: 100%;
+}
+
+/* Wireless */
+.clickable
+{
+    cursor: pointer;
+}
+
+.fa-signal-0
+{
+  width: 0px; 
+  overflow: hidden;
+}
+
+.fa-signal-1
+{
+  width: 4px; 
+  overflow: hidden;
+}
+
+.fa-signal-2
+{
+  width: 8px; 
+  overflow: hidden;
+}
+
+.fa-signal-3
+{
+  width: 13px; 
+  overflow: hidden;
+}
+.fa-signal-4
+{
+  width: 17px; 
+  overflow: hidden;
+}
+.fa-signal-5
+{
+  width: 22px; 
+  overflow: hidden;
 }
 
 /* Extruder calibration */

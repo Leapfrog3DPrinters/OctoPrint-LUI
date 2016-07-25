@@ -14,6 +14,10 @@
     <div class="header_status">
         Status: <span data-bind="text: printerState.stateString"></span>
     </div>
+    <div class="header_activity" data-bind="visible: printerState.currentActivity()">
+      <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
+      <span data-bind="text: printerState.currentActivity()"></span>
+    </div>
     <!--
     <div id="stop-light">
         <svg x="0px" y="0px"
@@ -23,6 +27,18 @@
             <circle class="light-green" fill="#35801C" cx="83" cy="15" r="9"/>
         </svg>
     </div>-->
+  {% if local_addr %}
+  <!-- ko allowBindings: false -->
+  <div id="ethernet_connectivity" class="network-status">
+    <a href="#">
+      <i class="fa fa-plug ethernet-status" data-bind="visible: status.connection.ethernet()"></i>
+    </a>
+  </div>
+  <div id="wifi_connectivity" class="network-status">
+    <a href="#"><img src="" class="wifi-status" data-bind="attr: { src: status.connection.wifi ? '{{ url_for("plugin.lui.static", filename="img/wifi.svg") }}' : '{{ url_for("plugin.lui.static", filename="img/wifi-slash.svg") }}' }" /></a>
+  </div>
+  <!-- /ko -->
+  {% endif %}
     <div class="header_login">
         <a href="#login" data-bind="click: showLoginFlyout"><i class = "fa fa-power-off" style="padding-right: 0.5em;"></i>{%- if not local_addr -%}<span data-bind="text: loginState.userMenuText">Login</span>{%- endif -%}</a>
     </div>

@@ -95,7 +95,7 @@
 
           {%  if local_addr -%}
           <ul class="button-area">
-            <li class="button secondary-button fileinput-button" data-bind="click: function() { $parent.browseForFirmware() }">
+            <li class="button secondary-button fileinput-button" data-bind="click: function() { $parent.browseForFirmware() }, css: { disabled: !$parent.files.isUsbAvailable() }">
               <a href="#">
                 <span>Browse USB drive for firmware</span>
             </a>
@@ -107,7 +107,7 @@
             <li class="button secondary-button fileinput-button">
               <a href="#">
                 <span>Upload firmware</span>
-                <input id="settings-flash-arduino" type="file" accept=".hex" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file", filename="")}}">
+                <input id="settings-flash-arduino" type="file" accept=".hex" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file", filename="")}}" />
             </a>
             </li>
           </ul>
