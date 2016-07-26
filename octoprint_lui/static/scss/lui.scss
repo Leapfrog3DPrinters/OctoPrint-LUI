@@ -124,14 +124,14 @@ a {
   border-left: 0;
 }
 
-.icon-bar a:hover {
-  background-color: $second-color;
-  color: $main-color;
-}
+// .icon-bar a:hover {
+//   background-color: $second-color;
+//   color: $main-color;
+// }
 
-.icon-bar a:hover i {
-  color: $main-color;
-}
+// .icon-bar a:hover i {
+//   color: $main-color;
+// }
 
 .icon-bar .active, .icon-bar .active i  {
   background-color: $second-color;
@@ -163,6 +163,7 @@ a {
   height: 45px;
     padding-left: 1rem;
 }
+
 
 .button-area {
   display: flex;
@@ -205,6 +206,12 @@ a {
 .button-area .secondary-button a:active { 
   color: $second-color;
   background-color: $main-color;
+}
+
+.button-area .secondary-button.load-button {
+  border-bottom: 0px;
+  border-top: 0px;
+  border: 0px;
 }
 
 .button-area .ok-button { 
@@ -393,7 +400,26 @@ input[type=radio] {
 
 
 .app-header .header_login {
-  margin-left: auto;
+  /*margin-left: auto;*/
+}
+
+.header_status
+{
+    padding-right: 2em;
+}
+
+.network-status
+{
+    margin-right: 60px;
+}
+#ethernet_connectivity{
+    margin-left: auto;
+}
+.wifi-status
+{
+    width: 1.2em;
+    height:  1.2em;
+    margin-top: 5px;
 }
 
 /*
@@ -625,7 +651,7 @@ input[type=radio] {
   flex-direction: column;
   flex-wrap: nowrap;
   justify-content: space-between;
-  border: 1px solid $dark-color;
+  border-bottom: 1px solid $dark-color;
   // font-size: 1.2rem;
   margin: 10px 0px;
   line-height: 1.5;
@@ -660,6 +686,9 @@ input[type=radio] {
   }
   &-item-right {
       text-align: right;
+  }
+  &-item-right span {
+      width: 100%;
   }
   &-nested {
     flex-direction: column;
@@ -1123,6 +1152,25 @@ select {
   padding-left: 0.5em;
 }
 
+.file-search-input-container
+{
+    display: flex;
+
+    .button-area
+    {
+        flex: auto;
+        i
+        {
+            padding-left: 0.4em;
+        }
+    }
+    input
+    {
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+}
+
 .file_sort{
   flex-basis: 5%;
   margin-left:auto;
@@ -1159,10 +1207,6 @@ select {
   flex: 0 1 auto;
 }
 
-.file_entry a {
-  color: $main-color;
-}
-
 .file_footer {
   flex: 0 1 auto;
 }
@@ -1171,11 +1215,24 @@ select {
   display: flex;
   flex:1;
   min-height:55px;
+  border: 2px solid $second-color;
 }
 
-.file_status, .file_info, .file_print {
+.file_status, .file_info {
   display:flex;
   flex: 0 0 55px;
+  text-align: right;
+}
+
+.file_print {
+  display:flex;
+  flex: 0 0 50px;
+  text-align: right;
+}
+
+.file_load {
+  display:flex;
+  flex: 0 0 150px;
   text-align: right;
 }
 
@@ -1191,6 +1248,12 @@ select {
   padding: 0px 20px;
   min-width: 0px;
   flex: 1;
+  color: $main-color;
+}
+
+.file_entry .file_print a:active {
+  color: $second-color;
+  background-color: $main-color;
 }
 
 .file_entry i {
@@ -1204,6 +1267,15 @@ select {
   overflow: hidden;
   white-space: nowrap;
   min-width: 0px; 
+}
+
+.file_entry  span.no_files
+{
+    white-space: normal;
+}
+
+.file_selected {
+  border: 2px solid $main-color;
 }
 
 .file_entry .file_add_info li {
@@ -1221,16 +1293,17 @@ select {
 .file_add_info_content {
   padding:5px;
   flex-grow: 4;
+  font-size: 90%;
 }
 
 .file_add_info_buttons {
   align-self: center;
-  flex-grow: 1;
+  flex-basis: 150px;
 }
 
 .file_add_info_preview
 {
-    flex-grow: 1;
+    flex-basis: 150px;
      align-items: flex-start; /* Chrome aspect ratio fix */
 }
 
@@ -1413,6 +1486,46 @@ pre code {
 .webcam-preview
 {
     width: 100%;
+}
+
+/* Wireless */
+.clickable
+{
+    cursor: pointer;
+}
+
+.fa-signal-0
+{
+  width: 0px; 
+  overflow: hidden;
+}
+
+.fa-signal-1
+{
+  width: 4px; 
+  overflow: hidden;
+}
+
+.fa-signal-2
+{
+  width: 8px; 
+  overflow: hidden;
+}
+
+.fa-signal-3
+{
+  width: 13px; 
+  overflow: hidden;
+}
+.fa-signal-4
+{
+  width: 17px; 
+  overflow: hidden;
+}
+.fa-signal-5
+{
+  width: 22px; 
+  overflow: hidden;
 }
 
 /* Extruder calibration */
@@ -1654,7 +1767,7 @@ $bed-height: 180px;
   // }
 
   #print .content > * {
-    width:50%;
+    // width:50%;
   }
 
 
@@ -1665,6 +1778,12 @@ $bed-height: 180px;
   .spool .spool_picture {
     display: none;
     flex-wrap:nowrap;
+  }
+}
+
+@media screen and (max-height: 740px) and (min-width: 790px) {
+  #print .content > * {
+    width:50%;
   }
 }
 

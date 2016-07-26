@@ -267,6 +267,11 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
         // set result list
         self.items(result);
+
+        // If not at the first page and the resulting page would be empty, move one page backwards
+        var currentPage = self.currentPage();
+        if (self.paginatedItems().length == 0 && currentPage > 0)
+            self.changePage(currentPage--);
     };
 
     //~~ local storage
@@ -644,4 +649,15 @@ function hideOfflineFlyout() {
     offline_blocking = false;
     $('.overlay').removeClass('active');
     $('#offline_flyout').removeClass('active');
+    // location.reload();
 };
+
+function addCSSRule(sheet, selector, rules, index) {
+    index = index || sheet.cssRules.length;
+    if("insertRule" in sheet) {
+        sheet.insertRule(selector + "{" + rules + "}", index);
+    }
+    else if("addRule" in sheet) {
+        sheet.addRule(selector, rules, index);
+    }
+}

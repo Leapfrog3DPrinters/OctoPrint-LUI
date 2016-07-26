@@ -8,13 +8,27 @@
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        Make sure the print bed is empty. Apply a print adhesive to the bed and press Start calibration.
+        Make sure the print bed is empty and both extruders are loaded with filament. Apply a print adhesive to the bed and press Start calibration.
+      </div>
+    </div>
+    <div class="Table-row" data-bind="visible: filament.leftFilament() == 'None'">
+      <div class="Table-item">
+        <span>
+          <i class="fa fa-exclamation-triangle"></i> Please load filament in the left extruder before you continue.
+        </span>
+      </div>
+    </div>
+    <div class="Table-row" data-bind="visible: filament.rightFilament() == 'None'">
+      <div class="Table-item">
+        <span>
+          <i class="fa fa-exclamation-triangle"></i> Please load filament in the right extruder before you continue.
+        </span>
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function() { startLargeExtruderCalibration()}">
+          <li class="button ok-button" data-bind="css: {disabled: !mayStartLargeCalibration() || !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function() { startLargeExtruderCalibration()}">
             <a href="">
               <span>Start calibration</span>
             </a>
@@ -210,7 +224,7 @@
         <div class="Table-item">Status</div>
         <div class="Table-item Table-item-grow-5">
           <div class="progress progress-striped progress-animate">
-            <span class="bg-main" style="width: 100%" data-bind="text: stateStepString, css: stateStepColor()"></span>
+{#             <span class="bg-main" style="width: 100%" data-bind="text: stateStepString, css: stateStepColor()"></span> #}
           </div>
         </div>
       </div>

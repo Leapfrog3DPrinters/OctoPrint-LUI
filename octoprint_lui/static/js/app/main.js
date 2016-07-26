@@ -63,6 +63,19 @@ $(function() {
         gettext("Transfering file to SD")
     ];
 
+    //~ Initialise is touch device:
+    function isTouchDevice() {
+        return 'ontouchstart' in document.documentElement;
+    }
+
+    //~ Set menu hover css rules for non touch devices
+    if (!isTouchDevice()){
+        var style_sheet = $('link[href="/plugin/lui/static/css/lui.css"]')[0].sheet
+        addCSSRule(style_sheet, ".icon-bar a:hover", "color: #434A54; background-color: #FFFFFF;");
+        addCSSRule(style_sheet, ".icon-bar a:hover i", "color: #434A54;");
+    }
+
+
     //~~ Initialize view models
 
     // the view model map is our basic look up table for dependencies that may be injected into other view models
@@ -79,36 +92,35 @@ $(function() {
     }
 
     // helper to create a view model instance with injected constructor parameters from the view model map
-    var _createViewModelInstance = function(viewModel, viewModelMap){
-        var viewModelClass = viewModel[0];
-        var viewModelParameters = viewModel[1];
+    var _createViewModelInstance = function(viewModel, viewModelMap, optionalDependencyPass) {
 
-        if (viewModelParameters !== undefined) {
-            if (!_.isArray(viewModelParameters)) {
-                viewModelParameters = [viewModelParameters];
+        // mirror the requested dependencies with an array of the viewModels
+        var viewModelParametersMap = function(parameter) {
+            // check if parameter is found within optional array and if all conditions are met return null instead of undefined
+            if (optionalDependencyPass && viewModel.optional.indexOf(parameter) !== -1 && !viewModelMap[parameter]) {
+                log.debug("Resolving optional parameter", [parameter], "without viewmodel");
+                return null; // null == "optional but not available"
             }
 
-            // now we'll try to resolve all of the view model's constructor parameters via our view model map
-            var constructorParameters = _.map(viewModelParameters, function(parameter){
-                return viewModelMap[parameter]
-            });
-        } else {
-            constructorParameters = [];
-        }
+            return viewModelMap[parameter] || undefined; // undefined == "not available"
+        };
 
-        if (_.some(constructorParameters, function(parameter) { return parameter === undefined; })) {
-            var _extractName = function(entry) { return entry[0]; };
-            var _onlyUnresolved = function(entry) { return entry[1] === undefined; };
-            var missingParameters = _.map(_.filter(_.zip(viewModelParameters, constructorParameters), _onlyUnresolved), _extractName);
-            log.debug("Postponing", viewModel[0].name, "due to missing parameters:", missingParameters);
+        // try to resolve all of the view model's constructor parameters via our view model map
+        var constructorParameters = _.map(viewModel.dependencies, viewModelParametersMap) || [];
+
+        if (constructorParameters.indexOf(undefined) !== -1) {
+            log.debug("Postponing", viewModel.name, "due to missing parameters:", _.keys(_.pick(_.object(viewModel.dependencies, constructorParameters), _.isUndefined)));
             return;
         }
 
-        // if we came this far then we could resolve all constructor parameters, so let's construct that view model
-        log.debug("Constructing", viewModel[0].name, "with parameters:", viewModelParameters);
-        return new viewModelClass(constructorParameters);
-    };
+        // transform array into object if a plugin wants it as an object
+        constructorParameters = (viewModel.returnObject) ? _.object(viewModel.dependencies, constructorParameters) : constructorParameters;
 
+        // if we came this far then we could resolve all constructor parameters, so let's construct that view model
+        log.debug("Constructing", viewModel.name, "with parameters:", viewModel.dependencies);
+        return new viewModel.construct(constructorParameters);
+    };
+    
     // map any additional view model bindings we might need to make
     var additionalBindings = {};
     _.each(OCTOPRINT_ADDITIONAL_BINDINGS, function(bindings) {
@@ -126,8 +138,7 @@ $(function() {
     });
 
     // helper for translating the name of a view model class into an identifier for the view model map
-    var _getViewModelId = function(viewModel){
-        var name = viewModel[0].name;
+    var _getViewModelId = function(name){
         return name.substr(0, 1).toLowerCase() + name.substr(1); // FooBarViewModel => fooBarViewModel
     };
 
@@ -140,6 +151,7 @@ $(function() {
     var allViewModels = [];
     var allViewModelData = [];
     var pass = 1;
+    var optionalDependencyPass = false;
     log.info("Starting dependency resolution...");
     while (unprocessedViewModels.length > 0) {
         log.debug("Dependency resolution, pass #" + pass);
@@ -149,15 +161,38 @@ $(function() {
         // now try to instantiate every one of our as of yet unprocessed view model descriptors
         while (unprocessedViewModels.length > 0){
             var viewModel = unprocessedViewModels.shift();
-            var viewModelId = _getViewModelId(viewModel);
 
-            // make sure that we don't have two view models going by the same name
-            if (_.has(viewModelMap, viewModelId)) {
-                log.error("Duplicate name while instantiating " + viewModelId);
+            // wrap anything not object related into an object
+            if(!_.isPlainObject(viewModel)) {
+                viewModel = {
+                    construct: (_.isArray(viewModel)) ? viewModel[0] : viewModel,
+                    dependencies: viewModel[1] || [],
+                    elements: viewModel[2] || [],
+                    optional: viewModel[3] || []
+                };
+            }
+
+            // make sure we have atleast a function
+            if (!_.isFunction(viewModel.construct)) {
+                log.error("No function to instantiate with", viewModel);
                 continue;
             }
 
-            var viewModelInstance = _createViewModelInstance(viewModel, viewModelMap);
+            // if name is not set, get name from constructor, if it's an anonymous function generate one
+            viewModel.name = viewModel.name || _getViewModelId(viewModel.construct.name) || _.uniqueId("unnamedViewModel");
+
+            // make sure all value's are in an array
+            viewModel.dependencies = (_.isArray(viewModel.dependencies)) ? viewModel.dependencies : [viewModel.dependencies];
+            viewModel.elements = (_.isArray(viewModel.elements)) ? viewModel.elements : [viewModel.elements];
+            viewModel.optional = (_.isArray(viewModel.optional)) ? viewModel.optional : [viewModel.optional];
+
+            // make sure that we don't have two view models going by the same name
+            if (_.has(viewModelMap, viewModel.name)) {
+                log.error("Duplicate name while instantiating " + viewModel.name);
+                continue;
+            }
+
+            var viewModelInstance = _createViewModelInstance(viewModel, viewModelMap, optionalDependencyPass);
 
             // our view model couldn't yet be instantiated, so postpone it for a bit
             if (viewModelInstance === undefined) {
@@ -166,18 +201,15 @@ $(function() {
             }
 
             // we could resolve the depdendencies and the view model is not defined yet => add it, it's now fully processed
-            var viewModelBindTargets = viewModel[2];
-            if (!_.isArray(viewModelBindTargets)) {
-                viewModelBindTargets = [viewModelBindTargets];
-            }
+            var viewModelBindTargets = viewModel.elements;
 
-            if (additionalBindings.hasOwnProperty(viewModelId)) {
-                viewModelBindTargets = viewModelBindTargets.concat(additionalBindings[viewModelId]);
+            if (additionalBindings.hasOwnProperty(viewModel.name)) {
+                viewModelBindTargets = viewModelBindTargets.concat(additionalBindings[viewModel.name]);
             }
 
             allViewModelData.push([viewModelInstance, viewModelBindTargets]);
             allViewModels.push(viewModelInstance);
-            viewModelMap[viewModelId] = viewModelInstance;
+            viewModelMap[viewModel.name] = viewModelInstance;
         }
 
         // anything that's now in the postponed list has to be readded to the unprocessedViewModels
@@ -186,20 +218,24 @@ $(function() {
         // if we still have the same amount of items in our list of unprocessed view models it means that we
         // couldn't instantiate any more view models over a whole iteration, which in turn mean we can't resolve the
         // dependencies of remaining ones, so log that as an error and then quit the loop
-        if (unprocessedViewModels.length == startLength) {
-            log.error("Could not instantiate the following view models due to unresolvable dependencies:");
-            _.each(unprocessedViewModels, function(entry) {
-                log.error(entry[0].name + " (missing: " + _.filter(entry[1], function(id) { return !_.has(viewModelMap, id); }).join(", ") + " )");
-            });
-            break;
+        if (unprocessedViewModels.length === startLength) {
+            // I'm gonna let you finish but we will do another pass with the optional dependencies flag enabled
+            if (!optionalDependencyPass) {
+                log.debug("Resolving next pass with optional dependencies flag enabled");
+                optionalDependencyPass = true;
+            } else {
+                log.error("Could not instantiate the following view models due to unresolvable dependencies:");
+                _.each(unprocessedViewModels, function(entry) {
+                    log.error(entry.name + " (missing: " + _.filter(entry.dependencies, function(id) { return !_.has(viewModelMap, id); }).join(", ") + " )");
+                });
+                break;
+            }
         }
 
         log.debug("Dependency resolution pass #" + pass + " finished, " + unprocessedViewModels.length + " view models left to process");
         pass++;
     }
     log.info("... dependency resolution done");
-
-    var dataUpdater = new DataUpdater(allViewModels);
 
     //~~ Custom knockout.js bindings
 
@@ -277,10 +313,6 @@ $(function() {
         callViewModels(allViewModels, "onAfterTabChange", [current, previous]);
     });
 
-
-    //~~ Starting up the app
-
-    callViewModels(allViewModels, "onStartup");
 
     //~~ view model binding
 
@@ -367,9 +399,19 @@ $(function() {
     if (!_.has(viewModelMap, "settingsViewModel")) {
         throw new Error("settingsViewModel is missing, can't run UI");
     }
-    viewModelMap["settingsViewModel"].requestData()
-        .done(bindViewModels);
 
+    log.info("Initial application setup done, connecting to server...");
+    var dataUpdater = new DataUpdater(allViewModels);
+    dataUpdater.connect()
+        .done(function() {
+            log.info("Finalizing application startup");
+
+            //~~ Starting up the app
+            callViewModels(allViewModels, "onStartup");
+
+            viewModelMap["settingsViewModel"].requestData()
+                .done(bindViewModels);
+        });
 
     // Icon bar selection
     $('.icon-bar a').on('click', function() {
@@ -407,7 +449,10 @@ $(function() {
             return;
         }
 
-        if (!flyout.blocking && flyout.warnings().length == 0 && flyout.confirmationDeferred === undefined)
+        if (!flyout.blocking &&
+            flyout.warnings().length == 0 &&
+            flyout.infos().length == 0 &&
+            flyout.confirmationDeferred === undefined)
         {
             flyout.closeFlyout();
         }
@@ -425,6 +470,9 @@ $(function() {
             gap: 0
         }
     );
+
+    // Global variable to defer print event notifications, e.g. during calibration
+    deferEventNotifications = false;
 
     // dropit
     $('.sort_menu').dropit();
@@ -568,7 +616,7 @@ $(function() {
     noUiSlider.create(slider, {
         start: 330,
         step: 1,
-        behaviour: 'snap',
+        behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,
@@ -587,7 +635,7 @@ $(function() {
     noUiSlider.create(fdSlider, {
         start: 330,
         step: 1,
-        behaviour: 'snap',
+        behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,
@@ -605,14 +653,19 @@ $(function() {
 
     var inputFormat = document.getElementById('input-format');
     var filament_percent = document.getElementById('filament_percent');
+    var newFilamentAmount = document.getElementById('new_filament_amount');
+    var newFilamentPercent = document.getElementById('new_filament_percent');
+
 
     var fdInputFormat = document.getElementById('fd-input-format');
     var fd_filament_percent = document.getElementById('fd_filament_percent');
 
     slider.noUiSlider.on('update', function( values, handle ) {
         inputFormat.value = values[handle];
+        new_filament_amount.innerText = values[handle];
         percent = ((values[handle] / 330) * 100).toFixed(0);
         filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+        new_filament_percent.innerText = percent + "%";
     });
 
     fdSlider.noUiSlider.on('update', function (values, handle) {

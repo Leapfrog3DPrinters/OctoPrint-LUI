@@ -131,6 +131,48 @@ $(function() {
             self.temperature_profiles.remove(profile);
         };
 
+        self.saveTemperatureProfiles = function()
+        {
+            var names = [];
+
+            for (var profile of self.temperature_profiles())
+            {
+                 // Ensures no strings are being sent to the back-end, and values can be compared to min-max
+                profile.extruder = parseInt(profile.extruder);
+                profile.bed = parseInt(profile.bed);
+
+                if (names.indexOf(profile.name.toLowerCase()) > -1) {
+                    $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" already exists. Please ensure each profile has a unique name.' }, 'error');
+                    return;
+                }
+
+                names.push(profile.name.toLowerCase());
+
+                //TODO: 'Soft-code' these values
+                if (LPFRG_MODEL == "Bolt") {
+                    if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 360) {
+                        $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" must have an extruder temperature between 150 &deg;C and 360 &deg;C.' }, 'error');
+                        return;
+                    }
+                } else
+                {
+                    if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 275) {
+                        $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" must have an extruder temperature between 150 &deg;C and 275 &deg;C.' }, 'error');
+                        return;
+                    }
+                }
+
+                if (isNaN(profile.bed) || profile.bed < 0) {
+                    $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" must have a bed temperature of at least 0 &deg;C.' }, 'error');
+                    return;
+                }
+
+
+            }
+
+            self.flyout.closeFlyoutAccept();
+        }
+
         self.addTerminalFilter = function() {
             self.terminalFilters.push({name: "New", regex: "(Send: M105)|(Recv: ok T:)"});
         };
@@ -568,22 +610,6 @@ $(function() {
                 .always(function () {
                     callViewModels(self.allViewModels, "onSettingsHidden");
                 });
-
-            //var settings_topic = "#" + topic +'_settings_flyout_content';
-            //var $settings_topic_content = $(settings_topic);
-            //$settings_topic_content.addClass('active');
-            //self.settingsTopic(capitalize(topic));
-            //callViewModels(self.allViewModels, "onSettingsShown");
-            //return self.flyout.showFlyout('settings', blocking)
-            //    .done(function () {
-            //        self.saveData();
-            //    })
-            //    .fail(function() {})
-            //    .always(function() {
-            //        $settings_topic_content.removeClass('active')
-            //        callViewModels(self.allViewModels, "onSettingsHidden");
-
-            //    });
         };
 
         // Sending custom commands to the printer, needed for level bed for example.

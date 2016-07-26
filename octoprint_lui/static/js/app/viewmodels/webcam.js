@@ -264,7 +264,7 @@ $(function () {
 
         self.onSettingsShown = function () {
             // TODO: Ensure all setting flyouts have this check
-            if ($('#webcam_settings_flyout_content').hasClass('active')) {
+            if (self.settings.settingsTopic() == "Webcam") {
                 self.requestData();
                 self.refreshPreview();
             }
@@ -350,6 +350,15 @@ $(function () {
             switch (messageType) {
                 case "timelapse_copy_progress":
                     self.setProgressBar(messageData.percentage);
+                    self.printerState.activities.push('Copying timelapse');
+                    break;
+                case "timelapse_copy_complete":
+                    self.setProgressBar(0);
+                    self.printerState.activities.pop('Copying timelapse');
+                    break;
+                case "timelapse_copy_failed":
+                    self.setProgressBar(0);
+                    self.printerState.activities.pop('Copying timelapse');
                     break;
 
             }

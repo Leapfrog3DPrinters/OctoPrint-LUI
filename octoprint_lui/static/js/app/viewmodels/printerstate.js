@@ -33,6 +33,15 @@ $(function () {
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
 
+        self.currentActivity = ko.pureComputed(function () {
+            if (self.activities().length > 0)
+                return self.activities()[0];
+            else
+                return undefined;
+        });
+
+        self.activities = ko.observableArray([]);
+
         self.filenameNoExtension = ko.computed(function () {
             if (self.filename())
                 return self.filename().slice(0, (self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
@@ -130,17 +139,17 @@ $(function () {
             return "-"
         });
 
-        self.stateStepString = ko.computed(function () {
-            if (self.temperatureState.isHeating()) return "Heating";
-            return self.stateString();
-        });
+        // self.stateStepString = ko.computed(function () {
+        //     if (self.temperatureState.isHeating()) return "Heating";
+        //     return self.stateString();
+        // });
 
-        self.stateStepColor = ko.computed(function () {
-            if (self.temperatureState.isHeating()) return "bg-orange"
-            if (self.isPrinting()) return "bg-main"
-            if (self.isError()) return "bg-red"
-            return "bg-none"
-        });
+        // self.stateStepColor = ko.computed(function () {
+        //     if (self.temperatureState.isHeating()) return "bg-orange"
+        //     if (self.isPrinting()) return "bg-main"
+        //     if (self.isError()) return "bg-red"
+        //     return "bg-none"
+        // });
 
 
         self.fileSelected = ko.computed(function () {
@@ -276,11 +285,18 @@ $(function () {
         };
 
         self.pause = function () {
-            OctoPrint.job.pause();
+            OctoPrint.job.togglePause();
         };
 
         self.cancel = function () {
-            OctoPrint.job.cancel();
+            var title = gettext("Cancel print");
+            var message = _.sprintf(gettext("You are about to cancel %(filename)s."), {filename: self.filenameNoExtension()});
+            var question = gettext("Are you sure you want to cancel this print?");
+            var dialog = {title: title, text: message, question: question};
+            self.flyout.showConfirmationFlyout(dialog)
+                .done(function(){ 
+                    OctoPrint.job.cancel()
+                });
         };
 
         self.gotoFileSelect = function () {
@@ -395,12 +411,14 @@ $(function () {
                 console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_rendering":
-                        //TODO: Maybe show spinner?
+                        if (messageData.filename == self.filename())
+                            self.activities.push('Creating preview');
                         break;
                     case "gcode_preview_ready":
-                        var currentFilename = self.filename();
-                        if (messageData.filename == currentFilename)
+                        if (messageData.filename == self.filename()) {
                             self.refreshPrintPreview(messageData.url);
+                            self.activities.pop('Creating preview');
+                        }
                         break;
                 }
             }
@@ -427,7 +445,10 @@ $(function () {
         self.onAfterBinding = function () {
             self.requestData();
 
-            self.filename.subscribe(function () { self.refreshPrintPreview(); 
+            self.filename.subscribe(function () {
+                self.activities.pop('Creating preview');
+                self.activities.pop('Analyzing');
+                self.refreshPrintPreview();
                 // Important to pass no parameters 
             });
         }

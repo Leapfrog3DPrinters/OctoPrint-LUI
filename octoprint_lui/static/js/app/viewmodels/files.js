@@ -23,6 +23,7 @@ $(function () {
 
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
+        self.currentOrigin = ko.observable("local");
 
         self.selectedFile = undefined;
 
@@ -103,6 +104,10 @@ $(function () {
             _.each(response.files, recursiveCheck);
         };
 
+        self.isOriginLocal = ko.pureComputed(function() {
+            return self.currentOrigin() == "local";
+        })
+
         self.browseLocal = function () {
             if (self.isLoadingFileList())
                 return;
@@ -113,6 +118,7 @@ $(function () {
             var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+                self.currentOrigin("local");
             }).always(function () { self.isLoadingFileList(false); });
         }
 
@@ -129,6 +135,7 @@ $(function () {
                 .fail(self.notifyUsbFail)
                 .then(function (response) {
                     self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+                    self.currentOrigin("usb");
                 }).always(function () { self.isLoadingFileList(false); });
         }
 
@@ -355,6 +362,7 @@ $(function () {
                 var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
                 if (entryElement) {
                     var entryOffset = entryElement.offsetTop;
+                    console.log(entryOffset);
                     $(".gcode_files").slimScroll({ scrollTo: entryOffset + "px" });//TODO
                 }
             }
@@ -465,9 +473,9 @@ $(function () {
                     if (self.flyout.deferred)
                         self.flyout.closeFlyoutAccept();
 
-                    changeTabTo("print");
-
-                }).always(function () { self.isLoadingFile = false; });
+                })
+                .always(function () { self.isLoadingFile = false; })
+                .done(function() {self.browseLocal();});
             }
             else {
                 OctoPrint.files.select(file.origin, file.path)
@@ -477,11 +485,16 @@ $(function () {
                             }
                             if (self.flyout.deferred)
                                 self.flyout.closeFlyoutAccept();
-                            changeTabTo("print");
+                            // changeTabTo("print");
                         }).always(function () { self.isLoadingFile = false; });;
             }
 
         };
+
+        self.printAndChangeTab = function() {
+            changeTabTo("print");
+            self.printerState.print();
+        }
 
         self.copyToUsb = function(file)
         {
@@ -731,7 +744,10 @@ $(function () {
         };
 
         self.templateFor = function (data) {
-            return "files_template_" + data.type;
+            if (data.origin == "usb" && data.type == "machinecode")
+                return "files_template_usb_" + data.type;
+            else
+                return "files_template_" + data.type;
         };
 
         self.templateForSelect = function (data) {
@@ -789,21 +805,21 @@ $(function () {
                 if (data["gcodeAnalysis"]["filament"] && typeof (data["gcodeAnalysis"]["filament"]) == "object") {
                     var filament = data["gcodeAnalysis"]["filament"];
                     if (_.keys(filament).length == 1) {
-                        output += gettext("Filament") + ": " + formatFilament(data["gcodeAnalysis"]["filament"]["tool" + 0]) + "<br>";
+                        output += "<strong>" + gettext("Filament") + ":</strong><br/>" + formatFilament(data["gcodeAnalysis"]["filament"]["tool" + 0]) + "<br>";
                     } else if (_.keys(filament).length > 1) {
                         for (var toolKey in filament) {
                             if (!_.startsWith(toolKey, "tool") || !filament[toolKey] || !filament[toolKey].hasOwnProperty("length") || filament[toolKey]["length"] <= 0) continue;
 
-                            output += gettext("Filament") + " (" + gettext("Tool") + " " + toolKey.substr("tool".length) + "): " + formatFilament(filament[toolKey]) + "<br>";
+                            output += "<strong>" + gettext("Filament ") + "</strong> (" + (toolKey == 'tool0' ? 'Right' : 'Left') + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
                         }
                     }
                 }
-                output += gettext("Estimated Print Time") + ": " + formatDuration(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
+                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatDuration(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
             }
             if (data["prints"] && data["prints"]["last"]) {
-                output += gettext("Last Printed") + ": " + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
+                output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
                 if (data["prints"]["last"]["lastPrintTime"]) {
-                    output += gettext("Last Print Time") + ": " + formatDuration(data["prints"]["last"]["lastPrintTime"]);
+                    output += "<strong>">gettext("Last Print Time") + ":</strong><br/>" + formatDuration(data["prints"]["last"]["lastPrintTime"]);
                 }
             }
             return output;
@@ -824,6 +840,11 @@ $(function () {
                     return item.path.toLowerCase() == filename.toLowerCase();
                 }
             }, false);
+        }
+
+        self.clearQuery = function()
+        {
+            self.searchQuery(undefined);
         }
 
         self.performSearch = function (e) {
@@ -853,6 +874,10 @@ $(function () {
 
         self.onDataUpdaterReconnect = function () {
             self.requestData(undefined, undefined, self.currentPath());
+        };
+
+        self.onServerConnect = self.onServerReconnect = function(payload) {
+            self.requestData();
         };
 
         self.onUserLoggedIn = function (user) {
@@ -887,7 +912,7 @@ $(function () {
                 else
                     self.browseUsb();
             }
-            else if (available) {
+            else if (available && (!self.flyout.isOpen() || !self.flyout.blocking)) {
                 var text = "You have inserted a USB drive.";
                 var question = "Would you like to browse through the files?";
                 var title = "USB drive inserted"
@@ -898,6 +923,13 @@ $(function () {
                    changeTabTo("files");
                    self.browseUsb();
                });
+            }
+            else if (available)
+            {
+                $.notify({
+                    title: gettext("USB drive inserted"),
+                    text: gettext('A USB drive was found. Go to the files tab to load your files.')
+                }, "success");
             }
             else {
                 self.browseLocal();
@@ -1102,7 +1134,16 @@ $(function () {
             self.requestData(undefined, undefined, self.currentPath());
         };
 
+        self.onEventMetadataAnalysisStarted = function (payload) {
+            if (payload.name == self.printerState.filename()) {
+                self.printerState.activities.push('Analyzing');
+            }
+        };
+
         self.onEventMetadataAnalysisFinished = function (payload) {
+            if (payload.name == self.printerState.filename()) {
+                self.printerState.activities.pop('Analyzing');
+            }
             self.requestData(undefined, undefined, self.currentPath());
         };
 
@@ -1119,7 +1160,6 @@ $(function () {
             var messageData = data['data'];
 
             if (plugin == "gcoderender") {
-                console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_ready":
                         self.gcodePreviews.push(messageData.filename.toLowerCase());
@@ -1140,10 +1180,39 @@ $(function () {
                         break;
                     case "media_file_copy_progress":
                         self.setProgressBar(messageData.percentage);
+
+                        if (messageData.percentage < 100)
+                            self.printerState.activities.push('Copying');
+                        else
+                            self.printerState.activities.pop('Copying');
+
+                        break;
+                    case "media_file_copy_complete":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
+                        break;
+                    case "media_file_copy_failed":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
                         break;
 
                     case "gcode_copy_progress":
                         self.setProgressBar(messageData.percentage);
+
+                        if (messageData.percentage < 100)
+                            self.printerState.activities.push('Copying');
+                        else
+                            self.printerState.activities.pop('Copying');
+
+                        break;
+
+                    case "gcode_copy_complete":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
+                        break;
+                    case "gcode_copy_failed":
+                        self.setProgressBar(0);
+                        self.printerState.activities.pop('Copying');
                         break;
 
                 }
@@ -1154,6 +1223,6 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
         ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel"],
-        ["#files", "#firmware_file_flyout", "#mode_select_flyout_content"]
+        ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });
