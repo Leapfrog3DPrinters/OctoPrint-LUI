@@ -866,6 +866,10 @@ $(function () {
             self.requestData(undefined, undefined, self.currentPath());
         };
 
+        self.onServerConnect = self.onServerReconnect = function(payload) {
+            self.requestData();
+        };
+
         self.onUserLoggedIn = function (user) {
             self.uploadButton.fileupload("enable");
             if (self.uploadSdButton) {

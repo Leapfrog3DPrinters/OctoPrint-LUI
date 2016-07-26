@@ -328,6 +328,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         remote_address = get_remote_address(request)
         return remote_address is None
 
+    def get_ui_preemptive_caching_enabled(self):
+        return False
+
     ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request = None):
         # Because blueprint is not protected, manually check for API key

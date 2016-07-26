@@ -1748,7 +1748,7 @@ $bed-height: 180px;
   // }
 
   #print .content > * {
-    width:50%;
+    // width:50%;
   }
 
 
@@ -1759,6 +1759,12 @@ $bed-height: 180px;
   .spool .spool_picture {
     display: none;
     flex-wrap:nowrap;
+  }
+}
+
+@media screen and (max-height: 740px) and (min-width: 790px) {
+  #print .content > * {
+    width:50%;
   }
 }
 

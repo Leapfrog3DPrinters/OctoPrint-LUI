@@ -137,9 +137,8 @@ function DataUpdater(allViewModels) {
             hideOfflineFlyout();
             callViewModels(self.allViewModels, "onServerReconnect");
             callViewModels(self.allViewModels, "onDataUpdaterReconnect");
-
         } else {
-            callViewModels(self.allViewModels, "onServerReconnect");
+            callViewModels(self.allViewModels, "onServerConnect");
         }
 
         // if we have a connected promise, resolve it now

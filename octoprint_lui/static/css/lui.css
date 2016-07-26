@@ -350,7 +350,21 @@ input[type=radio] {
   min-height: 45px; }
 
 .app-header .header_login {
+  /*margin-left: auto;*/ }
+
+.header_status {
+  padding-right: 2em; }
+
+.network-status {
+  margin-right: 60px; }
+
+#ethernet_connectivity {
   margin-left: auto; }
+
+.wifi-status {
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 5px; }
 
 /*
   Tabs
@@ -716,6 +730,8 @@ input[type=radio] {
       font-weight: 700; }
   .Table-item-right {
     text-align: right; }
+  .Table-item-right span {
+    width: 100%; }
   .Table-nested {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -1282,6 +1298,22 @@ select {
           flex-basis: 60%;
   padding-left: 0.5em; }
 
+.file-search-input-container {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex; }
+  .file-search-input-container .button-area {
+    -webkit-box-flex: 1;
+    -webkit-flex: auto;
+        -ms-flex: auto;
+            flex: auto; }
+    .file-search-input-container .button-area i {
+      padding-left: 0.4em; }
+  .file-search-input-container input {
+    padding-top: 7px;
+    padding-bottom: 7px; }
+
 .file_sort {
   -webkit-flex-basis: 5%;
       -ms-flex-preferred-size: 5%;
@@ -1370,7 +1402,7 @@ select {
           flex: 1;
   min-height: 55px; }
 
-.file_status, .file_info, .file_print {
+.file_status, .file_info {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1379,6 +1411,17 @@ select {
   -webkit-flex: 0 0 55px;
       -ms-flex: 0 0 55px;
           flex: 0 0 55px;
+  text-align: right; }
+
+.file_print {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 0;
+  -webkit-flex: 0 0 150px;
+      -ms-flex: 0 0 150px;
+          flex: 0 0 150px;
   text-align: right; }
 
 .file_name {
@@ -1425,6 +1468,9 @@ select {
   white-space: nowrap;
   min-width: 0px; }
 
+.file_entry span.no_files {
+  white-space: normal; }
+
 .file_entry .file_add_info li {
   -webkit-box-flex: 1;
   -webkit-flex-grow: 1;
@@ -1445,22 +1491,21 @@ select {
   -webkit-box-flex: 4;
   -webkit-flex-grow: 4;
       -ms-flex-positive: 4;
-          flex-grow: 4; }
+          flex-grow: 4;
+  font-size: 90%; }
 
 .file_add_info_buttons {
   -webkit-align-self: center;
       -ms-flex-item-align: center;
           align-self: center;
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1; }
+  -webkit-flex-basis: 150px;
+      -ms-flex-preferred-size: 150px;
+          flex-basis: 150px; }
 
 .file_add_info_preview {
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
+  -webkit-flex-basis: 150px;
+      -ms-flex-preferred-size: 150px;
+          flex-basis: 150px;
   -webkit-box-align: start;
   -webkit-align-items: flex-start;
       -ms-flex-align: start;
@@ -1606,6 +1651,34 @@ pre code {
 /* Webcam */
 .webcam-preview {
   width: 100%; }
+
+/* Wireless */
+.clickable {
+  cursor: pointer; }
+
+.fa-signal-0 {
+  width: 0px;
+  overflow: hidden; }
+
+.fa-signal-1 {
+  width: 4px;
+  overflow: hidden; }
+
+.fa-signal-2 {
+  width: 8px;
+  overflow: hidden; }
+
+.fa-signal-3 {
+  width: 13px;
+  overflow: hidden; }
+
+.fa-signal-4 {
+  width: 17px;
+  overflow: hidden; }
+
+.fa-signal-5 {
+  width: 22px;
+  overflow: hidden; }
 
 /* Extruder calibration */
 ul.width-calibrator {
@@ -1774,9 +1847,6 @@ ul.height-calibrator {
         -ms-flex-preferred-size: 50%;
             flex-basis: 50%; }
 
-  #print .content > * {
-    width: 50%; }
-
   .control-extrusion {
     padding-left: 10px; }
 
@@ -1785,6 +1855,9 @@ ul.height-calibrator {
     -webkit-flex-wrap: nowrap;
         -ms-flex-wrap: nowrap;
             flex-wrap: nowrap; } }
+@media screen and (max-height: 740px) and (min-width: 790px) {
+  #print .content > * {
+    width: 50%; } }
 /* 
   Animation Key frames 
 */

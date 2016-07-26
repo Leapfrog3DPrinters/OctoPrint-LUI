@@ -119,25 +119,12 @@ $(function() {
             self.allViewModels = allViewModels;
         };
 
-        self.onServerReconnect = function () {
+        self.onStartupComplete = self.onServerConnect = self.onServerReconnect = function() {
+            if (self.allViewModels == undefined) return;
             self.requestData();
         };
 
-        self.onStartup = function() {
-            self.elementUsernameInput = $("#login_user");
-            self.elementPasswordInput = $("#login_pass");
-            self.elementLoginButton = $("#login_button");
-            if (self.elementUsernameInput && self.elementUsernameInput.length
-                && self.elementLoginButton && self.elementLoginButton.length) {
-                self.elementLoginButton.blur(function() {
-                    self.elementUsernameInput.focus();
-                })
-            }
-        };
 
-        self.onStartupComplete = function() {
-            self.requestData();
-        };
     }
 
     OCTOPRINT_VIEWMODELS.push([

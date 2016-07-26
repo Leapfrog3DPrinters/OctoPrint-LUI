@@ -212,8 +212,6 @@ $(function() {
     }
     log.info("... dependency resolution done");
 
-    var dataUpdater = new DataUpdater(allViewModels);
-
     //~~ Custom knockout.js bindings
 
 
@@ -290,10 +288,6 @@ $(function() {
         callViewModels(allViewModels, "onAfterTabChange", [current, previous]);
     });
 
-
-    //~~ Starting up the app
-
-    callViewModels(allViewModels, "onStartup");
 
     //~~ view model binding
 
@@ -380,9 +374,19 @@ $(function() {
     if (!_.has(viewModelMap, "settingsViewModel")) {
         throw new Error("settingsViewModel is missing, can't run UI");
     }
-    viewModelMap["settingsViewModel"].requestData()
-        .done(bindViewModels);
 
+    log.info("Initial application setup done, connecting to server...");
+    var dataUpdater = new DataUpdater(allViewModels);
+    dataUpdater.connect()
+        .done(function() {
+            log.info("Finalizing application startup");
+
+            //~~ Starting up the app
+            callViewModels(allViewModels, "onStartup");
+
+            viewModelMap["settingsViewModel"].requestData()
+                .done(bindViewModels);
+        });
 
     // Icon bar selection
     $('.icon-bar a').on('click', function() {
