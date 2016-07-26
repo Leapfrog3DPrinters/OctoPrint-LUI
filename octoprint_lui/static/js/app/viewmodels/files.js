@@ -104,6 +104,10 @@ $(function () {
             _.each(response.files, recursiveCheck);
         };
 
+        self.isOriginLocal = ko.pureComputed(function() {
+            return self.currentOrigin() == "local";
+        })
+
         self.browseLocal = function () {
             if (self.isLoadingFileList())
                 return;
@@ -358,6 +362,7 @@ $(function () {
                 var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
                 if (entryElement) {
                     var entryOffset = entryElement.offsetTop;
+                    console.log(entryOffset);
                     $(".gcode_files").slimScroll({ scrollTo: entryOffset + "px" });//TODO
                 }
             }
@@ -468,9 +473,9 @@ $(function () {
                     if (self.flyout.deferred)
                         self.flyout.closeFlyoutAccept();
 
-                    changeTabTo("print");
-
-                }).always(function () { self.isLoadingFile = false; });
+                })
+                .always(function () { self.isLoadingFile = false; })
+                .done(function() {self.browseLocal();});
             }
             else {
                 OctoPrint.files.select(file.origin, file.path)
@@ -480,11 +485,16 @@ $(function () {
                             }
                             if (self.flyout.deferred)
                                 self.flyout.closeFlyoutAccept();
-                            changeTabTo("print");
+                            // changeTabTo("print");
                         }).always(function () { self.isLoadingFile = false; });;
             }
 
         };
+
+        self.printAndChangeTab = function() {
+            changeTabTo("print");
+            self.printerState.print();
+        }
 
         self.copyToUsb = function(file)
         {

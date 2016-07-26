@@ -14,10 +14,6 @@ $(function() {
             self.flyout.showFlyout('login');
         }
 
-        self.onUserLoggedOut = function () {
-            location.reload();
-        }
-
         //TODO: Remove!
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
