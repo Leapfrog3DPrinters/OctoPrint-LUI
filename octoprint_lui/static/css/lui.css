@@ -361,7 +361,7 @@ input[type=radio] {
   padding-right: 2em; }
 
 .network-status {
-  margin-right: 60px; }
+  margin-right: 20px; }
 
 #ethernet_connectivity {
   margin-left: auto; }
@@ -750,6 +750,13 @@ input[type=radio] {
     display: block;
     white-space: nowrap;
     text-overflow: ellipsis; }
+
+#user-list .Table, #settings_plugin_networkmanager .Table {
+  min-height: 13em;
+  -webkit-box-pack: start;
+  -webkit-justify-content: flex-start;
+      -ms-flex-pack: start;
+          justify-content: flex-start; }
 
 .Table-item-grow-1 {
   -webkit-box-flex: 1;
