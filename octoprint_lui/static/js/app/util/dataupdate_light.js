@@ -98,7 +98,7 @@ function DataUpdater(allViewModels) {
             self.allViewModels,
             "onServerDisconnect",
             function() { return !handled; },
-            function(method) { handled = !method() || handled; }
+            function(method) { var result = method(); handled = (result !== undefined && !result) || handled; }
         );
 
         if (handled) {
