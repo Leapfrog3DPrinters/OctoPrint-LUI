@@ -135,8 +135,6 @@ $(function() {
             var totalActual = 0;
             var totalTarget = 0;
 
-
-
             var tools = self.tools();
             for (var i = 0; i < tools.length; i++) {
                 if (lastData.hasOwnProperty("tool" + i)) {
@@ -144,9 +142,9 @@ $(function() {
                     tools[i]["target"](lastData["tool" + i].target);
                 }
                 if (i === 0) {
-                    self.rightProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["actual"]()));
+                    self.rightProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["target"]()));
                 } else if (i === 1) {
-                    self.leftProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["actual"]()));
+                    self.leftProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["target"]()));
                 }
                 if (tools[i]["target"] !== 0) {
                     totalTarget += tools[i]["target"]();

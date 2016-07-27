@@ -1728,7 +1728,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_lui = {
                 "action": "update_lui",
                 "name": "Update LUI",
-                "command": "cd {path}OctoPrint-LUI && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
+                "command": "cd {path}OctoPrint-LUI && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_lui)
@@ -1738,7 +1738,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_networkmanager = {
                 "action": "update_networkmanager",
                 "name": "Update NetworkManager",
-                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
+                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_networkmanager)
@@ -1748,7 +1748,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_octoprint = {
                 "action": "update_octoprint",
                 "name": "Update OctoPrint",
-                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
+                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_octoprint)
@@ -1758,7 +1758,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_flasharduino = {
                 "action": "update_flasharduino",
                 "name": "Update Flash Firmware Module",
-                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
+                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_flasharduino)
@@ -1768,7 +1768,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update_gcoderender = {
                 "action": "update_gcoderender",
                 "name": "Update Gcode Render Module",
-                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
+                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
                 "confirm": False
             }
             actions.append(update_gcoderender)
