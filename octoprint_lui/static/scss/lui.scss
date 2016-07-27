@@ -410,7 +410,7 @@ input[type=radio] {
 
 .network-status
 {
-    margin-right: 60px;
+    margin-right: 20px;
 }
 #ethernet_connectivity{
     margin-left: auto;
@@ -656,6 +656,7 @@ input[type=radio] {
   margin: 10px 0px;
   line-height: 1.5;
 
+
   // .Table-header
   &-header {
     font-weight: 700;
@@ -701,6 +702,11 @@ input[type=radio] {
       white-space: nowrap; 
       text-overflow: ellipsis;
   }
+}
+
+#user-list .Table, #settings_plugin_networkmanager .Table {
+  min-height: 13em; //TODO make better.
+  justify-content: flex-start;
 }
 
 // generate Flexbox grow-rate utility classes
