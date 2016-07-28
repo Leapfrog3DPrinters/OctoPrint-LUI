@@ -39,8 +39,13 @@ $(function() {
         self.tempLoaded = ko.observable(false);
 
 
-        self.rightProgress = ko.observable(undefined);
-        self.leftProgress = ko.observable(undefined);
+        self.toolProgress = ko.observableArray([ko.observable(undefined), ko.observable(undefined)]);
+        self.rightProgress = ko.pureComputed(function(){
+            return self.toolProgress()[0]();
+        });
+        self.leftProgress = ko.pureComputed(function(){
+            return self.toolProgress()[1]();
+        });
         self.bedProgress = ko.observable(undefined);
         self.totalProgress = ko.observable(undefined)
 
@@ -141,11 +146,8 @@ $(function() {
                     tools[i]["actual"](lastData["tool" + i].actual);
                     tools[i]["target"](lastData["tool" + i].target);
                 }
-                if (i === 0) {
-                    self.rightProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["target"]()));
-                } else if (i === 1) {
-                    self.leftProgress(self.heatingProgress(tools[i]["actual"](), tools[i]["target"]()));
-                }
+                self.toolProgress()[i](self.heatingProgress(tools[i]["actual"](), tools[i]["target"]()));
+                
                 if (tools[i]["target"] !== 0) {
                     totalTarget += tools[i]["target"]();
                     totalActual += tools[i]["actual"]();
@@ -240,8 +242,8 @@ $(function() {
         }
 
         self.heatingProgress = function(actual, target) {
-            if (target === 0) {
-                target = 200
+            if (target <= 1) {
+                target = 200;
             }
             var progress = ((actual / target) * 100).toFixed(2);
             var result = (progress <= 100) ? progress : 100;
@@ -338,15 +340,6 @@ $(function() {
             return OctoPrint.printer.setBedTemperatureOffset(parseInt(offset));
         };
 
-        self.handleEnter = function(event, type, item) {
-            if (event.keyCode == 13) {
-                if (type == "target") {
-                    self.setTarget(item);
-                } else if (type == "offset") {
-                    self.setOffset(item);
-                }
-            }
-        };
 
         self._processHeatingStatus = function(tool_status){
             self.isHeating(_.some(tool_status, {'status': 'HEATING'}));         

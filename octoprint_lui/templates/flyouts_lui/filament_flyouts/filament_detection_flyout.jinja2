@@ -160,17 +160,16 @@
       <div class="Table-item">Status</div>
     </div>
     <div id="fd_tool_heating" class = "Table-row">
-      <div class="Table-item Table-item-grow-3">
+    <div class="Table-item Table-item-grow-3">
         <div class="progress progress-large">
-          <span data-bind="text: temperatureState.toolStatus()[filament.toolNum()].text, style: { width: temperatureState.toolProgress()[filament.toolNum()] + '%'}, css: temperatureState.toolStatus()[filament.toolNum()].color"></span>
-          <span class="bg-none" data-bind="text: temperatureState.loadingText, style: {width: '100%'}"></span>
+            <span style="width: 100%" data-bind="text: temperatureState.toolStatus()[toolNum()].text, css: temperatureState.toolStatus()[toolNum()].css_class, style: { width: temperatureState.toolProgress()[toolNum()]() + '%' }"></span>
         </div>
-      </div>
+    </div>
     </div>
     <div id="fd_tool_loading" class="Table-row">
       <div class="Table-item">
         <div class="progress progress-large">
-          <span data-bind="style: { width: filament.filamentLoadProgress() + '%'}">Loading filament...</span>
+          <span data-bind="style: { width: filament.filamentLoadProgress() + '%'}, text: filament.filamentLoadingText"></span>
           <span class="bg-none" data-bind="style: {width: '100%'}"></span>
         </div>
       </div>

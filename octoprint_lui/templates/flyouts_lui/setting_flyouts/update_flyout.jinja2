@@ -2,13 +2,15 @@
   <div class="Table" data-bind="css: {disabled: updating()}">
     {% if debug_lui %}
     <div class="Table-row Table-header">
-      <div class="Table-item">
+      <div class="Table-item Table-item-grow-5">
         Version information
+      </div>
+      <div class="Table-item">
+          <span data-bind="text: modelName"></span>
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
           <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>
-          <span data-bind="text: modelName"></span>
         </span>
       </div>
     </div>
