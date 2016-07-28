@@ -459,7 +459,7 @@
             <ul class="button-area">
               <li class="button failed-button">
                 <a href="#save" data-bind="click: function() { confirmationDeferred.reject() }">
-                  <span>Cancel</span>
+                  <span data-bind="text: confirmation_cancel_text"></span>
                 </a>
               </li>
             </ul>
@@ -468,7 +468,7 @@
             <ul class="button-area">
               <li class="button ok-button">
                 <a href="#save" data-bind="click: function() { confirmationDeferred.resolve() }">
-                  <span>Confirm</span>
+                  <span data-bind="text: confirmation_ok_text"></span>
                 </a>
               </li>
             </ul>
