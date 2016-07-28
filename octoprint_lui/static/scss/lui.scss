@@ -1293,7 +1293,7 @@ select {
   display: flex;
   &.hide{
     display: none;
-}
+  }
 }
 
 .file_add_info_content {
@@ -1307,10 +1307,9 @@ select {
   flex-basis: 150px;
 }
 
-.file_add_info_preview
-{
-    flex-basis: 150px;
-     align-items: flex-start; /* Chrome aspect ratio fix */
+.file_add_info_preview {
+  flex-basis: 150px;
+  align-items: flex-start; /* Chrome aspect ratio fix */
 }
 
 .file_info {
