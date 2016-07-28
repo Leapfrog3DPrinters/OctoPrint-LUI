@@ -13,6 +13,8 @@ $(function() {
     self.confirmation_title = ko.observable(undefined);
     self.confirmation_text = ko.observable(undefined);
     self.confirmation_question = ko.observable(undefined);
+    self.confirmation_ok_text = ko.observable(undefined);
+    self.confirmation_cancel_text = ko.observable(undefined);
     
     self.warnings = ko.observableArray([]);
     self.infos = ko.observableArray([]);
@@ -99,10 +101,14 @@ $(function() {
       var title = data.title || "Are you sure?";
       var text = data.text || "";
       var question = data.question || "Are you sure want to proceed?";
+      var ok_text = data.ok_text || "Confirm";
+      var cancel_text = data.cancel_text || "Cancel";
 
       self.confirmation_title(title);
       self.confirmation_text(text);
       self.confirmation_question(question);
+      self.confirmation_ok_text(ok_text);
+      self.confirmation_cancel_text(cancel_text);
 
       // Show the confirmation flyout
       $('#confirmation_flyout').addClass('active');

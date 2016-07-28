@@ -292,7 +292,9 @@ $(function () {
             var title = gettext("Cancel print");
             var message = _.sprintf(gettext("You are about to cancel %(filename)s."), {filename: self.filenameNoExtension()});
             var question = gettext("Are you sure you want to cancel this print?");
-            var dialog = {title: title, text: message, question: question};
+            var ok_text = gettext("Yes");
+            var cancel_text = gettext("No");
+            var dialog = {title: title, text: message, question: question, ok_text: ok_text, cancel_text: cancel_text};
             self.flyout.showConfirmationFlyout(dialog)
                 .done(function(){ 
                     OctoPrint.job.cancel()
