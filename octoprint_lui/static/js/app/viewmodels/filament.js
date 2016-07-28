@@ -65,6 +65,8 @@ $(function () {
             }
         });
 
+        self.filamentLoadingText = ko.observable(undefined);
+
         self.filamentActionText = ko.observable(undefined);
 
         self.leftAmountString = ko.pureComputed(function () {
@@ -346,6 +348,7 @@ $(function () {
                     break;
                 case "filament_loading":
                     // Show loading info
+                    self.filamentLoadingText("Loading filament...")
                     break;
                 case "filament_load_progress":
                     self.filamentInProgress(true);
@@ -360,6 +363,7 @@ $(function () {
                     break;
                 case "filament_unloading":
                     // Show unloading 
+                    self.filamentLoadingText("Unloading filament...");
                     break;
                 case "filament_finished":
                     self.filamentInProgress(false);

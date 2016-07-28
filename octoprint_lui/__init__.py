@@ -180,7 +180,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self.model = "Xeed"
         
-        self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
+        self._logger.debug("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
 
         ##~ USB init
         self._init_usb()
@@ -244,27 +244,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.fetch_git_repo(update['path'])
 
     def is_update_needed(self, path):
-        self._logger.info(path)
         local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
         remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
         base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
 
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
-            self._logger.info("Git with path: {path} is up-to-date".format(path=path))
+            self._logger.debug("Git with path: {path} is up-to-date".format(path=path))
             return False 
         elif(local == base):
             ##~ Local is behind, we need to pull
-            self._logger.info("Git with path: {path} needs to be pulled".format(path=path))
+            self._logger.debug("Git with path: {path} needs to be pulled".format(path=path))
             return True
         elif(remote == base):
             ##~ This should never happen and should actually call a fresh reset of the git TODO
-            self._logger.info("Git with path: {path} needs to be pushed".format(path=path))
+            self._logger.debug("Git with path: {path} needs to be pushed".format(path=path))
             return True
 
 
     def fetch_git_repo(self, path):
-        self._logger.info(path)
         try:
             output = subprocess.check_output(['git', 'fetch'],cwd=path)
         except subprocess.CalledProcessError as err:
@@ -762,7 +760,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Now the full path is known, remove any folder names from file name
         _, filename = octoprint.server.fileManager.split_path("usb", filename)
 
-        self._logger.info("File selected: %s" % path)
+        self._logger.debug("File selected: %s" % path)
         
         upload = octoprint.filemanager.util.DiskFileWrapper(filename, path, move = False)
         
@@ -908,7 +906,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         folder_path = os.path.join(drive_folder, dst_folder)
         new_full_path = os.path.join(folder_path, filename)
 
-        self._logger.info("Copying file to: %s" % new_full_path);
+        self._logger.debug("Copying file to: %s" % new_full_path);
         
         # Helpers to check copying status
         def on_file_copy():
@@ -985,13 +983,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.set_extrusion_mode("relative")
            
             if self.loading_for_purging:
-                self._logger.info("load_filament for purging")
+                self._logger.debug("load_filament for purging")
                 load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
                 self.load_amount_stop = 2
                 self.loading_for_purging = False
             elif self.model == "Xeed": ## Switch on model for filament loading
-                self._logger.info("load_filament for Xeed")
+                self._logger.debug("load_filament for Xeed")
                 # We can set one change of extrusion and speed during the timer
                 # Start with load_initial and change to load_change at load_change['start']
                 load_initial=dict(amount=17.0, speed=2000)
@@ -1000,7 +998,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Total amount being loaded
                 self.load_amount_stop = 2100
             else:
-                self._logger.info("load_filament for Bolt")
+                self._logger.debug("load_filament for Bolt")
                 # Bolt loading
                 load_initial=dict(amount=17.0, speed=2000)
                 load_change = None
@@ -1097,7 +1095,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return self.load_amount <= self.load_amount_stop
 
     def _load_filament_condition(self):
-        self._logger.info("_load_filament_condition")
+        self._logger.debug("_load_filament_condition")
 
         # When loading is complete, set new loaded filament
         new_filament = {
@@ -1119,7 +1117,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_client_skip_unload()
 
     def _load_filament_finished(self):
-        self._logger.info("_load_filament_finished")
+        self._logger.debug("_load_filament_finished")
         # Loading is finished, turn off heaters, reset load timer and back to normal movements
         self.restore_extrusion_mode()
         self.load_filament_timer = None
@@ -1130,7 +1128,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.load_filament_timer = None
 
     def _load_filament_cont_finished(self):
-        self._logger.info("_load_filament_cont_finished")
+        self._logger.debug("_load_filament_cont_finished")
         self.restore_extrusion_mode()
         self.load_filament_timer = None
         self.send_client_loading_cont_stop()
@@ -1298,7 +1296,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.movement_mode = "relative"
             self.extrusion_mode = "relative" #TODO: Not entirely correct. If G90 > G91 > G90, extrusion_mode would be incorrectly set to relative
 
-        self._logger.info("Command: %s" % cmd)
+        self._logger.debug("Command: %s" % cmd)
         #self._logger.info("New movement mode: %s" % self.movement_mode)
         #self._logger.info("New extrusion mode: %s" % self.extrusion_mode)
 
@@ -1311,7 +1309,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.extrusion_mode = "relative"
             self.relative_extrusion_trigger = True
         
-        self._logger.info("Command: %s" % cmd)
+        self._logger.debug("Command: %s" % cmd)
         #self._logger.info("New movement mode: %s" % self.movement_mode)
         #self._logger.info("New extrusion mode: %s" % self.extrusion_mode)
 
@@ -1319,7 +1317,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Process a G92 command and handle zero-ing of extrusion distances
         if self.regexExtruder.search(cmd):
             self.last_extrusion = 0
-            self._logger.info("Extruder zero: %s" % cmd)
+            self._logger.debug("Extruder zero: %s" % cmd)
 
     def _process_G0_G1(self, cmd, comm_instance):
         #self._logger.info("Command: %s" % cmd)
@@ -1545,7 +1543,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ## This feels quite hacky so it might need to be altered. This is written to 
         ## counter loading filament with the same profile deadlock.
         
-        self._logger.info("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
+        self._logger.debug("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
         tool_num = self._get_tool_num(tool)
 
@@ -1707,7 +1705,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         self.update_info_list()
-        self._logger.info(self.update_info)
+        self._logger.debug(self.update_info)
 
 
     def _add_actions(self):
