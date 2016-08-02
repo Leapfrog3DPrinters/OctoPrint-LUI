@@ -25,7 +25,7 @@ $(function () {
         self.selectedFirmwareFile = ko.observable(undefined);
         self.currentOrigin = ko.observable("local");
 
-        self.selectedFile = undefined;
+        self.selectedFile = ko.observable(undefined);
 
         self.searchQuery = ko.observable(undefined);
         self.searchQuery.subscribe(function () {
@@ -268,7 +268,7 @@ $(function () {
 
 
         self.listHelper.selectedItem.subscribe(function(newValue) {
-            self.selectedFile = newValue;
+            self.selectedFile(newValue);
         });
 
         self.highlightCurrentFilename = function() {
@@ -451,8 +451,6 @@ $(function () {
 
             self.isLoadingFile = true;
 
-            self.selectedFile = file;
-
             if (file.type == "firmware") {
                 //Check if we're living in a flyout
                 if (self.flyout.deferred !== undefined) {
@@ -545,7 +543,7 @@ $(function () {
 
         self.startPrint = function() {
             var mode = self.printerState.printMode();
-            var file = self.selectedFile;
+            var file = self.selectedFile();
 
             var withinPrintDimensions = self.evaluatePrintDimensions(file, mode, true);
 
@@ -562,6 +560,43 @@ $(function () {
             // close flyout. 
         };
 
+        self.isDualPrint = ko.computed(function(){
+            // Checks if selected file uses both tools for printing.
+            // At the moment tools is hardcoded, should be taken from 
+            // printer profile. 
+            // There is a length check in there, because the analyser 
+            // sometimes falsely puts some extrusion on one of the tools 
+            // at start up script (or something)
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
+                var analysis = self.selectedFile()["gcodeAnalysis"];
+                if (!analysis) {
+                    return false;
+                }
+                var filamentInfo = self.selectedFile()['gcodeAnalysis']['filament'];
+                var requiredTools = ["tool0", "tool1"];
+                var lengthThreshold = 100;
+
+                if (requiredTools.every(function(t) { return t in filamentInfo})) {
+                    return(_.every(filamentInfo, function(t){ return t['length'] > lengthThreshold}));
+                } else {
+                    return false;
+                }
+
+            }
+        });
+
+        self.isWithinPrintDimensionsSyncMirrorMode = ko.computed(function() {
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
+                return self.evaluatePrintDimensions(self.selectedFile(), "sync", false);
+            }
+        })
+
+        self.isWithinPrintDimensions = ko.computed(function() {
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
+                return self.evaluatePrintDimensions(self.selectedFile(), "normal", false);
+            }
+        })
+
         self.evaluatePrintDimensions = function(data, mode, notify) {
             if (!self.settingsViewModel.feature_modelSizeDetection()) {
                 return true;
@@ -569,7 +604,7 @@ $(function () {
 
             var analysis = data["gcodeAnalysis"];
             if (!analysis) {
-                return true;
+                return false;
             }
 
             var printingArea = data["gcodeAnalysis"]["printingArea"];
@@ -674,8 +709,6 @@ $(function () {
                 }
                 
             }
-
-
 
             //warn user
             if (info != "") {

@@ -148,7 +148,7 @@ $(function() {
                 }
                 self.toolProgress()[i](self.heatingProgress(tools[i]["actual"](), tools[i]["target"]()));
                 
-                if (tools[i]["target"] !== 0) {
+                if (tools[i]["target"]() !== 0) {
                     totalTarget += tools[i]["target"]();
                     totalActual += tools[i]["actual"]();
                 }
