@@ -239,6 +239,11 @@ $(function () {
             self.estimatedPrintTime(data.estimatedPrintTime);
             self.lastPrintTime(data.lastPrintTime);
 
+            if(!data.estimatedPrintTime || !data.lastPrintTime || !data.filament)
+                self.activities.push('Analyzing');
+            else
+                self.activities.pop('Analyzing');
+
             var result = [];
             if (data.filament && typeof (data.filament) == "object" && _.keys(data.filament).length > 0) {
                 for (var key in data.filament) {
@@ -365,7 +370,7 @@ $(function () {
 
             if (url)
             {
-                self.printPreviewUrl(url + "?timestamp=" + new Date().getTime());
+                self.printPreviewUrl(url);
             }
             else if (filename)
             {
@@ -373,7 +378,7 @@ $(function () {
                     .done(function (data)
                      {
                         if(data.status == 'ready')
-                            self.printPreviewUrl(data.url + "?timestamp=" + new Date().getTime());
+                            self.printPreviewUrl(data.previewUrl);
                         else
                             self.printPreviewUrl(undefined)
                     }).fail(function()
@@ -399,6 +404,8 @@ $(function () {
         };
 
         self.requestData = function () {
+            self.refreshPrintPreview();
+
             OctoPrint.simpleApiGet('lui', {
                 success: self.fromResponse
             });
@@ -418,7 +425,7 @@ $(function () {
                         break;
                     case "gcode_preview_ready":
                         if (messageData.filename == self.filename()) {
-                            self.refreshPrintPreview(messageData.url);
+                            self.refreshPrintPreview(messageData.previewUrl);
                             self.activities.pop('Creating preview');
                         }
                         break;
@@ -450,8 +457,7 @@ $(function () {
             self.filename.subscribe(function () {
                 self.activities.pop('Creating preview');
                 self.activities.pop('Analyzing');
-                self.refreshPrintPreview();
-                // Important to pass no parameters 
+                self.refreshPrintPreview(); // Important to pass no parameters 
             });
         }
     }

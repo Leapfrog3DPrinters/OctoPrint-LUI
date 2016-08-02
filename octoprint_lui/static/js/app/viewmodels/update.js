@@ -113,7 +113,7 @@ $(function () {
             var items = self.updateinfo();
             var data = items[self.updateCounter];
 
-            if (!data.update) {
+            if (!data.update()) {
                 self.updateCounter++;
 
                 if (self.updateCounter == self.updateTarget)

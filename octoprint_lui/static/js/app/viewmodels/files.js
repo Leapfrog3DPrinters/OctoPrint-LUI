@@ -88,8 +88,9 @@ $(function () {
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
                 if (!element.hasOwnProperty("previewUrl")) {
-                    if (self.gcodePreviews.find(function (item) { return item.toLowerCase() == element["name"].toLowerCase(); }))
-                        element.previewUrl = ko.observable("/plugin/gcoderender/preview/" + element["name"]);
+                    previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == element["name"].toLowerCase(); });
+                    if (previewItem)
+                        element.previewUrl = ko.observable(previewItem.previewUrl);
                     else
                         element.previewUrl = ko.observable("");
                 }
@@ -1195,8 +1196,8 @@ $(function () {
             if (plugin == "gcoderender") {
                 switch (messageType) {
                     case "gcode_preview_ready":
-                        self.gcodePreviews.push(messageData.filename.toLowerCase());
-                        self.refreshPrintPreview(messageData.filename, messageData.url);
+                        self.gcodePreviews.push({ filename: messageData.filename, previewUrl: messageData.previewUrl });
+                        self.refreshPrintPreview(messageData.filename, messageData.previewUrl);
                         break;
                 }
             }
