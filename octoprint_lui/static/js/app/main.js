@@ -438,18 +438,13 @@ $(function() {
     // Don't drag links on touch screen
     $('a, div').on('dragstart', function(event) {event.preventDefault();});
 
-    // Allow global click on overlay to cancel flyout
-
-    var offline_blocking = false;
     var flyout = viewModelMap["flyoutViewModel"];
     var $overlay = $('.overlay');
     $overlay.bind("click", function(e) {
         e.preventDefault();
-        if (offline_blocking) {
-            return;
-        }
 
-        if (!flyout.blocking &&
+        if (!offline_blocking &&
+            !flyout.blocking &&
             flyout.warnings().length == 0 &&
             flyout.infos().length == 0 &&
             flyout.confirmationDeferred === undefined)

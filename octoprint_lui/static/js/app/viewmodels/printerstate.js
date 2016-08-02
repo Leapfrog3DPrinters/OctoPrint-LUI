@@ -239,7 +239,7 @@ $(function () {
             self.estimatedPrintTime(data.estimatedPrintTime);
             self.lastPrintTime(data.lastPrintTime);
 
-            if(!data.estimatedPrintTime || !data.lastPrintTime || !data.filament)
+            if (data.file && data.file.name && (!data.estimatedPrintTime || !data.filament))
                 self.activities.push('Analyzing');
             else
                 self.activities.pop('Analyzing');
