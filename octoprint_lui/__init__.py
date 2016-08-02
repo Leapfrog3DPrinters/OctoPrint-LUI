@@ -77,6 +77,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
         self.movement_mode = "absolute"
+        
         self.relative_extrusion_trigger = False
         self.current_print_extrusion_amount = None
         self.last_print_extrusion_amount = 0.0
@@ -384,6 +385,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
                     restore_calibration_values = [],
+                    prepare_for_calibration_position = [],
                     move_to_calibration_position = ["corner_num"],
                     restore_from_calibration_position = [],
                     start_print = ["mode"],
@@ -416,36 +418,42 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._printer.start_print()
 
+    def _on_api_command_prepare_for_calibration_position(self):
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S0"])
+            self.print_mode = "normal"
+        
+        self.set_movement_mode("absolute")
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
         
-        self.set_movement_mode("absolute")
-
         if self.model == "Bolt":
-            if corner["mode"] == 'normal':
+            if corner["mode"] == 'normal' and not self.print_mode == "normal":
                 self._printer.commands(["M605 S0"])
-            elif corner["mode"] == 'mirror':
+                self._printer.home(['x'])
+                self.print_mode = "normal"
+            elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
                 self._printer.commands(["M605 S3"])
+                self._printer.home(['x'])
+                self.print_mode = "mirror"
 
-        self._printer.commands(["M84 S300"]) # Set stepper disable timeout to 5min
-        self._printer.home(['x', 'y', 'z'])
         self._printer.change_tool(corner["tool"])
         self._printer.commands(['G1 Z5'])
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
         self._printer.commands(['G1 Z0'])
 
-        if self.model == "Bolt":
-            self._printer.commands(["M605 S1"])
-
-        self.restore_movement_mode()
-
     def _on_api_command_restore_from_calibration_position(self):
+        self._printer.commands(["M605 S1"])
         self._printer.home(['y', 'x'])
 
         if self.model == "Bolt":
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
             self._printer.commands(["M84"]) # And disable them right away for now
+
+        self.restore_movement_mode()
 
     def _on_api_command_start_calibration(self, calibration_type):
         self.calibration_type = calibration_type

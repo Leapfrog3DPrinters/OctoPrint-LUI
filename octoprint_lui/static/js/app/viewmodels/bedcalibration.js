@@ -59,6 +59,7 @@ $(function () {
 
         self.startManualBedCalibration = function()
         {
+            self._sendApi({ "command": "prepare_for_calibration_position" });
             self.showManualBedCalibration(true);
             self.mayAbort(false);
             self.mayAccept(true);
