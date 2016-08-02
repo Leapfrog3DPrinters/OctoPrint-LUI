@@ -201,6 +201,19 @@ a {
   border-bottom: 2px solid #FF9734;
   height: 1.8em; }
 
+/* Borders */
+.warning-border {
+  border: 2px solid #EDDB53; }
+
+.main-border {
+  border: 2px solid #434A54; }
+
+.ok-border {
+  border: 2px solid #A9CC3C; }
+
+.failed-border {
+  border: 2px solid #CC2B14; }
+
 /*
  Stop light
 */
@@ -1633,6 +1646,15 @@ pre code {
 
 .fa-main-color {
   color: #434A54; }
+
+.fa-ok-color {
+  color: #A9CC3C; }
+
+.fa-failed-color {
+  color: #CC2B14; }
+
+.fa-warning-color {
+  color: #EDDB53; }
 
 /* Startup */
 .startup_step {

@@ -984,7 +984,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
            
             if self.loading_for_purging:
                 self._logger.debug("load_filament for purging")
-                load_initial=dict(amount=17.0, speed=2000)
+                load_initial=dict(amount=18.0, speed=2000)
                 load_change = None
                 self.load_amount_stop = 2
                 self.loading_for_purging = False
@@ -992,7 +992,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.debug("load_filament for Xeed")
                 # We can set one change of extrusion and speed during the timer
                 # Start with load_initial and change to load_change at load_change['start']
-                load_initial=dict(amount=17.0, speed=2000)
+                load_initial=dict(amount=18.0, speed=2000)
                 load_change=dict(start=1900, amount=2.5, speed=300)
 
                 # Total amount being loaded
@@ -1000,7 +1000,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.debug("load_filament for Bolt")
                 # Bolt loading
-                load_initial=dict(amount=17.0, speed=2000)
+                load_initial=dict(amount=18.0, speed=2000)
                 load_change = None
                 self.load_amount_stop = 100
 
@@ -1026,7 +1026,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # We can set one change of extrusion and speed during the timer
                 # Start with load_initial and change to load_change at load_change['start']
                 unload_initial=dict(amount= -2.5, speed=300)
-                unload_change=dict(start=30, amount= -16.67, speed=2000)
+                unload_change=dict(start=30, amount= -18, speed=2000)
 
                 # Total amount being loaded
                 self.load_amount_stop = 2100
@@ -1619,9 +1619,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x', 'y'])
             self._printer.commands(["G1 X30 F10000"])
             self._printer.commands(["G1 Y1 F15000"])
+            self._printer.commands(["M605 S1"])
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
-            self._printer.commands(["M605 S1"])
         elif self.model == "Xeed":
             self._printer.commands(["G1 X190 Y20 F6000"]) 
             if self.filament_change_tool:

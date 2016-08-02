@@ -244,6 +244,25 @@ a {
   height: 1.8em;
 }
 
+
+/* Borders */
+
+.warning-border {
+  border: 2px solid $color-warning;
+}
+
+.main-border {
+  border: 2px solid $main-color;
+}
+
+.ok-border {
+  border: 2px solid $color-ok;
+}
+
+.failed-border {
+  border: 2px solid $color-failed;
+}
+
 /*
  Stop light
 */
@@ -1423,6 +1442,18 @@ pre code {
 
 .fa-main-color {
   color: $main-color;
+}
+
+.fa-ok-color {
+  color: $color-ok;
+}
+
+.fa-failed-color {
+  color: $color-failed;
+}
+
+.fa-warning-color {
+  color: $color-warning;
 }
 
 /* Startup */
