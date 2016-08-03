@@ -186,9 +186,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ USB init
         self._init_usb()
 
-        ##~ Powerbutton init
-        self._init_powerbutton()
-
         ##~ Init Update
         self._init_update()
 
@@ -1397,6 +1394,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.is_homed = True
                 self.is_homing = False
                 self.send_client_is_homed()
+                ##~ Now we have control over the printer, also take over control of the power button
+                self._init_powerbutton()
             
         if self.levelbed_command_sent:
             if "MaxCorrectionValue" in line:

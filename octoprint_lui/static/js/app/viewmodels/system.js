@@ -4,7 +4,6 @@ $(function() {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
-        self.printerState = parameters[2];
 
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
@@ -140,7 +139,7 @@ $(function() {
             if (plugin == "lui") {
                 switch (messageType) {
                     case "powerbutton_pressed":
-                        self.systemShutdown(self.printerState.isPrinting() || self.printerState.isPaused());
+                        self.systemShutdown();
                 }
             }
         }
@@ -149,7 +148,7 @@ $(function() {
     // view model class, parameters for constructor, container to bind to
     ADDITIONAL_VIEWMODELS.push([
         SystemViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel"],
+        ["loginStateViewModel", "flyoutViewModel"],
         []
     ]);
 });
