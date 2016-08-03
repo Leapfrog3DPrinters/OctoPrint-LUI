@@ -220,6 +220,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Bed calibration positions
         ## TODO: Make these dynamic. Maybe extend with Z and use it as generic positions table?
+        self.manual_bed_calibration_tool = None
         self.manual_bed_calibration_positions = dict()
         self.manual_bed_calibration_positions["Bolt"] = []
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 50, 'Y': 300, 'mode': 'normal' }) # 0=Top left
@@ -425,6 +426,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         self.set_movement_mode("absolute")
         self._printer.home(['x', 'y', 'z'])
+        self._printer.change_tool("tool1")
+        self.manual_bed_calibration_tool = "tool1"
         self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
@@ -440,12 +443,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._printer.home(['x'])
                 self.print_mode = "mirror"
 
-        self._printer.change_tool(corner["tool"])
+        if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
+            self._printer.home(['x'])
+            self._printer.change_tool(corner["tool"])
+            self.manual_bed_calibration_tool = corner["tool"]
+        
         self._printer.commands(['G1 Z5'])
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
         self._printer.commands(['G1 Z0'])
 
     def _on_api_command_restore_from_calibration_position(self):
+        self._printer.commands(['G1 Z5'])
         self._printer.commands(["M605 S1"])
         self._printer.home(['y', 'x'])
 
@@ -1627,7 +1635,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x', 'y'])
             self._printer.commands(["G1 X30 F10000"])
             self._printer.commands(["G1 Y1 F15000"])
-            self._printer.commands(["M605 S1"])
+            self._printer.commands(["M605 S0"])
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
         elif self.model == "Xeed":

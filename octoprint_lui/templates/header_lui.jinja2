@@ -14,7 +14,7 @@
     {% endif %} 
     #}
     <div class="header_status">
-        Status: <span data-bind="text: printerState.stateString"></span>
+        <span data-bind="text: printerState.stateString"></span>
     </div>
     <div class="header_activity" data-bind="visible: printerState.currentActivity()">
       <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
@@ -41,7 +41,7 @@
   </div>
   <!-- /ko -->
   {% endif %}
-    <div class="header_login">
+    <div class="header_login" {% if not local_addr %} style="margin-left: auto" {% endif %}>
         <a href="#login" data-bind="click: showLoginFlyout"><i class = "fa fa-power-off" style="padding-right: 0.5em;"></i>{%- if not local_addr -%}<span data-bind="text: loginState.userMenuText">Login</span>{%- endif -%}</a>
     </div>
 </header>
