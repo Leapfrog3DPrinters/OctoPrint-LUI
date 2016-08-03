@@ -4,6 +4,7 @@ $(function() {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
+        self.printerState = parameters[2];
 
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
@@ -95,9 +96,15 @@ $(function() {
             self.triggerCommand(command);
         };
 
-        self.systemShutdown = function() {
-            var dialog = {'title': 'Shutdown system', 'text': 'You are about to shutdown the system.', 'question' : 'Do you want to continue?'};
-            var command = {'actionSource': 'custom', 'action': 'shutdown', 'name': 'Shutdown', confirm: dialog};
+        self.systemShutdown = function (confirm) {
+            confirm = confirm !== false;
+
+            var dialog = { 'title': 'Shutdown system', 'text': 'You are about to shutdown the system.', 'question': 'Do you want to continue?' };
+            var command = { 'actionSource': 'custom', 'action': 'shutdown', 'name': 'Shutdown'}
+
+            if (confirm)
+                command.confirm = dialog;
+
             self.triggerCommand(command);
         };
 
@@ -125,12 +132,24 @@ $(function() {
                 self.requestData();
             }
         };
+
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
+            var messageType = data['type'];
+            var messageData = data['data'];
+
+            if (plugin == "lui") {
+                switch (messageType) {
+                    case "powerbutton_pressed":
+                        self.systemShutdown(self.printerState.isPrinting() || self.printerState.isPaused());
+                }
+            }
+        }
     }
 
     // view model class, parameters for constructor, container to bind to
     ADDITIONAL_VIEWMODELS.push([
         SystemViewModel,
-        ["loginStateViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel"],
         []
     ]);
 });

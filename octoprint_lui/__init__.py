@@ -186,6 +186,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ USB init
         self._init_usb()
 
+        ##~ Powerbutton init
+        self._init_powerbutton()
+
         ##~ Init Update
         self._init_update()
 
@@ -403,7 +406,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
-        self._on_api_command_start_calibration("bed_width_large")
+        self._on_powerbutton_press(16)
 
     def _on_api_command_unselect_file(self):
         self._printer.unselect_file()
@@ -1670,6 +1673,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Hit the first event in any case
         self._on_media_folder_updated(None)
+
+    def _init_powerbutton(self):
+        if self.model == "Bolt":
+            from octoprint_lui.util.powerbutton import PowerButtonHandler
+            self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
+            
+    def _on_powerbutton_press(self, channel):
+        self._send_client_message("powerbutton_pressed")
 
     def _init_update(self):
 
