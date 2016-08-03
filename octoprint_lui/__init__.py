@@ -329,7 +329,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return remote_address is None
 
     def get_ui_preemptive_caching_enabled(self):
-        return False
+        return True
 
     ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request = None):
@@ -536,8 +536,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
         
         if self.model == "Bolt":
-            self._printer.commands("M219 S%d" % width_correction)
-            self._printer.commands("M50 Y%d" % extruder_offset_y)
+            self._printer.commands("M219 S%f" % width_correction)
+            self._printer.commands("M50 Y%f" % extruder_offset_y)
 
         if persist:
             self._printer.commands("M500")
