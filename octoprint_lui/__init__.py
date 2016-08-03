@@ -432,7 +432,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
-        
+        self._printer.commands(['G1 Z5'])
+
         if self.model == "Bolt":
             if corner["mode"] == 'normal' and not self.print_mode == "normal":
                 self._printer.commands(["M605 S0"])
@@ -448,7 +449,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.change_tool(corner["tool"])
             self.manual_bed_calibration_tool = corner["tool"]
         
-        self._printer.commands(['G1 Z5'])
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
         self._printer.commands(['G1 Z0'])
 

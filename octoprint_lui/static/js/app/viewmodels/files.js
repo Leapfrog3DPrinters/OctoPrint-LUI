@@ -113,14 +113,16 @@ $(function () {
             if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList(true)
-            var filenameToFocus = '';
-            var locationToFocus = '';
+            self.isLoadingFileList(true);
+            var filenameToFocus = self.selectedFile().name;
+            var locationToFocus = undefined;
             var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
                 self.currentOrigin("local");
-            }).always(function () { self.isLoadingFileList(false); });
+            }).always(function () { 
+                self.isLoadingFileList(false);
+            });
         }
 
         self.browseUsb = function () {
@@ -362,8 +364,8 @@ $(function () {
                 }
                 var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
                 if (entryElement) {
-                    var entryOffset = entryElement.offsetTop;
-                    console.log(entryOffset);
+                    var entryOffset = $(entryElement).position().top;
+                    console.log("Entry offset: " + entryOffset);
                     $(".gcode_files").slimScroll({ scrollTo: entryOffset + "px" });//TODO
                 }
             }
@@ -474,7 +476,9 @@ $(function () {
 
                 })
                 .always(function () { self.isLoadingFile = false; })
-                .done(function() {self.browseLocal();});
+                .done(function () {
+                    self.browseLocal();
+                });
             }
             else {
                 OctoPrint.files.select(file.origin, file.path)
@@ -1196,6 +1200,11 @@ $(function () {
             if (plugin == "gcoderender") {
                 switch (messageType) {
                     case "gcode_preview_ready":
+                        previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == messageData.filename.toLowerCase() });
+
+                        if (previewItem)
+                            self.gcodePreviews.pop(previewItem)
+
                         self.gcodePreviews.push({ filename: messageData.filename, previewUrl: messageData.previewUrl });
                         self.refreshPrintPreview(messageData.filename, messageData.previewUrl);
                         break;

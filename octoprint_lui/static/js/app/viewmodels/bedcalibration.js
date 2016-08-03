@@ -32,6 +32,7 @@ $(function () {
             self.autoBedCalibrationProgressColor("rgb(" + self.gaugeColorStart[0] + "," + self.gaugeColorStart[2] + "," + self.gaugeColorStart[1] + ")");
             self.mayAbort(true);
             self.mayAccept(false);
+            $('.bed-canvas-item').removeClass('active');
         }
 
         self.onBedcalibrationFlyoutShown = function () {
