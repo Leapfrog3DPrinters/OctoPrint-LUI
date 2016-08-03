@@ -1,3 +1,5 @@
+import subprocess
+
 try:
     import RPi.GPIO as GPIO
 except RuntimeError:
@@ -11,10 +13,15 @@ BOUNCETIME = 1000 # minimal press interval in ms
 
 class PowerButtonHandler:
     def __init__(self, callback):
-        self._printer = printer
+        # Set pins
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(PWR_PIN, GPIO.OUT, initial=GPIO.HIGH)
         GPIO.setup(LED_PIN, GPIO.OUT, initial=GPIO.HIGH)
         GPIO.setup(BUTTON_PIN, GPIO.IN)
 
+        # Listen for button events on seperate thread
         GPIO.add_event_detect(BUTTON_PIN, GPIO.RISING, callback=callback, bouncetime=BOUNCETIME)
+
+        # Close intermediate button 'service'
+        subprocess.call("sudo service aasoftpoweroff stop".split())
+
