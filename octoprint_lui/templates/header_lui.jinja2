@@ -37,7 +37,7 @@
     </a>
   </div>
   <div id="wifi_connectivity" class="network-status">
-    <a href="#"><img src="" class="wifi-status" data-bind="attr: { src: status.connection.wifi ? '{{ url_for("plugin.lui.static", filename="img/wifi.svg") }}' : '{{ url_for("plugin.lui.static", filename="img/wifi-slash.svg") }}' }" /></a>
+    <a href="#"><img src="" class="wifi-status" data-bind="attr: { src: status.connection.wifi() ? '{{ url_for("plugin.lui.static", filename="img/wifi.svg") }}' : '{{ url_for("plugin.lui.static", filename="img/wifi-slash.svg") }}' }" /></a>
   </div>
   <!-- /ko -->
   {% endif %}
