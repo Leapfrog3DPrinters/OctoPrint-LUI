@@ -239,11 +239,6 @@ $(function () {
             self.estimatedPrintTime(data.estimatedPrintTime);
             self.lastPrintTime(data.lastPrintTime);
 
-            if (data.file && data.file.name && (!data.estimatedPrintTime || !data.filament))
-                self.activities.push('Analyzing');
-            else
-                self.activities.pop('Analyzing');
-
             var result = [];
             if (data.filament && typeof (data.filament) == "object" && _.keys(data.filament).length > 0) {
                 for (var key in data.filament) {
@@ -420,13 +415,15 @@ $(function () {
                 console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_rendering":
-                        if (messageData.filename == self.filename())
+                        if (messageData.filename == self.filename()) {
+                            self.printPreviewUrl(undefined); // Remove old preview
                             self.activities.push('Creating preview');
+                        }
                         break;
                     case "gcode_preview_ready":
                         if (messageData.filename == self.filename()) {
                             self.refreshPrintPreview(messageData.previewUrl);
-                            self.activities.pop('Creating preview');
+                            self.activities.remove('Creating preview');
                         }
                         break;
                 }
@@ -451,14 +448,25 @@ $(function () {
             }
         }
 
+        self.updateAnalyzingActivity = function()
+        {
+            if (self.filename() && (!self.estimatedPrintTime() || self.filament().length == 0))
+                self.activities.push('Analyzing');
+            else
+                self.activities.remove('Analyzing');
+        }
+
         self.onAfterBinding = function () {
             self.requestData();
 
             self.filename.subscribe(function () {
-                self.activities.pop('Creating preview');
-                self.activities.pop('Analyzing');
+                self.activities.remove('Creating preview');
+                self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
             });
+
+            self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
+            self.filament.subscribe(self.updateAnalyzingActivity);
         }
     }
 

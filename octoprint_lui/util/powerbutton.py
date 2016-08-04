@@ -17,7 +17,7 @@ class PowerButtonHandler:
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(PWR_PIN, GPIO.OUT, initial=GPIO.HIGH)
         GPIO.setup(LED_PIN, GPIO.OUT, initial=GPIO.HIGH)
-        GPIO.setup(BUTTON_PIN, GPIO.IN)
+        GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
         # Listen for button events on seperate thread
         GPIO.add_event_detect(BUTTON_PIN, GPIO.RISING, callback=callback, bouncetime=BOUNCETIME)

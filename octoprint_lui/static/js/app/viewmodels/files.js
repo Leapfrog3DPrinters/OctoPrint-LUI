@@ -1173,15 +1173,9 @@ $(function () {
         };
 
         self.onEventMetadataAnalysisStarted = function (payload) {
-            if (payload.name == self.printerState.filename()) {
-                self.printerState.activities.push('Analyzing');
-            }
         };
 
         self.onEventMetadataAnalysisFinished = function (payload) {
-            if (payload.name == self.printerState.filename()) {
-                self.printerState.activities.pop('Analyzing');
-            }
             self.requestData(undefined, undefined, self.currentPath());
         };
 
@@ -1227,16 +1221,16 @@ $(function () {
                         if (messageData.percentage < 100)
                             self.printerState.activities.push('Copying');
                         else
-                            self.printerState.activities.pop('Copying');
+                            self.printerState.activities.remove('Copying');
 
                         break;
                     case "media_file_copy_complete":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
                     case "media_file_copy_failed":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
 
                     case "gcode_copy_progress":
@@ -1245,17 +1239,17 @@ $(function () {
                         if (messageData.percentage < 100)
                             self.printerState.activities.push('Copying');
                         else
-                            self.printerState.activities.pop('Copying');
+                            self.printerState.activities.remove('Copying');
 
                         break;
 
                     case "gcode_copy_complete":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
                     case "gcode_copy_failed":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
 
                 }
