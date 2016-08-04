@@ -365,7 +365,7 @@ $(function () {
 
             if (url)
             {
-                self.printPreviewUrl(url + "?timestamp=" + new Date().getTime());
+                self.printPreviewUrl(url);
             }
             else if (filename)
             {
@@ -373,7 +373,7 @@ $(function () {
                     .done(function (data)
                      {
                         if(data.status == 'ready')
-                            self.printPreviewUrl(data.url + "?timestamp=" + new Date().getTime());
+                            self.printPreviewUrl(data.previewUrl);
                         else
                             self.printPreviewUrl(undefined)
                     }).fail(function()
@@ -399,6 +399,8 @@ $(function () {
         };
 
         self.requestData = function () {
+            self.refreshPrintPreview();
+
             OctoPrint.simpleApiGet('lui', {
                 success: self.fromResponse
             });
@@ -413,13 +415,15 @@ $(function () {
                 console.log(messageType)
                 switch (messageType) {
                     case "gcode_preview_rendering":
-                        if (messageData.filename == self.filename())
+                        if (messageData.filename == self.filename()) {
+                            self.printPreviewUrl(undefined); // Remove old preview
                             self.activities.push('Creating preview');
+                        }
                         break;
                     case "gcode_preview_ready":
                         if (messageData.filename == self.filename()) {
-                            self.refreshPrintPreview(messageData.url);
-                            self.activities.pop('Creating preview');
+                            self.refreshPrintPreview(messageData.previewUrl);
+                            self.activities.remove('Creating preview');
                         }
                         break;
                 }
@@ -444,15 +448,25 @@ $(function () {
             }
         }
 
+        self.updateAnalyzingActivity = function()
+        {
+            if (self.filename() && (!self.estimatedPrintTime() || self.filament().length == 0))
+                self.activities.push('Analyzing');
+            else
+                self.activities.remove('Analyzing');
+        }
+
         self.onAfterBinding = function () {
             self.requestData();
 
             self.filename.subscribe(function () {
-                self.activities.pop('Creating preview');
-                self.activities.pop('Analyzing');
-                self.refreshPrintPreview();
-                // Important to pass no parameters 
+                self.activities.remove('Creating preview');
+                self.updateAnalyzingActivity();
+                self.refreshPrintPreview(); // Important to pass no parameters 
             });
+
+            self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
+            self.filament.subscribe(self.updateAnalyzingActivity);
         }
     }
 

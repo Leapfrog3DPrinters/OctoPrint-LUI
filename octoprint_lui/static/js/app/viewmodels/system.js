@@ -44,7 +44,7 @@ $(function() {
             var deferred = $.Deferred();
 
             var callback = function() {
-                var update_warning = self.flyout.showWarning("Updating", "System is updating, please wait until the updates are completed...", true);
+                if (commandSpec.before) commandSpec.before();
                 OctoPrint.system.executeCommand(commandSpec.actionSource, commandSpec.action)
                     .done(function() {
                         $.notify({
@@ -68,7 +68,7 @@ $(function() {
                         }
                     })
                     .always(function(){
-                        self.flyout.closeWarning(update_warning);
+                        if (commandSpec.after) commandSpec.after();
                     });
             };
 
@@ -95,9 +95,15 @@ $(function() {
             self.triggerCommand(command);
         };
 
-        self.systemShutdown = function() {
-            var dialog = {'title': 'Shutdown system', 'text': 'You are about to shutdown the system.', 'question' : 'Do you want to continue?'};
-            var command = {'actionSource': 'custom', 'action': 'shutdown', 'name': 'Shutdown', confirm: dialog};
+        self.systemShutdown = function (confirm) {
+            confirm = confirm !== false;
+
+            var dialog = { 'title': 'Shutdown system', 'text': 'You are about to shutdown the system.', 'question': 'Do you want to continue?' };
+            var command = { 'actionSource': 'custom', 'action': 'shutdown', 'name': 'Shutdown'}
+
+            if (confirm)
+                command.confirm = dialog;
+
             self.triggerCommand(command);
         };
 
@@ -125,6 +131,18 @@ $(function() {
                 self.requestData();
             }
         };
+
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
+            var messageType = data['type'];
+            var messageData = data['data'];
+
+            if (plugin == "lui") {
+                switch (messageType) {
+                    case "powerbutton_pressed":
+                        self.systemShutdown();
+                }
+            }
+        }
     }
 
     // view model class, parameters for constructor, container to bind to

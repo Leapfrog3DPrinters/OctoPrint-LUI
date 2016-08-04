@@ -354,11 +354,11 @@ $(function () {
                     break;
                 case "timelapse_copy_complete":
                     self.setProgressBar(0);
-                    self.printerState.activities.pop('Copying timelapse');
+                    self.printerState.activities.remove('Copying timelapse');
                     break;
                 case "timelapse_copy_failed":
                     self.setProgressBar(0);
-                    self.printerState.activities.pop('Copying timelapse');
+                    self.printerState.activities.remove('Copying timelapse');
                     break;
 
             }

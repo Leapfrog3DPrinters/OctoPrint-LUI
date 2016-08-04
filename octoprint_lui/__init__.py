@@ -77,6 +77,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
         self.movement_mode = "absolute"
+        
         self.relative_extrusion_trigger = False
         self.current_print_extrusion_amount = None
         self.last_print_extrusion_amount = 0.0
@@ -219,6 +220,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Bed calibration positions
         ## TODO: Make these dynamic. Maybe extend with Z and use it as generic positions table?
+        self.manual_bed_calibration_tool = None
         self.manual_bed_calibration_positions = dict()
         self.manual_bed_calibration_positions["Bolt"] = []
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 50, 'Y': 300, 'mode': 'normal' }) # 0=Top left
@@ -292,9 +294,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
-        if self.from_localhost:
-            from octoprint.server.util.flask import add_non_caching_response_headers
-            add_non_caching_response_headers(response)
+        #if self.from_localhost:
+        #    from octoprint.server.util.flask import add_non_caching_response_headers
+        #    add_non_caching_response_headers(response)
 
         return response
 
@@ -327,7 +329,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return remote_address is None
 
     def get_ui_preemptive_caching_enabled(self):
-        return False
+        return True
 
     ##~ OctoPrint SimpleAPI Plugin  
     def on_api_get(self, request = None):
@@ -384,6 +386,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
                     restore_calibration_values = [],
+                    prepare_for_calibration_position = [],
                     move_to_calibration_position = ["corner_num"],
                     restore_from_calibration_position = [],
                     start_print = ["mode"],
@@ -400,7 +403,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
-        self._on_api_command_start_calibration("bed_width_large")
+        self._on_powerbutton_press(16)
 
     def _on_api_command_unselect_file(self):
         self._printer.unselect_file()
@@ -416,36 +419,49 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._printer.start_print()
 
+    def _on_api_command_prepare_for_calibration_position(self):
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S0"])
+            self.print_mode = "normal"
+        
+        self.set_movement_mode("absolute")
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.change_tool("tool1")
+        self.manual_bed_calibration_tool = "tool1"
+        self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
-        
-        self.set_movement_mode("absolute")
+        self._printer.commands(['G1 Z5'])
 
         if self.model == "Bolt":
-            if corner["mode"] == 'normal':
+            if corner["mode"] == 'normal' and not self.print_mode == "normal":
                 self._printer.commands(["M605 S0"])
-            elif corner["mode"] == 'mirror':
+                self._printer.home(['x'])
+                self.print_mode = "normal"
+            elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
                 self._printer.commands(["M605 S3"])
+                self._printer.home(['x'])
+                self.print_mode = "mirror"
 
-        self._printer.commands(["M84 S300"]) # Set stepper disable timeout to 5min
-        self._printer.home(['x', 'y', 'z'])
-        self._printer.change_tool(corner["tool"])
-        self._printer.commands(['G1 Z5'])
+        if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
+            self._printer.home(['x'])
+            self._printer.change_tool(corner["tool"])
+            self.manual_bed_calibration_tool = corner["tool"]
+        
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
         self._printer.commands(['G1 Z0'])
 
-        if self.model == "Bolt":
-            self._printer.commands(["M605 S1"])
-
-        self.restore_movement_mode()
-
     def _on_api_command_restore_from_calibration_position(self):
+        self._printer.commands(['G1 Z5'])
+        self._printer.commands(["M605 S1"])
         self._printer.home(['y', 'x'])
 
         if self.model == "Bolt":
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
             self._printer.commands(["M84"]) # And disable them right away for now
+
+        self.restore_movement_mode()
 
     def _on_api_command_start_calibration(self, calibration_type):
         self.calibration_type = calibration_type
@@ -520,8 +536,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
         
         if self.model == "Bolt":
-            self._printer.commands("M219 S%d" % width_correction)
-            self._printer.commands("M50 Y%d" % extruder_offset_y)
+            self._printer.commands("M219 S%f" % width_correction)
+            self._printer.commands("M50 Y%f" % extruder_offset_y)
 
         if persist:
             self._printer.commands("M500")
@@ -1378,6 +1394,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.is_homed = True
                 self.is_homing = False
                 self.send_client_is_homed()
+                ##~ Now we have control over the printer, also take over control of the power button
+                self._init_powerbutton()
             
         if self.levelbed_command_sent:
             if "MaxCorrectionValue" in line:
@@ -1619,7 +1637,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x', 'y'])
             self._printer.commands(["G1 X30 F10000"])
             self._printer.commands(["G1 Y1 F15000"])
-            self._printer.commands(["M605 S1"])
+            self._printer.commands(["M605 S0"])
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
         elif self.model == "Xeed":
@@ -1654,6 +1672,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Hit the first event in any case
         self._on_media_folder_updated(None)
+
+    def _init_powerbutton(self):
+        if self.model == "Bolt":
+            from octoprint_lui.util.powerbutton import PowerButtonHandler
+            self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
+            
+    def _on_powerbutton_press(self, channel):
+        self._send_client_message("powerbutton_pressed")
 
     def _init_update(self):
 
