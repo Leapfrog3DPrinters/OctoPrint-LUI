@@ -1,0 +1,27 @@
+import subprocess
+
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    print "Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script"
+
+LED_PIN = 22 
+PWR_PIN = 11 # Toggles power supply
+BUTTON_PIN = 16
+
+BOUNCETIME = 1000 # minimal press interval in ms
+
+class PowerButtonHandler:
+    def __init__(self, callback):
+        # Set pins
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(PWR_PIN, GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(LED_PIN, GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+
+        # Listen for button events on seperate thread
+        GPIO.add_event_detect(BUTTON_PIN, GPIO.RISING, callback=callback, bouncetime=BOUNCETIME)
+
+        # Close intermediate button 'service'
+        subprocess.call("sudo service aasoftpoweroff stop".split())
+

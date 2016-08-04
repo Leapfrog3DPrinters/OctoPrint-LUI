@@ -11,8 +11,12 @@
         </div>
         <div class="Table-item"> in (&deg;C)</div>
     </div>
+    {% if local_addr %}
     <!-- ko keyboardForeach: settings.temperature_profiles -->
-    <div class="Table-row" data-bind="css: {disabled: $parent.disableRemove($data)}">
+    {% else %}
+    <!-- ko foreach: settings.temperature_profiles -->
+    {% endif %}
+  <div class="Table-row" data-bind="css: {disabled: $parent.disableRemove($data)}">
         <div class="Table-item profile_name">
             <input type="text" data-bind="value: name">
         </div>
@@ -29,6 +33,7 @@
         </div>
     </div>
     <!-- /ko -->
+  
 </div>
 <ul class="button-area">
     <li class="button"><a href="#save" data-bind="click: settings.addTemperatureProfile"><span><i class="fa fa-plus"></i>Add profile</span></a>

@@ -15,6 +15,7 @@ $(function () {
         self.update_needed = ko.observable(false);
         self.updateCounter = 0;
         self.updateTarget = 0;
+        self.update_warning = undefined;
 
         self.fileNameToFlash = ko.observable(undefined); // Can either be a local (USB) file name or a filename to be uploaded
 
@@ -98,12 +99,31 @@ $(function () {
             var title = "Update: " + data.name()
             var dialog = { 'title': title, 'text': text, 'question': question };
 
-            var command = { 'actionSource': 'custom', 'action': data.action(), 'name': data.name(), confirm: dialog };
+            var command = {
+                'actionSource': 'custom',
+                'action': data.action(),
+                'name': data.name(),
+                confirm: dialog,
+                'before': self.showUpdateWarning,
+                'after': self.hideUpdateWarning
+            };
+
             self.system.triggerCommand(command)
                 .done(function () {
                     self.system.systemServiceRestart();
                 });
         };
+
+        self.showUpdateWarning = function ()
+        {
+            self.update_warning = self.flyout.showWarning("Updating", "System is updating, please wait until the updates are completed...", true);
+        }
+
+        self.hideUpdateWarning = function ()
+        {
+            if (self.update_warning)
+                self.flyout.closeWarning(self.update_warning);
+        }
 
         self._updateNext = function ()
         {
@@ -113,7 +133,7 @@ $(function () {
             var items = self.updateinfo();
             var data = items[self.updateCounter];
 
-            if (!data.update) {
+            if (!data.update()) {
                 self.updateCounter++;
 
                 if (self.updateCounter == self.updateTarget)
@@ -122,13 +142,19 @@ $(function () {
                     return self._updateNext();
             }
             else {
-                var command = { 'actionSource': 'custom', 'action': data.action(), 'name': data.name() };
+                var command = {
+                    'actionSource': 'custom',
+                    'action': data.action(),
+                    'name': data.name(),
+                    'before': self.showUpdateWarning,
+                    'after': self.hideUpdateWarning
+                };
                 self.system.triggerCommand(command)
                     .done(function () {
                         self.updateCounter++;
 
                         if (self.updateCounter == self.updateTarget)
-                            self.system.systemServiceRestart();// TODO: Show spinner that system is rebooting
+                            self.system.systemServiceRestart();
                         else
                             self._updateNext();
                     }).fail(function () {
