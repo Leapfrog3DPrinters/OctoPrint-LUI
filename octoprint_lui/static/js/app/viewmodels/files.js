@@ -87,7 +87,7 @@ $(function () {
                 if (!element.hasOwnProperty("parent")) element.parent = { children: list, parent: undefined };
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
-                if (!element.hasOwnProperty("previewUrl")) {
+                if (element.origin == "local" && !element.hasOwnProperty("previewUrl")) {
                     previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == element["name"].toLowerCase(); });
                     if (previewItem)
                         element.previewUrl = ko.observable(previewItem.previewUrl);
@@ -865,7 +865,7 @@ $(function () {
 
         self.refreshPrintPreview = function (filename, url) {
             var file = self.getFileByFilename(filename);
-
+         
             if(file)
                 file.previewUrl(url);
         }
@@ -1193,6 +1193,13 @@ $(function () {
 
             if (plugin == "gcoderender") {
                 switch (messageType) {
+                    case "gcode_preview_rendering":
+                        previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == messageData.filename.toLowerCase() });
+
+                        if (previewItem)
+                            self.gcodePreviews.pop(previewItem)
+
+                        self.refreshPrintPreview(messageData.filename, undefined);
                     case "gcode_preview_ready":
                         previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == messageData.filename.toLowerCase() });
 
