@@ -87,9 +87,10 @@ $(function () {
                 if (!element.hasOwnProperty("parent")) element.parent = { children: list, parent: undefined };
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
-                if (!element.hasOwnProperty("previewUrl")) {
-                    if (self.gcodePreviews.find(function (item) { return item.toLowerCase() == element["name"].toLowerCase(); }))
-                        element.previewUrl = ko.observable("/plugin/gcoderender/preview/" + element["name"]);
+                if (element.origin == "local" && !element.hasOwnProperty("previewUrl")) {
+                    previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == element["name"].toLowerCase(); });
+                    if (previewItem)
+                        element.previewUrl = ko.observable(previewItem.previewUrl);
                     else
                         element.previewUrl = ko.observable("");
                 }
@@ -112,14 +113,16 @@ $(function () {
             if (self.isLoadingFileList())
                 return;
 
-            self.isLoadingFileList(true)
-            var filenameToFocus = '';
-            var locationToFocus = '';
+            self.isLoadingFileList(true);
+            var filenameToFocus = self.selectedFile().name;
+            var locationToFocus = undefined;
             var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
                 self.currentOrigin("local");
-            }).always(function () { self.isLoadingFileList(false); });
+            }).always(function () { 
+                self.isLoadingFileList(false);
+            });
         }
 
         self.browseUsb = function () {
@@ -361,8 +364,8 @@ $(function () {
                 }
                 var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
                 if (entryElement) {
-                    var entryOffset = entryElement.offsetTop;
-                    console.log(entryOffset);
+                    var entryOffset = $(entryElement).position().top;
+                    console.log("Entry offset: " + entryOffset);
                     $(".gcode_files").slimScroll({ scrollTo: entryOffset + "px" });//TODO
                 }
             }
@@ -473,7 +476,9 @@ $(function () {
 
                 })
                 .always(function () { self.isLoadingFile = false; })
-                .done(function() {self.browseLocal();});
+                .done(function () {
+                    self.browseLocal();
+                });
             }
             else {
                 OctoPrint.files.select(file.origin, file.path)
@@ -860,7 +865,7 @@ $(function () {
 
         self.refreshPrintPreview = function (filename, url) {
             var file = self.getFileByFilename(filename);
-
+         
             if(file)
                 file.previewUrl(url);
         }
@@ -1168,15 +1173,9 @@ $(function () {
         };
 
         self.onEventMetadataAnalysisStarted = function (payload) {
-            if (payload.name == self.printerState.filename()) {
-                self.printerState.activities.push('Analyzing');
-            }
         };
 
         self.onEventMetadataAnalysisFinished = function (payload) {
-            if (payload.name == self.printerState.filename()) {
-                self.printerState.activities.pop('Analyzing');
-            }
             self.requestData(undefined, undefined, self.currentPath());
         };
 
@@ -1194,9 +1193,21 @@ $(function () {
 
             if (plugin == "gcoderender") {
                 switch (messageType) {
+                    case "gcode_preview_rendering":
+                        previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == messageData.filename.toLowerCase() });
+
+                        if (previewItem)
+                            self.gcodePreviews.pop(previewItem)
+
+                        self.refreshPrintPreview(messageData.filename, undefined);
                     case "gcode_preview_ready":
-                        self.gcodePreviews.push(messageData.filename.toLowerCase());
-                        self.refreshPrintPreview(messageData.filename, messageData.url);
+                        previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == messageData.filename.toLowerCase() });
+
+                        if (previewItem)
+                            self.gcodePreviews.pop(previewItem)
+
+                        self.gcodePreviews.push({ filename: messageData.filename, previewUrl: messageData.previewUrl });
+                        self.refreshPrintPreview(messageData.filename, messageData.previewUrl);
                         break;
                 }
             }
@@ -1217,16 +1228,16 @@ $(function () {
                         if (messageData.percentage < 100)
                             self.printerState.activities.push('Copying');
                         else
-                            self.printerState.activities.pop('Copying');
+                            self.printerState.activities.remove('Copying');
 
                         break;
                     case "media_file_copy_complete":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
                     case "media_file_copy_failed":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
 
                     case "gcode_copy_progress":
@@ -1235,17 +1246,17 @@ $(function () {
                         if (messageData.percentage < 100)
                             self.printerState.activities.push('Copying');
                         else
-                            self.printerState.activities.pop('Copying');
+                            self.printerState.activities.remove('Copying');
 
                         break;
 
                     case "gcode_copy_complete":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
                     case "gcode_copy_failed":
                         self.setProgressBar(0);
-                        self.printerState.activities.pop('Copying');
+                        self.printerState.activities.remove('Copying');
                         break;
 
                 }

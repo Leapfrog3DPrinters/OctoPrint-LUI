@@ -626,6 +626,8 @@ function changeTabTo(tab){
     $(icon_link).addClass('active');
 }
 
+offline_blocking = false; // Used in main.js to check if overlay is blocking
+
 function showOfflineFlyout(title, text, reconnectCallback) {
     offline_blocking = true;
 
