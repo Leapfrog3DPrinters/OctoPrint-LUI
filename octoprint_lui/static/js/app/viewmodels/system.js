@@ -112,8 +112,8 @@ $(function() {
 
             self.flyout.showConfirmationFlyout(dialog)
                     .done(function () {
-                        // Will never respond, because it is shutdown immediately. Assume its OK
-                        OctoPrint.system.executeCommand('custom', 'restart_service');
+                        // Will never respond, because it is shutdown immediately. Assume its OK. Use short timeout, because it blocks servicestatus polling
+                        OctoPrint.system.executeCommand('custom', 'restart_service', { timeout: 10 });
                     });
         };
 
