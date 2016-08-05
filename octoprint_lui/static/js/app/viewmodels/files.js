@@ -114,7 +114,10 @@ $(function () {
                 return;
 
             self.isLoadingFileList(true);
-            var filenameToFocus = self.selectedFile().name;
+            var filenameToFocus = undefined;
+            selectedFile = self.selectedFile();
+            if (selectedFile)
+                var filenameToFocus = selectedFile.name;
             var locationToFocus = undefined;
             var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {

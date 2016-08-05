@@ -526,7 +526,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _disable_timelapse(self):
         config = self._settings.global_get(["webcam", "timelapse"], merged=True)
         config["type"] = "off"
-
+        
         octoprint.timelapse.configure_timelapse(config, False)
 
     def _restore_timelapse(self):
@@ -1556,7 +1556,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.tool_status[tool_num]['text'] = text
             self.tool_status[tool_num]['css_class'] = css_class         
             self.change_status(tool, status)
-            self.send_client_tool_status()
+        self.send_client_tool_status()
 
 
     def change_status(self, tool, new_status):
