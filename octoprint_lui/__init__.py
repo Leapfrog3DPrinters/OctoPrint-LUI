@@ -246,9 +246,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.fetch_git_repo(update['path'])
 
     def is_update_needed(self, path):
-        local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
-        remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        local = None
+        remote = None
+        base = None
+
+        try:
+            local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+        except subprocess.CalledProcessError as e:
+            self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
+
+        try:
+            remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
+        except subprocess.CalledProcessError as e:
+            self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
+
+        try:
+            base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        except subprocess.CalledProcessError as e:
+            self._logger.warn("Git check failed for base:{path}. Output: {output}".format(path=path, output = e.output))
+           
+        if not local or not remote or not base:
+            return True ## If anything failed, at least try to pull
 
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
