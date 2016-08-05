@@ -109,8 +109,12 @@ $(function() {
 
         self.systemServiceRestart = function() {
             var dialog = {'title': 'Restart system service', 'text': 'You are about to restart the background printer services.', 'question' : 'Do you want to continue?'};
-            var command = {'actionSource': 'custom', 'action': 'restart_service', 'name': 'Restart service', confirm: dialog};
-            self.triggerCommand(command);
+
+            self.flyout.showConfirmationFlyout(dialog)
+                    .done(function () {
+                        // Will never respond, because it is shutdown immediately. Assume its OK
+                        OctoPrint.system.executeCommand('custom', 'restart_service');
+                    });
         };
 
         self.onUserLoggedIn = function(user) {

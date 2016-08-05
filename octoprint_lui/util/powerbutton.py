@@ -13,6 +13,8 @@ BOUNCETIME = 1000 # minimal press interval in ms
 
 class PowerButtonHandler:
     def __init__(self, callback):
+        GPIO.setwarnings(False)
+        
         # Set pins
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(PWR_PIN, GPIO.OUT, initial=GPIO.HIGH)

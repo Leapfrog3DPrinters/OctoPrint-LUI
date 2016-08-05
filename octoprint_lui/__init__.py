@@ -432,7 +432,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
-        self._printer.commands(['G1 Z5'])
+        self._printer.commands(['G1 Z5 F1200'])
 
         if self.model == "Bolt":
             if corner["mode"] == 'normal' and not self.print_mode == "normal":
@@ -450,10 +450,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.manual_bed_calibration_tool = corner["tool"]
         
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
-        self._printer.commands(['G1 Z0'])
+        self._printer.commands(['G1 Z0 F1200'])
 
     def _on_api_command_restore_from_calibration_position(self):
-        self._printer.commands(['G1 Z5'])
+        self._printer.commands(['G1 Z5 F1200'])
         self._printer.commands(["M605 S1"])
         self._printer.home(['y', 'x'])
 
@@ -1591,7 +1591,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_movement_mode("absolute")
         # First home X and Y 
         self._printer.home(['x', 'y'])
-        self._printer.commands(['G1 Z180 F3000'])
+        self._printer.commands(['G1 Z180 F1200'])
         if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
         self.restore_movement_mode()
