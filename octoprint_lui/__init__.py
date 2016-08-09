@@ -246,9 +246,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.fetch_git_repo(update['path'])
 
     def is_update_needed(self, path):
-        local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
-        remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        local = None
+        remote = None
+        base = None
+
+        try:
+            local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+        except subprocess.CalledProcessError as e:
+            self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
+
+        try:
+            remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
+        except subprocess.CalledProcessError as e:
+            self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
+
+        try:
+            base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
+        except subprocess.CalledProcessError as e:
+            self._logger.warn("Git check failed for base:{path}. Output: {output}".format(path=path, output = e.output))
+           
+        if not local or not remote or not base:
+            return True ## If anything failed, at least try to pull
 
         if (local == remote):
             ##~ Remote and local are the same, git is up-to-date
@@ -432,7 +450,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
-        self._printer.commands(['G1 Z5'])
+        self._printer.commands(['G1 Z5 F1200'])
 
         if self.model == "Bolt":
             if corner["mode"] == 'normal' and not self.print_mode == "normal":
@@ -450,10 +468,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.manual_bed_calibration_tool = corner["tool"]
         
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])]) 
-        self._printer.commands(['G1 Z0'])
+        self._printer.commands(['G1 Z0 F1200'])
 
     def _on_api_command_restore_from_calibration_position(self):
-        self._printer.commands(['G1 Z5'])
+        self._printer.commands(['G1 Z5 F1200'])
         self._printer.commands(["M605 S1"])
         self._printer.home(['y', 'x'])
 
@@ -508,7 +526,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _disable_timelapse(self):
         config = self._settings.global_get(["webcam", "timelapse"], merged=True)
         config["type"] = "off"
-
+        
         octoprint.timelapse.configure_timelapse(config, False)
 
     def _restore_timelapse(self):
@@ -1538,7 +1556,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.tool_status[tool_num]['text'] = text
             self.tool_status[tool_num]['css_class'] = css_class         
             self.change_status(tool, status)
-            self.send_client_tool_status()
+        self.send_client_tool_status()
 
 
     def change_status(self, tool, new_status):
@@ -1591,7 +1609,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_movement_mode("absolute")
         # First home X and Y 
         self._printer.home(['x', 'y'])
-        self._printer.commands(['G1 Z180 F3000'])
+        self._printer.commands(['G1 Z180 F1200'])
         if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
         self.restore_movement_mode()
