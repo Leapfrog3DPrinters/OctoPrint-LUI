@@ -112,7 +112,21 @@ $(function() {
 
             self.flyout.showConfirmationFlyout(dialog)
                     .done(function () {
-                        showOfflineFlyout();
+                        var title = "";
+                        var message = "";
+                        
+                        if (IS_LOCAL) {
+                            title = gettext("Service restarting");
+                            message = gettext("The background service of the printer is restarting. This is common after a software update. Printer will be available in a couple of minutes.")
+                        } else {
+                            title = gettext("Server disconnected");
+                            message = gettext("The browser has been disconnected from the printer. Either the printer is turned off or the network connection failed. Trying to reconnect in the coming minutes.")
+                        }
+
+                        showOfflineFlyout(
+                            title,
+                            message
+                        );
 
                         // Will never respond, because it is shutdown immediately. Assume its OK.
                         OctoPrint.system.executeCommand('custom', 'restart_service', { timeout: 10 });
