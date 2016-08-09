@@ -57,5 +57,20 @@
 	          <li class="button failed-button"><a href="#" data-bind="click: function() {system.systemShutdown()}"><span><i class = "fa fa-power-off" style="padding-left: 0.5em;"></i>Shutdown</span></a></li>
 	        </ul>
 	    </div>
-	</div>
+  </div>
+  {% if debug_lui %}
+  <div class="Table-row">
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="click: function() {system.systemServiceRestart()}">
+            <span>
+              <i class = "fa fa-refresh" style="padding-left: 0.5em;"></i>Service restart
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  {% endif %}
 </div>

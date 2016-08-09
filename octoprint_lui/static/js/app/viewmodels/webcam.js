@@ -350,15 +350,15 @@ $(function () {
             switch (messageType) {
                 case "timelapse_copy_progress":
                     self.setProgressBar(messageData.percentage);
-                    self.printerState.activities.push('Copying timelapse');
+                    self.printerState.activities.push('Copying');
                     break;
                 case "timelapse_copy_complete":
                     self.setProgressBar(0);
-                    self.printerState.activities.remove('Copying timelapse');
+                    self.printerState.activities.remove('Copying');
                     break;
                 case "timelapse_copy_failed":
                     self.setProgressBar(0);
-                    self.printerState.activities.remove('Copying timelapse');
+                    self.printerState.activities.remove('Copying');
                     break;
 
             }

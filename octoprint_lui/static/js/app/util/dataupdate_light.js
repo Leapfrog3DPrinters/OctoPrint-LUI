@@ -116,6 +116,13 @@ function DataUpdater(allViewModels) {
         BRANCH = data["branch"];
         $("span.version").text(DISPLAY_VERSION);
 
+        // Update API key
+        UI_API_KEY = data["apikey"];
+        OctoPrint.options.apikey = UI_API_KEY;
+        $.ajaxSetup({
+            headers: { "X-Api-Key": UI_API_KEY }
+        });
+
         // update plugin hash
         var oldPluginHash = self._pluginHash;
         self._pluginHash = data["plugin_hash"];

@@ -417,13 +417,13 @@ $(function () {
                     case "gcode_preview_rendering":
                         if (messageData.filename == self.filename()) {
                             self.printPreviewUrl(undefined); // Remove old preview
-                            self.activities.push('Creating preview');
+                            self.activities.push('Previewing');
                         }
                         break;
                     case "gcode_preview_ready":
                         if (messageData.filename == self.filename()) {
                             self.refreshPrintPreview(messageData.previewUrl);
-                            self.activities.remove('Creating preview');
+                            self.activities.remove('Previewing');
                         }
                         break;
                 }

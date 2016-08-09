@@ -114,7 +114,10 @@ $(function () {
                 return;
 
             self.isLoadingFileList(true);
-            var filenameToFocus = self.selectedFile().name;
+            var filenameToFocus = undefined;
+            selectedFile = self.selectedFile();
+            if (selectedFile)
+                var filenameToFocus = selectedFile.name;
             var locationToFocus = undefined;
             var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
@@ -484,7 +487,7 @@ $(function () {
                 OctoPrint.files.select(file.origin, file.path)
                         .done(function () {
                             if (printAfterLoad) {
-                                OctoPrint.job.start();
+                                self.printerState.print();
                             }
                             if (self.flyout.deferred)
                                 self.flyout.closeFlyoutAccept();
@@ -594,13 +597,35 @@ $(function () {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 return self.evaluatePrintDimensions(self.selectedFile(), "sync", false);
             }
-        })
+        });
 
         self.isWithinPrintDimensions = ko.computed(function() {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 return self.evaluatePrintDimensions(self.selectedFile(), "normal", false);
+             }
+        });
+
+        self.enoughFilament = ko.computed(function() {
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
+                var printFilament = self.selectedFile()['gcodeAnalysis']['filament'];
+                var loadedFilament = self.filament.filaments();
+                var mode = self.printerState.printMode();
+                var lengthThreshold = 100;
+
+                if (mode == "normal") {
+                    _.every(printFilament, function(tool, key){
+                        var toolNum = key.slice(-1);
+                        return (tool['length'] - lengthThreshold) < loadedFilament[toolNum].amount();
+                    });
+                } else if (mode == "sync" || mode == "mirror") {
+                    var maxLength = 0.0;
+                    _.each(printFilament, function(x){ maxLength < x.length ? maxLength = x.length : maxLength = maxLength});
+                    // console.log(maxLength);
+                }
+                // console.log(printFilament);
+                // console.log(loadedFilament);
             }
-        })
+        });
 
         self.evaluatePrintDimensions = function(data, mode, notify) {
             if (!self.settingsViewModel.feature_modelSizeDetection()) {
