@@ -607,7 +607,11 @@ $(function () {
 
         self.enoughFilament = ko.computed(function() {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
-                var printFilament = self.selectedFile()['gcodeAnalysis']['filament'];
+                var analysis = data["gcodeAnalysis"];
+                if (!analysis) {
+                    return false;
+                }
+                var printFilament = analysis['filament'];
                 var loadedFilament = self.filament.filaments();
                 var mode = self.printerState.printMode();
                 var lengthThreshold = 100;
