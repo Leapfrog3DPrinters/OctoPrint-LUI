@@ -368,8 +368,8 @@ $(function () {
                 var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
                 if (entryElement) {
                     var entryOffset = $(entryElement).position().top;
-                    console.log("Entry offset: " + entryOffset);
-                    $(".gcode_files").slimScroll({ scrollTo: entryOffset + "px" });//TODO
+                    // console.log("Entry offset: " + entryOffset); TODO
+                    // $(".gcode_files").slimScroll({ scrollTo: entryOffset + "px" });//
                 }
             }
 
@@ -607,7 +607,11 @@ $(function () {
 
         self.enoughFilament = ko.computed(function() {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
-                var printFilament = self.selectedFile()['gcodeAnalysis']['filament'];
+                var analysis = self.selectedFile()["gcodeAnalysis"];
+                if (!analysis) {
+                    return false;
+                }
+                var printFilament = analysis['filament'];
                 var loadedFilament = self.filament.filaments();
                 var mode = self.printerState.printMode();
                 var lengthThreshold = 100;
