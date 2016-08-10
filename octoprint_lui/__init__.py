@@ -168,6 +168,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="firmware")) \
                                  or octoprint.filemanager.valid_file_type(entry, type="firmware")
 
+        ##~ Power Button
+        self.powerbutton_handler = None
+
     def initialize(self):
         ##~ Model
         if sys.platform == "darwin":
@@ -501,7 +504,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _preheat_for_calibration(self):
         
         for tool in ["tool0", "tool1"]:
-            temp = self.filament_database.get(self._filament_query.tool == tool)["material"]["extruder"]
+            temp = int(self.filament_database.get(self._filament_query.tool == tool)["material"]["extruder"])
             self.heat_to_temperature(tool, temp)
             
 
@@ -781,7 +784,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if not (os.path.exists(path) and os.path.isfile(path)):
             return make_response("File not found on '%s': %s" % (target, filename), 404)
 
-		# selects/loads a file
+        # selects/loads a file
         if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
             return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
 
@@ -880,7 +883,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             done = True
 
         if userdata is not None:
-			# upload included userdata, add this now to the metadata
+            # upload included userdata, add this now to the metadata
             octoprint.server.fileManager.set_additional_metadata(octoprint.filemanager.FileDestinations.LOCAL, added_file, "userdata", userdata)
 
         octoprint.server.eventManager.fire(octoprint.events.Events.UPLOAD, {"file": filename, "target": target})
@@ -891,15 +894,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         location = "/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(filename)
         
         files.update({
-			octoprint.filemanager.FileDestinations.LOCAL: {
-				"name": filename,
-				"origin": octoprint.filemanager.FileDestinations.LOCAL,
-				"refs": {
-					"resource": location,
+            octoprint.filemanager.FileDestinations.LOCAL: {
+                "name": filename,
+                "origin": octoprint.filemanager.FileDestinations.LOCAL,
+                "refs": {
+                    "resource": location,
                     "download": "downloads/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(filename)
-				}
-			}
-		})
+                }
+            }
+        })
         
         r = make_response(jsonify(files=files, done=done), 201)
         r.headers["Location"] = location
@@ -1390,9 +1393,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _process_G28(self, cmd):
         #self._logger.info("Command: %s" % cmd)
-        if (all(c in cmd for c in 'XYZ') or cmd == "G28"):
-            self.home_command_sent = True
-            self.is_homing = True
+        ##~ Only do this check at the start up for now
+        ##~ TODO: Find when we want to make the printer not is_homed any more.
+        if not self.is_homed:
+            if (all(c in cmd for c in 'XYZ') or cmd == "G28"):
+                self.home_command_sent = True
+                self.is_homing = True
 
     def _process_M115(self, cmd):
         #self._logger.info("Command: %s" % cmd)
@@ -1413,6 +1419,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.is_homing = False
                 self.send_client_is_homed()
                 ##~ Now we have control over the printer, also take over control of the power button
+                ##~ TODO: This runs also on normal G28s.
                 self._init_powerbutton()
             
         if self.levelbed_command_sent:
@@ -1693,8 +1700,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _init_powerbutton(self):
         if self.model == "Bolt":
-            from octoprint_lui.util.powerbutton import PowerButtonHandler
-            self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
+            ## ~ Only initialise if it's not done yet.
+            if not self.powerbutton_handler:
+                from octoprint_lui.util.powerbutton import PowerButtonHandler
+                self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
             
     def _on_powerbutton_press(self, channel):
         self._send_client_message("powerbutton_pressed")
@@ -1902,13 +1911,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         for entry in entries:
             entry_path = os.path.join(path, entry)
             
-			# file handling
+            # file handling
             if os.path.isfile(entry_path):
                 file_type = octoprint.filemanager.get_file_type(entry)
                 if(file_type):
                     if file_type[0] is "firmware":
                         result = { entry, entry_path }
-			# folder recursion
+            # folder recursion
             elif os.path.isdir(entry_path):
                 result = self._check_for_firmware(entry_path)
 
@@ -1968,8 +1977,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def extension_tree_hook(self):
         return dict(firmware=dict(
-			        hex=octoprint.filemanager.ContentTypeMapping(["hex"], "application/octet-stream")
-		        ))
+                    hex=octoprint.filemanager.ContentTypeMapping(["hex"], "application/octet-stream")
+                ))
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
