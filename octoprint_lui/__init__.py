@@ -502,11 +502,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.select_file(abs_path, False, True)
     
     def _preheat_for_calibration(self):
-        
+        targetBedTemp = 0
+
         for tool in ["tool0", "tool1"]:
-            temp = int(self.filament_database.get(self._filament_query.tool == tool)["material"]["extruder"])
-            self.heat_to_temperature(tool, temp)
+            extruder = self.filament_database.get(self._filament_query.tool == tool)
+            targetTemp = int(extruder["material"]["extruder"])
+            bedTemp = int(extruder["material"]["bed"])
             
+            if bedTemp > targetBedTemp:
+                targetBedTemp = bedTemp
+
+            self.heat_to_temperature(tool, targetTemp)
+
+        if targetBedTemp > 0:
+            self.heat_to_temperature("bed", targetBedTemp)
 
     def _copy_calibration_file(self, calibration_src_filename):
         calibration_src_path = None
@@ -557,6 +566,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
         
         if self.model == "Bolt":
+            #TODO: Consider changing firmware to accept positive value for S (M115, M219 and EEPROM_printSettings)
             self._printer.commands("M219 S%f" % -width_correction)
             self._printer.commands("M50 Y%f" % extruder_offset_y)
 
@@ -1941,6 +1951,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         idx_end = 0
 
         # Loop through properties in defined order
+        # TODO: account for property type
         for key in self.firmware_info_properties:
             prop = self.firmware_info_properties[key]
             proplen = len(prop)
@@ -1963,7 +1974,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # For now, exception for bed_width_correction
                 # TODO: Consider changing firmware (M219, M115 and EEPROM_printSettings) to work with positive value of bed_width_correction
                 if key == "bed_width_correction":
-                    value = -value;
+                    value = -float(value)
+
                 self._logger.info("{}: {}".format(key, value))
 
                 self.machine_database.update({'value': value }, self._machine_query.property == key)
