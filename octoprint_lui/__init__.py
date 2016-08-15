@@ -557,19 +557,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
         
         if self.model == "Bolt":
-            self._printer.commands("M219 S%f" % width_correction)
+            self._printer.commands("M219 S%f" % -width_correction)
             self._printer.commands("M50 Y%f" % extruder_offset_y)
 
         if persist:
             self._printer.commands("M500")
 
         # Read back from machine (which may constrain the correction value) and store
-        self._get_machine_info()
+        self._get_firmware_info()
 
     def _on_api_command_restore_calibration_values(self):
         self._printer.commands("M501")
         # Read back from machine (which may constrain the correction value) and store
-        self._get_machine_info()
+        self._get_firmware_info()
 
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -1960,7 +1960,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Substring to get value
                 value = line[idx_start:idx_end]
 
+                # For now, exception for bed_width_correction
+                # TODO: Consider changing firmware (M219, M115 and EEPROM_printSettings) to work with positive value of bed_width_correction
+                if key == "bed_width_correction":
+                    value = -value;
                 self._logger.info("{}: {}".format(key, value))
+
                 self.machine_database.update({'value': value }, self._machine_query.property == key)
             else:    
                 self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)  
