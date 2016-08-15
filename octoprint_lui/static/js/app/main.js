@@ -384,6 +384,12 @@ $(function() {
         log.info("... binding done");
 
         callViewModels(allViewModels, "onStartupComplete");
+
+        var loader = $('#loader-wrapper');
+        loader.addClass('loaded');
+        setTimeout(function(){
+            loader.remove();
+        }, 1000)
     };
 
     if (!_.has(viewModelMap, "settingsViewModel")) {

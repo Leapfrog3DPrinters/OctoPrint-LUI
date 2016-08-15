@@ -15,7 +15,7 @@
             {%  if local_addr -%}
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: browseLocal, css: {'secondary-button': !isOriginLocal()}">
+                <li class="button load-button" data-bind="click: function() { browseLocal() }, css: {'secondary-button': !isOriginLocal()}">
                   <a href="#browse_local">
                     <span>
                       <i class="fa fa-hdd-o"></i>Local
@@ -26,7 +26,7 @@
             </div>
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: browseUsb, css: {disabled: !isUsbAvailable(), 'secondary-button': isOriginLocal()}">
+                <li class="button load-button" data-bind="click: function() { browseUsb() }, css: {disabled: !isUsbAvailable(), 'secondary-button': isOriginLocal()}">
                   <a href="#browse_usb">
                     <span>
                       <i class="fa fa-usb"></i>USB

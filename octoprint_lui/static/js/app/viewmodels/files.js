@@ -109,15 +109,18 @@ $(function () {
             return self.currentOrigin() == "local";
         })
 
-        self.browseLocal = function () {
+        self.browseLocal = function (filenameToFocus) {
             if (self.isLoadingFileList())
                 return;
 
             self.isLoadingFileList(true);
-            var filenameToFocus = undefined;
-            selectedFile = self.selectedFile();
-            if (selectedFile)
-                var filenameToFocus = selectedFile.name;
+            if (filenameToFocus == undefined) {
+                filenameToFocus = ''
+                selectedFile = self.selectedFile();
+                if (selectedFile){
+                    filenameToFocus = selectedFile.name;
+                }
+            }
             var locationToFocus = undefined;
             var switchToPath = '';
             self.loadFiles("local").done(preProcessList).done(function (response) {
@@ -367,9 +370,14 @@ $(function () {
                 }
                 var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
                 if (entryElement) {
-                    var entryOffset = $(entryElement).position().top;
-                    console.log("Entry offset: " + entryOffset);
-                    $(".gcode_files").slimScroll({ scrollTo: entryOffset + "px" });//TODO
+                    var container = $('#files');
+                    var scrollTo = $(entryElement);
+
+                    setTimeout(function(){
+                        container.animate({
+                            scrollTop: scrollTo.offset().top - container.offset().top + container.scrollTop() - 60
+                        }, 500, 'swing');
+                    }, 100); 
                 }
             }
 
@@ -467,7 +475,8 @@ $(function () {
                 self.isLoadingFile = false;
             }
             else if (file.origin == "usb") {
-                self._sendApi({ command: "select_usb_file", filename: file.path }).done(function () {
+                self._sendApi({ command: "select_usb_file", filename: file.path })
+                .done(function () {
                     self.setProgressBar(0);
 
                     if (printAfterLoad) {
@@ -477,17 +486,15 @@ $(function () {
                     if (self.flyout.deferred)
                         self.flyout.closeFlyoutAccept();
 
+                    self.browseLocal(file.name);
                 })
                 .always(function () { self.isLoadingFile = false; })
-                .done(function () {
-                    self.browseLocal();
-                });
             }
             else {
                 OctoPrint.files.select(file.origin, file.path)
                         .done(function () {
                             if (printAfterLoad) {
-                                OctoPrint.job.start();
+                                self.printerState.print();
                             }
                             if (self.flyout.deferred)
                                 self.flyout.closeFlyoutAccept();
@@ -597,13 +604,42 @@ $(function () {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 return self.evaluatePrintDimensions(self.selectedFile(), "sync", false);
             }
-        })
+        });
 
         self.isWithinPrintDimensions = ko.computed(function() {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 return self.evaluatePrintDimensions(self.selectedFile(), "normal", false);
+             }
+        });
+
+        self.enoughFilament = ko.computed(function() {
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
+                var analysis = self.selectedFile()["gcodeAnalysis"];
+                if (!analysis) {
+                    return false;
+                }
+                var printFilament = analysis['filament'];
+                var loadedFilament = self.filament.filaments();
+                var mode = self.printerState.printMode();
+                var lengthThreshold = 100;
+
+                if (mode == "normal") {
+                    var normalmode = _.every(printFilament, function(tool, key){
+                        var toolNum = key.slice(-1);
+                        return (tool['length'] - lengthThreshold) < loadedFilament[toolNum].amount();
+                    });
+                    console.log(normalmode);
+                } else if (mode == "sync" || mode == "mirror") {
+                    var maxLength = 0.0;
+                    _.each(printFilament, function(x){ maxLength < x.length ? maxLength = x.length : maxLength = maxLength});
+                    var mirrorsyncmode = _.every(loadedFilament, function(filament) { 
+                        return filament >= maxLength}) 
+                    console.log(mirrorsyncmode);
+                }
+                // console.log(printFilament);
+                // console.log(loadedFilament);
             }
-        })
+        });
 
         self.evaluatePrintDimensions = function(data, mode, notify) {
             if (!self.settingsViewModel.feature_modelSizeDetection()) {
