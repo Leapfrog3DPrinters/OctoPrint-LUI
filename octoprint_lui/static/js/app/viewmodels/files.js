@@ -462,7 +462,6 @@ $(function () {
             if (!file || self.isLoadingFile) {
                 return;
             }
-
             self.isLoadingFile = true;
 
             if (file.type == "firmware") {
@@ -480,7 +479,7 @@ $(function () {
                     self.setProgressBar(0);
 
                     if (printAfterLoad) {
-                        OctoPrint.job.start();
+                        self.printerState.print();
                     }
 
                     if (self.flyout.deferred)
@@ -612,11 +611,18 @@ $(function () {
              }
         });
 
+        self.gcodeAnalysisFinished = ko.computed(function(){
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
+                var analysis = self.selectedFile()["gcodeAnalysis"];
+                return analysis ? true : false;
+            }
+        });
+
         self.enoughFilament = ko.computed(function() {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
                 var analysis = self.selectedFile()["gcodeAnalysis"];
                 if (!analysis) {
-                    return false;
+                    return true;
                 }
                 var printFilament = analysis['filament'];
                 var loadedFilament = self.filament.filaments();
@@ -628,23 +634,28 @@ $(function () {
                         var toolNum = key.slice(-1);
                         return (tool['length'] - lengthThreshold) < loadedFilament[toolNum].amount();
                     });
-                    console.log(normalmode);
+                    return normalmode;
                 } else if (mode == "sync" || mode == "mirror") {
                     var maxLength = 0.0;
                     _.each(printFilament, function(x){ maxLength < x.length ? maxLength = x.length : maxLength = maxLength});
                     var mirrorsyncmode = _.every(loadedFilament, function(filament) { 
-                        return filament >= maxLength}) 
-                    console.log(mirrorsyncmode);
+                        return filament.amount() >= maxLength});
+                    return mirrorsyncmode;
                 }
-                // console.log(printFilament);
-                // console.log(loadedFilament);
             }
         });
+
+        self.enableForcePrint = function() {
+            self.printerState.forcePrint(true);
+        };
 
         self.evaluatePrintDimensions = function(data, mode, notify) {
             if (!self.settingsViewModel.feature_modelSizeDetection()) {
                 return true;
             }
+
+            if (self.printerState.forcePrint())
+                return true;
 
             var analysis = data["gcodeAnalysis"];
             if (!analysis) {
@@ -1079,6 +1090,7 @@ $(function () {
                     },
                         "success"
                     )
+                    self.loadFile(data.result.files.local, false);
                 }
             }
 

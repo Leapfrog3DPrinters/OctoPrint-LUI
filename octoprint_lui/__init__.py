@@ -43,7 +43,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         ##~ Global
         self.from_localhost = False
-        self.debug = False
+        self.debug = True
 
         ##~ Model specific variables
         self.model = None
@@ -127,7 +127,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.old_temperature_data = None
         self.current_temperature_data = None
-        self.temperature_window = 3
+        self.temperature_window = 6
         self.ready_timer_default = {'tool0': 5, 'tool1': 5, 'bed': 5}
         self.ready_timer = {'tool0': 0, 'tool1': 0, 'bed': 0}
         self.callback_mutex = threading.RLock()
