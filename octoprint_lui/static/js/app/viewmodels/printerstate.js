@@ -374,7 +374,7 @@ $(function () {
 
         self.refreshPrintPreview = function(url)
         {
-            var filename = self.filename();
+            var filename = self.filepath(); // Includes subfolder
 
             if (url)
             {
@@ -382,7 +382,7 @@ $(function () {
             }
             else if (filename)
             {
-                $.get('/plugin/gcoderender/previewstatus/' + filename + '/True')
+                $.get('/plugin/gcoderender/previewstatus', { filename: filename, make: true })
                     .done(function (data)
                      {
                         if(data.status == 'ready')

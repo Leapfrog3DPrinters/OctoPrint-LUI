@@ -424,7 +424,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
-        self._on_powerbutton_press(16)
+        self._on_powerbutton_press()
 
     def _on_api_command_unselect_file(self):
         self._printer.unselect_file()
@@ -502,11 +502,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.select_file(abs_path, False, True)
     
     def _preheat_for_calibration(self):
-        
+        targetBedTemp = 0
+
         for tool in ["tool0", "tool1"]:
-            temp = int(self.filament_database.get(self._filament_query.tool == tool)["material"]["extruder"])
-            self.heat_to_temperature(tool, temp)
+            extruder = self.filament_database.get(self._filament_query.tool == tool)
+            targetTemp = int(extruder["material"]["extruder"])
+            bedTemp = int(extruder["material"]["bed"])
             
+            if bedTemp > targetBedTemp:
+                targetBedTemp = bedTemp
+
+            self.heat_to_temperature(tool, targetTemp)
+
+        if targetBedTemp > 0:
+            self.heat_to_temperature("bed", targetBedTemp)
 
     def _copy_calibration_file(self, calibration_src_filename):
         calibration_src_path = None
@@ -557,19 +566,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
         
         if self.model == "Bolt":
-            self._printer.commands("M219 S%f" % width_correction)
+            #TODO: Consider changing firmware to accept positive value for S (M115, M219 and EEPROM_printSettings)
+            self._printer.commands("M219 S%f" % -width_correction)
             self._printer.commands("M50 Y%f" % extruder_offset_y)
 
         if persist:
             self._printer.commands("M500")
 
         # Read back from machine (which may constrain the correction value) and store
-        self._get_machine_info()
+        self._get_firmware_info()
 
     def _on_api_command_restore_calibration_values(self):
         self._printer.commands("M501")
         # Read back from machine (which may constrain the correction value) and store
-        self._get_machine_info()
+        self._get_firmware_info()
 
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -1705,7 +1715,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 from octoprint_lui.util.powerbutton import PowerButtonHandler
                 self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
             
-    def _on_powerbutton_press(self, channel):
+    def _on_powerbutton_press(self):
         self._send_client_message("powerbutton_pressed")
 
     def _init_update(self):
@@ -1941,6 +1951,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         idx_end = 0
 
         # Loop through properties in defined order
+        # TODO: account for property type
         for key in self.firmware_info_properties:
             prop = self.firmware_info_properties[key]
             proplen = len(prop)
@@ -1960,7 +1971,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Substring to get value
                 value = line[idx_start:idx_end]
 
+                # For now, exception for bed_width_correction
+                # TODO: Consider changing firmware (M219, M115 and EEPROM_printSettings) to work with positive value of bed_width_correction
+                if key == "bed_width_correction":
+                    value = -float(value)
+
                 self._logger.info("{}: {}".format(key, value))
+
                 self.machine_database.update({'value': value }, self._machine_query.property == key)
             else:    
                 self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)  
