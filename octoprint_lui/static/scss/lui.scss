@@ -224,11 +224,16 @@ a {
   border: 1px solid $color-failed;
 }
 
-.button-area .ok-button a, .button-area .failed-button a, { 
+.button-area .warning-button { 
+  background-color: $color-warning;
+  border: 1px solid $color-warning;
+}
+
+.button-area .ok-button a, .button-area .failed-button a, .button-area .warning-button a { 
   color: $second-color;
 }
 
-.button-area .ok-button a:active, .button-area .failed-button a:active { 
+.button-area .ok-button a:active, .button-area .failed-button a:active, .button-area .warning-button a:active { 
   color: $main-color;
   background-color: $second-color;
 }
@@ -696,7 +701,7 @@ input[type=radio] {
     flex-grow: 1;
     flex-basis: 0;
     min-width: 0;
-    padding: 0.3em 0.1em;
+    padding: 0.3em 0.3em;
     word-break: break-word;
     align-self:center;
     &:before {

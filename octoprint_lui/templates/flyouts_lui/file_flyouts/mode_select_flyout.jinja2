@@ -11,10 +11,35 @@
             </div>
         </div>
     </div>
-    {% if model == "Bolt" or debug_lui %} 
-    <div class="Table">
+    <div class="Table" data-bind="visible: !gcodeAnalysisFinished()">
         <div class="Table-row Table-header">
-            Printing mode
+            <div class="Table-item">
+                Job preperation
+            </div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">
+                The print job is still being analysed. This can take several minutes. 
+            </div>
+        </div>
+        <div class="Table-row">
+            <div class="Table-item">
+                <ul class="button-area">
+                    <li class="button warning-button">
+                        <a href="#save" data-bind="click: function() { printerState.enableForcePrint() } ">
+                            <span><i class="fa fa-exclamation-triangle"></i>Force print</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% if model == "Bolt" or debug_lui %} 
+    <div class="Table" data-bind="visible: gcodeAnalysisFinished() || printerState.forcePrint()">
+        <div class="Table-row Table-header">
+            <div class="Table-item">
+                Printing mode
+            </div>
         </div>
         <div class="Table-row">
             <div class="Table-item">
@@ -71,32 +96,44 @@
             </div>
         </div>
     </div>
-    {% endif %}
-    <div class="Table">
-    <div class="Table-row">
-        <div class="Table-item">
-        Are you sure you want to start this print?
+    <div class="Table" data-bind="visible: !enoughFilament()">
+        <div class="Table-row Table-header">
+            <div class="Table-item">
+                Filament check <span style="margin-left: auto;"><i class="fa fa-exclamation-triangle"></i></span>
+            </div>
         </div>
-    </div>    
-    <div class="Table-row">
-        <div class="Table-item">
-            <ul class="button-area">
-                <li class="button failed-button">
-                    <a href="#save" data-bind="click: function() {flyout.closeFlyout()} ">
-                        <span>Cancel</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <div class="Table-item" data-bind="css: {disabled: !isWithinPrintDimensions()}">
-            <ul class="button-area">
-                <li class="button ok-button">
-                    <a href="#save" data-bind="click: function() { startPrint()} ">
-                        <span>Start print</span>
-                    </a>
-                </li>
-            </ul>
+        <div class="Table-row" >
+            <div class="Table-item">
+                <span>There is not enough filament to print this job in <span data-bind="text: printerState.printMode"></span> mode.</span>
+            </div>
         </div>
     </div>
+    {% endif %}
+    <div class="Table">
+        <div class="Table-row">
+            <div class="Table-item">
+                Are you sure you want to start this print?
+            </div>
+        </div>    
+        <div class="Table-row">
+            <div class="Table-item">
+                <ul class="button-area">
+                    <li class="button failed-button">
+                        <a href="#save" data-bind="click: function() { flyout.closeFlyout() } ">
+                            <span>Cancel</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="Table-item" data-bind="css: {disabled: (!gcodeAnalysisFinished() && !printerState.forcePrint()) || !enoughFilament()}">
+                <ul class="button-area">
+                    <li class="button ok-button">
+                        <a href="#save" data-bind="click: function() { startPrint() } ">
+                            <span>Start print</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>  

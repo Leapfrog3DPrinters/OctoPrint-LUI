@@ -29,6 +29,7 @@ $(function () {
         self.timelapse = ko.observable(undefined);
 
         self.printMode = ko.observable("normal");
+        self.forcePrint = ko.observable(false);
 
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
@@ -278,9 +279,21 @@ $(function () {
             self.busyFiles(busyFiles);
         };
 
+        self.enableForcePrint = function() {
+            var title = "By-pass print analysis";
+            var message = "<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer."
+            var question = "Do you want to by-pass the print analysis and start the print?"
+            var dialog = {title: title, text: message, question: question};
+            self.flyout.showConfirmationFlyout(dialog, true)
+                .done(function(){ 
+                    self.forcePrint(true);
+                });
+        };
+
         self.print = function () {
 
             self.printMode("normal");
+            self.forcePrint(false);
             self.flyout.showFlyout("mode_select");
         };
 

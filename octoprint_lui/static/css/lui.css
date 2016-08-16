@@ -184,10 +184,14 @@ a {
   background-color: #CC2B14;
   border: 1px solid #CC2B14; }
 
-.button-area .ok-button a, .button-area .failed-button a {
+.button-area .warning-button {
+  background-color: #EDDB53;
+  border: 1px solid #EDDB53; }
+
+.button-area .ok-button a, .button-area .failed-button a, .button-area .warning-button a {
   color: #ffffff; }
 
-.button-area .ok-button a:active, .button-area .failed-button a:active {
+.button-area .ok-button a:active, .button-area .failed-button a:active, .button-area .warning-button a:active {
   color: #434A54;
   background-color: #ffffff; }
 
@@ -738,7 +742,7 @@ input[type=radio] {
         -ms-flex-preferred-size: 0;
             flex-basis: 0;
     min-width: 0;
-    padding: 0.3em 0.1em;
+    padding: 0.3em 0.3em;
     word-break: break-word;
     -webkit-align-self: center;
         -ms-flex-item-align: center;

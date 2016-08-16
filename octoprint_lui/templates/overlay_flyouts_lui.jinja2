@@ -453,19 +453,19 @@
         </div>
         <div class="Table-row">
           <div class="Table-item">
-            <div id="confirmation_text" data-bind="text: confirmation_text"></div>
+            <div id="confirmation_text" data-bind="html: confirmation_text"></div>
           </div>
         </div>
         <div class="Table-row">
           <div class="Table-item">
-            <div id="confirmation_question" data-bind="text: confirmation_question"></div>
+            <div id="confirmation_question" data-bind="html: confirmation_question"></div>
           </div>
         </div>
         <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">
               <li class="button failed-button">
-                <a href="#save" data-bind="click: function() { confirmationDeferred.reject() }">
+                <a href="#cancel" data-bind="click: function() { confirmationDeferred.reject() }">
                   <span data-bind="text: confirmation_cancel_text"></span>
                 </a>
               </li>
@@ -474,7 +474,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button ok-button">
-                <a href="#save" data-bind="click: function() { confirmationDeferred.resolve() }">
+                <a href="#confirm" data-bind="click: function() { confirmationDeferred.resolve() }">
                   <span data-bind="text: confirmation_ok_text"></span>
                 </a>
               </li>
