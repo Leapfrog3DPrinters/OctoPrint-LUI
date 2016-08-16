@@ -472,7 +472,7 @@ $(function () {
         self.onAfterBinding = function () {
             self.requestData();
 
-            self.filename.subscribe(function () {
+            self.filepath.subscribe(function () {
                 self.activities.remove('Creating preview');
                 self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
