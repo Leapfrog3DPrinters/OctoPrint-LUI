@@ -29,7 +29,7 @@ class PowerButtonHandler:
         # Close intermediate button 'service'
         subprocess.call("sudo service aasoftpoweroff stop".split())
 
-    def onPress(self):
+    def onPress(self, channel):
         #TODO: Maybe do some more advanced stuff, like seperate callbacks for different press duration
         if callable(self.callback):
             self.callback()

@@ -424,7 +424,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing 
         """
-        self._on_powerbutton_press(16)
+        self._on_powerbutton_press()
 
     def _on_api_command_unselect_file(self):
         self._printer.unselect_file()
@@ -1715,7 +1715,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 from octoprint_lui.util.powerbutton import PowerButtonHandler
                 self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
             
-    def _on_powerbutton_press(self, channel):
+    def _on_powerbutton_press(self):
         self._send_client_message("powerbutton_pressed")
 
     def _init_update(self):
