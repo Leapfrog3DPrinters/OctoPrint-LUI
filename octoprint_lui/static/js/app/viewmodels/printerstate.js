@@ -76,9 +76,9 @@ $(function () {
 
         self.estimatedPrintTimeString = ko.computed(function () {
             if (self.lastPrintTime())
-                return formatDuration(self.lastPrintTime());
+                return formatFuzzyPrintTime(self.lastPrintTime());
             if (self.estimatedPrintTime())
-                return formatDuration(self.estimatedPrintTime());
+                return formatFuzzyPrintTime(self.estimatedPrintTime());
             return "-";
         });
         self.byteString = ko.computed(function () {
@@ -105,7 +105,7 @@ $(function () {
                     return gettext("Calculating...");
                 }
             } else {
-                return formatFuzzyEstimation(self.printTimeLeft());
+                return formatFuzzyPrintTime(self.printTimeLeft());
             }
         });
         self.progressString = ko.computed(function () {
