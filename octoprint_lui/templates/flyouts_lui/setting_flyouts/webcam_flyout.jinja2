@@ -47,9 +47,29 @@
       Finished timelapses
     </div>
     <div class="Table-item">
-      <small style="margin-left: auto">
-        <span data-bind="text: storageAvailable"></span> free
-      </small>
+      <div id="timelapse_menu_container" style="margin-left: auto">
+        <ul id="timelapse_menu" class="sort_menu">
+          <li>
+            <a href="#">
+              <i class="fa fa-list"></i>
+            </a>
+            <ul>
+              <li class="menu_label">
+                <span>
+                  <small>
+                    <span data-bind="text: storageAvailable"></span>
+                  </small>
+                </span>
+              </li>
+              <li>
+                <a href="#" data-bind="click: removeAll, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
+                  <i class="fa fa-trash"></i>Delete all
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
   <div class="Table-row">

@@ -1209,6 +1209,31 @@ select {
   }
 }
 
+.sort_menu
+{
+    .fa
+    {
+        padding-right: 6px;
+    }
+}
+
+//TODO: Maybe do all menu styling in dropit.css?
+.menu_label
+{
+    background-color: $off-white;
+
+    >span
+        {
+        padding: 18px !important;
+    }
+    small span
+        {
+        font-size: 1rem;
+        padding: 0 !important; //Hackish
+    }
+
+}
+
 .file_area {
   display:flex;
   flex-direction:column;

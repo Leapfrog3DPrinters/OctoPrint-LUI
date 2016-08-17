@@ -403,7 +403,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
                     copy_gcode_to_usb = ["filename"],
+                    delete_all_uploads = [],
                     copy_timelapse_to_usb = ["filename"],
+                    delete_all_timelapses = [],
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
                     restore_calibration_values = [],
@@ -1007,6 +1009,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         src_path = os.path.join(timelapse_folder, filename)
 
         self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress", "timelapse_copy_complete", "timelapse_copy_failed")
+    
+    def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
+        import shutil
+
+        # Get the full path to the uploads folder
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+
+        has_failed = False
+
+        # Walk through all files
+        for filename in os.listdir(timelapse_folder):
+            file_path = os.path.join(timelapse_folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                # Don't remove subfolders as they may contain images for current renders. OctoPrint handles their removal.
+                #elif os.path.isdir(file_path): shutil.rmtree(file_path) 
+            except Exception as e:
+                self._logger.exception("Could not delete file: %s" % filename)
+                has_failed = True
+        
+        if has_failed:
+            return make_response(jsonify(result = "Could not delete all files"), 500)
+        else:
+            return make_response(jsonify(result = "OK"), 200);
 
     def _on_api_command_copy_gcode_to_usb(self, filename, *args, **kwargs):
         if not self.is_media_mounted:
@@ -1019,6 +1046,47 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         src_path = os.path.join(uploads_folder, filename)
 
         self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", "gcode_copy_progress", "gcode_copy_complete", "gcode_copy_failed")
+
+    def _on_api_command_delete_all_uploads(self, *args, **kwargs):
+        import shutil
+
+        # Find the filename of the current print job
+        selectedfile = None
+
+        if self._printer._selectedFile:
+            selectedfile = self._printer._selectedFile["filename"]
+       
+        ## Pause any gcode analyses (which may have open file handles)
+        #self._printer._analysisQueue.pause()
+        #self._printer._analysisQueue
+
+        # Get the full path to the uploads folder
+        uploads_folder = self._settings.global_get_basefolder("uploads")
+
+        has_failed = False
+
+        # Walk through all files
+        for filename in os.listdir(uploads_folder):
+            if filename == selectedfile:
+                continue
+
+            file_path = os.path.join(uploads_folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path): shutil.rmtree(file_path) # Recursively delete all files in subfolders
+            except Exception as e:
+                self._logger.exception("Could not delete file: %s" % filename)
+                has_failed = True
+
+        ## Restart the analyses, if we're not printing
+        #if self._printer._state != octoprint.util.comm.MachineCom.STATE_PRINTING:
+        #    self._printer._analysisQueue.resume()
+        
+        if has_failed:
+            return make_response(jsonify(result = "Could not delete all files"), 500)
+        else:
+            return make_response(jsonify(result = "OK"), 200);
 
     ##~ Load and Unload methods
 
@@ -1189,7 +1257,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
 
-        self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
+        if message_type != "tool_status":
+            self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
+
         self._plugin_manager.send_plugin_message(self._identifier, dict(type=message_type, data=data))
 
     def send_client_heating(self):

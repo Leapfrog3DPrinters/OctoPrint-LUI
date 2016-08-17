@@ -37,7 +37,7 @@ $(function () {
         self.freeSpaceString = ko.computed(function () {
             if (!self.freeSpace())
                 return "-";
-            return formatSize(self.freeSpace());
+            return formatSize(self.freeSpace()) + " free";
         });
         self.totalSpaceString = ko.computed(function () {
             if (!self.totalSpace())
@@ -515,6 +515,42 @@ $(function () {
             }
 
             self._sendApi({ command: "copy_gcode_to_usb", filename: file.name });
+        }
+
+        self.removeAllFiles = function()
+        {
+            
+            var text = "You have opted to delete all print jobs.";
+            if (self.selectedFile())
+                text += " This will not delete the currently selected file.";
+
+            var question = "Do you want to continue?";
+            var title = "Delete all jobs"
+            var dialog = { 'title': title, 'text': text, 'question': question };
+
+            self.flyout.showConfirmationFlyout(dialog)
+            .done(function () {
+                return self._sendApi({ command: 'delete_all_uploads' })
+                    .done(function () {
+                        
+                        $.notify({
+                            title: gettext("Jobs deleted"),
+                            text: gettext("All print jobs were deleted.")
+                        },
+                            "success"
+                        )
+                    })
+                .fail(function()
+                {
+                    $.notify({
+                        title: gettext("Not all jobs were deleted"),
+                        text: gettext("Some files could not be removed. Please try again.")
+                    },
+                            "warning"
+                        )
+                })
+                .always(function () { self.requestData(undefined, undefined, undefined); })
+            });
         }
 
         self.removeFile = function (file) {

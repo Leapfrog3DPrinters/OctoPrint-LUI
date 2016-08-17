@@ -466,7 +466,8 @@ $(function() {
     deferEventNotifications = false;
 
     // dropit
-    $('.sort_menu').dropit();
+    $('#files_menu').dropit();
+    $('#timelapse_menu').dropit();
 
     // jQuery overscroll
 
