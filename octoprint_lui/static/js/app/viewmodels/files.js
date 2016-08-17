@@ -917,7 +917,7 @@ $(function () {
                         }
                     }
                 }
-                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatDuration(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
+                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
             }
             if (data["prints"] && data["prints"]["last"]) {
                 output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";

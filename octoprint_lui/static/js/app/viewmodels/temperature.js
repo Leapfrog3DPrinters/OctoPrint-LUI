@@ -241,6 +241,36 @@ $(function() {
             };
         }
 
+        self.returnActualTemp = function(data) {
+            if (self.tools().length > 0 && self.tools() != undefined) {
+                switch (data.name()){
+                    case "Left":
+                        return self.tools()[1]['actual']().toFixed(0);
+                    case "Right":
+                        return self.tools()[0]['actual']().toFixed(0);
+                    case "Bed":
+                        return self.bedTemp['actual']().toFixed(0);
+                    default:
+                        return 0;
+                }
+            };
+        }
+
+        self.returnTargetTemp = function(data) {
+            if (self.tools().length > 0 && self.tools() != undefined) {
+                switch (data.name()){
+                    case "Left":
+                        return self.tools()[1]['target']().toFixed(0);
+                    case "Right":
+                        return self.tools()[0]['target']().toFixed(0);
+                    case "Bed":
+                        return self.bedTemp['target']().toFixed(0);
+                    default:
+                        return 0;
+                };
+            }
+        }
+
         self.heatingProgress = function(actual, target) {
             if (target <= 1) {
                 target = 200;

@@ -1089,10 +1089,6 @@ input[type=radio] {
   background-image: -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.25, rgba(255, 255, 255, 0.2)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.2)), color-stop(0.75, rgba(255, 255, 255, 0.2)), color-stop(0.75, transparent), to(transparent));
   background-image: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent); }
 
-.progress-striped.progress-animate > span:after, .progress-striped.progress-animate > span > span {
-  -webkit-animation: move 2s linear infinite;
-  animation: move 2s linear infinite; }
-
 @-webkit-keyframes move {
   0% {
     background-position: 0 0; }
