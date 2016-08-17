@@ -27,6 +27,9 @@ $(function () {
 
         self.selectedFile = ko.observable(undefined);
 
+        self.dimensions_warning_title = undefined;
+        self.dimensions_warning_message = undefined;
+
         self.searchQuery = ko.observable(undefined);
         self.searchQuery.subscribe(function () {
             self.performSearch();
@@ -803,18 +806,30 @@ $(function () {
 
             //warn user
             if (info != "") {
+                info += "Please fix the dimension of the job or try a different print mode."
+                warning += grid;
+                warning += info;
+                warning += sizeTable;
+                warning += positionTable;
+                self.dimensions_warning_title = title;
+                self.dimensions_warning_message = warning;
                 if (notify) {
-                    info += "Please fix the dimension of the job or try a different print mode."
-                    warning += grid;
-                    warning += info;
-                    warning += sizeTable;
-                    warning += positionTable;
                     self.flyout.showWarning(title, warning, false);
-
                 }
                 return false;
             } else {
                 return true;
+            }
+        };
+
+        self.showDimensionWarning = function() {
+            if (self.isDualPrint()){
+                var title = "Dual nozzle print"
+                var message = "The job selected uses both nozzles to print, therefore only normal mode is available.";
+                self.flyout.showInfo(title, message, false);
+
+            } else {
+                self.flyout.showWarning(self.dimensions_warning_title, self.dimensions_warning_message, false);
             }
         };
 
@@ -938,7 +953,7 @@ $(function () {
                         }
                     }
                 }
-                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatDuration(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
+                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
             }
             if (data["prints"] && data["prints"]["last"]) {
                 output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
