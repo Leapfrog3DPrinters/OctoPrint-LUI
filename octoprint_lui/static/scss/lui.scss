@@ -224,11 +224,16 @@ a {
   border: 1px solid $color-failed;
 }
 
-.button-area .ok-button a, .button-area .failed-button a, { 
+.button-area .warning-button { 
+  background-color: $color-warning;
+  border: 1px solid $color-warning;
+}
+
+.button-area .ok-button a, .button-area .failed-button a, .button-area .warning-button a { 
   color: $second-color;
 }
 
-.button-area .ok-button a:active, .button-area .failed-button a:active { 
+.button-area .ok-button a:active, .button-area .failed-button a:active, .button-area .warning-button a:active { 
   color: $main-color;
   background-color: $second-color;
 }
@@ -696,7 +701,7 @@ input[type=radio] {
     flex-grow: 1;
     flex-basis: 0;
     min-width: 0;
-    padding: 0.3em 0.1em;
+    padding: 0.3em 0.3em;
     word-break: break-word;
     align-self:center;
     &:before {
@@ -996,10 +1001,10 @@ input[type=radio] {
   background-image: -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.25, rgba(255, 255, 255, 0.2)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.2)), color-stop(0.75, rgba(255, 255, 255, 0.2)), color-stop(0.75, transparent), to(transparent));
   background-image: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
 }
-.progress-striped.progress-animate > span:after, .progress-striped.progress-animate > span > span {
-  -webkit-animation: move 2s linear infinite;
-          animation: move 2s linear infinite;
-}
+// .progress-striped.progress-animate > span:after, .progress-striped.progress-animate > span > span {
+//   -webkit-animation: move 2s linear infinite;
+//           animation: move 2s linear infinite;
+// }
 
 @keyframes move {
   0% {

@@ -29,6 +29,7 @@ $(function () {
         self.timelapse = ko.observable(undefined);
 
         self.printMode = ko.observable("normal");
+        self.forcePrint = ko.observable(false);
 
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
@@ -75,9 +76,9 @@ $(function () {
 
         self.estimatedPrintTimeString = ko.computed(function () {
             if (self.lastPrintTime())
-                return formatDuration(self.lastPrintTime());
+                return formatFuzzyPrintTime(self.lastPrintTime());
             if (self.estimatedPrintTime())
-                return formatDuration(self.estimatedPrintTime());
+                return formatFuzzyPrintTime(self.estimatedPrintTime());
             return "-";
         });
         self.byteString = ko.computed(function () {
@@ -104,7 +105,7 @@ $(function () {
                     return gettext("Calculating...");
                 }
             } else {
-                return formatFuzzyEstimation(self.printTimeLeft());
+                return formatFuzzyPrintTime(self.printTimeLeft());
             }
         });
         self.progressString = ko.computed(function () {
@@ -278,9 +279,21 @@ $(function () {
             self.busyFiles(busyFiles);
         };
 
+        self.enableForcePrint = function() {
+            var title = "By-pass print analysis";
+            var message = "<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer."
+            var question = "Do you want to by-pass the print analysis and start the print?"
+            var dialog = {title: title, text: message, question: question};
+            self.flyout.showConfirmationFlyout(dialog, true)
+                .done(function(){ 
+                    self.forcePrint(true);
+                });
+        };
+
         self.print = function () {
 
             self.printMode("normal");
+            self.forcePrint(false);
             self.flyout.showFlyout("mode_select");
         };
 
@@ -361,7 +374,7 @@ $(function () {
 
         self.refreshPrintPreview = function(url)
         {
-            var filename = self.filename();
+            var filename = self.filepath(); // Includes subfolder
 
             if (url)
             {
@@ -369,7 +382,7 @@ $(function () {
             }
             else if (filename)
             {
-                $.get('/plugin/gcoderender/previewstatus/' + filename + '/True')
+                $.get('/plugin/gcoderender/previewstatus', { filename: filename, make: true })
                     .done(function (data)
                      {
                         if(data.status == 'ready')
@@ -459,7 +472,7 @@ $(function () {
         self.onAfterBinding = function () {
             self.requestData();
 
-            self.filename.subscribe(function () {
+            self.filepath.subscribe(function () {
                 self.activities.remove('Creating preview');
                 self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 

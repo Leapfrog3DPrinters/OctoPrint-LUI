@@ -27,6 +27,9 @@ $(function () {
 
         self.selectedFile = ko.observable(undefined);
 
+        self.dimensions_warning_title = undefined;
+        self.dimensions_warning_message = undefined;
+
         self.searchQuery = ko.observable(undefined);
         self.searchQuery.subscribe(function () {
             self.performSearch();
@@ -462,7 +465,6 @@ $(function () {
             if (!file || self.isLoadingFile) {
                 return;
             }
-
             self.isLoadingFile = true;
 
             if (file.type == "firmware") {
@@ -480,7 +482,7 @@ $(function () {
                     self.setProgressBar(0);
 
                     if (printAfterLoad) {
-                        OctoPrint.job.start();
+                        self.printerState.print();
                     }
 
                     if (self.flyout.deferred)
@@ -612,11 +614,18 @@ $(function () {
              }
         });
 
+        self.gcodeAnalysisFinished = ko.computed(function(){
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
+                var analysis = self.selectedFile()["gcodeAnalysis"];
+                return analysis ? true : false;
+            }
+        });
+
         self.enoughFilament = ko.computed(function() {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
                 var analysis = self.selectedFile()["gcodeAnalysis"];
                 if (!analysis) {
-                    return false;
+                    return true;
                 }
                 var printFilament = analysis['filament'];
                 var loadedFilament = self.filament.filaments();
@@ -628,23 +637,28 @@ $(function () {
                         var toolNum = key.slice(-1);
                         return (tool['length'] - lengthThreshold) < loadedFilament[toolNum].amount();
                     });
-                    console.log(normalmode);
+                    return normalmode;
                 } else if (mode == "sync" || mode == "mirror") {
                     var maxLength = 0.0;
                     _.each(printFilament, function(x){ maxLength < x.length ? maxLength = x.length : maxLength = maxLength});
                     var mirrorsyncmode = _.every(loadedFilament, function(filament) { 
-                        return filament >= maxLength}) 
-                    console.log(mirrorsyncmode);
+                        return filament.amount() >= maxLength});
+                    return mirrorsyncmode;
                 }
-                // console.log(printFilament);
-                // console.log(loadedFilament);
             }
         });
+
+        self.enableForcePrint = function() {
+            self.printerState.forcePrint(true);
+        };
 
         self.evaluatePrintDimensions = function(data, mode, notify) {
             if (!self.settingsViewModel.feature_modelSizeDetection()) {
                 return true;
             }
+
+            if (self.printerState.forcePrint())
+                return true;
 
             var analysis = data["gcodeAnalysis"];
             if (!analysis) {
@@ -756,18 +770,30 @@ $(function () {
 
             //warn user
             if (info != "") {
+                info += "Please fix the dimension of the job or try a different print mode."
+                warning += grid;
+                warning += info;
+                warning += sizeTable;
+                warning += positionTable;
+                self.dimensions_warning_title = title;
+                self.dimensions_warning_message = warning;
                 if (notify) {
-                    info += "Please fix the dimension of the job or try a different print mode."
-                    warning += grid;
-                    warning += info;
-                    warning += sizeTable;
-                    warning += positionTable;
                     self.flyout.showWarning(title, warning, false);
-
                 }
                 return false;
             } else {
                 return true;
+            }
+        };
+
+        self.showDimensionWarning = function() {
+            if (self.isDualPrint()){
+                var title = "Dual nozzle print"
+                var message = "The job selected uses both nozzles to print, therefore only normal mode is available.";
+                self.flyout.showInfo(title, message, false);
+
+            } else {
+                self.flyout.showWarning(self.dimensions_warning_title, self.dimensions_warning_message, false);
             }
         };
 
@@ -891,7 +917,7 @@ $(function () {
                         }
                     }
                 }
-                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatDuration(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
+                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
             }
             if (data["prints"] && data["prints"]["last"]) {
                 output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
@@ -1079,6 +1105,7 @@ $(function () {
                     },
                         "success"
                     )
+                    self.loadFile(data.result.files.local, false);
                 }
             }
 

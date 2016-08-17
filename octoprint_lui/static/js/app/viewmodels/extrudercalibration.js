@@ -64,6 +64,8 @@ $(function () {
 
         self.startLargeExtruderCalibration = function () {
             deferEventNotifications = true;
+            self.calibrationProcessStarted(true);
+            self.isPrintingCalibration(true);
 
             // First set calibration at 0, 0
             self.setCalibration(0, 0, false).done(function () {
@@ -79,6 +81,7 @@ $(function () {
 
         self.startSmallExtruderCalibration = function () {
             self.smallCalibrationPrepared(true);
+            self.isPrintingCalibration(true);
 
             // Send the large bed width correction to the printer and print the small calibration
             self.setCalibration(self.largeBedWidthCorrection(), 0, false).done(function () {
@@ -93,29 +96,8 @@ $(function () {
             self.smallXCalibrationCompleted(true);
         }
 
-        self.onCalibrationPrintStarted = function(calibration_type)
-        {
-            switch(calibration_type)
-            {
-                case "bed_width_large":
-                    self.isPrintingCalibration(true);
-                    self.calibrationProcessStarted(true);
-                    break;
-                case "bed_width_small":
-                    self.isPrintingCalibration(true);
-                    break;
-            }
-        }
-
         self.onCalibrationPrintCompleted = function (calibration_type) {
-            switch (calibration_type) {
-                case "bed_width_large":
-                    self.isPrintingCalibration(false);
-                    break;
-                case "bed_width_small":
-                    self.isPrintingCalibration(false);
-                    break;
-            }
+            self.isPrintingCalibration(false);
         }
 
         self.onCalibrationPrintFailed = function (calibration_type) {
@@ -142,6 +124,7 @@ $(function () {
 
         self.saveCalibration = function () {
             OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
+            OctoPrint.printer.setBedTargetTemperature(0);
 
             self.setCalibration(self.bedWidthCorrection(), self.smallYAxisCorrection(), true)
                 .done(function ()
@@ -158,6 +141,7 @@ $(function () {
         self.abort = function ()
         {
             OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
+            OctoPrint.printer.setBedTargetTemperature(0);
 
             if (self.isPrintingCalibration()) {
                 OctoPrint.job.cancel();    
@@ -241,9 +225,6 @@ $(function () {
             var messageData = data['data'];
 
             switch (messageType) {
-                case "calibration_started":
-                    self.onCalibrationPrintStarted(messageData.calibration_type);
-                    break;
                 case "calibration_failed":
                     self.onCalibrationPrintFailed(messageData.calibration_type);
                     break;

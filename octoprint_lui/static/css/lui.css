@@ -184,10 +184,14 @@ a {
   background-color: #CC2B14;
   border: 1px solid #CC2B14; }
 
-.button-area .ok-button a, .button-area .failed-button a {
+.button-area .warning-button {
+  background-color: #EDDB53;
+  border: 1px solid #EDDB53; }
+
+.button-area .ok-button a, .button-area .failed-button a, .button-area .warning-button a {
   color: #ffffff; }
 
-.button-area .ok-button a:active, .button-area .failed-button a:active {
+.button-area .ok-button a:active, .button-area .failed-button a:active, .button-area .warning-button a:active {
   color: #434A54;
   background-color: #ffffff; }
 
@@ -738,7 +742,7 @@ input[type=radio] {
         -ms-flex-preferred-size: 0;
             flex-basis: 0;
     min-width: 0;
-    padding: 0.3em 0.1em;
+    padding: 0.3em 0.3em;
     word-break: break-word;
     -webkit-align-self: center;
         -ms-flex-item-align: center;
@@ -1084,10 +1088,6 @@ input[type=radio] {
   -o-background-size: 50px 50px;
   background-image: -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.25, rgba(255, 255, 255, 0.2)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.2)), color-stop(0.75, rgba(255, 255, 255, 0.2)), color-stop(0.75, transparent), to(transparent));
   background-image: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent); }
-
-.progress-striped.progress-animate > span:after, .progress-striped.progress-animate > span > span {
-  -webkit-animation: move 2s linear infinite;
-  animation: move 2s linear infinite; }
 
 @-webkit-keyframes move {
   0% {

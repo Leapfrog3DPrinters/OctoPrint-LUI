@@ -13,6 +13,8 @@ BOUNCETIME = 1000 # minimal press interval in ms
 
 class PowerButtonHandler:
     def __init__(self, callback):
+        self.callback = callback
+
         GPIO.setwarnings(False)
         
         # Set pins
@@ -22,8 +24,12 @@ class PowerButtonHandler:
         GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
         # Listen for button events on seperate thread
-        GPIO.add_event_detect(BUTTON_PIN, GPIO.RISING, callback=callback, bouncetime=BOUNCETIME)
+        GPIO.add_event_detect(BUTTON_PIN, GPIO.RISING, callback=self.onPress)
 
         # Close intermediate button 'service'
         subprocess.call("sudo service aasoftpoweroff stop".split())
 
+    def onPress(self, channel):
+        #TODO: Maybe do some more advanced stuff, like seperate callbacks for different press duration
+        if callable(self.callback):
+            self.callback()
