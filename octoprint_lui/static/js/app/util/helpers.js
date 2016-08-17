@@ -774,3 +774,12 @@ function addCSSRule(sheet, selector, rules, index) {
         sheet.addRule(selector, rules, index);
     }
 }
+
+ko.subscribable.fn.subscribeChanged = function (callback) {
+    var savedValue = this.peek();
+    return this.subscribe(function (latestValue) {
+        var oldValue = savedValue;
+        savedValue = latestValue;
+        callback(latestValue, oldValue);
+    });
+};

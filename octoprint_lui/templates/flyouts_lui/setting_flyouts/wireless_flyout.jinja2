@@ -1,12 +1,14 @@
 <div id="settings_plugin_networkmanager">
   <div id="networkmanager_connections" class="Table active">
     <div class="Table-row Table-header">
-      <div class="Table-item Table-item-grow-2">
+      <div class="Table-item">
         Wifi
       </div>
       <div class="Table-item Table-item-right">
         <span data-bind="text: wifiIp"></span>
-        <span data-bind="visible: working">
+      </div>
+      <div class="Table-item" data-bind="visible: working" style="flex-basis: 40px; max-width: 40px;">
+        <span>
           <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
         </span>
       </div>
