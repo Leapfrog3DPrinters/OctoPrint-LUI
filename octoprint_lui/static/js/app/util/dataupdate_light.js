@@ -252,7 +252,10 @@ function DataUpdater(allViewModels) {
                     title: gettext("Print job finished"),
                     text: _.sprintf(gettext(' Finished file: "%(filename)s"'), { filename: payload.filename })
                 },
-                    "success"
+                    { 
+                        className: "success",
+                        autoHide: false
+                    }
                 )
             } else if (type == "PrintResumed") {
                 $.notify({
