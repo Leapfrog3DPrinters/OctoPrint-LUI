@@ -67,15 +67,16 @@
             </form>
           </div>
           <div id="sort" class="file_sort">
-            <ul class="sort_menu">
+            <ul id="files_menu" class="sort_menu">
               <li>
                 <a href="#">
                   <i class="fa fa-list"></i>
                 </a>
                 <ul>
-                  <li>
+                  <li class="menu_label">
                     <span>
-                      <strong>Sort by:</strong>
+                      <i class="fa fa-sort"></i>
+                      <strong>Sort by</strong>
                     </span>
                   </li>
                   <li>
@@ -86,6 +87,19 @@
                   </li>
                   <li>
                     <a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a>
+                  </li>
+                  <li class="menu_label">
+                    <span>
+                      <i class="fa fa-hdd-o"></i>
+                      <strong>Storage</strong>
+                      <small>
+                        <span data-bind="text: freeSpaceString"></span>
+                      </small>
+                    </span>
+                  </li>
+                  <li>
+                    <a href="#" data-bind="click: removeAllFiles, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
+                      <i class="fa fa-trash"></i>Delete all</a>
                   </li>
                 </ul>
               </li>
