@@ -159,7 +159,7 @@ $(function () {
                 .done(self.fromResponse);
 
             self._getApi({ command: "storage_info" }).done(function (storage_info) {
-                self.storageAvailable(formatSize(storage_info.free));
+                self.storageAvailable(formatSize(storage_info.free) + " free");
             });
         };
 
@@ -209,6 +209,37 @@ $(function () {
             OctoPrint.timelapse.delete(filename)
                 .done(self.requestData);
         };
+
+        self.removeAll = function () {
+
+            var text = "You have opted to delete all finished timelapses.";
+            var question = "Do you want to continue?";
+            var title = "Delete all timelapses"
+            var dialog = { 'title': title, 'text': text, 'question': question };
+
+            self.flyout.showConfirmationFlyout(dialog, true)
+            .done(function () {
+                return self._sendApi({ command: 'delete_all_timelapses' })
+                    .done(function () {
+
+                        $.notify({
+                            title: gettext("Timelapses deleted"),
+                            text: gettext("All timelapses were deleted.")
+                        },
+                            "success"
+                        )
+                    })
+                .fail(function () {
+                    $.notify({
+                        title: gettext("Not all timelapses were deleted"),
+                        text: gettext("Some timelapses could not be removed. Please try again.")
+                    },
+                            "warning"
+                        )
+                })
+                .always(self.requestData);
+            });
+        }
 
         self.copyToUsb = function (filename) {
             self.isCopying(true);

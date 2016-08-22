@@ -67,15 +67,16 @@
             </form>
           </div>
           <div id="sort" class="file_sort">
-            <ul class="sort_menu">
+            <ul id="files_menu" class="sort_menu">
               <li>
                 <a href="#">
                   <i class="fa fa-list"></i>
                 </a>
                 <ul>
-                  <li>
+                  <li class="menu_label">
                     <span>
-                      <strong>Sort by:</strong>
+                      <i class="fa fa-sort"></i>
+                      <strong>Sort by</strong>
                     </span>
                   </li>
                   <li>
@@ -86,6 +87,19 @@
                   </li>
                   <li>
                     <a href="" data-bind="click: function() { $root.listHelper.changeSorting('size'); }">Size</a>
+                  </li>
+                  <li class="menu_label">
+                    <span>
+                      <i class="fa fa-hdd-o"></i>
+                      <strong>Storage</strong>
+                      <small>
+                        <span data-bind="text: freeSpaceString"></span>
+                      </small>
+                    </span>
+                  </li>
+                  <li>
+                    <a href="#" data-bind="click: removeAllFiles, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
+                      <i class="fa fa-trash"></i>Delete all</a>
                   </li>
                 </ul>
               </li>
@@ -153,9 +167,9 @@
           </script>
           <script type="text/html" id="files_template_machinecode">
             <ul class="file_main" data-bind="css: {'file_selected': $root.listHelper.isSelected($data)}">
-              <li class="file_name">
+              <li class="file_name" data-bind="click: function() { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }">
                 <a href="#file_name">
-                  <span data-bind="text: name, click: function() { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.isLoadActionPossible()}" title="{{ _('Load') }}"></span>
+                  <span data-bind="text: name, css: {disabled: !$root.isLoadActionPossible()}" title="{{ _('Load') }}"></span>
                 </a>
               </li>
               <li class="file_print" data-bind="visible: $root.listHelper.isSelected($data)">

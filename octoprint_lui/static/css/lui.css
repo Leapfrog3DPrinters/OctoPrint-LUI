@@ -1347,6 +1347,17 @@ select {
   .file_sort a {
     color: #434A54; }
 
+.sort_menu .fa {
+  padding-right: 6px; }
+
+.menu_label {
+  background-color: #F6F7F7; }
+  .menu_label > span {
+    padding: 18px !important; }
+  .menu_label small span {
+    font-size: 1rem;
+    padding: 0 !important; }
+
 .file_area {
   display: -webkit-box;
   display: -webkit-flex;
