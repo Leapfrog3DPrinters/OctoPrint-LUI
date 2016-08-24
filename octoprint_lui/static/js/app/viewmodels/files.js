@@ -758,6 +758,11 @@ $(function () {
                 grid += "<div class='print_area'></div>"
             }
 
+            // If we have a Dual Print with wiping, just enlarge the volume in X
+            if (self.isDualPrint()) {
+                boundaries["maxX"] = 370;
+            }
+
             grid += _.sprintf(gettext("<div class='print_model' style='width: %(dimensions.width).2fpx; height: %(dimensions.depth).2fpx; left: %(object.minX).2fpx; bottom: %(object.minY).2fpx'></div>"),formatData);
 
             grid += "</div></div></div>";
