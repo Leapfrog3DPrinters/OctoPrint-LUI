@@ -315,9 +315,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
-        #if self.from_localhost:
-        #    from octoprint.server.util.flask import add_non_caching_response_headers
-        #    add_non_caching_response_headers(response)
+        if self.from_localhost:
+            from octoprint.server.util.flask import add_non_caching_response_headers
+            add_non_caching_response_headers(response)
 
         return response
 
