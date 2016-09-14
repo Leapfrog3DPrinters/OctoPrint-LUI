@@ -1115,9 +1115,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.debug("load_filament for Bolt")
                 # Bolt loading
-                load_initial=dict(amount=18.0, speed=2000)
+                load_initial=dict(amount=3.0, speed=300)
                 load_change = None
-                self.load_amount_stop = 100
+                self.load_amount_stop = 200
 
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5, 
@@ -1174,7 +1174,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             #This method can also be used for the Bolt!
             self.load_amount = 0
             self.load_amount_stop = 100 # Safety timer on continuious loading
-            load_cont_initial = dict(amount=2.5 * direction, speed=300)
+            load_cont_initial = dict(amount=3.0 * direction, speed=300)
             self.set_extrusion_mode("relative")
             load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
             self.load_filament_timer = RepeatedTimer(0.5,
