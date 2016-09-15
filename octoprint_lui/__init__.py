@@ -2074,7 +2074,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if (event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
-            self.current_print_extrusion_amount = 0.0
+            self.current_print_extrusion_amount = [0.0, 0.0]
             self.save_filament_amount()
             self._printer.commands(["M605 S1"])
             self._printer.home(['x', 'y'])
