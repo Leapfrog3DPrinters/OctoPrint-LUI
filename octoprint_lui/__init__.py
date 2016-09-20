@@ -286,6 +286,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def fetch_git_repo(self, path):
+        # Set octoprint git remote to Leapfrog:
+        # Out for now, feels  way too hacky.
+        # if path is self.update_info[4]['path']:
+        #     try:
+        #         remote_git = subprocess.check_output(['git', 'remote', '-v'],cwd=path)
+        #     except subprocess.CalledProcessError as err:
+        #         self._logger.warn("Can't get remote gits with path: {path}. {err}".format(path=path, err=err))
+        #     if 'foosel' in remote_git:
+        #         try:
+        #             update_remote_git = subprocess.check_output(['git', 'remote', 'set-url', 'origin', 'https://github.com/Leapfrog3DPrinters/OctoPrint.git'],cwd=path)
+        #         except subprocess.CalledProcessError as err:
+        #             self._logger.warn("Can't set remote url with path: {path}. {err}".format(path=path, err=err))
+        #     self._logger.info("Changed git remote repo!")
+
         try:
             output = subprocess.check_output(['git', 'fetch'],cwd=path)
         except subprocess.CalledProcessError as err:
@@ -1834,10 +1848,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'OctoPrint',
                 'version': VERSION
             }
-            ]
+        ]
 
 
-        self.update_info_list()
+
+
+        ## Commenting the auto update during start up atm to see if we can fix corrupt .git/objects
+        ##self.update_info_list() 
         self._logger.debug(self.update_info)
 
 
