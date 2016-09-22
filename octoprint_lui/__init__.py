@@ -226,10 +226,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_tool = None
         self.manual_bed_calibration_positions = dict()
         self.manual_bed_calibration_positions["Bolt"] = []
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 50, 'Y': 300, 'mode': 'normal' }) # 0=Top left
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 315, 'Y': 300, 'mode': 'normal' }) # 1=Top right
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 50, 'Y': 50, 'mode': 'normal' }) # 2=Bottom left 
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 315, 'Y': 50, 'mode': 'normal' }) #3=Bottom right
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 70, 'Y': 280, 'mode': 'normal' }) # 0=Top left
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 305, 'Y': 280, 'mode': 'normal' }) # 1=Top right
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 70, 'Y': 70, 'mode': 'normal' }) # 2=Bottom left 
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 305, 'Y': 70, 'mode': 'normal' }) #3=Bottom right
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 160, 'mode': 'mirror' }) #4=Center
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
