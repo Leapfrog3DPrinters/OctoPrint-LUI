@@ -230,7 +230,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 315, 'Y': 300, 'mode': 'normal' }) # 1=Top right
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 50, 'Y': 50, 'mode': 'normal' }) # 2=Bottom left 
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 315, 'Y': 50, 'mode': 'normal' }) #3=Bottom right
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 175, 'mode': 'mirror' }) #4=Center
+        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 160, 'mode': 'mirror' }) #4=Center
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
     def update_info_list(self, force=False):
@@ -1754,8 +1754,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["M605 S3"]) # That reads: more awesomeness.
             self._printer.commands(["M84 S300"]) # Set stepper disable timeout to 5min
             self._printer.home(['x', 'y'])
-            self._printer.commands(["G1 X30 F10000"])
-            self._printer.commands(["G1 Y1 F15000"])
+            self._printer.commands(["G1 X1 F10000"])
+            self._printer.commands(["G1 Y-33 F15000"])
             self._printer.commands(["M605 S0"])
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
