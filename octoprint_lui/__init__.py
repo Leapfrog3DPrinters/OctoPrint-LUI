@@ -59,6 +59,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 "update": "/home/pi/" ,
                 "media": "/media/pi/"
             },
+            "Xcel" : {
+                "update": "/home/pi/" ,
+                "media": "/media/pi/"
+            },
             "Debug" : {
                 "update": "/home/pi/" ,
                 "media": "/media/pi/"
@@ -115,6 +119,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_database_path = None
         self._filament_query = None
         self.filament_database = None
+        self.machine_database_path = None
+        self.machine_database = None
+        self._machine_query = None
+        self.machine_info = None
 
 
 
@@ -172,28 +180,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.powerbutton_handler = None
 
     def initialize(self):
-        ##~ Model
-        if sys.platform == "darwin":
-            self.model = "MacDebug"
-        elif sys.platform == "win32":
-            self.model = "WindowsDebug"
-        elif os.path.exists('/home/pi'):
-            self.model = "Bolt"
-        elif sys.platform == "linux2":
-            self.model = "Xeed"
-        else:
-            self.model = "Xeed"
         
-        self._logger.debug("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
 
-        ##~ USB init
-        self._init_usb()
-
-        ##~ Init Update
-        self._init_update()
-
-        ##~ Add actions
-        self._add_actions()
 
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
@@ -214,6 +202,32 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.machine_database.all() == []:
             self._logger.info("No machine database found creating one...")
             self.machine_database.insert_multiple({ 'property': key, 'value': '' } for key in self.firmware_info_properties.keys())
+
+        self.machine_info = self._get_machine_info()
+        self.model = self.machine_info['machine_type']
+        if self.model == '':
+            ##~ Model
+            if sys.platform == "darwin":
+                self.model = "MacDebug"
+            elif sys.platform == "win32":
+                self.model = "WindowsDebug"
+            elif os.path.exists('/home/pi'):
+                self.model = "Bolt"
+            elif sys.platform == "linux2":
+                self.model = "Xeed"
+            else:
+                self.model = "Xeed"
+        
+        self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
+
+        ##~ USB init
+        self._init_usb()
+
+        ##~ Init Update
+        self._init_update()
+
+        ##~ Add actions
+        self._add_actions()
 
         ##~ Get filament amount stored in config
         self.update_filament_amount()
@@ -1126,6 +1140,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 # Total amount being loaded
                 self.load_amount_stop = 2100
+            elif self.model == "Xcel":
+                self._logger.debug("load_filament for Xcel")
+                # We can set one change of extrusion and speed during the timer
+                # Start with load_initial and change to load_change at load_change['start']
+                # TODO: Check amounts 
+                load_initial=dict(amount=18.0, speed=2000)
+                load_change=dict(start=2400, amount=2.5, speed=300)
+
+                # Total amount being loaded
+                self.load_amount_stop = 2600
             else:
                 self._logger.debug("load_filament for Bolt")
                 # Bolt loading
@@ -1159,6 +1183,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 # Total amount being loaded
                 self.load_amount_stop = 2100
+            if self.model == "Xcel":
+                # We can set one change of extrusion and speed during the timer
+                # Start with load_initial and change to load_change at load_change['start']
+                unload_initial=dict(amount= -2.5, speed=300)
+                unload_change=dict(start=30, amount= -18, speed=2000)
+
+                # Total amount being loaded
+                self.load_amount_stop = 2600
             else:
                 # Bolt stuff
                 unload_initial=dict(amount= -2.5, speed=300)
@@ -1353,7 +1385,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if not script_type == "gcode":
             return None
 
-        if self.model == "Xeed":
+        if self.model == "Xeed" or self.model == "Xcel":
             zoffset = -self._settings.get_float(["zoffset"])
 
         
@@ -1710,9 +1742,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_movement_mode("absolute")
         # First home X and Y 
         self._printer.home(['x', 'y'])
-        self._printer.commands(['G1 Z180 F1200'])
+        if self.model == "Bolt" or self.model == "Xeed":
+            self._printer.commands(['G1 Z180 F1200'])
         if self.model == "Xeed":
             self._printer.commands(["G1 X115 Y15 F6000"]) 
+        if self.model == "Xcel":
+            # TODO CHECK VALUES
+            self._printer.commands(['G1 Z1800 F1200'])
+            self._printer.commands(['G1 X225 Y100 F6000'])
         self.restore_movement_mode()
 
     def set_movement_mode(self, mode): 
@@ -1746,8 +1783,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_movement_mode("absolute")
         
         self.z_before_filament_load = self._printer._currentZ
-        if self._printer._currentZ < 30:
-            self._printer.commands(["G1 Z30 F1200"])            
+        if self.model == 'Xeed' or self.model == 'Bolt':
+            if self._printer._currentZ < 30:
+                self._printer.commands(["G1 Z30 F1200"])            
 
 
         if self.model == "Bolt":
@@ -1763,6 +1801,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["G1 X190 Y20 F6000"]) 
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
+        elif self.model == "Xcel":
+            self._printer.commands(['G1 Z300 F1200'])
+            self._printer.commands(['G1 X225 Y100 F6000'])
 
         self.restore_movement_mode()
 
@@ -1793,7 +1834,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._on_media_folder_updated(None)
 
     def _init_powerbutton(self):
-        if self.model == "Bolt":
+        if self.model == "Bolt" or self.model == "Xcel":
             ## ~ Only initialise if it's not done yet.
             if not self.powerbutton_handler:
                 from octoprint_lui.util.powerbutton import PowerButtonHandler

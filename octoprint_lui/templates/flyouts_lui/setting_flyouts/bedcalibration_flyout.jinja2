@@ -51,7 +51,7 @@
   </div>
 </div>
 {% endif %}
-{% if model == "Xeed" or model.endswith("Debug") %}
+{% if model == "Xeed" or model.endswith("Debug") or model == "Xcel" %}
 <div id="warn-before-calibration" data-bind="visible: !showAutoBedCalibration()">
   <div class="Table">
     <div class="Table-row Table-header">
