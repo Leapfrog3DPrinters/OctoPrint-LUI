@@ -81,6 +81,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
         self.movement_mode = "absolute"
+        self.last_movement_mode = "absolute"
         
         self.relative_extrusion_trigger = False
         self.current_print_extrusion_amount = None
@@ -1749,7 +1750,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.model == "Xcel":
             # TODO CHECK VALUES
             self._printer.commands(['G1 Z1800 F1200'])
-            self._printer.commands(['G1 X225 Y100 F6000'])
         self.restore_movement_mode()
 
     def set_movement_mode(self, mode): 

@@ -28,7 +28,6 @@ $(function () {
             self.sendHomeCommand('z');
             self.startedCalibration(true);
 
-            self.sendJogCommand('z', 1, self.calibration_zOffset());
         };
 
         self.saveCalibration = function() {
@@ -44,11 +43,6 @@ $(function () {
         };
 
         self.sendJogCommand = function (axis, multiplier, distance) {
-            if (typeof distance === "undefined")
-                distance = $('#jog_distance button.active').data('distance');
-            if (self.settings.printerProfiles.currentProfileData() && self.settings.printerProfiles.currentProfileData()["axes"] && self.settings.printerProfiles.currentProfileData()["axes"][axis] && self.settings.printerProfiles.currentProfileData()["axes"][axis]["inverted"]()) {
-                multiplier *= -1;
-            }
 
             var data = {};
             data[axis] = distance * multiplier;
