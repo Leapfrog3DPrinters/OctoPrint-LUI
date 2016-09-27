@@ -133,7 +133,7 @@ $(function () {
             if (!forPurge) {
                 self.filamentActionText("Swap");
                 self.showUnload();
-                slider.noUiSlider.set(330)
+                slider.noUiSlider.set(FILAMENT_ROLL_LENGTH)
 
                 $('#swap-load-unload').addClass('active');
                 $('#swap-info').removeClass('active')
