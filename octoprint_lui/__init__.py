@@ -323,13 +323,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         remote_address = get_remote_address(request)
         localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
         if remote_address is None:
-            self.from_localhost = True
+            from_localhost = True
         else:
-            self.from_localhost = netaddr.IPAddress(remote_address) in localhost
+            from_localhost = netaddr.IPAddress(remote_address) in localhost
 
-        response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
+        response = make_response(render_template("index_lui.jinja2", local_addr=from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
-        if self.from_localhost:
+        if from_localhost:
             from octoprint.server.util.flask import add_non_caching_response_headers
             add_non_caching_response_headers(response)
 
@@ -349,10 +349,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_additional_key_data_for_cache(self):
         remote_address = get_remote_address(request)
         if remote_address is None:
-            return
-
-        localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
-        from_localhost = netaddr.IPAddress(remote_address) in localhost
+            from_localhost = True
+        else:
+            localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
+            from_localhost = netaddr.IPAddress(remote_address) in localhost
 
         return "local" if from_localhost else "remote"
 
@@ -1979,10 +1979,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
 
-        if(self.from_localhost): 
-            if(event is None or (number_of_dirs > 0 and not was_media_mounted) or (number_of_dirs == 0 and was_media_mounted)):
-                # If event is None, it's a forced message
-                self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
+        if(event is None or (number_of_dirs > 0 and not was_media_mounted) or (number_of_dirs == 0 and was_media_mounted)):
+            # If event is None, it's a forced message
+            self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
 
         self.is_media_mounted = number_of_dirs > 0
 
