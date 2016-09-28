@@ -27,6 +27,26 @@ $(function() {
         });
     });
 
+    //~~ AJAX setup
+
+    // work around a stupid iOS6 bug where ajax requests get cached and only work once, as described at
+    // http://stackoverflow.com/questions/12506897/is-safari-on-ios-6-caching-ajax-results
+    $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+        if (options.type != "GET") {
+            var headers;
+            if (options.hasOwnProperty("headers")) {
+                options.headers["Cache-Control"] = "no-cache";
+            } else {
+                options.headers = { "Cache-Control": "no-cache" };
+            }
+        }
+    });
+
+    // send the current UI API key with any request
+    $.ajaxSetup({
+        headers: {"X-Api-Key": UI_API_KEY}
+    });
+
     //~~ Initialize file upload plugin
 
     $.widget("blueimp.fileupload", $.blueimp.fileupload, {
@@ -416,7 +436,20 @@ $(function() {
             callViewModels(allViewModels, "onStartup");
 
             viewModelMap["settingsViewModel"].requestData()
-                .done(bindViewModels);
+            .done(function() {
+                // There appears to be an odd race condition either in JQuery's AJAX implementation or
+                // the browser's implementation of XHR, causing a second GET request from inside the
+                // completion handler of the very same request to never get its completion handler called
+                // if ETag headers are present on the response (the status code of the request does NOT
+                // seem to matter here, only that the ETag header is present).
+                //
+                // Minimal example with which I was able to reproduce this behaviour can be found
+                // at https://gist.github.com/foosel/b2ddb9ebd71b0b63a749444651bfce3f
+                //
+                // Decoupling all consecutive calls from this done event handler hence is an easy way
+                // to avoid this problem. A zero timeout should do the trick nicely.
+                window.setTimeout(bindViewModels, 0);
+            });
         });
 
     // Icon bar selection

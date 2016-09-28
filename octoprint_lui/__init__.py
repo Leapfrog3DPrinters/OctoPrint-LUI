@@ -286,6 +286,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def fetch_git_repo(self, path):
+        # Set octoprint git remote to Leapfrog:
+        # Out for now, feels  way too hacky.
+        # if path is self.update_info[4]['path']:
+        #     try:
+        #         remote_git = subprocess.check_output(['git', 'remote', '-v'],cwd=path)
+        #     except subprocess.CalledProcessError as err:
+        #         self._logger.warn("Can't get remote gits with path: {path}. {err}".format(path=path, err=err))
+        #     if 'foosel' in remote_git:
+        #         try:
+        #             update_remote_git = subprocess.check_output(['git', 'remote', 'set-url', 'origin', 'https://github.com/Leapfrog3DPrinters/OctoPrint.git'],cwd=path)
+        #         except subprocess.CalledProcessError as err:
+        #             self._logger.warn("Can't set remote url with path: {path}. {err}".format(path=path, err=err))
+        #     self._logger.info("Changed git remote repo!")
+
         try:
             output = subprocess.check_output(['git', 'fetch'],cwd=path)
         except subprocess.CalledProcessError as err:
@@ -309,13 +323,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         remote_address = get_remote_address(request)
         localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
         if remote_address is None:
-            self.from_localhost = True
+            from_localhost = True
         else:
-            self.from_localhost = netaddr.IPAddress(remote_address) in localhost
+            from_localhost = netaddr.IPAddress(remote_address) in localhost
 
-        response = make_response(render_template("index_lui.jinja2", local_addr=self.from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
+        response = make_response(render_template("index_lui.jinja2", local_addr=from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
 
-        if self.from_localhost:
+        if from_localhost:
             from octoprint.server.util.flask import add_non_caching_response_headers
             add_non_caching_response_headers(response)
 
@@ -335,10 +349,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_additional_key_data_for_cache(self):
         remote_address = get_remote_address(request)
         if remote_address is None:
-            return
-
-        localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
-        from_localhost = netaddr.IPAddress(remote_address) in localhost
+            from_localhost = True
+        else:
+            localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
+            from_localhost = netaddr.IPAddress(remote_address) in localhost
 
         return "local" if from_localhost else "remote"
 
@@ -1834,10 +1848,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'OctoPrint',
                 'version': VERSION
             }
-            ]
+        ]
 
 
-        self.update_info_list()
+
+
+        ## Commenting the auto update during start up atm to see if we can fix corrupt .git/objects
+        ##self.update_info_list() 
         self._logger.debug(self.update_info)
 
 
@@ -1962,10 +1979,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
 
-        if(self.from_localhost): 
-            if(event is None or (number_of_dirs > 0 and not was_media_mounted) or (number_of_dirs == 0 and was_media_mounted)):
-                # If event is None, it's a forced message
-                self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
+        if(event is None or (number_of_dirs > 0 and not was_media_mounted) or (number_of_dirs == 0 and was_media_mounted)):
+            # If event is None, it's a forced message
+            self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
 
         self.is_media_mounted = number_of_dirs > 0
 
@@ -2074,7 +2090,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if (event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
-            self.current_print_extrusion_amount = 0.0
+            self.current_print_extrusion_amount = [0.0, 0.0]
             self.save_filament_amount()
             self._printer.commands(["M605 S1"])
             self._printer.home(['x', 'y'])

@@ -19,3 +19,7 @@ class UsbFileStorage(LocalFileStorage):
     @property
     def analysis_backlog(self):
         return []
+
+    def _sanitize_entry(self, entry, path, entry_path):
+        return entry, entry_path
+    
