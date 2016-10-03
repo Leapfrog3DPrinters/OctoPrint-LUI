@@ -234,6 +234,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
     def update_info_list(self, force=False):
+        if not octoprint_lui.util.is_online():
+            return self.send_client_internet_offline()
+        if not octoprint_lui.util.github_online():
+            return self.send_client_github_offline()
         self.fetch_all_repos(force)
         for update in self.update_info:
             update['update'] = self.is_update_needed(update['path'])
@@ -1275,6 +1279,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
 
         self._plugin_manager.send_plugin_message(self._identifier, dict(type=message_type, data=data))
+
+    def send_client_internet_offline(self):
+        self._send_client_message('internet_offline')
+
+    def send_client_github_offline(self):
+        self._send_client_message('github_offline')   
 
     def send_client_heating(self):
         self._send_client_message('tool_heating')
