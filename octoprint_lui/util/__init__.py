@@ -6,6 +6,7 @@ import watchdog.events
 import socket
 import urllib2
 import json
+import logging
 
 from octoprint.filemanager import LocalFileStorage
 
@@ -33,13 +34,15 @@ def is_online(host="8.8.8.8", port=53, timeout=3):
     OpenPort: 53/tcp
     Service: domain (DNS/TCP)
     """
+    logger = logging.getLogger("octoprint.plugins.lui.util")
+
     try:
         socket.setdefaulttimeout(timeout)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
         return True
     except Exception as ex:
-        print ex
+        logger.info(ex)
         return False
 
 def github_online():
@@ -47,6 +50,8 @@ def github_online():
     Checks the status of github server from the github status pi.
     returns True if status is good or minor, returns false if its major
     """
+    logger = logging.getLogger("octoprint.plugins.lui.util")
+
     github_status_api = 'https://status.github.com/api/status.json'
     try:
         response = urllib2.urlopen(github_status_api)
@@ -56,5 +61,5 @@ def github_online():
         else:
             return False
     except urllib2.URLError as ex:
-        print ex
+        logger.info(ex)
         return False
