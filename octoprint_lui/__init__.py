@@ -54,8 +54,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "Xeed" : {
                 "update": "/home/lily/" ,
                 "media": "/media/"
-                },
+            },
             "Bolt" : {
+                "update": "/home/pi/" ,
+                "media": "/media/pi/"
+            },
+            "Xcel" : {
                 "update": "/home/pi/" ,
                 "media": "/media/pi/"
             },
