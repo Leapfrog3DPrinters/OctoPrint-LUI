@@ -885,6 +885,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         def selectAndOrPrint(filename, absFilename, destination):
             if octoprint.filemanager.valid_file_type(added_file, "gcode") and (selectAfterUpload or printAfterSelect or (currentFilename == filename and currentOrigin == destination)):
                 self._printer.select_file(absFilename, False, printAfterSelect)
+            return filename
         
         futureFullPath = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, futurePath, futureFilename)
         
