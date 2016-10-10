@@ -272,6 +272,22 @@ $(function () {
                 case "firmware_update_found":
                     self.onFirmwareUpdateFound(messageData.file);
                     break;
+                case "internet_offline":
+                    $.notify({
+                        title: gettext("Printer offline"),
+                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilties. '), {})
+                    },
+                        "error"
+                    )
+                    break;
+                case "github_offline":
+                    $.notify({
+                        title: gettext("Update server offline"),
+                        text: _.sprintf(gettext('The update server seems to be offline. Please retry updating after or check the status at github.com/Leapfrog3DPrinters'), {})
+                    },
+                        "error"
+                    )
+                    break;
             }
         }
     }

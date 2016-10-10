@@ -2,7 +2,6 @@ $(function() {
   function FlyoutViewModel(parameters) {
     var self = this;
     
-    self.deferred = undefined;
     self.confirmationDeferred = undefined;
 
     self.template_flyout = undefined;
@@ -18,6 +17,7 @@ $(function() {
     
     self.warnings = ko.observableArray([]);
     self.infos = ko.observableArray([]);
+    self.flyouts = ko.observableArray([]);
 
     self.isOpen = function()
     {
@@ -81,19 +81,22 @@ $(function() {
     }
 
     self.showFlyout = function(flyout, blocking) {
-      self.deferred = $.Deferred();
+      var deferred = $.Deferred();
+      var template_flyout = '#'+flyout+'_flyout';
+      self.flyouts.push({deferred: deferred, template: template_flyout});
       self.blocking = blocking || false;
       
       self.flyoutName = flyout;
 
-      self.template_flyout = '#'+flyout+'_flyout';
-      self.activateFlyout();
+      self.activateFlyout(template_flyout);
 
       // Call viewmodels with the flyout method on{FlyoutTopic}Shown
       var method = "on" + capitalize(flyout) + "FlyoutShown";
       callViewModels(self.allViewModels, method);
 
-      return self.deferred;
+      console.log(self.flyouts());
+
+      return self.flyouts()[self.flyouts().length - 1].deferred
     };
     
     self.showConfirmationFlyout = function(data, leaveFlyout) {
@@ -112,6 +115,7 @@ $(function() {
 
       // Show the confirmation flyout
       $('#confirmation_flyout').addClass('active');
+      $('#confirmation_flyout').css("z-index", self.flyouts().length + 1);
       self.setOverlay();
 
       self.confirmationDeferred = $.Deferred()
@@ -119,7 +123,7 @@ $(function() {
               $('#confirmation_flyout').removeClass('active');
               self.setOverlay();
 
-              if (self.deferred !== undefined && !leaveFlyout)
+              if (self.flyouts().length !== 0 && !leaveFlyout)
                   self.closeFlyoutAccept();
           
               self.confirmationDeferred = undefined;
@@ -136,34 +140,43 @@ $(function() {
     };
 
     self.closeFlyout = function() {
-        self.deactivateFlyout();
-        if (self.deferred != undefined) {
-            self.deferred.reject();
-            self.deferred = undefined;
+        var flyout_ref = self.flyouts.pop()
+        var deferred = flyout_ref.deferred
+        var template_flyout = flyout_ref.template
+        if (deferred != undefined) {
+            deferred.reject();
         }
+        self.deactivateFlyout(template_flyout);
+      console.log(self.flyouts());
+
     };
     
     self.closeFlyoutAccept = function() {
-        self.deactivateFlyout();
-        if (self.deferred != undefined) {
-            self.deferred.resolve();
-            self.deferred = undefined;
+        var flyout_ref = self.flyouts.pop()
+        var deferred = flyout_ref.deferred
+        var template_flyout = flyout_ref.template
+        if (deferred != undefined) {
+            deferred.reject();
         }
+        self.deactivateFlyout(template_flyout);
+      console.log(self.flyouts());
+
     };
 
-    self.activateFlyout = function()
-    {
-        $(self.template_flyout).addClass('active');
+    self.activateFlyout = function(template_flyout) {
+        $(template_flyout).addClass('active');
+        $(template_flyout).css("z-index", self.flyouts().length + 1);
         self.setOverlay();
     }
 
-    self.deactivateFlyout = function () {
-        $(self.template_flyout).removeClass('active');
+    self.deactivateFlyout = function (template_flyout) {
+        $(template_flyout).removeClass('active');
+        // $(template_flyout).css("z-index", 1);
         self.setOverlay();
     }
 
     self.setOverlay = function () {
-        if (self.warnings().length == 0 && self.infos().length == 0 &&
+        if (self.warnings().length == 0 && self.infos().length == 0 && self.flyouts().length == 0 &&
             !$('#confirmation_flyout').hasClass('active') && !$(self.template_flyout).hasClass('active'))
             $('.overlay').removeClass('active');
         else

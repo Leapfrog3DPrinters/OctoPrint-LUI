@@ -620,7 +620,6 @@ $(function() {
                 .done(function () {
                     self.saveData();
                 })
-                .fail(function() {})
                 .always(function () {
                     callViewModels(self.allViewModels, "onSettingsHidden");
                 });

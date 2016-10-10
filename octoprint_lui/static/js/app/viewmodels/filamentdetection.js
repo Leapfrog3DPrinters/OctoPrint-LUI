@@ -48,7 +48,7 @@ $(function () {
             self.filament.filamentInProgress(true);
             self.filament.showUnload();
 
-            fd_slider.noUiSlider.set(330)
+            fd_slider.noUiSlider.set(FILAMENT_ROLL_LENGTH)
 
             $('.fd_step').removeClass('active');
             $('#fd_filament_swap_wizard').addClass('active'); 

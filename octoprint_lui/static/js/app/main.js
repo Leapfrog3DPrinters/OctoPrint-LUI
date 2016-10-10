@@ -649,13 +649,13 @@ $(function() {
     var fdSlider = document.getElementById('fd_slider');
 
     noUiSlider.create(slider, {
-        start: 330,
+        start: FILAMENT_ROLL_LENGTH,
         step: 1,
         behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,
-            'max': 330
+            'max': FILAMENT_ROLL_LENGTH
         },
         format: {
           to: function ( value ) {
@@ -668,13 +668,13 @@ $(function() {
     });
 
     noUiSlider.create(fdSlider, {
-        start: 330,
+        start: FILAMENT_ROLL_LENGTH,
         step: 1,
         behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,
-            'max': 330
+            'max': FILAMENT_ROLL_LENGTH
         },
         format: {
             to: function (value) {
@@ -698,15 +698,15 @@ $(function() {
     slider.noUiSlider.on('update', function( values, handle ) {
         inputFormat.value = values[handle];
         new_filament_amount.innerText = values[handle];
-        percent = ((values[handle] / 330) * 100).toFixed(0);
-        filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
+        filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
         new_filament_percent.innerText = percent + "%";
     });
 
     fdSlider.noUiSlider.on('update', function (values, handle) {
         fdInputFormat.value = values[handle];
-        percent = ((values[handle] / 330) * 100).toFixed(0);
-        fd_filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
+        fd_filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
     });
 
     inputFormat.addEventListener('change', function(){

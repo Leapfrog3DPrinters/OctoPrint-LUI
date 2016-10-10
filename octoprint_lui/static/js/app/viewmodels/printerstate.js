@@ -345,13 +345,8 @@ $(function () {
 
         self.beginMaintenance = function ()
         {
-            self.flyout.closeFlyout();
 
             self.settings.showSettingsTopic('maintenance', true)
-            .always(function ()
-            {
-                self.showStartupFlyout(false);
-            });
         }
         
         self.showBusyHoming = function () {
