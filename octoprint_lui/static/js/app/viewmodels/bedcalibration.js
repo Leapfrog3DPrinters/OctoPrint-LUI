@@ -150,7 +150,7 @@ $(function () {
                     break;
                 case "levelbed_complete":
                     self.updateAutoBedCalibrationProgress(0); // 0 = 100%
-                    self.updateAutoBedCalibrationProgressString("Complete");
+                    self.autoBedCalibrationProgressString("Complete");
                     self.autoBedCalibrationComplete(true);
                     self.mayAbort(false);
                     self.mayAccept(true);

@@ -518,7 +518,7 @@
     </div>
   </div>
 </aside>
-<div id="warnings_container">
+<div id="warnings_container" style="z-index: 99">
   <div data-bind="template: { name: 'warning-template', foreach: warnings }">
   </div>
   <script type="text/html" id="warning-template">
@@ -529,7 +529,7 @@
         </h4>
       </div>
       <div class="flyout-body">
-        <div id="info_flyout_content">
+        <div id="warnings_flyout_content">
           <div class="Table">
             <div class="Table-row Table-header">
               <div class="Table-item">
@@ -560,7 +560,7 @@
     </aside>
   </script>
 </div>
-<div id="infos_container">
+<div id="infos_container" style="z-index: 98">
   <div data-bind="template: { name: 'info-template', foreach: infos }">
   </div>
   <script type="text/html" id="info-template">

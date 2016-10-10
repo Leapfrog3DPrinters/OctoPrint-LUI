@@ -1263,7 +1263,6 @@ $(function () {
                 }, 100);
             });
 
-            self.requestData();
             self.checkUsbMounted();
         };
 
