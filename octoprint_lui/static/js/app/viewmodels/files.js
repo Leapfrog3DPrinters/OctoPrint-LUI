@@ -475,7 +475,7 @@ $(function () {
 
             if (file.type == "firmware") {
                 //Check if we're living in a flyout
-                if (self.flyout.deferred !== undefined) {
+                if (self.flyout.flyouts().length > 0) {
                     self.selectedFirmwareFile(file);
                     self.flyout.closeFlyoutAccept();
                 }
@@ -491,7 +491,7 @@ $(function () {
                         self.printerState.print();
                     }
 
-                    if (self.flyout.deferred)
+                    if (self.flyout.flyouts().length > 0)
                         self.flyout.closeFlyoutAccept();
 
                     self.browseLocal(file.name);
@@ -504,7 +504,7 @@ $(function () {
                             if (printAfterLoad) {
                                 self.printerState.print();
                             }
-                            if (self.flyout.deferred)
+                            if (self.flyout.flyouts().length > 0)
                                 self.flyout.closeFlyoutAccept();
                             // changeTabTo("print");
                         }).always(function () { self.isLoadingFile = false; });;

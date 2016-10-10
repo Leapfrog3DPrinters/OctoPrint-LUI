@@ -153,7 +153,7 @@ $(function() {
         var deferred = flyout_ref.deferred
         var template_flyout = flyout_ref.template
         if (deferred != undefined) {
-            deferred.reject();
+            deferred.resolve();
         }
         self.deactivateFlyout(template_flyout);
 

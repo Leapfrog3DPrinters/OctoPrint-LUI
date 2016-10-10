@@ -78,8 +78,6 @@ $(function () {
 
             self.files.browseUsbForFirmware();
 
-            self.flyout.closeFlyoutAccept();
-
             self.flyout.showFlyout('firmware_file')
                 .done(function () {
                     file = self.files.selectedFirmwareFile();
@@ -87,7 +85,6 @@ $(function () {
                 })
                 .fail(function () { })
                 .always(function () {
-                    self.settings.showSettingsTopic('update');
                     self.files.browseLocal(); // Reset file list to local gcodes
                 });
         };
