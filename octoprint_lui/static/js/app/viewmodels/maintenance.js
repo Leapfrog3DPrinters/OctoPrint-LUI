@@ -55,13 +55,11 @@ $(function() {
         }
 
         self.calibrateExtruders = function () {
-            self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('extrudercalibration', true);
         }
 
         self.calibrateBed = function()
         {
-            self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('bedcalibration', true);
         }
 
@@ -111,10 +109,7 @@ $(function() {
 
         self.setFilamentAmount = function() {
             self.filament.requestData();
-            self.flyout.closeFlyoutAccept();
-            self.flyout.showFlyout('filament_override').done(function () {
-                self.settings.showSettingsTopic('maintenance');
-            });
+            self.flyout.showFlyout('filament_override')
         };
 
         self.onSettingsShown = function (){ 
