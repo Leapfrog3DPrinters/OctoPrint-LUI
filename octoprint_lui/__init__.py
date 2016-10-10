@@ -36,8 +36,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
-                octoprint.printer.PrinterCallback
-):
+                octoprint.printer.PrinterCallback):
 
     def __init__(self):
         
