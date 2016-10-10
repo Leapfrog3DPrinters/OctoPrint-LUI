@@ -108,27 +108,13 @@ $(function() {
 
                 OctoPrint.connection.connect(data)
                     .done(function() {
-                        self.settings.requestData();
-                        self.settings.printerProfiles.requestData();
+                        // self.settings.requestData();
+                        // self.settings.printerProfiles.requestData();
                     });
             } else {
                 self.requestData();
                 OctoPrint.connection.disconnect();
             }
-        };
-
-        self.onStartup = function() {
-            self.requestData();
-
-            // when isAdmin becomes true the first time, set the panel open or
-            // closed based on the connection state
-            var subscription = self.loginState.isAdmin.subscribe(function(newValue) {
-                if (newValue) {
-                    // wait until after the isAdmin state has run through all subscriptions
-                    setTimeout(self.openOrCloseOnStateChange, 0);
-                    subscription.dispose();
-                }
-            });
         };
 
     }

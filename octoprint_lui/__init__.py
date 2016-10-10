@@ -25,6 +25,7 @@ import octoprint_lui.util
 import octoprint.plugin
 from octoprint.settings import settings
 from octoprint.util import RepeatedTimer
+from octoprint.settings import valid_boolean_trues
 from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
 from octoprint.events import Events
@@ -247,6 +248,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 160, 'mode': 'mirror' }) #4=Center
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
+    ## 
+    ## Update 
+    ##
+
+    @octoprint.plugin.BlueprintPlugin.route("/update", methods=["GET"])
+    def get_updates(self):
+
+        force = request.values.get("force", "false") in valid_boolean_trues
+        machine_info = self._get_machine_info()
+        update_info = self.update_info_list(force)
+        return make_response(jsonify(update=update_info, machine_info=machine_info), 200)
+
     def update_info_list(self, force=False):
         if not octoprint_lui.util.is_online():
             return self.send_client_internet_offline()
@@ -257,6 +270,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             update['update'] = self.is_update_needed(update['path'])
             if update['identifier'] == 'lui': ## TODO
                 update['version'] = self._plugin_manager.get_plugin_info(update['identifier']).version
+
+        return self.update_info
 
     def fetch_all_repos(self, force):
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced

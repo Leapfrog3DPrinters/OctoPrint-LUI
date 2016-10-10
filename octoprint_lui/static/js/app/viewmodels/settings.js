@@ -616,6 +616,8 @@ $(function() {
         self.showSettingsTopic = function (topic, blocking) {
             self.settingsTopic(capitalize(topic));
             callViewModels(self.allViewModels, "onSettingsShown");
+            callViewModels(self.allViewModels, "on" + self.settingsTopic()+ "SettingsShown");
+
             return self.flyout.showFlyout(topic + '_settings', blocking)
                 .done(function () {
                     self.saveData();

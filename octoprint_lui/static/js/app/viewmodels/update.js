@@ -192,10 +192,15 @@ $(function () {
             self.firmwareVersion(data.machine_info.firmware_version);
         };
 
-        self.requestData = function () {
-            OctoPrint.simpleApiGet('lui', {
-                success: self.fromResponse
-            });
+        self.requestData = function (force) {
+            var force = force || false;
+            var url = OctoPrint.getBlueprintUrl("lui") + "update";
+            OctoPrint.getWithQuery(url, {force: force})
+                .done(function(response){
+                    self.fromResponse(response);
+                    self.updating(false);
+                    $('#update_spinner').removeClass('fa-spin');
+                });
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -218,17 +223,7 @@ $(function () {
         self.refreshUpdateInfo = function () {
             self.updating(true);
             $('#update_spinner').addClass('fa-spin');
-            var data = {
-                command: "refresh_update_info"
-            };
-            var url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
-            //TODO: Get rid of the timeout?
-            setTimeout(function () {
-                self.requestData();
-                self.updating(false);
-                $('#update_spinner').removeClass('fa-spin');
-            }, 10000);
+            self.requestData(true);
         }
 
         self.onHexPathChanged = function(hex_path)
@@ -236,7 +231,7 @@ $(function () {
             self.fileNameToFlash(hex_path);
         }
 
-        self.onSettingsShown = function () {
+        self.onUpdateSettingsShown = function () {
             self.requestData();
         };
 
@@ -244,7 +239,7 @@ $(function () {
             self.flashArduino.resetFile();
         }
 
-        self.onBeforeBinding = function () {
+        self.onUserLoggedIn = function () {
             self.requestData();
         };
 
