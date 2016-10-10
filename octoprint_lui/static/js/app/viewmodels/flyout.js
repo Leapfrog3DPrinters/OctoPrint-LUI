@@ -94,8 +94,6 @@ $(function() {
       var method = "on" + capitalize(flyout) + "FlyoutShown";
       callViewModels(self.allViewModels, method);
 
-      console.log(self.flyouts());
-
       return self.flyouts()[self.flyouts().length - 1].deferred
     };
     
@@ -147,7 +145,6 @@ $(function() {
             deferred.reject();
         }
         self.deactivateFlyout(template_flyout);
-      console.log(self.flyouts());
 
     };
     
@@ -159,7 +156,6 @@ $(function() {
             deferred.reject();
         }
         self.deactivateFlyout(template_flyout);
-      console.log(self.flyouts());
 
     };
 
