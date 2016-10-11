@@ -42,7 +42,7 @@ def is_online(host="8.8.8.8", port=53, timeout=3):
         s.connect((host, port))
         return True
     except Exception as ex:
-        logger.info(ex)
+        logger.debug(ex)
         return False
 
 def github_online():
@@ -61,5 +61,5 @@ def github_online():
         else:
             return False
     except urllib2.URLError as ex:
-        logger.info(ex)
+        logger.debug(ex)
         return False

@@ -180,10 +180,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Power Button
         self.powerbutton_handler = None
 
+        ##~ Update 
+        self.fetching_updates = False
+
     def initialize(self):
         
-
-
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
 
@@ -248,40 +249,85 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 160, 'mode': 'mirror' }) #4=Center
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
-    ## 
-    ## Update 
-    ##
-
+    
+    ##~ Update 
+    
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["GET"])
     def get_updates(self):
-
+        # Only update if we passed 30 min since last fetch or if we are forced
         force = request.values.get("force", "false") in valid_boolean_trues
-        machine_info = self._get_machine_info()
-        update_info = self.update_info_list(force)
-        return make_response(jsonify(update=update_info, machine_info=machine_info), 200)
-
-    def update_info_list(self, force=False):
-        if not octoprint_lui.util.is_online():
-            return self.send_client_internet_offline()
-        if not octoprint_lui.util.github_online():
-            return self.send_client_github_offline()
-        self.fetch_all_repos(force)
-        for update in self.update_info:
-            update['update'] = self.is_update_needed(update['path'])
-            if update['identifier'] == 'lui': ## TODO
-                update['version'] = self._plugin_manager.get_plugin_info(update['identifier']).version
-
-        return self.update_info
-
-    def fetch_all_repos(self, force):
-        ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
         current_time = time.time()
-        if force or (current_time - self.last_git_fetch > 3600):
-            self.last_git_fetch = current_time
-            for update in self.update_info:
-                self.fetch_git_repo(update['path'])
+        cache_time_expired = (current_time - self.last_git_fetch) > 3600
+        if not cache_time_expired and not force:
+            self._logger.debug("Cache time of updates not expired, so not fetching updates yet")
+        # Not the complete update_info array has to be send to front end
+        update_frontend = self._create_update_frontend(self.update_info)
+        if (cache_time_expired or force) and not self.fetching_updates:
+            self.update_info_list(force)
+            return make_response(jsonify(status="fetching", update=update_frontend, machine_info=self.machine_info), 200)
+        return make_response(jsonify(status="cache", update=update_frontend, machine_info=self.machine_info), 200)
 
-    def is_update_needed(self, path):
+    @octoprint.plugin.BlueprintPlugin.route("/update", methods=["POST"])
+    def do_updates(self):
+
+        update_json = [{'name': update['name'], 'update': update['update'], 'version': update['version']} for update in update_info]
+        pass
+
+    def update_info_list(self, force):
+        updater_thread = threading.Thread(target=self._update_worker, args=(self.update_info, force))
+        updater_thread.daemon = False
+        updater_thread.start()
+
+    def _create_update_frontend(self, update_info):
+        for update in update_info:
+            update_frontend = [{'name': update['name'], 'update': update['update'], 'version': update['version']} for update in update_info]
+        return update_frontend
+
+    def _update_worker(self, update_info, force):
+        if not octoprint_lui.util.is_online():
+            # Only send a message to the front end if the user requests the update
+            if force:
+                self.send_client_internet_offline()
+            # Return out of the worker, we can't update - not online
+            return 
+
+        if not octoprint_lui.util.github_online():
+            # Only send a message to the front end if the user requests the update
+            if force:
+                self.send_client_github_offline()
+            # Return out of the worker, we can't update - not online
+            return 
+        try:
+            self.fetching_updates = True
+            self._fetch_all_repos(update_info)
+            update_info_updated = self._update_needed_version_all(update_info)
+            self.update_info = update_info_updated  
+        except Exception as e:
+            self._logger.debug("Something went wrong in the git fetch thread: {error}".format(error= e))
+            return self._send_client_message("update_fetch_error")
+        finally:
+            self.fetching_updates = False
+
+        data = dict(update=self._create_update_frontend(self.update_info), machine_info=  self.machine_info)
+        return self._send_client_message("update_fetch_success", data)
+
+
+
+    def _fetch_all_repos(self, update_info):
+        ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
+        for update in update_info:
+            self._fetch_git_repo(update['path'])
+        self.last_git_fetch = time.time()
+
+    def _update_needed_version_all(self, update_info):
+        for update in update_info:
+            update['update'] = self._is_update_needed(update['path'])
+            plugin_info = self._plugin_manager.get_plugin_info(update['identifier'])
+            if plugin_info:
+                update['version'] = plugin_info.version 
+        return update_info
+
+    def _is_update_needed(self, path):
         local = None
         remote = None
         base = None
@@ -318,7 +364,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return True
 
 
-    def fetch_git_repo(self, path):
+    def _fetch_git_repo(self, path):
         # Set octoprint git remote to Leapfrog:
         # Out for now, feels  way too hacky.
         # if path is self.update_info[4]['path']:
@@ -339,6 +385,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
         self._logger.debug("Fetched git repo: {path}".format(path=path))
 
+
+    ##~ OctoPrint Settings
     def get_settings_defaults(self):
         return {
             "model": self.model,
@@ -420,7 +468,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             machine_info = self._get_machine_info()
             result = dict({
-                'update': self.update_info,
                 'machine_info': machine_info,
                 'filaments': self.filament_database.all(),
                 'is_homed': self.is_homed,
@@ -444,7 +491,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     update_filament = ["tool", "amount", "profileName"],
                     move_to_filament_load_position = [],
                     move_to_maintenance_position = [],
-                    refresh_update_info = [],
                     temperature_safety_timer_cancel = [],
                     begin_homing = [],
                     get_files = ["origin"],
@@ -1875,49 +1921,46 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.update_info = [
             {
+                'name': "Leapfrog UI",
                 'identifier': 'lui',
+                'version': self._plugin_manager.get_plugin_info('lui').version,
                 'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                'action': 'update_lui',
-                'name': "Leapfrog UI",
-                'version': "testing"
+                "command": "cd {path}OctoPrint-LUI && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
+                'name': 'Network Manager',
                 'identifier': 'networkmanager',
+                'version': self._plugin_manager.get_plugin_info('networkmanager').version,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                'action': 'update_networkmanager',
-                'name': 'Network Manager',
-                'version': "0.0.1"
+                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
+                'name': 'Flash Firmware Module',
                 'identifier': 'flasharduino',
+                'version': self._plugin_manager.get_plugin_info('flasharduino').version,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                'action': 'update_flasharduino',
-                'name': 'Flash Firmware Module',
-                'version': "0.0.1"
+                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },  
             {
+                'name': 'G-code Render Module',
                 'identifier': 'gcoderender',
+                'version': self._plugin_manager.get_plugin_info('gcoderender').version,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                'action': 'update_gcoderender',
-                'name': 'G-code Render Module',
-                'version': "0.0.1"
+                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },     
             {
+                'name': 'OctoPrint',
                 'identifier': 'octoprint',
+                'version': VERSION,
                 'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                'action': 'update_octoprint',
-                'name': 'OctoPrint',
-                'version': VERSION
+                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             }
         ]
-
-
-
 
         ## Commenting the auto update during start up atm to see if we can fix corrupt .git/objects
         ##self.update_info_list() 
@@ -1936,56 +1979,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return any(True for x in dict if x['action'] == variable)
 
         actions = self._settings.global_get(["system", "actions"])
-
-        ## Add update LUI to the actions    
-        if not is_variable_in_dict('update_lui', actions):
-            update_lui = {
-                "action": "update_lui",
-                "name": "Update LUI",
-                "command": "cd {path}OctoPrint-LUI && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
-                "confirm": False
-            }
-            actions.append(update_lui)
-
-        ## Add update network manager to the actions
-        if not is_variable_in_dict('update_networkmanager', actions):
-            update_networkmanager = {
-                "action": "update_networkmanager",
-                "name": "Update NetworkManager",
-                "command": "cd {path}OctoPrint-NetworkManager && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
-                "confirm": False
-            }
-            actions.append(update_networkmanager)
-
-        ## Add update OctoPrint core to the actions
-        if not is_variable_in_dict('update_octoprint', actions):
-            update_octoprint = {
-                "action": "update_octoprint",
-                "name": "Update OctoPrint",
-                "command": "cd {path}OctoPrint && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
-                "confirm": False
-            }
-            actions.append(update_octoprint)
-
-        ## Add update flasharduino to the actions
-        if not is_variable_in_dict('update_flasharduino', actions):
-            update_flasharduino = {
-                "action": "update_flasharduino",
-                "name": "Update Flash Firmware Module",
-                "command": "cd {path}OctoPrint-flashArduino && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
-                "confirm": False
-            }
-            actions.append(update_flasharduino)
-
-        ## Add update gcodeRender to the actions
-        if not is_variable_in_dict('update_gcoderender', actions):
-            update_gcoderender = {
-                "action": "update_gcoderender",
-                "name": "Update Gcode Render Module",
-                "command": "cd {path}OctoPrint-gcodeRender && git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update']),
-                "confirm": False
-            }
-            actions.append(update_gcoderender)
 
         ## Add shutdown 
         if not is_variable_in_dict('shutdown', actions):

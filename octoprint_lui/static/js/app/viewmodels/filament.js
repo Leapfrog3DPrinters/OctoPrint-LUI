@@ -446,7 +446,7 @@ $(function () {
             });
         };
 
-        self.onSettingsShown = function() {
+        self.onMaterialsSettingsShown = function() {
             self.requestData().success(function () {
 
                 var leftName = self.leftFilament();

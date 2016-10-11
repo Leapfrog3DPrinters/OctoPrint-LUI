@@ -576,6 +576,7 @@ $(function() {
         }
 
         self.onEventSettingsUpdated = function() {
+            console.log("Event Settings Bla");
             var preventSettingsRefresh = _.any(self.allViewModels, function(viewModel) {
                 if (viewModel.hasOwnProperty("onSettingsPreventRefresh")) {
                     try {

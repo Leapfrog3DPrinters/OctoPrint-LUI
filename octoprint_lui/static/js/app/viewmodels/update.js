@@ -90,30 +90,25 @@ $(function () {
         };
 
         self.sendUpdateCommand = function (data) {
+            var url = OctoPrint.getBlueprintUrl("lui") + "update";
 
             var text = "You are about to update a component of the User Interface.";
             var question = "Do want to update " + data.name() + "?";
             var title = "Update: " + data.name()
             var dialog = { 'title': title, 'text': text, 'question': question };
 
-            var command = {
-                'actionSource': 'custom',
-                'action': data.action(),
-                'name': data.name(),
-                confirm: dialog,
-                'before': self.showUpdateWarning,
-                'after': self.hideUpdateWarning
-            };
-
-            self.system.triggerCommand(command)
-                .done(function () {
-                    self.system.systemServiceRestart();
-                });
-        };
+            self.flyout.showConfirmationFlyout(dialog)
+                .done(function(){
+                    OctoPrint.post(url, "update", {"name":data.name()})
+                })
+        }
 
         self.showUpdateWarning = function ()
         {
-            self.update_warning = self.flyout.showWarning("Updating", "System is updating, please wait until the updates are completed...", true);
+            self.update_warning = self.flyout.showWarning(
+                "Updating", 
+                "System is updating, please wait until the updates are completed...", 
+                true);
         }
 
         self.hideUpdateWarning = function ()
@@ -198,8 +193,6 @@ $(function () {
             OctoPrint.getWithQuery(url, {force: force})
                 .done(function(response){
                     self.fromResponse(response);
-                    self.updating(false);
-                    $('#update_spinner').removeClass('fa-spin');
                 });
         };
 
@@ -280,6 +273,19 @@ $(function () {
                         "error"
                     )
                     break;
+                case "update_fetch_error":
+                    $.notify({
+                        title: gettext("Update fetching failed."),
+                        text: _.sprintf(gettext('Please check the logs.'), {})
+                    },
+                        "error"
+                    )
+                    break;
+                case "update_fetch_success":
+                    console.log("Update received", messageData)
+                    self.fromResponse(messageData);
+                    self.updating(false);
+                    $('#update_spinner').removeClass('fa-spin');
             }
         }
     }

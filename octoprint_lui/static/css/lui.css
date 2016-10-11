@@ -561,6 +561,18 @@ input[type=radio] {
 .hide {
   display: none !important; }
 
+#offline_flyout {
+  z-index: 100; }
+
+#confirmation_flyout {
+  z-index: 99; }
+
+#warnings_container {
+  z-index: 97; }
+
+#infos_container {
+  z-index: 96; }
+
 /* 
   Circles
 */

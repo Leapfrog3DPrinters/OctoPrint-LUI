@@ -157,10 +157,6 @@ $(function () {
         self.requestData = function () {
             OctoPrint.timelapse.get({ data: { unrendered: true } })
                 .done(self.fromResponse);
-
-            self._getApi({ command: "storage_info" }).done(function (storage_info) {
-                self.storageAvailable(formatSize(storage_info.free) + " free");
-            });
         };
 
         self.fromResponse = function (response) {
@@ -293,17 +289,18 @@ $(function () {
             self.copyProgressBar = copyProgress.find(".bg-orange");
         }
 
-        self.onSettingsShown = function () {
-            // TODO: Ensure all setting flyouts have this check
-            if (self.settings.settingsTopic() == "Webcam") {
-                self.requestData();
-                self.refreshPreview();
-            }
-        }
+        self.onWebcamSettingsShown = function () {
+            self.requestData();
+            self.refreshPreview();
+        };
 
         self.onBeforeSaveSettings = function () {
             self.save();
-        }
+        };
+
+        self.onBeforeBinding = function(){
+            self.storageAvailable = self.files.freeSpaceString;
+        };
 
         self.onEventPostRollStart = function (payload) {
             var title = gettext("Capturing timelapse postroll");

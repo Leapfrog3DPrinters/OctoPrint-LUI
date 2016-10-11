@@ -108,8 +108,6 @@ $(function() {
 
                 OctoPrint.connection.connect(data)
                     .done(function() {
-                        // self.settings.requestData();
-                        // self.settings.printerProfiles.requestData();
                     });
             } else {
                 self.requestData();
