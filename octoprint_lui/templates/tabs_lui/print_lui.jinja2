@@ -77,7 +77,7 @@
           </div>
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button ok-button" data-bind="click: print, css: { disabled: !isOperational() || !fileSelected() || !loginState.loggedIn()}">
+              <li class="button ok-button" data-bind="click: function () { print() }, css: { disabled: !isOperational() || !fileSelected() || !loginState.loggedIn()}">
                 <a href="#">
                   <span>
                     <i class="fa fa-play"></i>Start print
@@ -124,7 +124,7 @@
           </div>
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button" data-bind="click: pause, css: {active: isPaused(), disabled: !enablePause()}, attr: {title: titlePauseButton}">
+              <li class="button" data-bind="click: function () { pause() }, css: {active: isPaused(), disabled: !enablePause()}, attr: {title: titlePauseButton}">
                 <a href="#">
                   <span data-bind="visible: !isPaused()">
                     <i class="fa" data-bind="css: {'fa-pause': !isPaused(), 'fa-play': isPaused()}"></i> {{ _('Pause') }}
@@ -138,7 +138,7 @@
           </div>
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button failed-button" data-bind="click: cancel, css: {disabled: !enableCancel()}" title="{{ _('Cancels the print job') }}">
+              <li class="button failed-button" data-bind="click: function () { cancel() }, css: {disabled: !enableCancel()}" title="{{ _('Cancels the print job') }}">
                 <a href="#">
                   <span>
                     <i class="fa fa-stop"></i>Cancel

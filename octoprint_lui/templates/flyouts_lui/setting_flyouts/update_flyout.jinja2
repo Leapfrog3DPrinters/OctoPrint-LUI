@@ -10,7 +10,7 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>
+          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
         </span>
       </div>
     </div>
@@ -38,7 +38,7 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>
+          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
           <span data-bind="text: modelName"></span>
         </span>
       </div>
@@ -49,7 +49,7 @@
       </div>
       <div class="Table-item Table-item-grow-3">
         <ul class="button-area">
-          <li class="button" data-bind="css: getUpdateAllButtonClass, click: updateAll">
+          <li class="button" data-bind="css: getUpdateAllButtonClass, click: function () { updateAll() }">
             <a href="">
               <span data-bind="text: getUpdateAllText"></span>
             </a>

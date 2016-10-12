@@ -67,7 +67,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: startAutoBedCalibration">
+          <li class="button" data-bind="click: function () { startAutoBedCalibration() }">
             <a href="">
               <span>Level bed</span>
             </a>
@@ -76,7 +76,7 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: startZoffset ">
+          <li class="button" data-bind="click: function () { startZoffset() } ">
             <a href="">
               <span>Z-offset wizard</span>
             </a>

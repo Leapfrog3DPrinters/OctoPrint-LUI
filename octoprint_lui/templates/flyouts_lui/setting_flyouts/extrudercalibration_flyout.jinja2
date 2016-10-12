@@ -239,7 +239,7 @@
 
       <!--<div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: pause, enable: enablePause, css: {active: isPaused()}, attr: {title: titlePauseButton}">
+          <li class="button" data-bind="click: function () { pause() }, enable: enablePause, css: {active: isPaused()}, attr: {title: titlePauseButton}">
             <a href="#">
               <span data-bind="visible: !isPaused()">
                 <i class="fa" data-bind="css: {'fa-pause': !isPaused(), 'fa-play': isPaused()}"></i> {{ _('Pause') }}

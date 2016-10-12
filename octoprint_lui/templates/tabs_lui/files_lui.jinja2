@@ -57,7 +57,7 @@
                   <div class="button-area" data-bind="visible: searchQuery()">
                     <ul>
                       <li class="button">
-                        <a href="#" data-bind="click: clearQuery">
+                        <a href="#" data-bind="click: function () { clearQuery() }">
                           <i class="fa fa-remove">  </i>
                         </a>
                       </li>

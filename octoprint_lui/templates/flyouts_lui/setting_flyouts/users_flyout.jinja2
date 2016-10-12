@@ -26,7 +26,7 @@
   <div class="pagination pagination-mini pagination-centered" data-bind="visible: users.listHelper.allSize() > CONFIG_USERSPERPAGE">
     <ul>
       <li style="justify-content: flex-start" data-bind="css: {disabled: users.listHelper.currentPage() === 0}">
-        <a href="#" data-bind="click: users.listHelper.prevPage">«</a>
+        <a href="#" data-bind="click: function () { users.listHelper.prevPage() }">«</a>
       </li>
     </ul>
     <ul data-bind="foreach: users.listHelper.pages">
@@ -36,7 +36,7 @@
     </ul>
     <ul>
       <li style="justify-content: flex-end" data-bind="css: {disabled: users.listHelper.currentPage() === users.listHelper.lastPage()}">
-        <a href="#" data-bind="click: users.listHelper.nextPage">»</a>
+        <a href="#" data-bind="click: function () { users.listHelper.nextPage() }">»</a>
       </li>
     </ul>
   </div>

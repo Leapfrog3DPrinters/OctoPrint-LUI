@@ -30,7 +30,7 @@
     <div class="pagination pagination-mini pagination-centered"  data-bind="visible: listHelper.allSize() > 5">
       <ul>
         <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
-          <a href="javascript:void(0)" data-bind="click: listHelper.prevPage">«</a>
+          <a href="javascript:void(0)" data-bind="click: function () { listHelper.prevPage() }">«</a>
         </li>
       </ul>
       <ul data-bind="foreach: listHelper.pages">
@@ -40,7 +40,7 @@
       </ul>
       <ul>
         <li data-bind="css: {disabled: listHelper.currentPage() === listHelper.lastPage()}">
-          <a href="javascript:void(0)" data-bind="click: listHelper.nextPage">»</a>
+          <a href="javascript:void(0)" data-bind="click: function () { listHelper.nextPage() }">»</a>
         </li>
       </ul>
     </div>
@@ -106,7 +106,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button secondary-button" data-bind="click: cancelWifiConfiguration">
+          <li class="button secondary-button" data-bind="click: function () { cancelWifiConfiguration() }">
             <a href="">
               <span>Back</span>
             </a>
@@ -115,7 +115,7 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: confirmWifiConfiguration, css: {disabled: working() || !editorWifiPassphrase1() || editorWifiPassphrase1() == '' }">
+          <li class="button" data-bind="click: function () { confirmWifiConfiguration() }, css: {disabled: working() || !editorWifiPassphrase1() || editorWifiPassphrase1() == '' }">
             <a href="">
               <span>Connect</span>
             </a>
