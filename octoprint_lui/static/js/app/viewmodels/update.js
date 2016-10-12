@@ -89,12 +89,20 @@ $(function ()  {
                 });
         };
 
-        self.sendUpdateCommand = function (data) {
+        self.update = function (data) {
             var url = OctoPrint.getBlueprintUrl("lui") + "update";
 
-            var text = "You are about to update a component of the User Interface.";
-            var question = "Do want to update " + data.name() + "?";
-            var title = "Update: " + data.name()
+            var text, question, title = ""
+
+            if (data.name() == "all") {
+                title = "Update software";
+                text = "You are about to update the printer software.";
+                question = "Do you want to continue?";
+            } else {
+                title = "Update: " + data.name()
+                text = "You are about to update a component of the User Interface.";
+                question = "Do want to update " + data.name() + "?";
+            }
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
@@ -116,63 +124,6 @@ $(function ()  {
             if (self.update_warning)
                 self.flyout.closeWarning(self.update_warning);
         }
-
-        self._updateNext = function () 
-        {
-            //TODO: Provide progress feedback to user
-            console.log('Updating' + (self.updateCounter + 1) + '/' + self.updateTarget);
-                
-            var items = self.updateinfo();
-            var data = items[self.updateCounter];
-
-            if (!data.update()) {
-                self.updateCounter++;
-
-                if (self.updateCounter == self.updateTarget)
-                    self.system.systemServiceRestart();
-                else
-                    return self._updateNext();
-            }
-            else {
-                var command = {
-                    'actionSource': 'custom',
-                    'action': data.action(),
-                    'name': data.name(),
-                    'before': self.showUpdateWarning,
-                    'after': self.hideUpdateWarning
-                };
-                self.system.triggerCommand(command)
-                    .done(function ()  {
-                        self.updateCounter++;
-
-                        if (self.updateCounter == self.updateTarget)
-                            self.system.systemServiceRestart();
-                        else
-                            self._updateNext();
-                    }).fail(function ()  {
-                        $.notify({ title: 'Software update failed', text: 'An error has occured while trying to update the software. Please try again.' }, "error");
-                    });
-            }
-        }
-
-        self.updateAll = function (data) {
-
-            self.updateCounter = 0;
-            self.updateTarget = self.updateinfo().length;
-
-            if (self.updateTarget > 0) {
-                var text = "You are about to update the printer software.";
-                var question = "Do want to continue?";
-                var title = "Update software";
-
-                self.flyout.showConfirmationFlyout({ 'title': title, 'text': text, 'question': question }).done(function ()  {
-                    self._updateNext();
-                })
-            }
-
-            
-                
-        };
 
         self.fromResponse = function (data) {
             var info = ko.mapping.fromJS(data.update);

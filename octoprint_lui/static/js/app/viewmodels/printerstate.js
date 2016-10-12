@@ -440,7 +440,7 @@ $(function ()  {
 
                 switch (messageType) {
                     case "is_homed":
-                        if (self.flyout.flyoutName == "startup")
+                        if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
                             self.closeStartupFlyout();
                         break;
                     case "is_homing":

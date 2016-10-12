@@ -7,7 +7,7 @@ $(function () {
     self.template_flyout = undefined;
 
     self.blocking = false;
-    self.flyoutName = "";
+    self.currentFlyoutTemplate = "";
 
     self.confirmation_title = ko.observable(undefined);
     self.confirmation_text = ko.observable(undefined);
@@ -86,7 +86,7 @@ $(function () {
       self.flyouts.push({deferred: deferred, template: template_flyout});
       self.blocking = blocking || false;
       
-      self.flyoutName = flyout;
+      self.currentFlyoutTemplate = template_flyout;
 
       self.activateFlyout(template_flyout);
 
@@ -145,7 +145,8 @@ $(function () {
             deferred.reject();
         }
         self.deactivateFlyout(template_flyout);
-
+        self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
+        console.log(self.currentFlyoutTemplate);
     };
     
     self.closeFlyoutAccept = function () {
@@ -156,7 +157,8 @@ $(function () {
             deferred.resolve();
         }
         self.deactivateFlyout(template_flyout);
-
+        self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
+        console.log(self.currentFlyoutTemplate);
     };
 
     self.activateFlyout = function(template_flyout) {
