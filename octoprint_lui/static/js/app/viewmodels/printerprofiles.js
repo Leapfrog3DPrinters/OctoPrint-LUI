@@ -1,5 +1,5 @@
-$(function() {
-    var cleanProfile = function() {
+$(function () {
+    var cleanProfile = function () {
         return {
             id: "",
             name: "",
@@ -56,7 +56,7 @@ $(function() {
 
         self.currentProfileData = ko.observable(ko.mapping.fromJS(cleanProfile()));
 
-        self.requestData = function() {
+        self.requestData = function () {
             OctoPrint.printerprofiles.list()
                 .done(self.fromResponse);
         };

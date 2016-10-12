@@ -2,7 +2,7 @@
   <div class="content">
     <div class="settings_topics">
       <!-- Printer -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('printer')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()} ">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('printer')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()} ">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">
@@ -23,7 +23,7 @@
       </div><!-- Printer -->
       {% if local_addr %}
       <!-- Maintenance -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('maintenance')}, css: { disabled: !isOperational() || isPaused() || isPrinting() } ">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('maintenance')}, css: { disabled: !isOperational() || isPaused() || isPrinting() } ">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">
@@ -44,7 +44,7 @@
       </div><!-- Maintenance -->
       {% endif %}
       <!-- Materials -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('materials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('materials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">
@@ -64,7 +64,7 @@
         </ul>
       </div><!-- Materials -->
       <!-- Webcam -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('webcam')}, css: {disabled: !loginState.loggedIn()}">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('webcam')}, css: {disabled: !loginState.loggedIn()}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">
@@ -85,7 +85,7 @@
       </div><!-- /Webcam -->
 
       <!-- Users -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('users')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('users')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">
@@ -106,7 +106,7 @@
       </div><!-- Users -->
       {% if local_addr %}
       <!-- Wireless -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('wireless')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('wireless')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">
@@ -128,7 +128,7 @@
       {% endif %}
       {% if debug_lui %}
       <!-- Advanced -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('advanced')}">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('advanced')}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">
@@ -149,7 +149,7 @@
       </div><!-- /Advanced -->
       {% endif %}
       <!-- Update -->
-      <div class="settings_topic" data-bind="click: function() {showSettingsTopic('update')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('update')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">

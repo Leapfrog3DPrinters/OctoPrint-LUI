@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     function ExtruderCalibrationViewModel(parameters) {
         var self = this;
 
@@ -9,14 +9,14 @@ $(function () {
         self.printerState = parameters[4];
         self.filament = parameters[5];
 
-        self.mayStartLargeCalibration = ko.pureComputed(function () {
+        self.mayStartLargeCalibration = ko.pureComputed(function ()  {
             return self.filament.leftFilament() != "None" && self.filament.rightFilament() != "None"
         });
 
         self.smallYAxisCorrection = ko.observable(0);
 
         self.smallBedWidthCorrection = ko.pureComputed({
-            read: function () {
+            read: function ()  {
                 var v = self.bedWidthCorrection();
                 return Math.round((v - Math.round(v)) * 10);
             },
@@ -27,7 +27,7 @@ $(function () {
         });
 
         self.largeBedWidthCorrection = ko.pureComputed({
-            read: function () {
+            read: function ()  {
                 var v = self.bedWidthCorrection();
                 return Math.round(v);
             },
@@ -46,7 +46,7 @@ $(function () {
         self.smallYCalibrationCompleted = ko.observable(false);
         self.smallCalibrationPrepared = ko.observable(false);
 
-        $(".width-calibrator > li").click(function () {
+        $(".width-calibrator > li").click(function ()  {
             var val = $(this).data('val');
 
             if ($(this).parent().attr('id') == "small-bed-width-correction")
@@ -56,35 +56,35 @@ $(function () {
         });
 
 
-        $("#y-axis-calibration > li").click(function () {
+        $("#y-axis-calibration > li").click(function ()  {
             var val = $(this).data('val');
 
             self.smallYAxisCorrection(val/10);
         });
 
-        self.startLargeExtruderCalibration = function () {
+        self.startLargeExtruderCalibration = function ()  {
             deferEventNotifications = true;
             self.calibrationProcessStarted(true);
             self.isPrintingCalibration(true);
 
             // First set calibration at 0, 0
-            self.setCalibration(0, 0, false).done(function () {
+            self.setCalibration(0, 0, false).done(function ()  {
                 console.log("Calibration set to 0, 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
             });
             
         };
 
-        self.prepareSmallExtruderCalibration = function () {
+        self.prepareSmallExtruderCalibration = function ()  {
             self.largeCalibrationCompleted(true);
         };
 
-        self.startSmallExtruderCalibration = function () {
+        self.startSmallExtruderCalibration = function ()  {
             self.smallCalibrationPrepared(true);
             self.isPrintingCalibration(true);
 
             // Send the large bed width correction to the printer and print the small calibration
-            self.setCalibration(self.largeBedWidthCorrection(), 0, false).done(function () {
+            self.setCalibration(self.largeBedWidthCorrection(), 0, false).done(function ()  {
                 console.log("Calibration set to " + self.largeBedWidthCorrection() + ", 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_small" });
             });
@@ -106,7 +106,7 @@ $(function () {
             //$.notify({ title: 'Calibration failed', text: 'An error has occured while printing the calibration patterns. Please try again.' }, "error");
         }
 
-        self.restoreCalibration = function () {
+        self.restoreCalibration = function ()  {
             return self._sendApi({
                 command: "restore_calibration_values"
             });
@@ -122,12 +122,12 @@ $(function () {
             });
         }
 
-        self.saveCalibration = function () {
+        self.saveCalibration = function ()  {
             OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
             OctoPrint.printer.setBedTargetTemperature(0);
 
             self.setCalibration(self.bedWidthCorrection(), self.smallYAxisCorrection(), true)
-                .done(function ()
+                .done(function () 
                 {
                     self.flyout.closeFlyoutAccept();
                     $.notify({ title: 'Calibration stored', text: 'The printer has been calibrated successfully.' }, "success");
@@ -135,10 +135,10 @@ $(function () {
                 }).fail(function()
                 {
                     $.notify({ title: 'Calibration failed', text: 'An error has occured while storing the calibration settings. Please try again.' }, "error");
-                }).always(function () { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
+                }).always(function ()  { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
         };
 
-        self.abort = function ()
+        self.abort = function () 
         {
             OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
             OctoPrint.printer.setBedTargetTemperature(0);
@@ -169,13 +169,13 @@ $(function () {
             self.restoreCalibration();
         }
 
-        self.onExtrudercalibrationFlyoutShown = function () {
+        self.onExtrudercalibrationFlyoutShown = function ()  {
             self.restoreState();
             self.requestData();
 
         }
 
-        self.requestData = function () {
+        self.requestData = function ()  {
             self._getApi().done(self.fromResponse);
         }
 
@@ -197,7 +197,7 @@ $(function () {
             return OctoPrint.get(url, data);
         };
 
-        self.onAfterBinding = function () {
+        self.onAfterBinding = function ()  {
             self.bedWidthCorrection.subscribe(function (val) {
 
                 var sm = self.smallBedWidthCorrection();

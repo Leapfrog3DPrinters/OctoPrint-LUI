@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function TerminalViewModel(parameters) {
         var self = this;
 
@@ -27,7 +27,7 @@ $(function() {
         self.cmdHistory = [];
         self.cmdHistoryIdx = -1;
 
-        self.displayedLines = ko.computed(function() {
+        self.displayedLines = ko.computed(function () {
             var regex = self.filterRegex();
             var lineVisible = function(entry) {
                 return regex == undefined || !entry.line.match(regex);
@@ -49,7 +49,7 @@ $(function() {
             return result;
         });
 
-        self.lineCount = ko.computed(function() {
+        self.lineCount = ko.computed(function () {
             var regex = self.filterRegex();
             var lineVisible = function(entry) {
                 return regex == undefined || !entry.line.match(regex);
@@ -141,7 +141,7 @@ $(function() {
             self.isLoading(data.flags.loading);
         };
 
-        self.updateFilterRegex = function() {
+        self.updateFilterRegex = function () {
             var filterRegexStr = self.activeFilters().join("|").trim();
             if (filterRegexStr == "") {
                 self.filterRegex(undefined);
@@ -151,31 +151,31 @@ $(function() {
             self.updateOutput();
         };
 
-        self.updateOutput = function() {
+        self.updateOutput = function () {
             if (self.autoscrollEnabled()) {
                 self.scrollToEnd();
             }
         };
 
-        self.toggleAutoscroll = function() {
+        self.toggleAutoscroll = function () {
             self.autoscrollEnabled(!self.autoscrollEnabled());
         };
 
-        self.selectAll = function() {
+        self.selectAll = function () {
             var container = $("#terminal-output");
             if (container.length) {
                 container.selectText();
             }
         };
 
-        self.scrollToEnd = function() {
+        self.scrollToEnd = function () {
             var container = $("#terminal-output");
             if (container.length) {
                 container.scrollTop(container[0].scrollHeight);
             }
         };
 
-        self.sendCommand = function() {
+        self.sendCommand = function () {
             var command = self.command();
             if (!command) {
                 return;
@@ -189,7 +189,7 @@ $(function() {
 
             if (command) {
                 OctoPrint.control.sendGcode(command)
-                    .done(function() {
+                    .done(function () {
                         self.cmdHistory.push(command);
                         self.cmdHistory.slice(-300); // just to set a sane limit to how many manually entered commands will be saved...
                         self.cmdHistoryIdx = self.cmdHistory.length;
@@ -198,7 +198,7 @@ $(function() {
             }
         };
 
-        self.fakeAck = function() {
+        self.fakeAck = function () {
             OctoPrint.printer.fakeAck();
         };
 

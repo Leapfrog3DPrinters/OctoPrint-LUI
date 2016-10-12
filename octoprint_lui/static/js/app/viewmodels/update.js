@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     function UpdateViewModel(parameters) {
         var self = this;
 
@@ -22,7 +22,7 @@ $(function () {
         self.modelName = ko.observable(undefined);
         self.firmwareVersion = ko.observable(undefined);
 
-        self.flashingAllowed = ko.computed(function () {
+        self.flashingAllowed = ko.computed(function ()  {
             return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
         });
 
@@ -42,7 +42,7 @@ $(function () {
             }
         };
 
-        self.getUpdateAllText = ko.pureComputed(function() {
+        self.getUpdateAllText = ko.pureComputed(function () {
             if (self.update_needed() > 0) {
                 return "Update"
             } else {
@@ -50,7 +50,7 @@ $(function () {
             }
         });
 
-        self.getUpdateAllIcon = ko.pureComputed(function() {
+        self.getUpdateAllIcon = ko.pureComputed(function () {
             if (self.update_needed() > 0) {
                 return "fa-refresh"
             } else {
@@ -66,7 +66,7 @@ $(function () {
             }
         };
 
-        self.getUpdateAllButtonClass = ko.pureComputed(function () {
+        self.getUpdateAllButtonClass = ko.pureComputed(function ()  {
             if (self.update_needed() > 0) {
                 return ""
             } else {
@@ -74,17 +74,17 @@ $(function () {
             }
         });
 
-        self.browseForFirmware = function () {
+        self.browseForFirmware = function ()  {
 
             self.files.browseUsbForFirmware();
 
             self.flyout.showFlyout('firmware_file')
-                .done(function () {
+                .done(function ()  {
                     file = self.files.selectedFirmwareFile();
                     self.flashArduino.onLocalFileSelected(file);
                 })
-                .fail(function () { })
-                .always(function () {
+                .fail(function ()  { })
+                .always(function ()  {
                     self.files.browseLocal(); // Reset file list to local gcodes
                 });
         };
@@ -103,7 +103,7 @@ $(function () {
                 })
         }
 
-        self.showUpdateWarning = function ()
+        self.showUpdateWarning = function () 
         {
             self.update_warning = self.flyout.showWarning(
                 "Updating", 
@@ -111,13 +111,13 @@ $(function () {
                 true);
         }
 
-        self.hideUpdateWarning = function ()
+        self.hideUpdateWarning = function () 
         {
             if (self.update_warning)
                 self.flyout.closeWarning(self.update_warning);
         }
 
-        self._updateNext = function ()
+        self._updateNext = function () 
         {
             //TODO: Provide progress feedback to user
             console.log('Updating' + (self.updateCounter + 1) + '/' + self.updateTarget);
@@ -142,14 +142,14 @@ $(function () {
                     'after': self.hideUpdateWarning
                 };
                 self.system.triggerCommand(command)
-                    .done(function () {
+                    .done(function ()  {
                         self.updateCounter++;
 
                         if (self.updateCounter == self.updateTarget)
                             self.system.systemServiceRestart();
                         else
                             self._updateNext();
-                    }).fail(function () {
+                    }).fail(function ()  {
                         $.notify({ title: 'Software update failed', text: 'An error has occured while trying to update the software. Please try again.' }, "error");
                     });
             }
@@ -165,7 +165,7 @@ $(function () {
                 var question = "Do want to continue?";
                 var title = "Update software";
 
-                self.flyout.showConfirmationFlyout({ 'title': title, 'text': text, 'question': question }).done(function () {
+                self.flyout.showConfirmationFlyout({ 'title': title, 'text': text, 'question': question }).done(function ()  {
                     self._updateNext();
                 })
             }
@@ -206,14 +206,14 @@ $(function () {
                 var dialog = { 'title': title, 'text': text, 'question': question };
 
                 self.flyout.showConfirmationFlyout(dialog)
-                    .done(function () {
+                    .done(function ()  {
                         self.settings.showSettingsTopic('update');
                         self.flashArduino.onLocalFileSelected(file);
                     });
             }
         };
 
-        self.refreshUpdateInfo = function () {
+        self.refreshUpdateInfo = function ()  {
             self.updating(true);
             $('#update_spinner').addClass('fa-spin');
             self.requestData(true);
@@ -224,19 +224,19 @@ $(function () {
             self.fileNameToFlash(hex_path);
         }
 
-        self.onUpdateSettingsShown = function () {
+        self.onUpdateSettingsShown = function ()  {
             self.requestData();
         };
 
-        self.onSettingsHidden = function () {
+        self.onSettingsHidden = function ()  {
             self.flashArduino.resetFile();
         }
 
-        self.onUserLoggedIn = function () {
+        self.onUserLoggedIn = function ()  {
             self.requestData();
         };
 
-        self.onAfterBinding = function() 
+        self.onAfterBinding = function () 
         {
             self.flashArduino.hex_path.subscribe(self.onHexPathChanged);
 

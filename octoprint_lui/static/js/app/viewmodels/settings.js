@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function SettingsViewModel(parameters) {
         var self = this;
 
@@ -117,13 +117,13 @@ $(function() {
         self.webcam_ffmpegPathText = ko.observable();
         self.webcam_ffmpegPathOk = ko.observable(false);
         self.webcam_ffmpegPathBroken = ko.observable(false);
-        self.webcam_ffmpegPathReset = function() {
+        self.webcam_ffmpegPathReset = function () {
             self.webcam_ffmpegPathText("");
             self.webcam_ffmpegPathOk(false);
             self.webcam_ffmpegPathBroken(false);
         };
 
-        self.addTemperatureProfile = function() {
+        self.addTemperatureProfile = function () {
             self.temperature_profiles.push({name: "New", extruder:0, bed:0});
         };
 
@@ -173,7 +173,7 @@ $(function() {
             self.flyout.closeFlyoutAccept();
         }
 
-        self.addTerminalFilter = function() {
+        self.addTerminalFilter = function () {
             self.terminalFilters.push({name: "New", regex: "(Send: M105)|(Recv: ok T:)"});
         };
 
@@ -188,14 +188,14 @@ $(function() {
             };
             if(!newValue && oldValue) {
                 self.flyout.showConfirmationFlyout(data, true)
-                .fail(function() {
+                .fail(function () {
                     self.feature_modelSizeDetection(true)
                 });
             }
 
         });
 
-        self.testWebcamStreamUrl = function() {
+        self.testWebcamStreamUrl = function () {
             if (!self.webcam_streamUrl()) {
                 return;
             }
@@ -248,7 +248,7 @@ $(function() {
                         message: $('<p>' + text + '</p><p><img src="data:' + mimeType + ';base64,' + content + '" /></p>')
                     });
                 })
-                .fail(function() {
+                .fail(function () {
                     $("i.icon-spinner", target).remove();
                     showMessageDialog({
                         title: errorTitle,
@@ -257,7 +257,7 @@ $(function() {
                 });
         };
 
-        self.testWebcamFfmpegPath = function() {
+        self.testWebcamFfmpegPath = function () {
             if (!self.webcam_ffmpegPath()) {
                 return;
             }
@@ -280,11 +280,11 @@ $(function() {
                 });
         };
 
-        self.onSettingsShown = function() {
+        self.onSettingsShown = function () {
             self.requestData();
         };
 
-        self.onSettingsHidden = function() {
+        self.onSettingsHidden = function () {
             self.webcam_ffmpegPathReset();
         };
 
@@ -305,7 +305,7 @@ $(function() {
             }
 
             // handler for any explicitely provided callbacks
-            var callbackHandler = function() {
+            var callbackHandler = function () {
                 if (!callback) return;
                 try {
                     callback();
@@ -349,7 +349,7 @@ $(function() {
                     });
                     self.outstanding = [];
                 })
-                .fail(function() {
+                .fail(function () {
                     // reject all promises
                     var args = arguments;
                     _.each(self.outstanding, function(deferred) {
@@ -357,7 +357,7 @@ $(function() {
                     });
                     self.outstanding = [];
                 })
-                .always(function() {
+                .always(function () {
                     self.receiving(false);
                 });
         };
@@ -366,7 +366,7 @@ $(function() {
         /**
          * Fetches the settings as currently stored in this client instance.
          */
-        self.getLocalData = function() {
+        self.getLocalData = function () {
             var data = {};
             if (self.settings != undefined) {
                 data = ko.mapping.toJS(self.settings);
@@ -375,18 +375,18 @@ $(function() {
             // some special read functions for various observables
             var specialMappings = {
                 feature: {
-                    externalHeatupDetection: function() { return !self.feature_disableExternalHeatupDetection()},
-                    alwaysSendChecksum: function() { return self.feature_sendChecksum() == "always"},
-                    neverSendChecksum: function() { return self.feature_sendChecksum() == "never"}
+                    externalHeatupDetection: function () { return !self.feature_disableExternalHeatupDetection()},
+                    alwaysSendChecksum: function () { return self.feature_sendChecksum() == "always"},
+                    neverSendChecksum: function () { return self.feature_sendChecksum() == "never"}
                 },
                 serial: {
-                    additionalPorts : function() { return commentableLinesToArray(self.serial_additionalPorts()) },
-                    additionalBaudrates: function() { return _.map(splitTextToArray(self.serial_additionalBaudrates(), ",", true, function(item) { return !isNaN(parseInt(item)); }), function(item) { return parseInt(item); }) },
-                    longRunningCommands: function() { return splitTextToArray(self.serial_longRunningCommands(), ",", true) },
-                    checksumRequiringCommands: function() { return splitTextToArray(self.serial_checksumRequiringCommands(), ",", true) }
+                    additionalPorts : function () { return commentableLinesToArray(self.serial_additionalPorts()) },
+                    additionalBaudrates: function () { return _.map(splitTextToArray(self.serial_additionalBaudrates(), ",", true, function(item) { return !isNaN(parseInt(item)); }), function(item) { return parseInt(item); }) },
+                    longRunningCommands: function () { return splitTextToArray(self.serial_longRunningCommands(), ",", true) },
+                    checksumRequiringCommands: function () { return splitTextToArray(self.serial_checksumRequiringCommands(), ",", true) }
                 },
                 scripts: {
-                    gcode: function() {
+                    gcode: function () {
                         // we have a special handler function for the gcode scripts since the
                         // server will always send us those that have been set already, so we
                         // can't depend on all keys that we support to be present in the
@@ -575,7 +575,7 @@ $(function() {
             self.allViewModels = allViewModels;
         }
 
-        self.onEventSettingsUpdated = function() {
+        self.onEventSettingsUpdated = function () {
             console.log("Event Settings Bla");
             var preventSettingsRefresh = _.any(self.allViewModels, function(viewModel) {
                 if (viewModel.hasOwnProperty("onSettingsPreventRefresh")) {
@@ -620,10 +620,10 @@ $(function() {
             callViewModels(self.allViewModels, "on" + self.settingsTopic()+ "SettingsShown");
 
             return self.flyout.showFlyout(topic + '_settings', blocking)
-                .done(function () {
+                .done(function ()  {
                     self.saveData();
                 })
-                .always(function () {
+                .always(function ()  {
                     callViewModels(self.allViewModels, "onSettingsHidden");
                 });
         };
@@ -664,7 +664,7 @@ $(function() {
             }
         };
 
-        self.startZoffset = function() {
+        self.startZoffset = function () {
             self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('zoffset');
 

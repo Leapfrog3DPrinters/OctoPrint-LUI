@@ -15,7 +15,7 @@
 
             init : function(options) {
                 this.dropit.settings = $.extend({}, this.dropit.defaults, options);
-                return this.each(function() {
+                return this.each(function () {
                     var $el = $(this),
                          el = this,
                          settings = $.fn.dropit.settings;

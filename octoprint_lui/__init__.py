@@ -263,27 +263,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Not the complete update_info array has to be send to front end
         update_frontend = self._create_update_frontend(self.update_info)
         if (cache_time_expired or force) and not self.fetching_updates:
-            self.update_info_list(force)
+            self.fetch_update_info_list(force)
             return make_response(jsonify(status="fetching", update=update_frontend, machine_info=self.machine_info), 200)
         return make_response(jsonify(status="cache", update=update_frontend, machine_info=self.machine_info), 200)
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["POST"])
     def do_updates(self):
 
-        update_json = [{'name': update['name'], 'update': update['update'], 'version': update['version']} for update in update_info]
         pass
 
-    def update_info_list(self, force):
-        updater_thread = threading.Thread(target=self._update_worker, args=(self.update_info, force))
-        updater_thread.daemon = False
-        updater_thread.start()
+    def fetch_update_info_list(self, force):
+        fetch_thread = threading.Thread(target=self._fetch_worker, args=(self.update_info, force))
+        fetch_thread.daemon = False
+        fetch_thread.start()
 
     def _create_update_frontend(self, update_info):
         for update in update_info:
             update_frontend = [{'name': update['name'], 'update': update['update'], 'version': update['version']} for update in update_info]
         return update_frontend
 
-    def _update_worker(self, update_info, force):
+    def _fetch_worker(self, update_info, force):
         if not octoprint_lui.util.is_online():
             # Only send a message to the front end if the user requests the update
             if force:
@@ -308,6 +307,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         finally:
             self.fetching_updates = False
 
+        self._get_firmware_info()
         data = dict(update=self._create_update_frontend(self.update_info), machine_info=  self.machine_info)
         return self._send_client_message("update_fetch_success", data)
 
@@ -824,14 +824,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_load_filament_cont_stop(self, *args, **kwargs):
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
-
-    def _on_api_command_refresh_update_info(self, *args, **kwargs):
-        # Force refresh update info
-        self._logger.info("Refresh update info: {kwargs}".format(kwargs=kwargs))
-        self.update_info_list(force=True)
-        
-        # Send another M115 to get the firmware version
-        self._get_firmware_info()
 
     def _on_api_command_move_to_filament_load_position(self, *args, **kwargs):
         self.move_to_filament_load_position()

@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function SystemViewModel(parameters) {
         var self = this;
 
@@ -8,11 +8,11 @@ $(function() {
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
 
-        self.requestData = function() {
+        self.requestData = function () {
             self.requestCommandData();
         };
 
-        self.requestCommandData = function() {
+        self.requestCommandData = function () {
             if (!self.loginState.isAdmin()) {
                 return $.Deferred().reject().promise();
             }
@@ -43,10 +43,10 @@ $(function() {
         self.triggerCommand = function(commandSpec) {
             var deferred = $.Deferred();
 
-            var callback = function() {
+            var callback = function () {
                 if (commandSpec.before) commandSpec.before();
                 OctoPrint.system.executeCommand(commandSpec.actionSource, commandSpec.action)
-                    .done(function() {
+                    .done(function () {
                         $.notify({
                             title: "Success",
                             text: _.sprintf(gettext("The command \"%(command)s\" executed successfully"), {command: commandSpec.name})},
@@ -88,7 +88,7 @@ $(function() {
             return deferred.promise();
         };
 
-        self.systemReboot = function() {
+        self.systemReboot = function () {
             console.log("System Reboot called")
             var dialog = {'title': 'Reboot system', 'text': 'You are about to reboot the system.', 'question' : 'Do you want to continue?'};
             var command = {'actionSource': 'custom', 'action': 'reboot', 'name': 'Reboot', confirm: dialog};
@@ -107,11 +107,11 @@ $(function() {
             self.triggerCommand(command);
         };
 
-        self.systemServiceRestart = function() {
+        self.systemServiceRestart = function () {
             var dialog = {'title': 'Restart system service', 'text': 'You are about to restart the background printer services.', 'question' : 'Do you want to continue?'};
 
             self.flyout.showConfirmationFlyout(dialog)
-                    .done(function () {
+                    .done(function ()  {
                         var title = "";
                         var message = "";
                         
@@ -142,12 +142,12 @@ $(function() {
             }
         };
 
-        self.onUserLoggedOut = function() {
+        self.onUserLoggedOut = function () {
             self.lastCommandResponse = undefined;
             self.systemActions([]);
         };
 
-        self.onEventSettingsUpdated = function() {
+        self.onEventSettingsUpdated = function () {
             if (self.loginState.isAdmin()) {
                 self.requestData();
             }

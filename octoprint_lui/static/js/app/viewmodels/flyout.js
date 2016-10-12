@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
   function FlyoutViewModel(parameters) {
     var self = this;
     
@@ -27,7 +27,7 @@ $(function() {
     self.showWarning = function(title, message, blocking, callback)
     {
         var blocking = blocking || false;
-        var callback = callback || function () { };
+        var callback = callback || function ()  { };
         warningVm = {
             warning_title: title,
             warning_text: message,
@@ -55,7 +55,7 @@ $(function() {
 
     self.showInfo = function (title, message, blocking, callback) {
         var blocking = blocking || false;
-        var callback = callback || function () { };
+        var callback = callback || function ()  { };
 
         infoVm = {
             info_title: title,
@@ -75,7 +75,7 @@ $(function() {
         self.setOverlay();
     };
 
-    self.closeLastInfo = function () {
+    self.closeLastInfo = function ()  {
         self.infos.pop();
         self.setOverlay();
     }
@@ -117,7 +117,7 @@ $(function() {
       self.setOverlay();
 
       self.confirmationDeferred = $.Deferred()
-          .done(function () {
+          .done(function ()  {
               $('#confirmation_flyout').removeClass('active');
               self.setOverlay();
 
@@ -127,7 +127,7 @@ $(function() {
               self.confirmationDeferred = undefined;
               
           })
-          .fail(function () {
+          .fail(function ()  {
               $('#confirmation_flyout').removeClass('active');
               self.setOverlay();
 
@@ -137,7 +137,7 @@ $(function() {
       return self.confirmationDeferred;
     };
 
-    self.closeFlyout = function() {
+    self.closeFlyout = function () {
         var flyout_ref = self.flyouts.pop()
         var deferred = flyout_ref.deferred
         var template_flyout = flyout_ref.template
@@ -148,7 +148,7 @@ $(function() {
 
     };
     
-    self.closeFlyoutAccept = function() {
+    self.closeFlyoutAccept = function () {
         var flyout_ref = self.flyouts.pop()
         var deferred = flyout_ref.deferred
         var template_flyout = flyout_ref.template
@@ -171,7 +171,7 @@ $(function() {
         self.setOverlay();
     }
 
-    self.setOverlay = function () {
+    self.setOverlay = function ()  {
         if (self.warnings().length == 0 && self.infos().length == 0 && self.flyouts().length == 0 &&
             !$('#confirmation_flyout').hasClass('active') && !$(self.template_flyout).hasClass('active'))
             $('.overlay').removeClass('active');

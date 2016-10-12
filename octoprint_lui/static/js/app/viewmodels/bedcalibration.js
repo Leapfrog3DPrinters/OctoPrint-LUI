@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     function BedCalibrationViewModel(parameters) {
         var self = this;
 
@@ -35,7 +35,7 @@ $(function () {
             $('.bed-canvas-item').removeClass('active');
         }
 
-        self.onBedcalibrationFlyoutShown = function () {
+        self.onBedcalibrationFlyoutShown = function ()  {
             self.resetState();
             self.requestData();
         }
@@ -66,12 +66,12 @@ $(function () {
             self.mayAccept(true);
         }
 
-        self.startZoffset = function () {
+        self.startZoffset = function ()  {
             self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('zoffset');
         };
 
-        self.startAutoBedCalibration = function () {
+        self.startAutoBedCalibration = function ()  {
             self.showAutoBedCalibration(true);
             self.mayAbort(false);
             self.settings.sendCustomCommand({ type: 'command', command: 'G32', name: 'Level bed', showNotification: false });
@@ -86,14 +86,14 @@ $(function () {
             self._sendApi({ "command": "restore_from_calibration_position"});
         }
 
-        $('.bed-canvas-item').click(function () {
+        $('.bed-canvas-item').click(function ()  {
             $(this).siblings().removeClass('active');
             $(this).addClass('active');
 
             self.moveToCorner($(this).data('corner'));
         });
 
-        self.requestData = function () {
+        self.requestData = function ()  {
            
         }
 
@@ -111,7 +111,7 @@ $(function () {
             return OctoPrint.get(url, data);
         };
 
-        self.onAfterBinding = function () {
+        self.onAfterBinding = function ()  {
             
         }
 
