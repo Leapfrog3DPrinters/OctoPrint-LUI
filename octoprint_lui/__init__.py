@@ -269,7 +269,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["POST"])
     def do_updates(self):
-
+        plugin = request.value.get("plugin", None)
+        if plugin == "all":
+            # Updating all plugins
+            # Send updating to front end
+            # 
+        elif plugin:
+            # Going to update only a single plugin part this is for debugging purpouse only
+            # Send updating to front end
+        else:
+            # We didn't get a plugin 
         pass
 
     def fetch_update_info_list(self, force):
