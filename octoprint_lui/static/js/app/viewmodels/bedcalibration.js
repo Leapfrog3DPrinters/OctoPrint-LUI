@@ -4,9 +4,8 @@ $(function ()  {
 
         self.settings = parameters[0];
         self.loginState = parameters[1];
-        self.settings = parameters[2];
-        self.flyout = parameters[3];
-        self.printerState = parameters[4];
+        self.flyout = parameters[2];
+        self.printerState = parameters[3];
 
         self.mayAbort = ko.observable(true);
         self.mayAccept = ko.observable(false);
@@ -168,7 +167,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#bedcalibration_flyout"]

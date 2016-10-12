@@ -274,11 +274,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Updating all plugins
             # Send updating to front end
             # 
+            pass
         elif plugin:
             # Going to update only a single plugin part this is for debugging purpouse only
             # Send updating to front end
+            pass
         else:
             # We didn't get a plugin 
+            pass
         pass
 
     def fetch_update_info_list(self, force):

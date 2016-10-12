@@ -4,10 +4,9 @@ $(function ()  {
 
         self.settings = parameters[0];
         self.loginState = parameters[1];
-        self.settings = parameters[2];
-        self.flyout = parameters[3];
-        self.printerState = parameters[4];
-        self.filament = parameters[5];
+        self.flyout = parameters[2];
+        self.printerState = parameters[3];
+        self.filament = parameters[4];
 
         self.mayStartLargeCalibration = ko.pureComputed(function ()  {
             return self.filament.leftFilament() != "None" && self.filament.rightFilament() != "None"
@@ -244,7 +243,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "filamentViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "filamentViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#extrudercalibration_flyout"]
