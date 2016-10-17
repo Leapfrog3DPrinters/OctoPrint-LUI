@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     function UpdateViewModel(parameters) {
         var self = this;
 
@@ -22,7 +22,7 @@ $(function () {
         self.modelName = ko.observable(undefined);
         self.firmwareVersion = ko.observable(undefined);
 
-        self.flashingAllowed = ko.computed(function () {
+        self.flashingAllowed = ko.computed(function ()  {
             return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
         });
 
@@ -42,7 +42,7 @@ $(function () {
             }
         };
 
-        self.getUpdateAllText = ko.pureComputed(function() {
+        self.getUpdateAllText = ko.pureComputed(function () {
             if (self.update_needed() > 0) {
                 return "Update"
             } else {
@@ -50,7 +50,7 @@ $(function () {
             }
         });
 
-        self.getUpdateAllIcon = ko.pureComputed(function() {
+        self.getUpdateAllIcon = ko.pureComputed(function () {
             if (self.update_needed() > 0) {
                 return "fa-refresh"
             } else {
@@ -66,7 +66,7 @@ $(function () {
             }
         };
 
-        self.getUpdateAllButtonClass = ko.pureComputed(function () {
+        self.getUpdateAllButtonClass = ko.pureComputed(function ()  {
             if (self.update_needed() > 0) {
                 return ""
             } else {
@@ -74,110 +74,66 @@ $(function () {
             }
         });
 
-        self.browseForFirmware = function () {
+        self.browseForFirmware = function ()  {
 
             self.files.browseUsbForFirmware();
 
             self.flyout.showFlyout('firmware_file')
-                .done(function () {
+                .done(function ()  {
                     file = self.files.selectedFirmwareFile();
                     self.flashArduino.onLocalFileSelected(file);
                 })
-                .fail(function () { })
-                .always(function () {
+                .fail(function ()  { })
+                .always(function ()  {
                     self.files.browseLocal(); // Reset file list to local gcodes
                 });
         };
 
-        self.sendUpdateCommand = function (data) {
+        self.update = function (data) {
+            var url = OctoPrint.getBlueprintUrl("lui") + "update";
 
-            var text = "You are about to update a component of the User Interface.";
-            var question = "Do want to update " + data.name() + "?";
-            var title = "Update: " + data.name()
+            var text, question, title = ""
+
+            // Standar behaviour
+            if (data.name() == "all") {
+                title = "Update software";
+                text = "You are about to update the printer software.";
+                question = "Do you want to continue?";
+            } else { // Development behaviour
+                title = "Update: " + data.name()
+                text = "You are about to update a component of the User Interface.";
+                question = "Do want to update " + data.name() + "?";
+            }
             var dialog = { 'title': title, 'text': text, 'question': question };
-
-            var command = {
-                'actionSource': 'custom',
-                'action': data.action(),
-                'name': data.name(),
-                confirm: dialog,
-                'before': self.showUpdateWarning,
-                'after': self.hideUpdateWarning
-            };
-
-            self.system.triggerCommand(command)
+            self.flyout.showConfirmationFlyout(dialog)
                 .done(function () {
-                    self.system.systemServiceRestart();
+                    OctoPrint.postJson(url, {"plugin":data.name()})
+                        .done(function () {
+                            self.showUpdateWarning();
+                         }).fail(function () {
+                            $.notify({
+                                title: gettext("Update failed."),
+                                text: _.sprintf(gettext('Please check the logs.'), {})
+                            },
+                                "error"
+                            )
+                         })
                 });
         };
 
-        self.showUpdateWarning = function ()
+        self.showUpdateWarning = function () 
         {
-            self.update_warning = self.flyout.showWarning("Updating", "System is updating, please wait until the updates are completed...", true);
+            self.update_warning = self.flyout.showWarning(
+                "Updating", 
+                "System is updating, please wait until the updates are completed...", 
+                true);
         }
 
-        self.hideUpdateWarning = function ()
+        self.hideUpdateWarning = function () 
         {
             if (self.update_warning)
                 self.flyout.closeWarning(self.update_warning);
         }
-
-        self._updateNext = function ()
-        {
-            //TODO: Provide progress feedback to user
-            console.log('Updating' + (self.updateCounter + 1) + '/' + self.updateTarget);
-                
-            var items = self.updateinfo();
-            var data = items[self.updateCounter];
-
-            if (!data.update()) {
-                self.updateCounter++;
-
-                if (self.updateCounter == self.updateTarget)
-                    self.system.systemServiceRestart();
-                else
-                    return self._updateNext();
-            }
-            else {
-                var command = {
-                    'actionSource': 'custom',
-                    'action': data.action(),
-                    'name': data.name(),
-                    'before': self.showUpdateWarning,
-                    'after': self.hideUpdateWarning
-                };
-                self.system.triggerCommand(command)
-                    .done(function () {
-                        self.updateCounter++;
-
-                        if (self.updateCounter == self.updateTarget)
-                            self.system.systemServiceRestart();
-                        else
-                            self._updateNext();
-                    }).fail(function () {
-                        $.notify({ title: 'Software update failed', text: 'An error has occured while trying to update the software. Please try again.' }, "error");
-                    });
-            }
-        }
-
-        self.updateAll = function (data) {
-
-            self.updateCounter = 0;
-            self.updateTarget = self.updateinfo().length;
-
-            if (self.updateTarget > 0) {
-                var text = "You are about to update the printer software.";
-                var question = "Do want to continue?";
-                var title = "Update software";
-
-                self.flyout.showConfirmationFlyout({ 'title': title, 'text': text, 'question': question }).done(function () {
-                    self._updateNext();
-                })
-            }
-
-            
-                
-        };
 
         self.fromResponse = function (data) {
             var info = ko.mapping.fromJS(data.update);
@@ -192,10 +148,13 @@ $(function () {
             self.firmwareVersion(data.machine_info.firmware_version);
         };
 
-        self.requestData = function () {
-            OctoPrint.simpleApiGet('lui', {
-                success: self.fromResponse
-            });
+        self.requestData = function (force) {
+            var force = force || false;
+            var url = OctoPrint.getBlueprintUrl("lui") + "update";
+            OctoPrint.getWithQuery(url, {force: force})
+                .done(function(response){
+                    self.fromResponse(response);
+                });
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -208,27 +167,17 @@ $(function () {
                 var dialog = { 'title': title, 'text': text, 'question': question };
 
                 self.flyout.showConfirmationFlyout(dialog)
-                    .done(function () {
+                    .done(function ()  {
                         self.settings.showSettingsTopic('update');
                         self.flashArduino.onLocalFileSelected(file);
                     });
             }
         };
 
-        self.refreshUpdateInfo = function () {
+        self.refreshUpdateInfo = function ()  {
             self.updating(true);
             $('#update_spinner').addClass('fa-spin');
-            var data = {
-                command: "refresh_update_info"
-            };
-            var url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
-            //TODO: Get rid of the timeout?
-            setTimeout(function () {
-                self.requestData();
-                self.updating(false);
-                $('#update_spinner').removeClass('fa-spin');
-            }, 10000);
+            self.requestData(true);
         }
 
         self.onHexPathChanged = function(hex_path)
@@ -236,19 +185,19 @@ $(function () {
             self.fileNameToFlash(hex_path);
         }
 
-        self.onSettingsShown = function () {
+        self.onUpdateSettingsShown = function ()  {
             self.requestData();
         };
 
-        self.onSettingsHidden = function () {
+        self.onSettingsHidden = function ()  {
             self.flashArduino.resetFile();
         }
 
-        self.onBeforeBinding = function () {
+        self.onUserLoggedIn = function ()  {
             self.requestData();
         };
 
-        self.onAfterBinding = function() 
+        self.onAfterBinding = function () 
         {
             self.flashArduino.hex_path.subscribe(self.onHexPathChanged);
 
@@ -284,6 +233,38 @@ $(function () {
                     },
                         "error"
                     )
+                    break;
+                case "update_fetch_error":
+                    $.notify({
+                        title: gettext("Update fetching failed."),
+                        text: _.sprintf(gettext('Please check the logs.'), {})
+                    },
+                        "error"
+                    )
+                    break;
+                case "update_fetch_success":
+                    self.fromResponse(messageData);
+                    self.updating(false);
+                    $('#update_spinner').removeClass('fa-spin');
+                    break;
+                case "update_error":
+                    self.hideUpdateWarning();
+                    $.notify({
+                        title: gettext("Update failed."),
+                        text: _.sprintf(gettext('Please check the logs.'), {})
+                    },
+                        "error"
+                    )
+                    break;
+                case "update_success":
+                    self.hideUpdateWarning();
+                    $.notify({
+                        title: gettext("Update completed."),
+                        text: _.sprintf(gettext('Restart the service to finish the updates.'), {})
+                    },
+                        "success"
+                    )
+                    self.system.systemServiceRestart();
                     break;
             }
         }

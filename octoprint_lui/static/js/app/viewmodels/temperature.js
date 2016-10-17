@@ -1,11 +1,11 @@
-$(function() {
+$(function () {
     function TemperatureViewModel(parameters) {
         var self = this;
 
         self.loginState = parameters[0];
         self.settingsViewModel = parameters[1];
 
-        self._createToolEntry = function() {
+        self._createToolEntry = function () {
             return {
                 name: ko.observable(),
                 key: ko.observable(),
@@ -51,14 +51,14 @@ $(function() {
 
         self.isHeating = ko.observable(false);
 
-        self.loadingText = ko.computed(function() {
+        self.loadingText = ko.computed(function () {
             if (self.tempLoaded()) 
                 return gettext("");
             else 
                 return gettext("Loading...");
         });
 
-        self._printerProfileUpdated = function() {
+        self._printerProfileUpdated = function () {
             var graphColors = ["red", "orange", "green", "brown", "purple"];
             var heaterOptions = {};
             var tools = self.tools();
@@ -102,7 +102,7 @@ $(function() {
             self.heaterOptions(heaterOptions);
             self.tools(tools);
         };
-        self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function() {
+        self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function () {
             self._printerProfileUpdated();
             self.settingsViewModel.printerProfiles.currentProfileData().extruder.count.subscribe(self._printerProfileUpdated);
             self.settingsViewModel.printerProfiles.currentProfileData().heatedBed.subscribe(self._printerProfileUpdated());
@@ -285,7 +285,7 @@ $(function() {
             var value = item.newTarget();
             if (!value) return;
 
-            var onSuccess = function() {
+            var onSuccess = function () {
                 item.newTarget("");
             };
 
@@ -302,7 +302,7 @@ $(function() {
             if (!profile) return;
 
             
-            var onSuccess = function() {
+            var onSuccess = function () {
                 item.newTarget("");
             };
 
@@ -319,7 +319,7 @@ $(function() {
         };
 
         self.setTargetToZero = function(item) {
-            var onSuccess = function() {
+            var onSuccess = function () {
                 item.newTarget("");
             };
 
@@ -336,7 +336,7 @@ $(function() {
             var value = item.newOffset();
             if (!value) return;
 
-            var onSuccess = function() {
+            var onSuccess = function () {
                 item.newOffset("");
             };
 
@@ -397,7 +397,7 @@ $(function() {
             }
         };
 
-        self.requestData = function () {
+        self.requestData = function ()  {
             OctoPrint.simpleApiGet('lui', {
                 success: self.fromResponse
             });

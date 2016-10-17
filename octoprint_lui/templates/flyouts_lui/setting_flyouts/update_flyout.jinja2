@@ -10,7 +10,7 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>
+          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
         </span>
       </div>
     </div>
@@ -22,7 +22,7 @@
       </div>
       <div class="Table-item Table-item-grow-3">
         <ul class="button-area">
-          <li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function(){$root.sendUpdateCommand($data)}">
+          <li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function () {$root.update($data)}">
             <a href="">
               <span data-bind="text: $root.getUpdateText($data)"></span>
             </a>
@@ -38,7 +38,7 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: refreshUpdateInfo"></i>
+          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
           <span data-bind="text: modelName"></span>
         </span>
       </div>
@@ -49,7 +49,7 @@
       </div>
       <div class="Table-item Table-item-grow-3">
         <ul class="button-area">
-          <li class="button" data-bind="css: getUpdateAllButtonClass, click: updateAll">
+          <li class="button" data-bind="css: getUpdateAllButtonClass, click: function () { updateAll() }">
             <a href="">
               <span data-bind="text: getUpdateAllText"></span>
             </a>
@@ -97,7 +97,7 @@
 
           {%  if local_addr -%}
           <ul class="button-area">
-            <li class="button secondary-button fileinput-button" data-bind="click: function() { $parent.browseForFirmware() }, css: { disabled: !$parent.files.isUsbAvailable() }">
+            <li class="button secondary-button fileinput-button" data-bind="click: function () { $parent.browseForFirmware() }, css: { disabled: !$parent.files.isUsbAvailable() }">
               <a href="#">
                 <span>Browse USB drive for firmware</span>
             </a>

@@ -10,7 +10,7 @@
   <aside id="printer_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="printer_settings_flyout_content" class="flyout_content">
@@ -19,12 +19,12 @@
 
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: flyout.closeFlyout">
+          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Cancel</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
             <span>Save</span>
           </a>
         </li>
@@ -34,7 +34,7 @@
   <aside id="materials_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -44,12 +44,12 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: flyout.closeFlyout">
+          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Cancel</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: saveTemperatureProfiles">
+          <a href="#save" data-bind="click: function () { saveTemperatureProfiles() }">
             <span>Save</span>
           </a>
         </li>
@@ -59,7 +59,7 @@
   <aside id="wireless_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
 
@@ -70,7 +70,7 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: flyout.closeFlyout">
+          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Close</span>
           </a>
         </li>
@@ -80,7 +80,7 @@
   <aside id="users_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="users_settings_flyout_content" class="flyout_content">
@@ -89,7 +89,7 @@
 
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: flyout.closeFlyout">
+          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Close</span>
           </a>
         </li>
@@ -99,7 +99,7 @@
   <aside id="advanced_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -109,12 +109,12 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: flyout.closeFlyout">
+          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Cancel</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
             <span>Save</span>
           </a>
         </li>
@@ -124,7 +124,7 @@
   <aside id="update_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -134,7 +134,7 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: flyout.closeFlyout">
+          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Close</span>
           </a>
         </li>
@@ -144,7 +144,7 @@
   <aside id="maintenance_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -154,7 +154,7 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: flyout.closeFlyout">
+          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Close</span>
           </a>
         </li>
@@ -164,7 +164,7 @@
   <aside id="webcam_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -174,12 +174,12 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: flyout.closeFlyout">
+          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
             <span>Cancel</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
             <span>Save</span>
           </a>
         </li>
@@ -190,7 +190,7 @@
   <aside id="login_flyout" class="flyout">
     <div class="flyout-header">
     <h4>System</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="login_flyout_content">
@@ -201,7 +201,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button secondary-button">
-                <a href="#save" data-bind="click: flyout.closeFlyout">
+                <a href="#save" data-bind="click: function () { flyout.closeFlyout() }">
                   <span>Back</span>
                 </a>
               </li>
@@ -223,7 +223,7 @@
       </div>
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#save" data-bind="click: cancelFilamentDetection">
+          <a href="#save" data-bind="click: function () { cancelFilamentDetection() } ">
             <span data-bind="">Cancel Print</span>
           </a>
         </li>
@@ -233,7 +233,7 @@
   <aside id="filament_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Filament</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="filament_flyout_content">
@@ -241,7 +241,7 @@
       </div>
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#abort" data-bind="click: flyout.closeFlyout">
+          <a href="#abort" data-bind="click: function () { flyout.closeFlyout() }">
             <span data-bind="">Abort</span>
           </a>
         </li>
@@ -251,7 +251,7 @@
   <aside id="firmware_file_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Firmware files</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="firmware_file_flyout_content">
@@ -259,7 +259,7 @@
       </div>
       <ul class="button-area">
         <li class="button">
-          <a href="#save" data-bind="click: flyout.closeFlyout">
+          <a href="#save" data-bind="click: function () { flyout.closeFlyout() }">
             <span data-bind="">Close</span>
           </a>
         </li>
@@ -269,7 +269,7 @@
   <aside id="info_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Info</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="info_flyout_content">
@@ -277,7 +277,7 @@
       </div>
       <ul class="button-area">
         <li class="button">
-          <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
             <span>Close</span>
           </a>
         </li>
@@ -287,7 +287,7 @@
   <aside id="zoffset_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Z-offset Wizard</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="zoffset_flyout_content">
@@ -295,7 +295,7 @@
       </div>
       <ul class="button-area">
         <li class="button">
-          <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
             <span>Close</span>
           </a>
         </li>
@@ -312,7 +312,7 @@
       </div>
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#save" data-bind="click: abort">
+          <a href="#save" data-bind="click: function () { abort() }">
             <span>Abort</span>
           </a>
         </li>
@@ -329,12 +329,12 @@
       </div>
       <ul class="button-area">
         <li class="button failed-button" data-bind="visible: mayAbort">
-          <a href="#save" data-bind="click: abort, disabled: mayAbort">
+          <a href="#save" data-bind="click: function () { abort() }, disabled: mayAbort">
             <span>Abort</span>
           </a>
         </li>
         <li class="button" data-bind="visible: mayAccept">
-          <a href="#save" data-bind="click: accept, disabled: mayAccept">
+          <a href="#save" data-bind="click: function () { accept() }, disabled: mayAccept">
             <span>Close</span>
           </a>
         </li>
@@ -344,7 +344,7 @@
   <aside id="mode_select_flyout" class="flyout">
     <div class="flyout-header">
       <h4>Start print</h4>
-      <span class="flyout-close" data-bind="click: flyout.closeFlyout">
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }">
         <i class="fa fa-times"></i>
       </span>
     </div>
@@ -409,7 +409,7 @@
         <div class="Table-item">
           <ul class="button-area">
             <li class="button">
-              <a href="#" data-bind="click: function() {updateFilament('tool1', updateLeftAmount())}">
+              <a href="#" data-bind="click: function () {updateFilament('tool1', updateLeftAmount())}">
                 <span>
                   <i class="fa fa-refresh"></i>Update left
                 </span>
@@ -420,7 +420,7 @@
         <div class="Table-item">
           <ul class="button-area">
             <li class="button">
-              <a href="#" data-bind="click: function() {updateFilament('tool0', updateRightAmount())}">
+              <a href="#" data-bind="click: function () {updateFilament('tool0', updateRightAmount())}">
                 <span>
                   <i class="fa fa-refresh"></i>Update right
                 </span>
@@ -432,7 +432,7 @@
     </div>
     <ul class="button-area">
       <li class="button">
-        <a href="#save" data-bind="click: flyout.closeFlyoutAccept">
+        <a href="#save" data-bind="click: function ()  { flyout.closeFlyoutAccept() }">
           <span>Close</span>
         </a>
       </li>
@@ -465,7 +465,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button failed-button">
-                <a href="#cancel" data-bind="click: function() { confirmationDeferred.reject() }">
+                <a href="#cancel" data-bind="click: function () { confirmationDeferred.reject() }">
                   <span data-bind="text: confirmation_cancel_text"></span>
                 </a>
               </li>
@@ -474,7 +474,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button ok-button">
-                <a href="#confirm" data-bind="click: function() { confirmationDeferred.resolve() }">
+                <a href="#confirm" data-bind="click: function () { confirmationDeferred.resolve() }">
                   <span data-bind="text: confirmation_ok_text"></span>
                 </a>
               </li>
@@ -546,7 +546,7 @@
               <div class="Table-item">
                 <ul class="button-area">
                   <li class="button ok-button">
-                    <a href="#save" data-bind="click: function() { callback(); $root.closeWarning($data) }">
+                    <a href="#save" data-bind="click: function () { callback(); $root.closeWarning($data) }">
                       <span>OK</span>
                     </a>
                   </li>
@@ -588,7 +588,7 @@
               <div class="Table-item">
                 <ul class="button-area">
                   <li class="button ok-button">
-                    <a href="#save" data-bind="click: function() { callback(); $root.closeInfo($data) }">
+                    <a href="#save" data-bind="click: function () { callback(); $root.closeInfo($data) }">
                       <span>OK</span>
                     </a>
                   </li>

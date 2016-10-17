@@ -5,7 +5,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: filamentLoadPosition">
+        <li class="button" data-bind="click: function () { filamentLoadPosition() }">
           <a href="">
             <span>Head maintenance position</span>
           </a>
@@ -16,7 +16,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: cleanBedPosition">
+        <li class="button" data-bind="click: function () { cleanBedPosition() }">
           <a href="">
             <span>Clean bed position</span>
           </a>
@@ -27,7 +27,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: setFilamentAmount">
+        <li class="button" data-bind="click: function () { setFilamentAmount() } ">
           <a href="#">
             <span>Set filament amount</span>
           </a>
@@ -39,7 +39,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: calibrateExtruders">
+        <li class="button" data-bind="click: function () { calibrateExtruders() }">
           <a href="#">
             <span>Calibrate extruders</span>
           </a>
@@ -51,7 +51,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: calibrateBed">
+        <li class="button" data-bind="click: function () { calibrateBed() }">
           <a href="#">
             <span>Calibrate bed</span>
           </a>
@@ -63,7 +63,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function() { beginPurgeWizard('tool1'); }, css: {disabled: filament.leftFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()} ">
+          <a href="#" data-bind="click: function () { beginPurgeWizard('tool1'); }, css: {disabled: filament.leftFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()} ">
             <span>
               <i class="fa fa-arrow-down"></i>Purge left</span>
           </a>
@@ -73,7 +73,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function() { beginPurgeWizard('tool0'); }, css: {disabled: filament.rightFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()}">
+          <a href="#" data-bind="click: function () { beginPurgeWizard('tool0'); }, css: {disabled: filament.rightFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()}">
             <span>
               <i class="fa fa-arrow-down"></i>Purge right</span>
           </a>

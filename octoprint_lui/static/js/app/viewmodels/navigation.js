@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function NavigationViewModel(parameters) {
         var self = this;
 
@@ -9,7 +9,7 @@ $(function() {
         self.settings = parameters[4];
 
 
-        self.showLoginFlyout = function () {
+        self.showLoginFlyout = function ()  {
             self.usersettings.show();
             self.flyout.showFlyout('login');
         }
@@ -21,7 +21,7 @@ $(function() {
         }
 
         //TODO: Remove!
-        self.doDebuggingAction = function () {
+        self.doDebuggingAction = function ()  {
             self._sendApi({
                 command: "trigger_debugging_action"
             });
@@ -29,7 +29,7 @@ $(function() {
 
         self.onStartup = function()
         {
-            $('.network-status a').click(function () { self.settings.showSettingsTopic('wireless') });
+            $('.network-status a').click(function ()  { self.settings.showSettingsTopic('wireless') });
         }
 
     }

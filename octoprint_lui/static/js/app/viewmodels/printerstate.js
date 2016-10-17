@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     function PrinterStateViewModel(parameters) {
         // TODO Adapt to LUI
         var self = this;
@@ -34,7 +34,7 @@ $(function () {
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
 
-        self.currentActivity = ko.pureComputed(function () {
+        self.currentActivity = ko.pureComputed(function ()  {
             if (self.activities().length > 0)
                 return self.activities()[0];
             else
@@ -43,20 +43,20 @@ $(function () {
 
         self.activities = ko.observableArray([]);
 
-        self.filenameNoExtension = ko.computed(function () {
+        self.filenameNoExtension = ko.computed(function ()  {
             if (self.filename())
                 return self.filename().slice(0, (self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
         })
 
         self.busyFiles = ko.observableArray([]);
 
-        self.enablePrint = ko.computed(function () {
+        self.enablePrint = ko.computed(function ()  {
             return self.isOperational() && self.isReady() && !self.isPrinting() && self.loginState.isUser() && self.filename() != undefined;
         });
-        self.enablePause = ko.computed(function () {
+        self.enablePause = ko.computed(function ()  {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
         });
-        self.enableCancel = ko.computed(function () {
+        self.enableCancel = ko.computed(function ()  {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
         });
 
@@ -74,30 +74,30 @@ $(function () {
         self.titlePrintButton = ko.observable(self.TITLE_PRINT_BUTTON_UNPAUSED);
         self.titlePauseButton = ko.observable(self.TITLE_PAUSE_BUTTON_UNPAUSED);
 
-        self.estimatedPrintTimeString = ko.computed(function () {
+        self.estimatedPrintTimeString = ko.computed(function ()  {
             if (self.lastPrintTime())
                 return formatFuzzyPrintTime(self.lastPrintTime());
             if (self.estimatedPrintTime())
                 return formatFuzzyPrintTime(self.estimatedPrintTime());
             return "-";
         });
-        self.byteString = ko.computed(function () {
+        self.byteString = ko.computed(function ()  {
             if (!self.filesize())
                 return "-";
             var filepos = self.filepos() ? formatSize(self.filepos()) : "-";
             return filepos + " / " + formatSize(self.filesize());
         });
-        self.heightString = ko.computed(function () {
+        self.heightString = ko.computed(function ()  {
             if (!self.currentHeight())
                 return "-";
             return _.sprintf("%.02fmm", self.currentHeight());
         });
-        self.printTimeString = ko.computed(function () {
+        self.printTimeString = ko.computed(function ()  {
             if (!self.printTime())
                 return "-";
             return formatDuration(self.printTime());
         });
-        self.printTimeLeftString = ko.computed(function () {
+        self.printTimeLeftString = ko.computed(function ()  {
             if (self.printTimeLeft() == undefined) {
                 if (!self.printTime() || !(self.isPrinting() || self.isPaused())) {
                     return "-";
@@ -108,19 +108,19 @@ $(function () {
                 return formatFuzzyPrintTime(self.printTimeLeft());
             }
         });
-        self.progressString = ko.computed(function () {
+        self.progressString = ko.computed(function ()  {
             if (!self.progress())
                 return 0;
             return self.progress();
         });
-        self.pauseString = ko.computed(function () {
+        self.pauseString = ko.computed(function ()  {
             if (self.isPaused())
                 return gettext("Continue");
             else
                 return gettext("Pause");
         });
 
-        self.leftFilament = ko.computed(function () {
+        self.leftFilament = ko.computed(function ()  {
             filaments = self.filament();
             for (var key in filaments) {
                 if (filaments[key].name() == "Tool 1") {
@@ -130,7 +130,7 @@ $(function () {
             return "-"
         });
 
-        self.rightFilament = ko.computed(function () {
+        self.rightFilament = ko.computed(function ()  {
             filaments = self.filament();
             for (var key in filaments) {
                 if (filaments[key].name() == "Tool 0") {
@@ -140,12 +140,12 @@ $(function () {
             return "-"
         });
 
-        // self.stateStepString = ko.computed(function () {
+        // self.stateStepString = ko.computed(function ()  {
         //     if (self.temperatureState.isHeating()) return "Heating";
         //     return self.stateString();
         // });
 
-        // self.stateStepColor = ko.computed(function () {
+        // self.stateStepColor = ko.computed(function ()  {
         //     if (self.temperatureState.isHeating()) return "bg-orange"
         //     if (self.isPrinting()) return "bg-main"
         //     if (self.isError()) return "bg-red"
@@ -153,14 +153,14 @@ $(function () {
         // });
 
 
-        self.fileSelected = ko.computed(function () {
+        self.fileSelected = ko.computed(function ()  {
             if (self.filename())
                 return true
             else
                 return false
         });
 
-        self.timelapseString = ko.computed(function () {
+        self.timelapseString = ko.computed(function ()  {
             var timelapse = self.timelapse();
 
             if (!timelapse || !timelapse.hasOwnProperty("type"))
@@ -279,7 +279,7 @@ $(function () {
             self.busyFiles(busyFiles);
         };
 
-        self.enableForcePrint = function() {
+        self.enableForcePrint = function () {
             var title = "By-pass print analysis";
             var message = "<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer."
             var question = "Do you want to by-pass the print analysis and start the print?"
@@ -290,18 +290,18 @@ $(function () {
                 });
         };
 
-        self.print = function () {
+        self.print = function ()  {
 
             self.printMode("normal");
             self.forcePrint(false);
             self.flyout.showFlyout("mode_select");
         };
 
-        self.pause = function () {
+        self.pause = function ()  {
             OctoPrint.job.togglePause();
         };
 
-        self.cancel = function () {
+        self.cancel = function ()  {
             var title = gettext("Cancel print");
             var message = _.sprintf(gettext("You are about to cancel %(filename)s."), {filename: self.filenameNoExtension()});
             var question = gettext("Are you sure you want to cancel this print?");
@@ -314,13 +314,13 @@ $(function () {
                 });
         };
 
-        self.gotoFileSelect = function () {
+        self.gotoFileSelect = function ()  {
             changeTabTo("files");
         };
 
-        self.showInfoFlyout = function () {
+        self.showInfoFlyout = function ()  {
             self.flyout.showFlyout('info')
-                .done(function () {
+                .done(function ()  {
                 });
         };
 
@@ -335,32 +335,32 @@ $(function () {
             self.flyout.showFlyout('startup', true);
         }
 
-        self.closeStartupFlyout = function () {
+        self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept();
         }
 
-        self.beginHoming = function () {
+        self.beginHoming = function ()  {
             self._sendApi({ command: "begin_homing" });
         }
 
-        self.beginMaintenance = function ()
+        self.beginMaintenance = function () 
         {
 
             self.settings.showSettingsTopic('maintenance', true)
         }
         
-        self.showBusyHoming = function () {
+        self.showBusyHoming = function ()  {
             $('.startup_step').removeClass('active');
             $('#startup_step_busy_homing').addClass('active');
         }
 
-        self.onDoorOpen = function () {
+        self.onDoorOpen = function ()  {
             if (self.warningVm === undefined) {
                 self.warningVm = self.flyout.showWarning('Door open',
                     'Please close the door before you continue printing.');
             }
         }
-        self.onDoorClose = function () {
+        self.onDoorClose = function ()  {
             if (self.warningVm !== undefined) {
                 self.flyout.closeWarning(self.warningVm);
                 self.warningVm = undefined;
@@ -406,7 +406,7 @@ $(function () {
             OctoPrint.postJson(url, data);
         };
 
-        self.requestData = function () {
+        self.requestData = function ()  {
             self.refreshPrintPreview();
 
             OctoPrint.simpleApiGet('lui', {
@@ -440,7 +440,7 @@ $(function () {
 
                 switch (messageType) {
                     case "is_homed":
-                        if (self.flyout.flyoutName == "startup")
+                        if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
                             self.closeStartupFlyout();
                         break;
                     case "is_homing":
@@ -464,10 +464,10 @@ $(function () {
                 self.activities.remove('Analyzing');
         }
 
-        self.onAfterBinding = function () {
+        self.onAfterBinding = function ()  {
             self.requestData();
 
-            self.filepath.subscribe(function () {
+            self.filepath.subscribe(function ()  {
                 self.activities.remove('Creating preview');
                 self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 

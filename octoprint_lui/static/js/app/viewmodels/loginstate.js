@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function LoginStateViewModel(parameters) {
         var self = this;
 
@@ -21,7 +21,7 @@ $(function() {
         self.elementPasswordInput = undefined;
         self.elementLoginButton = undefined;
 
-        self.userMenuText = ko.computed(function() {
+        self.userMenuText = ko.computed(function () {
             if (self.loggedIn()) {
                 return self.username();
             } else {
@@ -29,7 +29,7 @@ $(function() {
             }
         });
 
-        self.reloadUser = function() {
+        self.reloadUser = function () {
             if (self.currentUser() == undefined) {
                 return;
             }
@@ -38,7 +38,7 @@ $(function() {
                 .done(self.fromResponse);
         };
 
-        self.requestData = function() {
+        self.requestData = function () {
             OctoPrint.browser.passiveLogin()
                 .done(self.fromResponse);
         };
@@ -80,12 +80,12 @@ $(function() {
                     self.fromResponse(response);
                     self.flyout.closeFlyoutAccept();
                 })
-                .fail(function() {
+                .fail(function () {
                     $.notify({title: gettext("Login failed"), text: gettext("User unknown or wrong password")}, "error");
                 });
         };
 
-        self.logout = function() {
+        self.logout = function () {
             OctoPrint.browser.logout()
                 .done(function(response) {
                     $.notify({title: gettext("Logout successful"), text: gettext("You are now logged out")}, "success");
@@ -94,7 +94,7 @@ $(function() {
                 });
         };
 
-        self.loginOrOut = function() {
+        self.loginOrOut = function () {
             if (!self.loggedIn()) {
                 self.login();
             }
@@ -119,7 +119,7 @@ $(function() {
             self.allViewModels = allViewModels;
         };
 
-        self.onStartupComplete = self.onServerConnect = self.onServerReconnect = function() {
+        self.onStartupComplete = self.onServerConnect = self.onServerReconnect = function () {
             if (self.allViewModels == undefined) return;
             self.requestData();
         };

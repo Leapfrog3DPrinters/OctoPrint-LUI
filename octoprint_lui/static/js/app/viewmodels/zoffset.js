@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     //TODO: Maybe refactor into bedcalibration.js?
     function ZOffsetViewModel(parameters) {
         var self = this;
@@ -24,19 +24,19 @@ $(function () {
 
         };
 
-        self.startZcalibration = function() {
+        self.startZcalibration = function () {
             self.sendHomeCommand('z');
             self.startedCalibration(true);
 
         };
 
-        self.saveCalibration = function() {
+        self.saveCalibration = function () {
             self.settings.settings.plugins.lui.zoffset(self.calibration_zOffset());
             self.settings.saveData();
             self.flyout.closeFlyoutAccept();
         };
 
-        self.onAfterBinding = function() {
+        self.onAfterBinding = function () {
             $("#zOffset_dialog").on("show", function(){
                 self.onDialogShown();
             });
@@ -53,7 +53,7 @@ $(function () {
             OctoPrint.printer.home(axis);
         };
 
-        self.onZoffsetFlyoutShown = function() {
+        self.onZoffsetFlyoutShown = function () {
             self.calibration_zOffset(0);
             self.startedCalibration(false);
         }
@@ -63,7 +63,7 @@ $(function () {
             OctoPrint.postJson(url, data);
         };
 
-        self.moveToMaintenancePosition = function() {
+        self.moveToMaintenancePosition = function () {
             self._sendApi({
                 command: 'move_to_maintenance_position'
             });

@@ -1,12 +1,11 @@
-$(function () {
+$(function ()  {
     function BedCalibrationViewModel(parameters) {
         var self = this;
 
         self.settings = parameters[0];
         self.loginState = parameters[1];
-        self.settings = parameters[2];
-        self.flyout = parameters[3];
-        self.printerState = parameters[4];
+        self.flyout = parameters[2];
+        self.printerState = parameters[3];
 
         self.mayAbort = ko.observable(true);
         self.mayAccept = ko.observable(false);
@@ -35,7 +34,7 @@ $(function () {
             $('.bed-canvas-item').removeClass('active');
         }
 
-        self.onBedcalibrationFlyoutShown = function () {
+        self.onBedcalibrationFlyoutShown = function ()  {
             self.resetState();
             self.requestData();
         }
@@ -66,12 +65,12 @@ $(function () {
             self.mayAccept(true);
         }
 
-        self.startZoffset = function () {
+        self.startZoffset = function ()  {
             self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('zoffset');
         };
 
-        self.startAutoBedCalibration = function () {
+        self.startAutoBedCalibration = function ()  {
             self.showAutoBedCalibration(true);
             self.mayAbort(false);
             self.settings.sendCustomCommand({ type: 'command', command: 'G32', name: 'Level bed', showNotification: false });
@@ -86,14 +85,14 @@ $(function () {
             self._sendApi({ "command": "restore_from_calibration_position"});
         }
 
-        $('.bed-canvas-item').click(function () {
+        $('.bed-canvas-item').click(function ()  {
             $(this).siblings().removeClass('active');
             $(this).addClass('active');
 
             self.moveToCorner($(this).data('corner'));
         });
 
-        self.requestData = function () {
+        self.requestData = function ()  {
            
         }
 
@@ -111,7 +110,7 @@ $(function () {
             return OctoPrint.get(url, data);
         };
 
-        self.onAfterBinding = function () {
+        self.onAfterBinding = function ()  {
             
         }
 
@@ -168,7 +167,7 @@ $(function () {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#bedcalibration_flyout"]

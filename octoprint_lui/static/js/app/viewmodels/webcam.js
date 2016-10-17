@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     function WebcamViewModel(parameters) {
         var self = this;
 
@@ -26,14 +26,14 @@ $(function () {
         self.isDirty = ko.observable(false);
         self.storageAvailable = ko.observable(undefined);
 
-        self.isBusy = ko.pureComputed(function () {
+        self.isBusy = ko.pureComputed(function ()  {
             return self.printerState.isPrinting() || self.printerState.isPaused();
         });
 
         self.isCopying = ko.observable(false);
 
         self.timelapseEnabled = ko.pureComputed({
-            read: function () {
+            read: function ()  {
                 return self.timelapseType() == "timed";
             },
             write: function (value) {
@@ -46,29 +46,29 @@ $(function () {
         });
 
 
-        self.timelapseTypeSelected = ko.pureComputed(function () {
+        self.timelapseTypeSelected = ko.pureComputed(function ()  {
             return ("off" != self.timelapseType());
         });
 
-        self.timelapseFpsEnabled = ko.pureComputed(function () {
+        self.timelapseFpsEnabled = ko.pureComputed(function ()  {
             return ("timed" == self.timelapseType());
         });
 
-        self.timelapsePostRollEnabled = ko.pureComputed(function () {
+        self.timelapsePostRollEnabled = ko.pureComputed(function ()  {
             return ("timed" == self.timelapseType());
         });
 
-        self.timelapseTimedIntervalEnabled = ko.pureComputed(function () {
+        self.timelapseTimedIntervalEnabled = ko.pureComputed(function ()  {
             return ("timed" == self.timelapseType());
         });
 
-        self.timelapseTimedInterval.subscribe(function () {
+        self.timelapseTimedInterval.subscribe(function ()  {
             self.isDirty(true);
         });
-        self.timelapsePostRoll.subscribe(function () {
+        self.timelapsePostRoll.subscribe(function ()  {
             self.isDirty(true);
         });
-        self.timelapseFps.subscribe(function () {
+        self.timelapseFps.subscribe(function ()  {
             self.isDirty(true);
         });
 
@@ -134,7 +134,7 @@ $(function () {
             5 // Timelapse files per page
         );
 
-        self.refreshPreview = function () {
+        self.refreshPreview = function ()  {
             previewUrl = '/webcam/?action=snapshot&timestamp=' + new Date().getTime();
          
             self.webcam_previewUrl(previewUrl);
@@ -154,13 +154,9 @@ $(function () {
             window.open('/plugin/lui/webcamstream', '_blank', 'menubar=no,status=no,toolbar=no,width='+width+'px,height='+height+'px')
         }
 
-        self.requestData = function () {
+        self.requestData = function ()  {
             OctoPrint.timelapse.get({ data: { unrendered: true } })
                 .done(self.fromResponse);
-
-            self._getApi({ command: "storage_info" }).done(function (storage_info) {
-                self.storageAvailable(formatSize(storage_info.free) + " free");
-            });
         };
 
         self.fromResponse = function (response) {
@@ -210,7 +206,7 @@ $(function () {
                 .done(self.requestData);
         };
 
-        self.removeAll = function () {
+        self.removeAll = function ()  {
 
             var text = "You have opted to delete all finished timelapses.";
             var question = "Do you want to continue?";
@@ -218,9 +214,9 @@ $(function () {
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog, true)
-            .done(function () {
+            .done(function ()  {
                 return self._sendApi({ command: 'delete_all_timelapses' })
-                    .done(function () {
+                    .done(function ()  {
 
                         $.notify({
                             title: gettext("Timelapses deleted"),
@@ -229,7 +225,7 @@ $(function () {
                             "success"
                         )
                     })
-                .fail(function () {
+                .fail(function ()  {
                     $.notify({
                         title: gettext("Not all timelapses were deleted"),
                         text: gettext("Some timelapses could not be removed. Please try again.")
@@ -247,12 +243,12 @@ $(function () {
             self._sendApi({
                 command: "copy_timelapse_to_usb",
                 filename: filename
-            }).done(function () {
+            }).done(function ()  {
                 self.setProgressBar(0);
                 $.notify({ title: 'Timelapse copied', text: 'The timelapse has been copied to your USB drive.' }, 'success');
-            }).fail(function () {
+            }).fail(function ()  {
                 $.notify({ title: 'Copying of timelapse failed', text: 'The timelapse could not be copied. Plese check if there is sufficient space available on the drive and try again.' }, 'error');
-            }).always(function () {
+            }).always(function ()  {
                 self.isCopying(false);
             });
         }
@@ -267,7 +263,7 @@ $(function () {
                 .done(self.requestData);
         };
 
-        self.save = function () {
+        self.save = function ()  {
             var payload = {
                 "type": self.timelapseType(),
                 "postRoll": self.timelapsePostRoll(),
@@ -288,22 +284,23 @@ $(function () {
                 .done(self.fromResponse);
         };
 
-        self.onStartup = function () {
+        self.onStartup = function ()  {
             var copyProgress = $("#timelapse_copy_progress");
             self.copyProgressBar = copyProgress.find(".bg-orange");
         }
 
-        self.onSettingsShown = function () {
-            // TODO: Ensure all setting flyouts have this check
-            if (self.settings.settingsTopic() == "Webcam") {
-                self.requestData();
-                self.refreshPreview();
-            }
-        }
+        self.onWebcamSettingsShown = function ()  {
+            self.requestData();
+            self.refreshPreview();
+        };
 
-        self.onBeforeSaveSettings = function () {
+        self.onBeforeSaveSettings = function ()  {
             self.save();
-        }
+        };
+
+        self.onBeforeBinding = function(){
+            self.storageAvailable = self.files.freeSpaceString;
+        };
 
         self.onEventPostRollStart = function (payload) {
             var title = gettext("Capturing timelapse postroll");

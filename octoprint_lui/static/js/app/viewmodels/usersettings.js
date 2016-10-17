@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function UserSettingsViewModel(parameters) {
         var self = this;
 
@@ -35,7 +35,7 @@ $(function() {
             }
         });
 
-        self.textLogin = ko.computed(function() {
+        self.textLogin = ko.computed(function () {
             if (self.loginState.loggedIn()) {
                 return gettext("Logout");
             } else {
@@ -44,7 +44,7 @@ $(function() {
         });
 
 
-        self.passwordMismatch = ko.computed(function() {
+        self.passwordMismatch = ko.computed(function () {
             return self.access_password() != self.access_repeatedPassword();
         });
 
@@ -58,7 +58,7 @@ $(function() {
             self.currentUser(user);
         };
 
-        self.save = function() {
+        self.save = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             if (self.access_password() && !self.passwordMismatch()) {
@@ -71,7 +71,7 @@ $(function() {
                 }
             };
             self.updateSettings(self.currentUser().name, settings)
-                .done(function() {
+                .done(function () {
                     // close dialog
                     self.currentUser(undefined);
                     self.loginState.reloadUser();
@@ -82,19 +82,19 @@ $(function() {
             return OctoPrint.users.saveSettings(username, settings);
         };
 
-        self.saveEnabled = function() {
+        self.saveEnabled = function () {
             return !self.passwordMismatch();
         };
 
-        self.onStartup = function() {
+        self.onStartup = function () {
             self.userSettingsDialog = $("#usersettings_dialog");
         };
 
         self.onAllBound = function(allViewModels) {
-            self.userSettingsDialog.on('show', function() {
+            self.userSettingsDialog.on('show', function () {
                 callViewModels(allViewModels, "onUserSettingsShown");
             });
-            self.userSettingsDialog.on('hidden', function() {
+            self.userSettingsDialog.on('hidden', function () {
                 callViewModels(allViewModels, "onUserSettingsHidden");
             });
         }

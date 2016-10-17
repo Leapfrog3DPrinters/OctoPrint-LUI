@@ -1,4 +1,4 @@
-$(function () {
+$(function ()  {
     function FilamentDetectionViewModel(parameters) {
         var self = this;
 
@@ -11,11 +11,11 @@ $(function () {
 
         self.temperatureSafetyTimerValue = ko.observable(undefined);
 
-        self.temperatureSafetyTimerText = ko.pureComputed(function () {
+        self.temperatureSafetyTimerText = ko.pureComputed(function ()  {
             return formatDuration(self.temperatureSafetyTimerValue());
         });
 
-        self.temperatureSafetyTimerPercentage = ko.pureComputed(function () {
+        self.temperatureSafetyTimerPercentage = ko.pureComputed(function ()  {
             return (self.temperatureSafetyTimerValue() / 900) * 100;
         });
 
@@ -28,22 +28,22 @@ $(function () {
             $('#filament_depleted').addClass('active');
 
             self.flyout.showFlyout('filament_detection', true)
-                .done(function () {
+                .done(function ()  {
                     self.filament.changeFilamentDone();
                     self._completeFilamentDetectionApi();
                     console.log('Filament detection flyout accepted');
                 })
-                .fail(function () {
+                .fail(function ()  {
                     self.filament.changeFilamentCancel();
                 })
-                .always(function () {
+                .always(function ()  {
                     // If this closes we need to reset stuff
                     self.filament.filamentLoadProgress(0);
                     self.filament.filamentInProgress(false);
                 });
         }
 
-        self.startSwapFilamentWizard = function () {
+        self.startSwapFilamentWizard = function ()  {
             self._cancelTempSafetyTimer();
             self.filament.filamentInProgress(true);
             self.filament.showUnload();
@@ -84,7 +84,7 @@ $(function () {
                 text: '',
                 question: 'Are you sure you want to cancel your print?'
             })
-                .done(function () {
+                .done(function ()  {
                     //Cancel print
                     self._cancelTempSafetyTimer();
                     self._cancelFilamentDetectionApi();
@@ -100,7 +100,7 @@ $(function () {
             });
         }
 
-        self._completeFilamentDetectionApi = function () {
+        self._completeFilamentDetectionApi = function ()  {
             self._sendApi({
                 command: "filament_detection_complete"
             });
