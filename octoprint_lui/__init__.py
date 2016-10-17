@@ -2228,18 +2228,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["M605 S1"])
 
     def _perform_service_restart(self):
-    """
-    Perform a restart of the octoprint service restart
-    """
+        """
+        Perform a restart of the octoprint service restart
+        """
 
-    self._logger.info("Restarting...")
-    try:
-        util.execute("sudo service octoprint restart")
-    except exceptions.ScriptError as e:
-        self._logger.exception("Error while restarting")
-        self._logger.warn("Restart stdout:\n%s" % e.stdout)
-        self._logger.warn("Restart stderr:\n%s" % e.stderr)
-        raise exceptions.RestartFailed()
+        self._logger.info("Restarting...")
+        try:
+            util.execute("sudo service octoprint restart")
+        except exceptions.ScriptError as e:
+            self._logger.exception("Error while restarting")
+            self._logger.warn("Restart stdout:\n%s" % e.stdout)
+            self._logger.warn("Restart stderr:\n%s" % e.stderr)
+            raise exceptions.RestartFailed()
 
 
     ##~ Helper method that calls api defined functions
