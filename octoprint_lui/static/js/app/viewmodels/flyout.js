@@ -143,10 +143,11 @@ $(function () {
         var template_flyout = flyout_ref.template
         if (deferred != undefined) {
             deferred.reject();
+            if (self.flyouts().length > 0){
+              self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
+            }
         }
         self.deactivateFlyout(template_flyout);
-        self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
-        console.log(self.currentFlyoutTemplate);
     };
     
     self.closeFlyoutAccept = function () {
@@ -155,10 +156,11 @@ $(function () {
         var template_flyout = flyout_ref.template
         if (deferred != undefined) {
             deferred.resolve();
+            if (self.flyouts().length > 0){
+              self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
+            }
         }
         self.deactivateFlyout(template_flyout);
-        self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
-        console.log(self.currentFlyoutTemplate);
     };
 
     self.activateFlyout = function(template_flyout) {

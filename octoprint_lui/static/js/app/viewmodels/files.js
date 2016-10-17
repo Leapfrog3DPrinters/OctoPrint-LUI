@@ -729,11 +729,11 @@ $(function ()  {
 
             // set print volume boundaries
             var boundaries = {
-                minX : 0,
+                minX : -10,
                 maxX : volumeInfo.width(),
-                minY : 0,
+                minY : -33,
                 maxY : volumeInfo.depth(),
-                minZ : 0,
+                minZ : -1,
                 maxZ : volumeInfo.height()
             };
             if (volumeInfo.origin() == "center") {

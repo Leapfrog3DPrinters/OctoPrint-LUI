@@ -94,22 +94,32 @@ $(function ()  {
 
             var text, question, title = ""
 
+            // Standar behaviour
             if (data.name() == "all") {
                 title = "Update software";
                 text = "You are about to update the printer software.";
                 question = "Do you want to continue?";
-            } else {
+            } else { // Development behaviour
                 title = "Update: " + data.name()
                 text = "You are about to update a component of the User Interface.";
                 question = "Do want to update " + data.name() + "?";
             }
             var dialog = { 'title': title, 'text': text, 'question': question };
-
             self.flyout.showConfirmationFlyout(dialog)
-                .done(function(){
-                    OctoPrint.post(url, "update", {"name":data.name()})
-                })
-        }
+                .done(function () {
+                    OctoPrint.postJson(url, {"plugin":data.name()})
+                        .done(function () {
+                            self.showUpdateWarning();
+                         }).fail(function () {
+                            $.notify({
+                                title: gettext("Update failed."),
+                                text: _.sprintf(gettext('Please check the logs.'), {})
+                            },
+                                "error"
+                            )
+                         })
+                });
+        };
 
         self.showUpdateWarning = function () 
         {
@@ -233,10 +243,29 @@ $(function ()  {
                     )
                     break;
                 case "update_fetch_success":
-                    console.log("Update received", messageData)
                     self.fromResponse(messageData);
                     self.updating(false);
                     $('#update_spinner').removeClass('fa-spin');
+                    break;
+                case "update_error":
+                    self.hideUpdateWarning();
+                    $.notify({
+                        title: gettext("Update failed."),
+                        text: _.sprintf(gettext('Please check the logs.'), {})
+                    },
+                        "error"
+                    )
+                    break;
+                case "update_success":
+                    self.hideUpdateWarning();
+                    $.notify({
+                        title: gettext("Update completed."),
+                        text: _.sprintf(gettext('Restart the service to finish the updates.'), {})
+                    },
+                        "success"
+                    )
+                    self.system.systemServiceRestart();
+                    break;
             }
         }
     }
