@@ -45,7 +45,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Global
         self.from_localhost = False
-        self.debug = True
+        self.debug = False
 
         ##~ Model specific variables
         self.model = None
