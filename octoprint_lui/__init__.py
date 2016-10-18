@@ -2234,7 +2234,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.info("Restarting...")
         try:
-            util.execute("sudo service octoprint restart")
+            octoprint_lui.util.execute("sudo service octoprint restart")
         except exceptions.ScriptError as e:
             self._logger.exception("Error while restarting")
             self._logger.warn("Restart stdout:\n%s" % e.stdout)
