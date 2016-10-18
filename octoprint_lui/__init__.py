@@ -186,6 +186,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetching_updates = False
 
     def initialize(self):
+        #~~ get debug from yaml
+        self.debug = self._settings.get_boolean(["debug_lui"])
 
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
@@ -465,6 +467,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "zoffset": 0,
             "action_door": True,
             "action_filament": True,
+            "debug_lui": False,
         }
 
     ##~ OctoPrint UI Plugin
