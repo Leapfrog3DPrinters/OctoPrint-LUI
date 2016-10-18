@@ -16,6 +16,7 @@ $(function ()  {
         self.updateCounter = 0;
         self.updateTarget = 0;
         self.update_warning = undefined;
+        self.lpfrg_software_version = ko.observable(undefined);
 
         self.fileNameToFlash = ko.observable(undefined); // Can either be a local (USB) file name or a filename to be uploaded
 
@@ -89,25 +90,29 @@ $(function ()  {
                 });
         };
 
-        self.update = function (data) {
+        self.update = function (plugin) {
             var url = OctoPrint.getBlueprintUrl("lui") + "update";
 
-            var text, question, title = ""
-
+            var text, question, title, name = "";
+            if (_.isObject(plugin)) {
+                name = plugin.name();
+            } else {
+                name = plugin;
+            }
             // Standar behaviour
-            if (data.name() == "all") {
+            if (plugin == "all") {
                 title = "Update software";
                 text = "You are about to update the printer software.";
                 question = "Do you want to continue?";
             } else { // Development behaviour
-                title = "Update: " + data.name()
+                title = "Update: " + name;
                 text = "You are about to update a component of the User Interface.";
-                question = "Do want to update " + data.name() + "?";
+                question = "Do want to update " + name + "?";
             }
             var dialog = { 'title': title, 'text': text, 'question': question };
             self.flyout.showConfirmationFlyout(dialog)
                 .done(function () {
-                    OctoPrint.postJson(url, {"plugin":data.name()})
+                    OctoPrint.postJson(url, {"plugin":name})
                         .done(function () {
                             self.showUpdateWarning();
                          }).fail(function () {
@@ -143,6 +148,8 @@ $(function ()  {
             });
             self.update_needed(updates);
             self.updateinfo(info());
+
+            self.lpfrg_software_version(info().find( function (x) { return x.name() === "Leapfrog UI" }).version());
 
             self.modelName(data.machine_info.machine_type);
             self.firmwareVersion(data.machine_info.firmware_version);

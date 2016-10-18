@@ -762,7 +762,7 @@ function hideOfflineFlyout() {
     offline_blocking = false;
     // $('.overlay').removeClass('active');
     $('#offline_flyout').removeClass('active');
-    location.reload();
+    location.reload(true);
 };
 
 function addCSSRule(sheet, selector, rules, index) {

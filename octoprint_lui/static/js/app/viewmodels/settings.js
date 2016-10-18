@@ -182,7 +182,7 @@ $(function () {
         };
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
-            data = {
+            var data = {
                 title: "Disable print analysis",
                 text: "You are about to disable the print analysis feature. Doing so will allow you to print without the print check. This could result in bad prints and/or potential damages to the printer."
             };
