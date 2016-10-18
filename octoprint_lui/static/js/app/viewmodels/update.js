@@ -273,7 +273,8 @@ $(function ()  {
                         autoHide: false
                     }
                     )
-
+                    self.hideUpdateWarning();
+                    
                     var title = "";
                     var message = "";
                     
