@@ -102,11 +102,11 @@ $(function ()  {
             // Standar behaviour
             if (plugin == "all") {
                 title = "Update software";
-                text = "You are about to update the printer software.";
+                text = "You are about to update the printer software. This will take some time and will restart the printer background service when completed.";
                 question = "Do you want to continue?";
             } else { // Development behaviour
                 title = "Update: " + name;
-                text = "You are about to update a component of the User Interface.";
+                text = "You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed.";
                 question = "Do want to update " + name + "?";
             }
             var dialog = { 'title': title, 'text': text, 'question': question };
@@ -264,14 +264,15 @@ $(function ()  {
                     )
                     break;
                 case "update_success":
-                    self.hideUpdateWarning();
                     $.notify({
                         title: gettext("Update completed."),
-                        text: _.sprintf(gettext('Restart the service to finish the updates.'), {})
+                        text: _.sprintf(gettext('Going to restart the service to finish the updates.'), {})
                     },
-                        "success"
+                    { 
+                        className: "success",
+                        autoHide: false
+                    }
                     )
-                    self.system.systemServiceRestart();
                     break;
             }
         }
