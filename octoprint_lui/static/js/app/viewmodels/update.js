@@ -100,7 +100,7 @@ $(function ()  {
                 name = plugin;
             }
             // Standar behaviour
-            if (plugin == "all") {
+            if (name == "all") {
                 title = "Update software";
                 text = "You are about to update the printer software. This will take some time and will restart the printer background service when completed.";
                 question = "Do you want to continue?";
@@ -273,7 +273,7 @@ $(function ()  {
                         autoHide: false
                     }
                     )
-                    
+
                     var title = "";
                     var message = "";
                     
