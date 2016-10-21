@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function MaintenanceViewModel(parameters) {
         var self = this;
 
@@ -19,7 +19,7 @@ $(function() {
             OctoPrint.printer.jog(data);
         };
 
-        self.filamentLoadPosition = function () {
+        self.filamentLoadPosition = function ()  {
 
             var text = "You are about to move the printer to the maintenance position.";
             var question = "Do want to continue?";
@@ -27,14 +27,14 @@ $(function() {
             var dialog = {'title': title, 'text': text, 'question' : question};
 
             self.flyout.showConfirmationFlyout(dialog, true)
-                .done(function () {
+                .done(function ()  {
                     self.moveToFilamentLoadPosition();
 
                     self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterMaintenance);
                 });
         };
 
-        self.cleanBedPosition = function () {
+        self.cleanBedPosition = function ()  {
 
             var text = "You are about to move the printer to the clean bed position. This move will home all axis! Make sure there is no print on the bed.";
             var question = "Do want to continue?";
@@ -54,14 +54,12 @@ $(function() {
             OctoPrint.printer.home(['x', 'y']);
         }
 
-        self.calibrateExtruders = function () {
-            self.flyout.closeFlyoutAccept();
+        self.calibrateExtruders = function ()  {
             self.flyout.showFlyout('extrudercalibration', true);
         }
 
         self.calibrateBed = function()
         {
-            self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('bedcalibration', true);
         }
 
@@ -74,18 +72,18 @@ $(function() {
             return OctoPrint.postJson(url, data);
         };
 
-        self.moveToCleanBedPosition = function() {
+        self.moveToCleanBedPosition = function () {
             self._sendApi({
                 command: 'move_to_maintenance_position'
-            }).done(function () {
+            }).done(function ()  {
                 $.notify({ title: "Clean bed", text: "The printer is moving towards the clean bed position." }, "success");
             });
         };
 
-        self.moveToFilamentLoadPosition = function() {
+        self.moveToFilamentLoadPosition = function () {
             self._sendApi({
                 command: 'move_to_filament_load_position'
-            }).done(function () {
+            }).done(function ()  {
                 $.notify({ title: "Head maintenance", text: "The printhead is moving towards the maintenance position." }, "success");
                 
             });
@@ -104,20 +102,17 @@ $(function() {
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
-                .done(function () {
+                .done(function ()  {
                     self.filament.showFilamentChangeFlyout(tool, true);
                 });
         };
 
-        self.setFilamentAmount = function() {
+        self.setFilamentAmount = function () {
             self.filament.requestData();
-            self.flyout.closeFlyoutAccept();
-            self.flyout.showFlyout('filament_override').done(function () {
-                self.settings.showSettingsTopic('maintenance');
-            });
+            self.flyout.showFlyout('filament_override')
         };
 
-        self.onSettingsShown = function (){ 
+        self.onSettingsShown = function () { 
             $('#maintenance_control').addClass('active');
             $('#maintenance_filament').removeClass('active');
 

@@ -159,7 +159,7 @@
 			type = "text";
 		}
 		attr = "data-notify-" + type;
-		return find(elem, "[" + attr + "]").each(function() {
+		return find(elem, "[" + attr + "]").each(function () {
 			var name;
 			name = $(this).attr(attr);
 			if (!name) {
@@ -197,7 +197,7 @@
 
 	var inherit = function(a, b) {
 		var F;
-		F = function() {};
+		F = function () {};
 		F.prototype = a;
 		return $.extend(true, new F(), b);
 	};
@@ -290,7 +290,7 @@
 		this.run(data);
 	}
 
-	Notification.prototype.loadHTML = function() {
+	Notification.prototype.loadHTML = function () {
 		var style;
 		style = this.getStyle();
 		this.userContainer = $(style.html);
@@ -300,7 +300,7 @@
 	Notification.prototype.show = function(show, userCallback) {
 		var args, callback, elems, fn, hidden;
 		callback = (function(_this) {
-			return function() {
+			return function () {
 				if (!show && !_this.elem) {
 					_this.destroy();
 				}
@@ -329,7 +329,7 @@
 		return elems[fn].apply(elems, args);
 	};
 
-	Notification.prototype.setGlobalPosition = function() {
+	Notification.prototype.setGlobalPosition = function () {
 		var p = this.getPosition();
 		var pMain = p[0];
 		var pAlign = p[1];
@@ -354,7 +354,7 @@
 		return anchor.prepend(this.wrapper);
 	};
 
-	Notification.prototype.setElementPosition = function() {
+	Notification.prototype.setElementPosition = function () {
 		var arrowColor, arrowCss, arrowSize, color, contH, contW, css, elemH, elemIH, elemIW, elemPos, elemW, gap, j, k, len, len1, mainFull, margin, opp, oppFull, pAlign, pArrow, pMain, pos, posFull, position, ref, wrapPos;
 		position = this.getPosition();
 		pMain = position[0];
@@ -425,7 +425,7 @@
 		}
 	};
 
-	Notification.prototype.getPosition = function() {
+	Notification.prototype.getPosition = function () {
 		var pos, ref, ref1, ref2, ref3, ref4, ref5, text;
 		text = this.options.position || (this.elem ? this.options.elementPosition : this.options.globalPosition);
 		pos = parsePosition(text);
@@ -459,7 +459,7 @@
 		return style;
 	};
 
-	Notification.prototype.updateClasses = function() {
+	Notification.prototype.updateClasses = function () {
 		var classes, style;
 		classes = ["base"];
 		if ($.isArray(this.options.className)) {
@@ -521,7 +521,7 @@
 		}
 	};
 
-	Notification.prototype.destroy = function() {
+	Notification.prototype.destroy = function () {
 		return this.wrapper.remove();
 	};
 
@@ -537,7 +537,7 @@
 	};
 
 	$.fn[pluginName] = function(data, options) {
-		$(this).each(function() {
+		$(this).each(function () {
 			var inst;
 			inst = getAnchorElement($(this)).data(pluginClassName);
 			if (inst) {
@@ -600,7 +600,7 @@
 		}
 	});
 
-	$(function() {
+	$(function () {
 		insertCSS(coreStyle.css).attr("id", "core-notify");
 		$(document).on("click", "." + pluginClassName + "-hidable", function(e) {
 			return $(this).trigger("notify-hide");

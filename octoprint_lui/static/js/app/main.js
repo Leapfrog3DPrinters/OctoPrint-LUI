@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
 
     OctoPrint = window.OctoPrint;
 
@@ -105,7 +105,7 @@ $(function() {
     // see: http://stackoverflow.com/questions/6903762/function-name-not-supported-in-ie
     if (!(function f() {}).name) {
         Object.defineProperty(Function.prototype, 'name', {
-            get: function() {
+            get: function () {
                 return this.toString().match(/^\s*function\s*(\S*)\s*\(/)[1];
             }
         });
@@ -272,7 +272,7 @@ $(function() {
             return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
         },
         update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-            setTimeout(function() {
+            setTimeout(function () {
                 if (element.nodeName == "#comment") {
                     // foreach is bound to a virtual element
                     $(element.parentElement).slimScroll({scrollBy: 0});
@@ -288,7 +288,7 @@ $(function() {
     ko.bindingHandlers.invisible = {
         init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
             if (!valueAccessor()) return;
-            ko.bindingHandlers.style.update(element, function() {
+            ko.bindingHandlers.style.update(element, function () {
                 return { visibility: 'hidden' };
             });
         }
@@ -297,7 +297,7 @@ $(function() {
 
     // jquery plugin to select all text in an element
     // originally from: http://stackoverflow.com/a/987376
-    $.fn.selectText = function() {
+    $.fn.selectText = function () {
         var doc = document;
         var element = this[0];
         var range, selection;
@@ -336,7 +336,7 @@ $(function() {
 
     //~~ view model binding
 
-    var bindViewModels = function() {
+    var bindViewModels = function () {
         log.info("Going to bind " + allViewModelData.length + " view models...");
         _.each(allViewModelData, function(viewModelData) {
             if (!Array.isArray(viewModelData) || viewModelData.length != 2) {
@@ -429,14 +429,14 @@ $(function() {
     log.info("Initial application setup done, connecting to server...");
     var dataUpdater = new DataUpdater(allViewModels);
     dataUpdater.connect()
-        .done(function() {
+        .done(function () {
             log.info("Finalizing application startup");
 
             //~~ Starting up the app
             callViewModels(allViewModels, "onStartup");
 
             viewModelMap["settingsViewModel"].requestData()
-            .done(function() {
+            .done(function () {
                 // There appears to be an odd race condition either in JQuery's AJAX implementation or
                 // the browser's implementation of XHR, causing a second GET request from inside the
                 // completion handler of the very same request to never get its completion handler called
@@ -453,7 +453,7 @@ $(function() {
         });
 
     // Icon bar selection
-    $('.icon-bar a').on('click', function() {
+    $('.icon-bar a').on('click', function () {
         //Remove open from open tab
         $('.tabs > .tab.open').removeClass('open');
         var tabID = $(this).attr('href');
@@ -463,7 +463,7 @@ $(function() {
     });
 
     // Open additional info print file
-    $('li.file_name, li.file_info').on('click', function() {
+    $('li.file_name, li.file_info').on('click', function () {
         $(this).parent().siblings('.file_add_info').toggleClass('slide');
     });
 
@@ -634,7 +634,7 @@ $(function() {
                 return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
             },
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-                setTimeout(function () {
+                setTimeout(function ()  {
                     $(element.parentElement).find("input[type='number']").keyboard(keyboardLayouts.number);
                     $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
 
@@ -649,13 +649,13 @@ $(function() {
     var fdSlider = document.getElementById('fd_slider');
 
     noUiSlider.create(slider, {
-        start: 330,
+        start: FILAMENT_ROLL_LENGTH,
         step: 1,
         behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,
-            'max': 330
+            'max': FILAMENT_ROLL_LENGTH
         },
         format: {
           to: function ( value ) {
@@ -668,13 +668,13 @@ $(function() {
     });
 
     noUiSlider.create(fdSlider, {
-        start: 330,
+        start: FILAMENT_ROLL_LENGTH,
         step: 1,
         behaviour: 'tap',
         connect: 'lower',
         range: {
             'min': 0,
-            'max': 330
+            'max': FILAMENT_ROLL_LENGTH
         },
         format: {
             to: function (value) {
@@ -698,22 +698,22 @@ $(function() {
     slider.noUiSlider.on('update', function( values, handle ) {
         inputFormat.value = values[handle];
         new_filament_amount.innerText = values[handle];
-        percent = ((values[handle] / 330) * 100).toFixed(0);
-        filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
+        filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
         new_filament_percent.innerText = percent + "%";
     });
 
     fdSlider.noUiSlider.on('update', function (values, handle) {
         fdInputFormat.value = values[handle];
-        percent = ((values[handle] / 330) * 100).toFixed(0);
-        fd_filament_percent.innerHTML = ((values[handle] / 330) * 100).toFixed(0) + "%";
+        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
+        fd_filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
     });
 
     inputFormat.addEventListener('change', function(){
         slider.noUiSlider.set(this.value);
     });
 
-    fdInputFormat.addEventListener('change', function () {
+    fdInputFormat.addEventListener('change', function ()  {
         fdSlider.noUiSlider.set(this.value);
     });
 

@@ -22,7 +22,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
     //~~ item handling
 
-    self.refresh = function() {
+    self.refresh = function () {
         self._updateItems();
     };
 
@@ -42,7 +42,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         }
     };
 
-    self.selectNone = function() {
+    self.selectNone = function () {
         self.selectedItem(undefined);
     };
 
@@ -69,7 +69,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
     //~~ pagination
 
-    self.paginatedItems = ko.dependentObservable(function() {
+    self.paginatedItems = ko.dependentObservable(function () {
         if (self.items() == undefined) {
             return [];
         } else if (self.pageSize() == 0) {
@@ -80,10 +80,10 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
             return self.items().slice(from, to);
         }
     });
-    self.lastPage = ko.dependentObservable(function() {
+    self.lastPage = ko.dependentObservable(function () {
         return (self.pageSize() == 0 ? 1 : Math.ceil(self.items().length / self.pageSize()) - 1);
     });
-    self.pages = ko.dependentObservable(function() {
+    self.pages = ko.dependentObservable(function () {
         var pages = [];
         if (self.pageSize() == 0) {
             pages.push({ number: 0, text: 1 });
@@ -135,12 +135,12 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         if (newPage < 0 || newPage > self.lastPage())
             return;
         self.currentPage(newPage);
-    };    self.prevPage = function() {
+    };    self.prevPage = function () {
         if (self.currentPage() > 0) {
             self.currentPage(self.currentPage() - 1);
         }
     };
-    self.nextPage = function() {
+    self.nextPage = function () {
         if (self.currentPage() < self.lastPage()) {
             self.currentPage(self.currentPage() + 1);
         }
@@ -170,7 +170,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         self._updateItems();
     };
 
-    self.resetSearch = function() {
+    self.resetSearch = function () {
         self.changeSearchFunction(undefined);
     };
 
@@ -238,7 +238,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
     //~~ update for sorted and filtered view
 
-    self._updateItems = function() {
+    self._updateItems = function () {
         // determine comparator
         var comparator = undefined;
         var currentSorting = self.currentSorting();
@@ -276,7 +276,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
     //~~ local storage
 
-    self._saveCurrentSortingToLocalStorage = function() {
+    self._saveCurrentSortingToLocalStorage = function () {
         if ( self._initializeLocalStorage() ) {
             var currentSorting = self.currentSorting();
             if (currentSorting !== undefined)
@@ -286,7 +286,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         }
     };
 
-    self._loadCurrentSortingFromLocalStorage = function() {
+    self._loadCurrentSortingFromLocalStorage = function () {
         if ( self._initializeLocalStorage() ) {
             if (_.contains(_.keys(supportedSorting), localStorage[self.listType + "." + "currentSorting"]))
                 self.currentSorting(localStorage[self.listType + "." + "currentSorting"]);
@@ -295,20 +295,20 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         }
     };
 
-    self._saveCurrentFiltersToLocalStorage = function() {
+    self._saveCurrentFiltersToLocalStorage = function () {
         if ( self._initializeLocalStorage() ) {
             var filters = _.intersection(_.keys(self.supportedFilters), self.currentFilters());
             localStorage[self.listType + "." + "currentFilters"] = JSON.stringify(filters);
         }
     };
 
-    self._loadCurrentFiltersFromLocalStorage = function() {
+    self._loadCurrentFiltersFromLocalStorage = function () {
         if ( self._initializeLocalStorage() ) {
             self.currentFilters(_.intersection(_.keys(self.supportedFilters), JSON.parse(localStorage[self.listType + "." + "currentFilters"])));
         }
     };
 
-    self._initializeLocalStorage = function() {
+    self._initializeLocalStorage = function () {
         if (!Modernizr.localstorage)
             return false;
 
@@ -659,7 +659,7 @@ function callViewModels(allViewModels, method, callback) {
 
 function callViewModelsIf(allViewModels, method, condition, callback) {
     if (condition == undefined || !_.isFunction(condition)) {
-        condition = function() { return true; };
+        condition = function () { return true; };
     }
 
     var parameters = undefined;
@@ -709,7 +709,7 @@ function callViewModelsIf(allViewModels, method, condition, callback) {
 
 var sizeObservable = function(observable) {
     return ko.computed({
-        read: function() {
+        read: function () {
             return formatSize(observable());
         },
         write: function(value) {
@@ -762,7 +762,7 @@ function hideOfflineFlyout() {
     offline_blocking = false;
     // $('.overlay').removeClass('active');
     $('#offline_flyout').removeClass('active');
-    location.reload();
+    location.reload(true);
 };
 
 function addCSSRule(sheet, selector, rules, index) {

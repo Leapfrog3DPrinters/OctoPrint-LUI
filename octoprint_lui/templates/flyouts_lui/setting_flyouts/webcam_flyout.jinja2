@@ -25,13 +25,13 @@
     </div>
 
     <div class="Table-item">
-      <a href="#" data-bind="click: refreshPreview" style="margin-left: auto">
+      <a href="#" data-bind="click: function () { refreshPreview() }" style="margin-left: auto">
         <i class="fa fa-refresh"></i> Refresh
       </a>
     </div>
     {% if not local_addr %}
     <div class="Table-item">
-      <a href="#"  data-bind="click: startLivestream" style="margin-left: auto">
+      <a href="#"  data-bind="click: function () { startLivestream() }" style="margin-left: auto">
         <i class="fa fa-play"></i> Livestream
       </a>
     </div>
@@ -62,7 +62,7 @@
                 </span>
               </li>
               <li>
-                <a href="#" data-bind="click: removeAll, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
+                <a href="#" data-bind="click: function () { removeAll() }, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
                   <i class="fa fa-trash"></i>Delete all
                 </a>
               </li>
@@ -94,7 +94,7 @@
       {% if local_addr %}
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function() { $parent.copyToUsb($data.name); }, css: {disabled: $root.isCopying() ||  !$root.files.isUsbAvailable()}">
+          <a href="#" data-bind="click: function () { $parent.copyToUsb($data.name); }, css: {disabled: $root.isCopying() ||  !$root.files.isUsbAvailable()}">
             <span>
               <i class="fa fa-floppy-o"></i>
             </span>
@@ -116,7 +116,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#delete" data-bind="click: function() { if ($root.loginState.isUser()) { $parent.removeFile($data.name); } else { return; } }, css: {disabled: $root.isCopying() || !$root.loginState.isUser()}">
+          <a href="#delete" data-bind="click: function () { if ($root.loginState.isUser()) { $parent.removeFile($data.name); } else { return; } }, css: {disabled: $root.isCopying() || !$root.loginState.isUser()}">
             <span>
               <i class="fa fa-trash-o"></i>
             </span>
@@ -130,17 +130,17 @@
 <div class="pagination pagination-mini pagination-centered" data-bind="visible: listHelper.allSize() > 5">
   <ul>
     <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
-      <a href="javascript:void(0)" data-bind="click: listHelper.prevPage">«</a>
+      <a href="javascript:void(0)" data-bind="click: function () { listHelper.prevPage() }">«</a>
     </li>
   </ul>
   <ul data-bind="foreach: listHelper.pages">
     <li data-bind="css: { active: $data.number === $root.listHelper.currentPage(), disabled: $data.number === -1 }">
-      <a href="javascript:void(0)" data-bind="text: $data.text, click: function() { $root.listHelper.changePage($data.number); }"></a>
+      <a href="javascript:void(0)" data-bind="text: $data.text, click: function () { $root.listHelper.changePage($data.number); }"></a>
     </li>
   </ul>
   <ul>
     <li data-bind="css: {disabled: listHelper.currentPage() === listHelper.lastPage()}">
-      <a href="javascript:void(0)" data-bind="click: listHelper.nextPage">»</a>
+      <a href="javascript:void(0)" data-bind="click: function () { listHelper.nextPage() }">»</a>
     </li>
   </ul>
 </div>
@@ -160,7 +160,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function() { if ($root.loginState.isUser() && !$root.isBusy()) { $parent.renderUnrendered($data.name); } else { return; } }, css: {disabled: $root.isCopying() || !$root.loginState.isUser() || processing || $root.isBusy()}">
+          <a href="#" data-bind="click: function () { if ($root.loginState.isUser() && !$root.isBusy()) { $parent.renderUnrendered($data.name); } else { return; } }, css: {disabled: $root.isCopying() || !$root.loginState.isUser() || processing || $root.isBusy()}">
             <span>
               <i class="fa fa-file-video-o"></i> Retry
             </span>
@@ -169,7 +169,7 @@
       </ul>
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#" data-bind="click: function() { if ($root.loginState.isUser()) { $parent.removeUnrendered($data.name); } else { return; } }, css: {disabled: $root.isCopying() ||  processing || !$root.loginState.isUser()}">
+          <a href="#" data-bind="click: function () { if ($root.loginState.isUser()) { $parent.removeUnrendered($data.name); } else { return; } }, css: {disabled: $root.isCopying() ||  processing || !$root.loginState.isUser()}">
             <span>
               <i class="fa fa-trash-o"></i>
             </span>
@@ -184,17 +184,17 @@
 <div class="pagination pagination-mini pagination-centered"  data-bind="visible: unrenderedListHelper.allSize() > 5">
   <ul>
     <li data-bind="css: {disabled: unrenderedListHelper.currentPage() === 0}">
-      <a href="javascript:void(0)" data-bind="click: unrenderedListHelper.prevPage">«</a>
+      <a href="javascript:void(0)" data-bind="click: function () { unrenderedListHelper.prevPage() }">«</a>
     </li>
   </ul>
   <ul data-bind="foreach: unrenderedListHelper.pages">
     <li data-bind="css: { active: $data.number === $root.unrenderedListHelper.currentPage(), disabled: $data.number === -1 }">
-      <a href="javascript:void(0)" data-bind="text: $data.text, click: function() { $root.unrenderedListHelper.changePage($data.number); }"></a>
+      <a href="javascript:void(0)" data-bind="text: $data.text, click: function () { $root.unrenderedListHelper.changePage($data.number); }"></a>
     </li>
   </ul>
   <ul>
     <li data-bind="css: {disabled: unrenderedListHelper.currentPage() === unrenderedListHelper.lastPage()}">
-      <a href="javascript:void(0)" data-bind="click: unrenderedListHelper.nextPage">»</a>
+      <a href="javascript:void(0)" data-bind="click: function () { unrenderedListHelper.nextPage() }">»</a>
     </li>
   </ul>
 </div>

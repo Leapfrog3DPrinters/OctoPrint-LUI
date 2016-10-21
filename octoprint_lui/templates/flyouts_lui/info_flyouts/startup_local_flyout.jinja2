@@ -19,7 +19,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button ok-button">
-            <a href="#" data-bind="click: beginHoming">
+            <a href="#" data-bind="click: function () { beginHoming() }">
               <span>
                 <i class="fa fa-home"></i>Begin homing
               </span>
@@ -30,7 +30,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button secondary-button">
-            <a href="#" data-bind="click: beginMaintenance">
+            <a href="#" data-bind="click: function () { beginMaintenance() }">
               <span>
                 <i class="fa fa-wrench"></i>Maintenance
               </span>
@@ -43,7 +43,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button secondary-button">
-            <a href="#" data-bind="click: function(){ location.reload() }">
+            <a href="#" data-bind="click: function () { location.reload(true) }">
               <span>
                 <i class="fa fa-refresh"></i>Retry printer connection
               </span>

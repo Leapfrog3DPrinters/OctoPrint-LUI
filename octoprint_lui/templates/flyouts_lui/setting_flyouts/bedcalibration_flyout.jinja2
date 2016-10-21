@@ -14,7 +14,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function() { startManualBedCalibration()}">
+          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startManualBedCalibration()}">
             <a href="">
               <span>Continue calibration</span>
             </a>
@@ -44,14 +44,13 @@
           <div class="bed-canvas-item top right" data-corner="1"></div>
           <div class="bed-canvas-item bottom left" data-corner="2"></div>
           <div class="bed-canvas-item bottom right" data-corner="3"></div>
-		  <div class="bed-canvas-item center" data-corner="4"></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 {% endif %}
-{% if model == "Xeed" or model.endswith("Debug") %}
+{% if model == "Xeed" or model.endswith("Debug") or model == "Xcel" %}
 <div id="warn-before-calibration" data-bind="visible: !showAutoBedCalibration()">
   <div class="Table">
     <div class="Table-row Table-header">
@@ -67,7 +66,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: startAutoBedCalibration">
+          <li class="button" data-bind="click: function () { startAutoBedCalibration() }">
             <a href="">
               <span>Level bed</span>
             </a>
@@ -76,7 +75,7 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: startZoffset ">
+          <li class="button" data-bind="click: function () { startZoffset() } ">
             <a href="">
               <span>Z-offset wizard</span>
             </a>

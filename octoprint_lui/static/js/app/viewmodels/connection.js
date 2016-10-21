@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function ConnectionViewModel(parameters) {
         var self = this;
 
@@ -6,7 +6,7 @@ $(function() {
         self.settings = parameters[1];
         self.printerProfiles = parameters[2];
 
-        self.printerProfiles.profiles.items.subscribe(function() {
+        self.printerProfiles.profiles.items.subscribe(function () {
             var allProfiles = self.printerProfiles.profiles.items();
 
             var printerOptions = [];
@@ -16,7 +16,7 @@ $(function() {
             self.printerOptions(printerOptions);
         });
 
-        self.printerProfiles.currentProfile.subscribe(function() {
+        self.printerProfiles.currentProfile.subscribe(function () {
             self.selectedPrinter(self.printerProfiles.currentProfile());
         });
 
@@ -37,7 +37,7 @@ $(function() {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
 
-        self.buttonText = ko.computed(function() {
+        self.buttonText = ko.computed(function () {
             if (self.isErrorOrClosed())
                 return gettext("Connect");
             else
@@ -46,7 +46,7 @@ $(function() {
 
         self.previousIsOperational = undefined;
 
-        self.requestData = function() {
+        self.requestData = function () {
             OctoPrint.connection.getSettings()
                 .done(self.fromResponse);
         };
@@ -94,7 +94,7 @@ $(function() {
 
         };
 
-        self.connect = function() {
+        self.connect = function () {
             if (self.isErrorOrClosed()) {
                 var data = {
                     "port": self.selectedPort() || "AUTO",
@@ -107,28 +107,12 @@ $(function() {
                     data["save"] = true;
 
                 OctoPrint.connection.connect(data)
-                    .done(function() {
-                        self.settings.requestData();
-                        self.settings.printerProfiles.requestData();
+                    .done(function () {
                     });
             } else {
                 self.requestData();
                 OctoPrint.connection.disconnect();
             }
-        };
-
-        self.onStartup = function() {
-            self.requestData();
-
-            // when isAdmin becomes true the first time, set the panel open or
-            // closed based on the connection state
-            var subscription = self.loginState.isAdmin.subscribe(function(newValue) {
-                if (newValue) {
-                    // wait until after the isAdmin state has run through all subscriptions
-                    setTimeout(self.openOrCloseOnStateChange, 0);
-                    subscription.dispose();
-                }
-            });
         };
 
     }
