@@ -214,6 +214,11 @@ $(function ()  {
             
         }
 
+        self.updateDoneOrError = function() {
+            self.updating(false);
+            $('#update_spinner').removeClass('fa-spin');
+        }
+
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
                 return;
@@ -232,6 +237,7 @@ $(function ()  {
                     },
                         "error"
                     )
+                    self.updateDoneOrError();
                     break;
                 case "github_offline":
                     $.notify({
@@ -240,6 +246,7 @@ $(function ()  {
                     },
                         "error"
                     )
+                    self.updateDoneOrError();
                     break;
                 case "update_fetch_error":
                     $.notify({
@@ -248,11 +255,11 @@ $(function ()  {
                     },
                         "error"
                     )
+                    self.updateDoneOrError();
                     break;
                 case "update_fetch_success":
                     self.fromResponse(messageData);
-                    self.updating(false);
-                    $('#update_spinner').removeClass('fa-spin');
+                    self.updateDoneOrError();
                     break;
                 case "update_error":
                     self.hideUpdateWarning();
@@ -262,6 +269,7 @@ $(function ()  {
                     },
                         "error"
                     )
+                    self.updateDoneOrError();
                     break;
                 case "update_success":
                     $.notify({
