@@ -853,6 +853,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands(["M605 S3"]) # mirror
         self._printer.home(['x'])
         self._printer.commands(["G1 X20"]) # wipe it
+        self._printer.commands(["G1 X1"]) # wipe it
         self._printer.commands(["M605 S0"]) # back to normal
         self._printer.home(['y', 'x'])
         self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
@@ -876,6 +877,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands(["M605 S3"]) # mirror
         self._printer.home(['x'])
         self._printer.commands(["G1 X20"]) # wipe it
+        self._printer.commands(["G1 X1"]) # wipe it
         self._printer.commands(["M605 S0"]) # back to normal
         self._printer.home(['y', 'x'])
         self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
