@@ -621,6 +621,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
+        # TODO HERE
         corner = self.manual_bed_calibration_positions[self.model][corner_num]
         self._printer.commands(['G1 Z5 F1200'])
 
