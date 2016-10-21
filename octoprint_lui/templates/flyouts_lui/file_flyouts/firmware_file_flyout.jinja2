@@ -68,7 +68,7 @@
       </script>
 
       <script type="text/html" id="files_template_select_folder">
-        <div data-bind="click: function () { $root.changeFolder() }">
+        <div data-bind="click: function () { $root.changeFolder($data) }">
           <ul class="file_main">
             <li class="file_status file_neutral">
               <a href="#file_status">
