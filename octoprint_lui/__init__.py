@@ -850,6 +850,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Cancel all heat up and reset
         # Loading has already started, so just cancel the loading
         # which will stop heating already.
+        self._printer.commands(["M605 S3"]) # mirror
+        self._printer.commands(["G1 X20"]) # wipe it
+        self._printer.commands(["M605 S0"]) # back to normal
         self._printer.home(['y', 'x'])
         self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
         self._printer.commands(["M84"]) # And disable them right away for now
