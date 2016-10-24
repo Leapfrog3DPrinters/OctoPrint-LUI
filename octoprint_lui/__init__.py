@@ -1721,7 +1721,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif action_trigger == "door_closed" and self._settings.get_boolean(["action_door"]):
             self._send_client_message(action_trigger, dict(line=line))
             comm.setPause(False)
-        elif action_trigger == "filament" and self._settings.get_boolean(["action_filament"]) and self.filament_action == False:
+        elif action_trigger == "filament" and self._settings.get_boolean(["action_filament"]) and \
+            comm.isPrinting() and self.filament_action == False:
             self._on_filament_detection_during_print(comm)
 
     def _on_filament_detection_during_print(self, comm):
