@@ -15,10 +15,10 @@
         <i class="fa" data-bind="css: { 'fa-check': admin, 'fa-check-empty': !admin }"></i>
       </div>
       <div class="Table-item settings_user_actions">
-        <a href="#" class="fa fa-pencil" title="{{ _('Change password') }}" data-bind="click: function() { $root.users.showChangePasswordDialog($data); }"></a>
+        <a href="#" class="fa fa-pencil" title="{{ _('Change password') }}" data-bind="click: function () { $root.users.showChangePasswordDialog($data); }"></a>
       </div>
       <div class="Table-item">
-        <a href="#" class="fa fa-trash" title="{{ _('Delete user') }}" data-bind="click: function() { $root.users.removeUser($data); }"></a>
+        <a href="#" class="fa fa-trash" title="{{ _('Delete user') }}" data-bind="click: function () { $root.users.removeUser($data); }"></a>
       </div>
     </div>
     <!-- /ko -->
@@ -26,17 +26,17 @@
   <div class="pagination pagination-mini pagination-centered" data-bind="visible: users.listHelper.allSize() > CONFIG_USERSPERPAGE">
     <ul>
       <li style="justify-content: flex-start" data-bind="css: {disabled: users.listHelper.currentPage() === 0}">
-        <a href="#" data-bind="click: users.listHelper.prevPage">«</a>
+        <a href="#" data-bind="click: function () { users.listHelper.prevPage() }">«</a>
       </li>
     </ul>
     <ul data-bind="foreach: users.listHelper.pages">
       <li data-bind="css: { active: $data.number === $root.users.listHelper.currentPage(), disabled: $data.number === -1 }">
-        <a href="#" data-bind="text: $data.text, click: function() { $root.users.listHelper.changePage($data.number); }"></a>
+        <a href="#" data-bind="text: $data.text, click: function () { $root.users.listHelper.changePage($data.number); }"></a>
       </li>
     </ul>
     <ul>
       <li style="justify-content: flex-end" data-bind="css: {disabled: users.listHelper.currentPage() === users.listHelper.lastPage()}">
-        <a href="#" data-bind="click: users.listHelper.nextPage">»</a>
+        <a href="#" data-bind="click: function () { users.listHelper.nextPage() }">»</a>
       </li>
     </ul>
   </div>
@@ -120,7 +120,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button ok-button" >
-          <a href="#" data-bind="click: function() { $root.users.confirmAddUser(); }, css: { disabled: $root.users.editorPasswordMismatch() || $root.users.noPassword() || $root.users.noUsername() }">
+          <a href="#" data-bind="click: function () { $root.users.confirmAddUser(); }, css: { disabled: $root.users.editorPasswordMismatch() || $root.users.noPassword() || $root.users.noUsername() }">
             <span>
               {{ _('Confirm') }}
             </span>
@@ -173,7 +173,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#" data-bind="click: function() { $root.users.hideChangePasswordDialog() }">
+          <a href="#" data-bind="click: function () { $root.users.hideChangePasswordDialog() }">
             <span>
               {{ _('Abort') }}
             </span>
@@ -184,7 +184,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button ok-button" >
-          <a href="#" data-bind="click: function() { $root.users.confirmChangePassword(); }, css: { disabled: $root.users.editorPasswordMismatch() }">
+          <a href="#" data-bind="click: function () { $root.users.confirmChangePassword(); }, css: { disabled: $root.users.editorPasswordMismatch() }">
             <span>
               {{ _('Confirm') }}
             </span>

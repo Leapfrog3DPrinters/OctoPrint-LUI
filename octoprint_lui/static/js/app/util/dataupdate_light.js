@@ -13,11 +13,11 @@ function DataUpdater(allViewModels) {
     self._lastProcessingTimes = [];
     self._lastProcessingTimesSize = 20;
 
-    self.increaseThrottle = function() {
+    self.increaseThrottle = function () {
         self.setThrottle(self._throttleFactor + 1);
     };
 
-    self.decreaseThrottle = function() {
+    self.decreaseThrottle = function () {
         if (self._throttleFactor <= 1) {
             return;
         }
@@ -37,7 +37,7 @@ function DataUpdater(allViewModels) {
         self._socket.send(JSON.stringify(payload));
     };
 
-    self.connect = function() {
+    self.connect = function () {
         if (self._connectedDeferred) {
             self._connectedDeferred.reject();
         }
@@ -46,7 +46,7 @@ function DataUpdater(allViewModels) {
         return self._connectedDeferred.promise();
     };
 
-    self.reconnect = function() {
+    self.reconnect = function () {
         if (self._connectedDeferred) {
             self._connectedDeferred.reject();
         }
@@ -65,7 +65,7 @@ function DataUpdater(allViewModels) {
         callViewModelsIf(
             self.allViewModels,
             "onServerDisconnect",
-            function() { return !handled; },
+            function () { return !handled; },
             function(method) { var result = method(); handled = (result !== undefined && !result) || handled; }
         );
 
@@ -92,12 +92,12 @@ function DataUpdater(allViewModels) {
 
     };
 
-    self._onReconnectFailed = function() {
+    self._onReconnectFailed = function () {
         var handled = false;
         callViewModelsIf(
             self.allViewModels,
             "onServerDisconnect",
-            function() { return !handled; },
+            function () { return !handled; },
             function(method) { var result = method(); handled = (result !== undefined && !result) || handled; }
         );
 

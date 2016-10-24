@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
   function FlyoutViewModel(parameters) {
     var self = this;
     
@@ -7,7 +7,7 @@ $(function() {
     self.template_flyout = undefined;
 
     self.blocking = false;
-    self.flyoutName = "";
+    self.currentFlyoutTemplate = "";
 
     self.confirmation_title = ko.observable(undefined);
     self.confirmation_text = ko.observable(undefined);
@@ -27,7 +27,7 @@ $(function() {
     self.showWarning = function(title, message, blocking, callback)
     {
         var blocking = blocking || false;
-        var callback = callback || function () { };
+        var callback = callback || function ()  { };
         warningVm = {
             warning_title: title,
             warning_text: message,
@@ -55,7 +55,7 @@ $(function() {
 
     self.showInfo = function (title, message, blocking, callback) {
         var blocking = blocking || false;
-        var callback = callback || function () { };
+        var callback = callback || function ()  { };
 
         infoVm = {
             info_title: title,
@@ -75,7 +75,7 @@ $(function() {
         self.setOverlay();
     };
 
-    self.closeLastInfo = function () {
+    self.closeLastInfo = function ()  {
         self.infos.pop();
         self.setOverlay();
     }
@@ -86,15 +86,13 @@ $(function() {
       self.flyouts.push({deferred: deferred, template: template_flyout});
       self.blocking = blocking || false;
       
-      self.flyoutName = flyout;
+      self.currentFlyoutTemplate = template_flyout;
 
       self.activateFlyout(template_flyout);
 
       // Call viewmodels with the flyout method on{FlyoutTopic}Shown
       var method = "on" + capitalize(flyout) + "FlyoutShown";
       callViewModels(self.allViewModels, method);
-
-      console.log(self.flyouts());
 
       return self.flyouts()[self.flyouts().length - 1].deferred
     };
@@ -119,7 +117,7 @@ $(function() {
       self.setOverlay();
 
       self.confirmationDeferred = $.Deferred()
-          .done(function () {
+          .done(function ()  {
               $('#confirmation_flyout').removeClass('active');
               self.setOverlay();
 
@@ -129,7 +127,7 @@ $(function() {
               self.confirmationDeferred = undefined;
               
           })
-          .fail(function () {
+          .fail(function ()  {
               $('#confirmation_flyout').removeClass('active');
               self.setOverlay();
 
@@ -139,28 +137,30 @@ $(function() {
       return self.confirmationDeferred;
     };
 
-    self.closeFlyout = function() {
+    self.closeFlyout = function () {
         var flyout_ref = self.flyouts.pop()
         var deferred = flyout_ref.deferred
         var template_flyout = flyout_ref.template
         if (deferred != undefined) {
             deferred.reject();
+            if (self.flyouts().length > 0){
+              self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
+            }
         }
         self.deactivateFlyout(template_flyout);
-      console.log(self.flyouts());
-
     };
     
-    self.closeFlyoutAccept = function() {
+    self.closeFlyoutAccept = function () {
         var flyout_ref = self.flyouts.pop()
         var deferred = flyout_ref.deferred
         var template_flyout = flyout_ref.template
         if (deferred != undefined) {
-            deferred.reject();
+            deferred.resolve();
+            if (self.flyouts().length > 0){
+              self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
+            }
         }
         self.deactivateFlyout(template_flyout);
-      console.log(self.flyouts());
-
     };
 
     self.activateFlyout = function(template_flyout) {
@@ -175,7 +175,7 @@ $(function() {
         self.setOverlay();
     }
 
-    self.setOverlay = function () {
+    self.setOverlay = function ()  {
         if (self.warnings().length == 0 && self.infos().length == 0 && self.flyouts().length == 0 &&
             !$('#confirmation_flyout').hasClass('active') && !$(self.template_flyout).hasClass('active'))
             $('.overlay').removeClass('active');

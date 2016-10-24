@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     function UsersViewModel(parameters) {
         var self = this;
 
@@ -58,19 +58,19 @@ $(function() {
             self.editorRepeatedPassword(undefined);
         });
 
-        self.editorPasswordMismatch = ko.computed(function() {
+        self.editorPasswordMismatch = ko.computed(function () {
             return self.editorPassword() != self.editorRepeatedPassword();
         });
 
-        self.noPassword = ko.computed(function () {
+        self.noPassword = ko.computed(function ()  {
             return self.editorPassword() == "" || self.editorPassword() === undefined;
         });
 
-        self.noUsername = ko.computed(function () {
+        self.noUsername = ko.computed(function ()  {
             return self.editorUsername() == "" || self.editorUsername() === undefined;
         })
 
-        self.requestData = function() {
+        self.requestData = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             OctoPrint.simpleApiGet('lui', {
@@ -92,7 +92,7 @@ $(function() {
             }));
         };
 
-        self.hideAddUserDialog = function () {
+        self.hideAddUserDialog = function ()  {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(undefined);
@@ -101,7 +101,7 @@ $(function() {
             self.addUserDialog.addClass("hide");
         };
 
-        self.showAddUserDialog = function() {
+        self.showAddUserDialog = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(undefined);
@@ -110,7 +110,7 @@ $(function() {
             self.addUserDialog.removeClass("hide");
         };
 
-        self.confirmAddUser = function() {
+        self.confirmAddUser = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             var user = {
@@ -121,7 +121,7 @@ $(function() {
             };
 
             self.addUser(user)
-                .done(function() {
+                .done(function () {
                     // close dialog
                     self.currentUser(undefined);
                     self.userList.removeClass("disabled");
@@ -137,7 +137,7 @@ $(function() {
             self.editUserDialog.removeClass("hide");
         };
 
-        self.confirmEditUser = function() {
+        self.confirmEditUser = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             var user = self.currentUser();
@@ -145,7 +145,7 @@ $(function() {
             user.admin = self.editorAdmin();
 
             self.updateUser(user)
-                .done(function() {
+                .done(function () {
                     // close dialog
                     self.currentUser(undefined);
                     self.editUserDialog.removeClass("hide");
@@ -168,16 +168,16 @@ $(function() {
             self.changePasswordDialog.removeClass("hide");
         };
 
-        self.confirmChangePassword = function() {
+        self.confirmChangePassword = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
             var pw = self.editorPassword();
             if (pw !== undefined && pw != "") {
                 self.updatePassword(self.currentUser().name, pw)
-                    .done(function () {
+                    .done(function ()  {
                         var user = self.currentUser();
                         user.admin = self.editorAdmin();
 
-                        self.updateUser(user).done(function () {
+                        self.updateUser(user).done(function ()  {
                             // close dialog
                             self.currentUser(undefined);
                             self.userList.removeClass("disabled");
@@ -191,7 +191,7 @@ $(function() {
                 var user = self.currentUser();
                 user.admin = self.editorAdmin();
 
-                self.updateUser(user).done(function () {
+                self.updateUser(user).done(function ()  {
                     // close dialog
                     self.currentUser(undefined);
                     self.userList.removeClass("disabled");
@@ -200,7 +200,7 @@ $(function() {
             }
         };
 
-        self.confirmGenerateApikey = function() {
+        self.confirmGenerateApikey = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.generateApikey(self.currentUser().name)
@@ -209,11 +209,11 @@ $(function() {
                 });
         };
 
-        self.confirmDeleteApikey = function() {
+        self.confirmDeleteApikey = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.deleteApikey(self.currentUser().name)
-                .done(function() {
+                .done(function () {
                     self._updateApikey(undefined);
                 });
         };
@@ -225,7 +225,7 @@ $(function() {
 
         //~~ Framework
 
-        self.onStartup = function() {
+        self.onStartup = function () {
             self.addUserDialog = $("#settings-usersDialogAddUser");
             self.editUserDialog = $("#settings-usersDialogEditUser");
             self.userList = $("#user-list");
