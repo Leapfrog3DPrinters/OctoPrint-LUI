@@ -1292,7 +1292,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 load_change=dict(start=2400, amount=2.5, speed=300)
 
                 # Total amount being loaded
-                self.load_amount_stop = 2600
+                self.load_amount_stop = 2800
             else:
                 self._logger.debug("load_filament for Bolt")
                 # Bolt loading
@@ -1362,7 +1362,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             #This method can also be used for the Bolt!
             self.load_amount = 0
-            self.load_amount_stop = 100 # Safety timer on continuious loading
+            self.load_amount_stop = 400 if self.model == 'Xcel' else 100 # Safety timer on continuious loading
             load_cont_initial = dict(amount=2.5 * direction, speed=240)
             self.set_extrusion_mode("relative")
             load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
@@ -1735,8 +1735,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_detection_tool_temperatures = deepcopy(self.current_temperature_data)
         self.filament_action = True
 
-        #Will move to load position, set the tool, etc
-        self._on_api_command_change_filament(tool)
+        # Copied partly from change filament
+        # Send to the front end that we are currently changing filament.
+        self.send_client_in_progress()
+        # Set filament change tool and profile
+        self.filament_change_tool = tool
+        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
+        self._printer.change_tool(tool)
+
+        self.z_before_filament_load = self._printer._currentZ
+        self._printer.jog({'z': 10})
+        self._printer.home(['x'])
 
         if not self.temperature_safety_timer:
             self.temperature_safety_timer_value = 900
