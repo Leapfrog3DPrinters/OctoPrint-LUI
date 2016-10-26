@@ -228,7 +228,9 @@ $(function ()  {
             var messageData = data['data'];
             switch (messageType) {
                 case "firmware_update_found":
-                    self.onFirmwareUpdateFound(messageData.file);
+                    if(DEBUG_LUI) {
+                        self.onFirmwareUpdateFound(messageData.file);
+                    }
                     break;
                 case "internet_offline":
                     $.notify({
