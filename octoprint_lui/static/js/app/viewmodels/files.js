@@ -946,6 +946,7 @@ $(function ()  {
         };
 
         self.enableAdditionalData = function (data) {
+            // TODO: Add anaylsing icon in files additional data.
             return data["gcodeAnalysis"] || data["prints"] && data["prints"]["last"];
         };
 
