@@ -978,6 +978,8 @@ $(function ()  {
                     }
                 }
                 output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
+            } else {
+                output += "<strong>Analysing job </strong> <i class='fa fa-spinner fa-pulse'></i>"
             }
             if (data["prints"] && data["prints"]["last"]) {
                 output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
