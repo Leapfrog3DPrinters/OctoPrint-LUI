@@ -850,14 +850,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Cancel all heat up and reset
         # Loading has already started, so just cancel the loading
         # which will stop heating already.
-        self._printer.commands(["M605 S3"]) # mirror
-        self._printer.home(['x'])
-        self._printer.commands(["G1 X20"]) # wipe it
-        self._printer.commands(["G1 X1"]) # wipe it
-        self._printer.commands(["M605 S0"]) # back to normal
-        self._printer.home(['y', 'x'])
-        self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
-        self._printer.commands(["M84"]) # And disable them right away for now
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S3"]) # mirror
+            self._printer.home(['x'])
+            self._printer.commands(["G1 X20"]) # wipe it
+            self._printer.commands(["G1 X1"]) # wipe it
+            self._printer.commands(["M605 S0"]) # back to normal
+            self._printer.home(['y', 'x'])
+            self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
+            self._printer.commands(["M84"]) # And disable them right away for now
+        elif self.model != "Bolt" and not self.filament_action:
+            self._printer.home(['x','y'])
 
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
@@ -874,14 +877,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Still don't know if this is the best spot TODO
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
-        self._printer.commands(["M605 S3"]) # mirror
-        self._printer.home(['x'])
-        self._printer.commands(["G1 X20"]) # wipe it
-        self._printer.commands(["G1 X1"]) # wipe it
-        self._printer.commands(["M605 S0"]) # back to normal
-        self._printer.home(['y', 'x'])
-        self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
-        self._printer.commands(["M84"]) # And disable them right away for now
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S3"]) # mirror
+            self._printer.home(['x'])
+            self._printer.commands(["G1 X20"]) # wipe it
+            self._printer.commands(["G1 X1"]) # wipe it
+            self._printer.commands(["M605 S0"]) # back to normal
+            self._printer.home(['y', 'x'])
+            self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
+            self._printer.commands(["M84"]) # And disable them right away for now
+        elif self.model != "Bolt" and not self.filament_action: 
+            self._printer.home(['y', 'x'])
+
         self._printer.set_temperature(self.filament_change_tool, 0.0)
         self._logger.info("Change filament done called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
@@ -1722,7 +1729,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(action_trigger, dict(line=line))
             comm.setPause(False)
         elif action_trigger == "filament" and self._settings.get_boolean(["action_filament"]) and \
-            comm.isPrinting() and self.filament_action == False:
+            comm.isPrinting() and not self.filament_action:
             self._on_filament_detection_during_print(comm)
 
     def _on_filament_detection_during_print(self, comm):
