@@ -83,9 +83,9 @@ $(function () {
     self.showFlyout = function(flyout, blocking) {
       var deferred = $.Deferred();
       var template_flyout = '#'+flyout+'_flyout';
-      self.flyouts.push({deferred: deferred, template: template_flyout});
-      self.blocking = blocking || false;
-      
+      var blocking = blocking || false;
+      self.blocking = blocking;
+      self.flyouts.push({deferred: deferred, template: template_flyout, blocking: blocking});
       self.currentFlyoutTemplate = template_flyout;
 
       self.activateFlyout(template_flyout);
@@ -145,7 +145,10 @@ $(function () {
             deferred.reject();
             if (self.flyouts().length > 0){
               self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
-            }
+                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking
+              } else {
+                self.blocking = false;
+              }
         }
         self.deactivateFlyout(template_flyout);
     };
@@ -158,6 +161,9 @@ $(function () {
             deferred.resolve();
             if (self.flyouts().length > 0){
               self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
+              self.blocking = self.flyouts()[self.flyouts().length - 1].blocking
+            } else {
+              self.blocking = false;
             }
         }
         self.deactivateFlyout(template_flyout);

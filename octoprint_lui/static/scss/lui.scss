@@ -1355,6 +1355,8 @@ select {
 .file_add_info {
   background-color: #f2f2f2;
   display: flex;
+  min-width: 0px;
+  flex-wrap: nowrap;
   &.hide{
     display: none;
   }
@@ -1364,6 +1366,9 @@ select {
   padding:5px;
   flex-grow: 4;
   font-size: 90%;
+  flex-shrink: 1;
+  min-width: 0px;
+  word-break: break-word;
 }
 
 .file_add_info_buttons {
@@ -1374,6 +1379,7 @@ select {
 .file_add_info_preview {
   flex-basis: 150px;
   align-items: flex-start; /* Chrome aspect ratio fix */
+  min-width: 150px; 
 }
 
 .file_info {
@@ -1463,11 +1469,13 @@ pre code {
 /* Print Check */
 
 .grid {
-  margin-left: calc(50% - 150px);
+  margin-left: calc(50% - 165px);
+  margin-bottom: 30px;
   position:relative;
   background-image: repeating-linear-gradient(0deg,transparent,transparent 40px,#CCC 40px,#CCC 41px),repeating-linear-gradient(-90deg,transparent,transparent 20px,#CCC 20px,#CCC 21px);
   background-size: 41px 41px;
   width: 100%;
+  border: solid 1px grey;
 }
 
 .print_area {

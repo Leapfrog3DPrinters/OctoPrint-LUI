@@ -27,6 +27,7 @@
   var CONFIG_ACCESS_CONTROL = true;
 
   var IS_LOCAL = {%  if local_addr -%} true; {% else %} false; {%- endif %}
+  var DEBUG_LUI = {%  if debug_lui -%} true; {% else %} false; {%- endif %}
 
   var LPFRG_MODEL = "{{ model }}"
 </script>
