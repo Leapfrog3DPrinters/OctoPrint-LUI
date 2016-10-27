@@ -756,7 +756,10 @@ $(function ()  {
 
             // Create grid 
             var grid = "<div class='Table-row'><div class='Table-item'>";
-            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(profile.maxX).2fpx; height: %(profile.maxY).2fpx;'>"), formatData);
+            var gridsize_y = 300;
+            var gridsize_x = 330;
+
+            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>"), {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
 
             // We can only print half X with sync and mirror mode
             if (mode == "sync" || mode == "mirror") {
@@ -768,8 +771,15 @@ $(function ()  {
             if (self.isDualPrint()) {
                 boundaries["maxX"] = 370;
             }
+            var draw = {
+                width: (dimensions.width / boundaries.maxX) * gridsize_x,
+                depth: (dimensions.depth / boundaries.maxY) * gridsize_y,
+                left: (dimensions.width / boundaries.maxX) * (printingArea.minX / 2),
+                bottom: (dimensions.depth / boundaries.maxY) * (printingArea.minY / 2)
+            };
 
-            grid += _.sprintf(gettext("<div class='print_model' style='width: %(dimensions.width).2fpx; height: %(dimensions.depth).2fpx; left: %(object.minX).2fpx; bottom: %(object.minY).2fpx'></div>"),formatData);
+
+            grid += _.sprintf(gettext("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx'></div>"),{draw: draw});
 
             grid += "</div></div></div>";
 
@@ -783,7 +793,7 @@ $(function ()  {
             if (dimensions["depth"] > boundaries["maxY"]) {
                 info += gettext("Object exceeds print area in depth.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object depth</div></div>";
-                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxy).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>"), formatData);
+                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>"), formatData);
             }
             if (dimensions["height"] > boundaries["maxZ"]) {
                 info += gettext("Object exceeds print area in height.");
@@ -800,17 +810,17 @@ $(function ()  {
                 if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
                     info += gettext("Object positioned outside print area in width.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.minX).2f - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>"), formatData);  
+                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>"), formatData);  
                 }
                 if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
                     info += gettext("Object positioned outside print area in depth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.minY).2f - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>"), formatData);  
+                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>"), formatData);  
                 }
                 if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
                     info += gettext("Object positioned outside print area in heigth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.minZ).2f - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>"), formatData);  
+                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>"), formatData);  
                 }
                 
             }
@@ -936,6 +946,7 @@ $(function ()  {
         };
 
         self.enableAdditionalData = function (data) {
+            // TODO: Add anaylsing icon in files additional data.
             return data["gcodeAnalysis"] || data["prints"] && data["prints"]["last"];
         };
 
@@ -951,6 +962,8 @@ $(function ()  {
 
         self.getAdditionalData = function (data) {
             var output = "";
+            //add the full name of the gcode
+            output += "<strong>" +gettext("Filename") + ":</strong><br/>" + data["name"] + "<br/>";
             if (data["gcodeAnalysis"]) {
                 if (data["gcodeAnalysis"]["filament"] && typeof (data["gcodeAnalysis"]["filament"]) == "object") {
                     var filament = data["gcodeAnalysis"]["filament"];
@@ -965,6 +978,8 @@ $(function ()  {
                     }
                 }
                 output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
+            } else {
+                output += "<strong>Analysing job </strong> <i class='fa fa-spinner fa-pulse'></i>"
             }
             if (data["prints"] && data["prints"]["last"]) {
                 output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
