@@ -645,18 +645,23 @@ $(function ()  {
         });
 
         self.isWithinPrintDimensionsSyncMirrorMode = ko.computed(function () {
+            return true // 1.0.2 work around
+
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 return self.evaluatePrintDimensions(self.selectedFile(), "sync", false);
             }
         });
 
         self.isWithinPrintDimensions = ko.computed(function () {
+            return true // 1.0.2 work around
+
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 return self.evaluatePrintDimensions(self.selectedFile(), "normal", false);
              }
         });
 
         self.gcodeAnalysisFinished = ko.computed(function(){
+            return true // 1.0.2 work around
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 var analysis = self.selectedFile()["gcodeAnalysis"];
                 return analysis ? true : false;
@@ -704,7 +709,8 @@ $(function ()  {
 
             var analysis = data["gcodeAnalysis"];
             if (!analysis) {
-                return false;
+                // This should be false but is true atm to cater for the analysis blocking.
+                return true;
             }
 
             var printingArea = data["gcodeAnalysis"]["printingArea"];
@@ -729,13 +735,18 @@ $(function ()  {
 
             // set print volume boundaries
             var boundaries = {
-                minX : -10,
+                minX : 0.0,
                 maxX : volumeInfo.width(),
-                minY : -33,
+                minY : 0.0,
                 maxY : volumeInfo.depth(),
-                minZ : -1,
+                minZ : 0.0,
                 maxZ : volumeInfo.height()
             };
+            if (LPFRG_MODEL == "Bolt"){
+                bounderies["minY"] = -35.0;
+                bounderies["minZ"] = -1.0; // This is in just for safety but needs to be checked.
+                boundaries["maxX"] = 373; // This is all to cater for the wiping. TODO FIX IT.
+            }
             if (volumeInfo.origin() == "center") {
                 boundaries["maxX"] = volumeInfo.width() / 2;
                 boundaries["minX"] = -1 * boundaries["maxX"];
@@ -761,16 +772,13 @@ $(function ()  {
 
             grid += _.sprintf(gettext("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>"), {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
 
+            // TODO: Out for now, only check massive prints.
             // We can only print half X with sync and mirror mode
-            if (mode == "sync" || mode == "mirror") {
-                boundaries["maxX"] = volumeInfo.width() / 2;
-                grid += "<div class='print_area'></div>"
-            }
+            // if (mode == "sync" || mode == "mirror") {
+            //     boundaries["maxX"] = volumeInfo.width() / 2;
+            //     grid += "<div class='print_area'></div>"
+            // }
 
-            // If we have a Dual Print with wiping, just enlarge the volume in X
-            if (self.isDualPrint()) {
-                boundaries["maxX"] = 370;
-            }
             var draw = {
                 width: (dimensions.width / boundaries.maxX) * gridsize_x,
                 depth: (dimensions.depth / boundaries.maxY) * gridsize_y,
@@ -785,17 +793,17 @@ $(function ()  {
 
             // First check if the size is correct for the mode.
             var sizeTable = "";
-            if (dimensions["width"] > boundaries["maxX"]) {
+            if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
                 info += "Object exceeds print area in width. ";
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object width</div></div>";
                 sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>"), formatData);  
             }
-            if (dimensions["depth"] > boundaries["maxY"]) {
+            if (dimensions["depth"] > (boundaries["maxY"] + Math.abs(boundaries["minY"]))) {
                 info += gettext("Object exceeds print area in depth.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object depth</div></div>";
                 sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>"), formatData);
             }
-            if (dimensions["height"] > boundaries["maxZ"]) {
+            if (dimensions["height"] > (boundaries["maxZ"] + Math.abs(boundaries["minZ"]))) {
                 info += gettext("Object exceeds print area in height.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object height</div></div>";
                 sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(dimensions.height).2f mm</div></div>"), formatData);
@@ -852,6 +860,39 @@ $(function ()  {
             } else {
                 self.flyout.showWarning(self.dimensions_warning_title, self.dimensions_warning_message, false);
             }
+        };
+
+        self.printerState.printMode.subscribeChanged(function(newValue, oldValue){
+            if ((newValue == "sync" || newValue == "mirror") && (oldValue == "normal")) {
+                self.showSyncMirrorWarning();
+            }
+        });
+
+        self.showSyncMirrorWarning = function() {
+            var title = "Sync or Mirror print";
+
+            var grid = "<div class='Table-row'><div class='Table-item'>";
+            var gridsize_y = 300;
+            var gridsize_x = 330;
+
+            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>"), {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
+            grid += "<div class='print_area'></div>"
+
+            var draw = {
+                width: 165,
+                depth: 300,
+                left: 0,
+                bottom: 0
+            };
+            grid += _.sprintf(gettext("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx; background-color: #A9CC3C'></div>"),{draw: draw});
+            grid += "</div></div></div>";
+
+            var info = "<div class='Table-row Table-header'><div class='Table-item'>Info</div></div>";
+            info += "<div class='Table-row'><div class='Table-item'>To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.</div></div>"
+            var message = "";
+            message += grid;
+            message += info;
+            self.flyout.showWarning(title, message, false);
         };
 
         self.sliceFile = function(file) {
