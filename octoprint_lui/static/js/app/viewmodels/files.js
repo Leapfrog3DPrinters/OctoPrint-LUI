@@ -876,7 +876,6 @@ $(function ()  {
             var gridsize_x = 330;
 
             grid += _.sprintf(gettext("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>"), {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
-            grid += "<div class='print_area'></div>"
 
             var draw = {
                 width: 165,
@@ -884,7 +883,7 @@ $(function ()  {
                 left: 0,
                 bottom: 0
             };
-            grid += _.sprintf(gettext("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx; background-color: #A9CC3C'></div>"),{draw: draw});
+            grid += _.sprintf(gettext("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx; background-color: #A9CC3C; border-right: 3px dashed #CC2B14'></div>"),{draw: draw});
             grid += "</div></div></div>";
 
             var info = "<div class='Table-row Table-header'><div class='Table-item'>Info</div></div>";
