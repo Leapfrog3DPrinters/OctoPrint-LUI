@@ -107,7 +107,6 @@ $(function () {
         self.server_diskspace_warning_str = sizeObservable(self.server_diskspace_warning);
         self.server_diskspace_critical_str = sizeObservable(self.server_diskspace_critical);
 
-        self.debug_lui = ko.observable(undefined);
 
         self.settings = undefined;
         self.lastReceivedSettings = undefined;

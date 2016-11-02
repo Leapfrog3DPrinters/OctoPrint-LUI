@@ -4,10 +4,11 @@ This is where we keep a short list of changes just to remember stuff. And things
 
 ### 1.0.3 
 
--
 - Added notifications on disk space low and diskspace critically low.
 - After print done/cancel/error print, move the bed down 20mm. 
 - After z-offset (Xcel / Xeed) is completed, move the bed down 20mm.
+- Fixed: Webcam stream not working in certain situations. 
+- Fixed: Bug not being to start a print in certain situations introduced in 1.0.2
 - Fixed: Can't login remotoly on Safari browser
 - Fixed: Actual and Target temperature could take two lines when certain temperatures were shown
 
