@@ -2241,11 +2241,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.calibration_type:
             self._on_calibration_event(event)
 
-        if (event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
+        if (event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = [0.0, 0.0]
             self.save_filament_amount()
-            self._printer.commands(["M605 S1"])
+            if self.model == "Bolt":
+                self._printer.commands(["M605 S1"])
+            self._printer.jog({'z': 20})
             self._printer.home(['x', 'y'])
 
         if (event == Events.PRINT_STARTED):

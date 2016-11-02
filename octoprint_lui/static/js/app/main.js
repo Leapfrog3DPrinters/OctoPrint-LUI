@@ -717,4 +717,5 @@ $(function () {
         fdSlider.noUiSlider.set(this.value);
     });
 
+
 });

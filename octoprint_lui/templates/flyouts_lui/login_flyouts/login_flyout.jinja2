@@ -5,7 +5,7 @@
 		    	<label for="login_user">{{ _('Username') }}</label>
 		    </div>
 		    <div class="Table-item">
-		    	<input type="text" id="login_user" data-bind="value: loginState.loginUser, event: {'keyup': loginState.onLoginUserKeyup}" placeholder="{{ _('Username') }}" autocapitalize="none">
+		    	<input type="text" id="login_user" data-bind="textInput: loginState.loginUser" placeholder="{{ _('Username') }}" autocapitalize="none">
 		    </div>
 		</div>
 		<div class="Table-row">
@@ -13,7 +13,7 @@
 				<label for="login_pass">{{ _('Password') }}</label>
 			</div>
 		    <div class="Table-item">
-		    	<input type="password" id="login_pass" data-bind="value: loginState.loginPass, event: {'keyup': loginState.onLoginPassKeyup}" placeholder="{{ _('Password') }}">
+		    	<input type="password" id="login_pass" data-bind="textInput: loginState.loginPass" placeholder="{{ _('Password') }}">
 		    </div>
 		</div>
 		<div class="Table-row">

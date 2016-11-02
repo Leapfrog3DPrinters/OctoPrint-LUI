@@ -103,18 +103,6 @@ $(function () {
             }
         };
 
-        self.onLoginUserKeyup = function(data, event) {
-            if (event.keyCode == 13) {
-                self.elementPasswordInput.focus();
-            }
-        };
-
-        self.onLoginPassKeyup = function(data, event) {
-            if (event.keyCode == 13) {
-                self.login();
-            }
-        };
-
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
         };

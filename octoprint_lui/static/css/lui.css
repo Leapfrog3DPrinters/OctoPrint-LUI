@@ -1132,11 +1132,7 @@ input[type=radio] {
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
   padding-left: 10px;
-  min-width: 0;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none; }
+  min-width: 0; }
 
 select {
   font-family: agenda-medium, sans-serif;
