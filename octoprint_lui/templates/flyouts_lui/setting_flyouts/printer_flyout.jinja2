@@ -70,4 +70,20 @@
         </div>
     </div>
     {% endif %}
+    <div class="Table-row hide" id="settings_debug_mode_check">
+        <div class="Table-item">
+            Debug mode
+        </div>
+        <div class="Table-item">
+            <div class="check_toggle">
+                <input type="checkbox" data-bind="checked: settings.plugins.lui.debug_lui" id="settings-debug_lui" />
+                <label for="settings-debug_lui"></label>
+            </div>
+        </div>
+    </div>
+    <div class="Table-row hide" id="settings_debug_mode_text">
+        <div class="Table-item">
+            This will require a system restart to take effect. This mode is for debugging and special support request. This mode can change user experience dramatically!
+        </div>
+    </div>
 </div>

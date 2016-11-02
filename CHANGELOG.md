@@ -2,10 +2,23 @@
 
 This is where we keep a short list of changes just to remember stuff. And things. 
 
+### 1.0.3 
+
+-
+- Added notifications on disk space low and diskspace critically low.
+- After print done/cancel/error print, move the bed down 20mm. 
+- After z-offset (Xcel / Xeed) is completed, move the bed down 20mm.
+- Fixed: Can't login remotoly on Safari browser
+- Fixed: Actual and Target temperature could take two lines when certain temperatures were shown
+
+
+
 ### 1.0.2
 
 - Changed 'Check Dimension' option that failed on the new wiping sequence coordinates. The dimension check is less strict now and depends more on the user input knowledge
 - Selecting sync/mirror mode will show a warning that the model has to be sliced on the left side with one nozzle
+
+
 
 ### 1.0.1
 

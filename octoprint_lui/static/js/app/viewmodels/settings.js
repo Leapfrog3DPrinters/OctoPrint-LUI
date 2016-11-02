@@ -107,6 +107,8 @@ $(function () {
         self.server_diskspace_warning_str = sizeObservable(self.server_diskspace_warning);
         self.server_diskspace_critical_str = sizeObservable(self.server_diskspace_critical);
 
+        self.debug_lui = ko.observable(undefined);
+
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 
@@ -180,6 +182,17 @@ $(function () {
         self.removeTerminalFilter = function(filter) {
             self.terminalFilters.remove(filter);
         };
+
+        self.appearance_name.subscribeChanged(function(newValue, oldValue){
+            if (newValue.toLowerCase() == "debug" || DEBUG_LUI) {
+                $('#settings_debug_mode_check').removeClass('hide');
+                $('#settings_debug_mode_text').removeClass('hide');
+
+            } else {
+                $('#settings_debug_mode_check').addClass('hide');
+                $('#settings_debug_mode_text').addClass('hide');
+            }
+        });
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
             var data = {

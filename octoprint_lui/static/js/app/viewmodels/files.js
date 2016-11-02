@@ -66,8 +66,32 @@ $(function ()  {
             }
         });
 
+        self.diskusageNotificationCheck = function() {
+            if (self.diskusageCritical()) {
+                $.notify({
+                    title: gettext("Disk space critically low!"),
+                    text: _.sprintf(gettext('Free some space by deleting jobs or timelapses to continue usage.'), {})
+                },
+                { 
+                    className: "error",
+                    autoHide: false
+                }
+                )
+                return
+            } else if (self.diskusageWarning()) {
+                $.notify({
+                    title: gettext("Disk space very low!"),
+                    text: _.sprintf(gettext('Please free some space by deleting jobs or timelapses.'), {})
+                },
+                { 
+                    className: "warning",
+                    autoHide: false
+                }
+                )
+            }
+        };
+
         self.uploadButton = undefined;
-        self.uploadSdButton = undefined;
         self.uploadProgressBar = undefined;
 
         self.isLoadingFile = false;
@@ -365,6 +389,7 @@ $(function ()  {
 
             self.allItems(files);
             self.currentPath("");
+            
 
             if (!switchToPath) {
                 self.listHelper.updateItems(files);
@@ -397,6 +422,8 @@ $(function ()  {
             if (response.total != undefined) {
                 self.totalSpace(response.total);
             }
+
+            self.diskusageNotificationCheck();
 
             self.highlightCurrentFilename();
         };
@@ -1087,17 +1114,11 @@ $(function ()  {
 
         self.onUserLoggedIn = function (user) {
             self.uploadButton.fileupload("enable");
-            if (self.uploadSdButton) {
-                self.uploadSdButton.fileupload("enable");
-            }
-            self.requestData();
+            // self.requestData();
         };
 
         self.onUserLoggedOut = function ()  {
             self.uploadButton.fileupload("disable");
-            if (self.uploadSdButton) {
-                self.uploadSdButton.fileupload("disable");
-            }
         };
 
         self.onUsbAvailableChanged = function ()  {
@@ -1159,24 +1180,11 @@ $(function ()  {
                 }
             });
 
-            // $(".gcode_files").slimScroll({
-            //     height: "306px",
-            //     size: "5px",
-            //     distance: "0",
-            //     railVisible: true,
-            //     alwaysVisible: true,
-            //     scrollBy: "102px"
-            // });
 
             self.addFolderDialog = $("#add_folder_dialog");
 
             //~~ Gcode upload
-
             self.uploadButton = $("#gcode_upload");
-            self.uploadSdButton = $("#gcode_upload_sd");
-            if (!self.uploadSdButton.length) {
-                self.uploadSdButton = undefined;
-            }
 
             var uploadProgress = $("#gcode_upload_progress");
             self.uploadProgressBar = uploadProgress.find(".bg-orange");
@@ -1228,7 +1236,7 @@ $(function ()  {
             }
 
             function setDropzone(dropzone, enable) {
-                var button = (dropzone == "local") ? self.uploadButton : self.uploadSdButton;
+                var button = self.uploadButton;
                 var drop = (dropzone == "local") ? localTarget : sdTarget;
                 var url = API_BASEURL + "files/" + dropzone;
 

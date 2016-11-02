@@ -1119,7 +1119,7 @@ input:not([type=submit]):not([type=file]) {
   font-size: 1em;
   padding-left: 10px;
   min-width: 0;
-  user-select: none;
+  // user-select: none; Out for now bugs Safari
 }
 
 select {
