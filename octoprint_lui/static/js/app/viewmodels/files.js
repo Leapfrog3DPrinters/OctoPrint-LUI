@@ -770,8 +770,8 @@ $(function ()  {
                 maxZ : volumeInfo.height()
             };
             if (LPFRG_MODEL == "Bolt"){
-                bounderies["minY"] = -35.0;
-                bounderies["minZ"] = -1.0; // This is in just for safety but needs to be checked.
+                boundaries["minY"] = -35.0;
+                boundaries["minZ"] = -1.0; // This is in just for safety but needs to be checked.
                 boundaries["maxX"] = 373; // This is all to cater for the wiping. TODO FIX IT.
             }
             if (volumeInfo.origin() == "center") {
