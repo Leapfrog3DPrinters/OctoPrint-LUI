@@ -2,6 +2,10 @@
 
 This is where we keep a short list of changes just to remember stuff. And things. 
 
+### 1.0.4
+
+- Fixed: Bug introduced in 1.0.3 that would not allow remote uploads. 
+
 ### 1.0.3 
 
 - Added notifications on disk space low and diskspace critically low.

@@ -26,6 +26,8 @@ $(function ()  {
         self.currentOrigin = ko.observable("local");
 
         self.selectedFile = ko.observable(undefined);
+        self.uploadSdButton = undefined;
+
 
         self.dimensions_warning_title = undefined;
         self.dimensions_warning_message = undefined;
@@ -1185,6 +1187,10 @@ $(function ()  {
 
             //~~ Gcode upload
             self.uploadButton = $("#gcode_upload");
+            self.uploadSdButton = $("#gcode_upload_sd");
+            if (!self.uploadSdButton.length) {
+                self.uploadSdButton = undefined;
+            }
 
             var uploadProgress = $("#gcode_upload_progress");
             self.uploadProgressBar = uploadProgress.find(".bg-orange");
@@ -1236,7 +1242,7 @@ $(function ()  {
             }
 
             function setDropzone(dropzone, enable) {
-                var button = self.uploadButton;
+                var button = (dropzone == "local") ? self.uploadButton : self.uploadSdButton;
                 var drop = (dropzone == "local") ? localTarget : sdTarget;
                 var url = API_BASEURL + "files/" + dropzone;
 
