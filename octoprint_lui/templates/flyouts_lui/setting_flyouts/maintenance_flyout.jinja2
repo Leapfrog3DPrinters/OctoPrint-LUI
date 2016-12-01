@@ -63,7 +63,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function () { beginPurgeWizard('tool1'); }, css: {disabled: filament.leftFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()} ">
+          <a href="#" data-bind="click: function () { beginPurgeWizard('tool1'); }, css: {disabled: filament.leftFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() } ">
             <span>
               <i class="fa fa-arrow-down"></i>Purge left</span>
           </a>
@@ -73,7 +73,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function () { beginPurgeWizard('tool0'); }, css: {disabled: filament.rightFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() || filamentInProgress()}">
+          <a href="#" data-bind="click: function () { beginPurgeWizard('tool0'); }, css: {disabled: filament.rightFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() }">
             <span>
               <i class="fa fa-arrow-down"></i>Purge right</span>
           </a>

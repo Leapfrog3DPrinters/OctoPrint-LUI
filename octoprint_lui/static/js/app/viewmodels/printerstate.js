@@ -7,6 +7,7 @@ $(function ()  {
         self.flyout = parameters[1];
         self.temperatureState = parameters[2];
         self.settings = parameters[3];
+        self.system = parameters[4];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -17,6 +18,17 @@ $(function ()  {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
         self.isSdReady = ko.observable(undefined);
+
+        self.isHomed = ko.observable(undefined);
+        self.isHoming = ko.observable(undefined);
+
+        self.errorDescriptionString = ko.pureComputed(function() {
+            if ( self.stateString().toLowerCase().indexOf("mintemp") > 0 ) {
+                return gettext("Your extruder temperature is either very low or your extruder is disconnected. Make sure you are operating within environment specifications or check the connection of your extruder.");
+            } else {
+                return "";
+            }
+        });
 
         self.filename = ko.observable(undefined);
         self.filepath = ko.observable(undefined);
@@ -324,14 +336,7 @@ $(function ()  {
                 });
         };
 
-        self.showStartupFlyout = function (isHoming) {
-            $('.startup_step').removeClass('active');
-
-            if (isHoming)
-                $('#startup_step_busy_homing').addClass('active');
-            else
-                $('#startup_step_prompt').addClass('active');
-
+        self.showStartupFlyout = function () {
             self.flyout.showFlyout('startup', true);
         }
 
@@ -394,8 +399,10 @@ $(function ()  {
         }
 
         self.fromResponse = function (data) {
-            if (!data.is_homed) {
-                self.showStartupFlyout(data.is_homing);
+            self.isHomed(data.is_homed);
+            self.isHoming(data.is_homing)
+            if (!self.isHomed()) {
+                self.showStartupFlyout();
             }
         }
 
@@ -480,7 +487,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
         ["#print", "#info_flyout", "#startup_flyout"]
     ]);
 });

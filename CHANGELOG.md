@@ -1,6 +1,15 @@
 ## Change log 
 
-This is where we keep a short list of changes just to remember stuff. And things. 
+Change log for OctoPrint-LUI. 
+
+### 1.0.5
+
+- Enhanced the selection of materials during filament swap. Bigger area to tap on.
+- Added warning when printer is in Error state on start up. 
+- Printer can be shut down when in error state on start up.
+- Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment. 
+- Fixed: Can't swap filament after a print is finished.
+
 
 ### 1.0.4
 
