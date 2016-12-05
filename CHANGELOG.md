@@ -4,9 +4,10 @@ Change log for OctoPrint-LUI.
 
 ### 1.0.5
 
+- Added auto shutdown function. Will shutdown the machine after print is finished. Option will reset after a shutdown. 
 - Enhanced the selection of materials during filament swap. Bigger area to tap on.
 - Added warning when printer is in Error state on start up. 
-- Printer can be shut down when in error state on start up.
+- Printer can be shut down when in Error state on start up.
 - Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment. 
 - Fixed: Can't swap filament after a print is finished.
 

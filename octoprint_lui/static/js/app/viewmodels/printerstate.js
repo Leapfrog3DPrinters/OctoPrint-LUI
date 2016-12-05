@@ -23,7 +23,7 @@ $(function ()  {
         self.isHoming = ko.observable(undefined);
 
         self.errorDescriptionString = ko.pureComputed(function() {
-            if ( self.stateString().toLowerCase().indexOf("mintemp") > 0 ) {
+            if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
                 return gettext("Your extruder temperature is either very low or your extruder is disconnected. Make sure you are operating within environment specifications or check the connection of your extruder.");
             } else {
                 return "";
@@ -404,6 +404,7 @@ $(function ()  {
             if (!self.isHomed()) {
                 self.showStartupFlyout();
             }
+            self.settings.autoShutdown(data.auto_shutdown);
         }
 
         // Api send functions
@@ -458,6 +459,10 @@ $(function ()  {
                         break;
                     case "door_closed":
                         self.onDoorClose();
+                        break;
+                    case "auto_shutdown":
+                        console.log("Changing shut down to", messageData.toggle);
+                        self.settings.autoShutdown(messageData.toggle);
                         break;
                 }
             }

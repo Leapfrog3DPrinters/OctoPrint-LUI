@@ -4,6 +4,7 @@ $(function () {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
+        self.settings = parameters[2];
 
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
@@ -169,7 +170,7 @@ $(function () {
     // view model class, parameters for constructor, container to bind to
     ADDITIONAL_VIEWMODELS.push([
         SystemViewModel,
-        ["loginStateViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "settingsViewModel"],
         []
     ]);
 });

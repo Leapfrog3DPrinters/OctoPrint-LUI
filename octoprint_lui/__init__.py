@@ -46,6 +46,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Global
         self.from_localhost = False
         self.debug = False
+        self.auto_shutdown = False
 
         ##~ Model specific variables
         self.model = None
@@ -547,7 +548,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'is_homed': self.is_homed,
                 'is_homing': self.is_homing,
                 'reserved_usernames': self.reserved_usernames,
-                'tool_status': self.tool_status
+                'tool_status': self.tool_status,
+                'auto_shutdown': self.auto_shutdown
                 })
             return jsonify(result)
 
@@ -581,6 +583,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     restore_from_calibration_position = [],
                     start_print = ["mode"],
                     unselect_file = [],
+                    auto_shutdown = ["toggle"],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
@@ -597,6 +600,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_unselect_file(self):
         self._printer.unselect_file()
+
+    def _on_api_command_auto_shutdown(self, toggle):
+        self.auto_shutdown = toggle;
+        self._send_client_message("auto_shutdown", dict(toggle=toggle))
+        self._logger.info("Auto shutdown set to {toggle}".format(toggle=toggle))
 
     def _on_api_command_start_print(self, mode):
         self.print_mode = mode
@@ -2250,6 +2258,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.jog({'z': 20})
             self._printer.home(['x', 'y'])
 
+        if (event == Events.PRINT_DONE and self.auto_shutdown):
+            self._logger.info("Print done and auto shutdown on. Shutting down printer.")
+            self._perform_sytem_shutdown()
+
         if (event == Events.PRINT_STARTED):
             self.current_print_extrusion_amount = [0.0, 0.0]
 
@@ -2272,6 +2284,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.exception("Error while restarting")
             self._logger.warn("Restart stdout:\n%s" % e.stdout)
             self._logger.warn("Restart stderr:\n%s" % e.stderr)
+            raise exceptions.RestartFailed()
+
+    def _perform_sytem_shutdown(self):
+        """
+        Perform a restart of the octoprint service restart
+        """
+
+        self._logger.info("Shutting down...")
+        try:
+            octoprint_lui.util.execute("sudo shutdown -h now")
+        except exceptions.ScriptError as e:
+            self._logger.exception("Error while shutting down")
+            self._logger.warn("Shutdown stdout:\n%s" % e.stdout)
+            self._logger.warn("Shutdown stderr:\n%s" % e.stderr)
             raise exceptions.RestartFailed()
 
 

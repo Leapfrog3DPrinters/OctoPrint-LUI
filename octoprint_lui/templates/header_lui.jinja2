@@ -42,6 +42,6 @@
   <!-- /ko -->
   {% endif %}
     <div class="header_login" {% if not local_addr %} style="margin-left: auto" {% endif %}>
-        <a href="#login" data-bind="click: function () { showLoginFlyout() }"><i class = "fa fa-power-off" style="padding-right: 0.5em;"></i>{%- if not local_addr -%}<span data-bind="text: loginState.userMenuText">Login</span>{%- endif -%}</a>
+        <a href="#login" data-bind="click: function () { showLoginFlyout() }"><i class = "fa fa-power-off" style="padding-right: 0.5em;"></i><span data-bind="visible: settings.autoShutdown">!</span>{%- if not local_addr -%}<span data-bind="text: loginState.userMenuText">Login</span>{%- endif -%}</a>
     </div>
 </header>
