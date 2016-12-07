@@ -10,7 +10,7 @@ Change log for OctoPrint-LUI.
 - Printer can be shut down when in Error state on start up.
 - Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment. 
 - Fixed: Can't swap filament after a print is finished.
-
+- Fixed: Bug in OctoPrint-NetworkManager where SSIDs with ":" would crash the SSID parser. 
 
 ### 1.0.4
 
