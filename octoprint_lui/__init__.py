@@ -87,8 +87,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.last_movement_mode = "absolute"
 
         self.relative_extrusion_trigger = False
-        self.current_print_extrusion_amount = None
-        self.last_print_extrusion_amount = 0.0
+        self.current_print_extrusion_amount = [0.0, 0.0]
+        self.last_print_extrusion_amount = [0.0, 0.0]
         self.last_send_filament_amount = None
         self.last_saved_filament_amount = None
         self.loading_for_purging = False
@@ -117,6 +117,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_in_progress = False
 
         self.temperature_safety_timer = None
+
+        self.auto_shutdown_timer = None
+        self.auto_shutdown_timer_value = 0
+        self.auto_shutdown_after_movie_done = False
 
         ##~ TinyDB
 
@@ -584,6 +588,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     start_print = ["mode"],
                     unselect_file = [],
                     auto_shutdown = ["toggle"],
+                    auto_shutdown_timer_cancel = [],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
@@ -603,7 +608,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_auto_shutdown(self, toggle):
         self.auto_shutdown = toggle;
-        self._send_client_message("auto_shutdown", dict(toggle=toggle))
+        self._send_client_message("auto_shutdown_toggle", dict(toggle=toggle))
         self._logger.info("Auto shutdown set to {toggle}".format(toggle=toggle))
 
     def _on_api_command_start_print(self, mode):
@@ -1273,6 +1278,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return make_response(jsonify(result = "Could not delete all files"), 500)
         else:
             return make_response(jsonify(result = "OK"), 200);
+
+    def _on_api_command_auto_shutdown_timer_cancel(self):
+        if self.auto_shutdown_timer:
+            self.auto_shutdown_timer.cancel()
+            self.auto_shutdown_timer = None
+        self.auto_shutdown_after_movie_done = False
 
     ##~ Load and Unload methods
 
@@ -2259,8 +2270,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x', 'y'])
 
         if (event == Events.PRINT_DONE and self.auto_shutdown):
-            self._logger.info("Print done and auto shutdown on. Shutting down printer.")
-            self._perform_sytem_shutdown()
+            config = self._settings.global_get(["webcam", "timelapse"], merged=True)
+            type = config["type"]
+            self._send_client_message("auto_shutdown_start")
+            # Timelapse not configured, just start the timer
+            if type is None or "off" == type:
+                self._logger.info("Print done, no timelapse configured and auto shutdown on. Starting shutdown timer.")
+                # Start auto shutdown timer
+                self._auto_shutdown_start()
+            else: 
+                # Timelapse is configured, let's not do anything and shutdown after render complete
+                self._send_client_message("auto_shutdown_wait_on_render")
+                self.auto_shutdown_after_movie_done = True
+                return
+
+        if (event == Events.MOVIE_DONE and self.auto_shutdown_after_movie_done):
+            # Start auto shutdown timer
+            self._logger.info("Render movie Done after print done with auto shutdown. Also start the timer.")
+            self._auto_shutdown_start()
 
         if (event == Events.PRINT_STARTED):
             self.current_print_extrusion_amount = [0.0, 0.0]
@@ -2271,6 +2298,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(event == Events.CONNECTED):
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
+
+    def _auto_shutdown_start(self):
+        if not self.auto_shutdown_timer:
+            self.auto_shutdown_timer_value = 180 #3 Minute shutdown
+            self.auto_shutdown_timer = RepeatedTimer(1,
+                                                        self._auto_shutdown_tick,
+                                                        run_first=False,
+                                                        condition=self._auto_shutdown_required,
+                                                        on_condition_false=self._auto_shutdown_condition)
+            self.auto_shutdown_timer.start()
+
+    def _auto_shutdown_tick(self):
+        self.auto_shutdown_timer_value -= 1
+        self._send_client_message("auto_shutdown_timer", { "timer": self.auto_shutdown_timer_value })
+
+    def _auto_shutdown_required(self):
+        return self.auto_shutdown_timer_value > 0
+
+    def _auto_shutdown_condition(self):
+        self._logger.info("Shutdown timer finished. Shutting down...")
+        self._perform_sytem_shutdown()
 
     def _perform_service_restart(self):
         """

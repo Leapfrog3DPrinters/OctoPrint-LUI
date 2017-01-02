@@ -42,6 +42,8 @@ $(function ()  {
 
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
+        self.autoShutdownTimer = ko.observable(0);
+        self.autoShutdownWaitOnRender = ko.observable(false);
 
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
@@ -359,6 +361,11 @@ $(function ()  {
             $('#startup_step_busy_homing').addClass('active');
         }
 
+        self.cancelAutoShutdown = function () {
+            self.flyout.closeFlyout();
+            self._sendApi({command: 'auto_shutdown_timer_cancel'});
+        }
+
         self.onDoorOpen = function ()  {
             if (self.warningVm === undefined) {
                 self.warningVm = self.flyout.showWarning('Door open',
@@ -460,9 +467,23 @@ $(function ()  {
                     case "door_closed":
                         self.onDoorClose();
                         break;
-                    case "auto_shutdown":
+                    case "auto_shutdown_toggle":
                         console.log("Changing shut down to", messageData.toggle);
                         self.settings.autoShutdown(messageData.toggle);
+                        break;
+                    case "auto_shutdown_start":
+                        self.flyout.showFlyout("auto_shutdown", true)
+                        self.autoShutdownTimer(180);
+                        break;
+                    case "auto_shutdown_wait_on_render":
+                        self.autoShutdownWaitOnRender(true);
+                        break;
+                    case "auto_shutdown_timer":
+                        if (!$('#auto_shutdown_flyout').hasClass('active')) {
+                            self.flyout.showFlyout("auto_shutdown", true);
+                        }
+                        self.autoShutdownWaitOnRender(false);
+                        self.autoShutdownTimer(messageData.timer);
                         break;
                 }
             }
@@ -493,6 +514,6 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
         ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout"]
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout"]
     ]);
 });
