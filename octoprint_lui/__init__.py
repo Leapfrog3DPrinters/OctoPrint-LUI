@@ -1280,10 +1280,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return make_response(jsonify(result = "OK"), 200);
 
     def _on_api_command_auto_shutdown_timer_cancel(self):
+        # User cancelled timer. So cancel the timer and send to front-end to close flyout.
         if self.auto_shutdown_timer:
             self.auto_shutdown_timer.cancel()
             self.auto_shutdown_timer = None
         self.auto_shutdown_after_movie_done = False
+        self._send_client_message('auto_shutdown_timer_cancelled')
 
     ##~ Load and Unload methods
 
@@ -2279,14 +2281,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # Start auto shutdown timer
                 self._auto_shutdown_start()
             else: 
-                # Timelapse is configured, let's not do anything and shutdown after render complete
+                # Timelapse is configured, let's not do anything and shutdown after render complete or failed
                 self._send_client_message("auto_shutdown_wait_on_render")
                 self.auto_shutdown_after_movie_done = True
                 return
 
         if (event == Events.MOVIE_DONE and self.auto_shutdown_after_movie_done):
             # Start auto shutdown timer
-            self._logger.info("Render movie Done after print done with auto shutdown. Also start the timer.")
+            self._logger.info("Render movie Done after print done with auto shutdown. Starting shutdown.")
+            self._auto_shutdown_start()
+
+        if (event == Events.MOVIE_FAILED and self.auto_shutdown_after_movie_done):
+            # Start auto shutdown timer and log that the render failed
+            self._logger.warn("Render movie Failed after print done with auto shutdown. Starting shutdown.")
             self._auto_shutdown_start()
 
         if (event == Events.PRINT_STARTED):

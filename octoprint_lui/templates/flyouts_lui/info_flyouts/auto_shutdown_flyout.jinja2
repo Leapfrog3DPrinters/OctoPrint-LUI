@@ -7,10 +7,10 @@
 		</div>
 		<div class="Table-row" data-bind="visible: autoShutdownWaitOnRender() ">
 			<div class="Table-item">
-				<span>Time-lapse is still being rendered. Waiting on completion of render to start auto-shutdown.</span>
+				<span>Time-lapse is still being rendered. Waiting on completion of render to start auto-shutdown. Shutting down the printer during time-lapse render will result in a failed time-lapse.</span>
 			</div>
 		</div>
-		<div class="Table-row" data-bind="visible: autoShutdownTimer() > 0">
+		<div class="Table-row" data-bind="visible: ( autoShutdownTimer() > 0 && autoShutdownTimer() != 180 )">
 			<div class="Table-item">
 				<span>Print is about to shut down. Shutting down in: <span data-bind="text: autoShutdownTimer"></span> seconds.</span>
 			</div>
@@ -23,7 +23,7 @@
 				      <span>Cancel</span>
 				    </a>
 				  </li>
-				  <li class="button">
+				  <li class="button" data-bind="disabled: autoShutdownWaitOnRender() ">
 				    <a href="#save" data-bind="click: function () { system.systemShutdown() }">
 				      <span>Shutdown now</span>
 				    </a>

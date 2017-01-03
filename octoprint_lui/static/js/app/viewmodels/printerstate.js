@@ -362,7 +362,6 @@ $(function ()  {
         }
 
         self.cancelAutoShutdown = function () {
-            self.flyout.closeFlyout();
             self._sendApi({command: 'auto_shutdown_timer_cancel'});
         }
 
@@ -484,6 +483,9 @@ $(function ()  {
                         }
                         self.autoShutdownWaitOnRender(false);
                         self.autoShutdownTimer(messageData.timer);
+                        break;
+                    case "auto_shutdown_timer_cancelled":
+                        self.flyout.closeFlyout();
                         break;
                 }
             }
