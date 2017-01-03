@@ -467,7 +467,6 @@ $(function ()  {
                         self.onDoorClose();
                         break;
                     case "auto_shutdown_toggle":
-                        console.log("Changing shut down to", messageData.toggle);
                         self.settings.autoShutdown(messageData.toggle);
                         break;
                     case "auto_shutdown_start":
