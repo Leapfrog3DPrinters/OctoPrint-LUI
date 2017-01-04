@@ -1106,17 +1106,12 @@ $(function ()  {
             return false;
         };
 
-        self.onDataUpdaterReconnect = function ()  {
-            self.requestData(undefined, undefined, self.currentPath());
-        };
-
-        self.onServerConnect = self.onServerReconnect = function(payload) {
+        self.onServerConnect = function(payload) {
             self.requestData();
         };
 
         self.onUserLoggedIn = function (user) {
             self.uploadButton.fileupload("enable");
-            // self.requestData();
         };
 
         self.onUserLoggedOut = function ()  {
@@ -1332,7 +1327,7 @@ $(function ()  {
                     if (dropZone) dropZoneBackground.removeClass("hover");
                 }, 100);
             });
-
+            self.requestData();
             self.checkUsbMounted();
         };
 

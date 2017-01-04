@@ -12,6 +12,7 @@ Change log for OctoPrint-LUI.
 - Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment. 
 - Fixed: Can't swap filament after a print is finished.
 - Fixed: Bug in OctoPrint-NetworkManager where SSIDs with ":" would crash the SSID parser. Bumped version of NetworkManager to 1.0.1
+- Fixed: G92 X0 Y0 Z0 were not stripped correctly. G92 X0 Y0 Z0, which will zero a specific axis, will bug the printer when in sync/mirror mode and are therefore removed from gcode when sending. 
 
 ### 1.0.4
 

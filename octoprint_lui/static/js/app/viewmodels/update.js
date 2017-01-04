@@ -200,7 +200,7 @@ $(function ()  {
             self.flashArduino.resetFile();
         }
 
-        self.onUserLoggedIn = function ()  {
+        self.onStartup = function ()  {
             self.requestData();
         };
 

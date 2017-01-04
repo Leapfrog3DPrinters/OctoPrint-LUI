@@ -355,6 +355,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         fetch_thread = threading.Thread(target=self._fetch_worker, args=(self.update_info, force))
         fetch_thread.daemon = False
         fetch_thread.start()
+        self.fetching_updates = True
 
     def _create_update_frontend(self, update_info):
         for update in update_info:
@@ -376,7 +377,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Return out of the worker, we can't update - not online
             return
         try:
-            self.fetching_updates = True
             self._fetch_all_repos(update_info)
             update_info_updated = self._update_needed_version_all(update_info)
             self.update_info = update_info_updated
@@ -1585,8 +1585,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         These commands are problamatic with different print modes.
         """
         if gcode and gcode == "G92":
-            cmd = re.sub('[XYZ]0 ', '', cmd)
-            return cmd,
+            new_cmd = re.sub(' [XYZ]0', '', cmd)
+            return new_cmd,
 
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):

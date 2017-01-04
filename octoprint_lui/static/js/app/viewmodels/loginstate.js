@@ -107,7 +107,7 @@ $(function () {
             self.allViewModels = allViewModels;
         };
 
-        self.onStartupComplete = self.onServerConnect = self.onServerReconnect = function () {
+        self.onStartupComplete = self.onServerConnect = function () {
             if (self.allViewModels == undefined) return;
             self.requestData();
         };
