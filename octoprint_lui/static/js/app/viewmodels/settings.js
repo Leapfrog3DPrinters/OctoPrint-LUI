@@ -209,7 +209,9 @@ $(function () {
                     title: "Turn on auto shutdown",
                     text: "You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine."
                 };
-                self.flyout.showWarning(data.title, data.text)
+                setTimeout(function(){
+                    self.flyout.showWarning(data.title, data.text)
+                }, 500)
             }         
             sendAutoShutdownStatus();
             return true;

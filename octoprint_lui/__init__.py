@@ -394,7 +394,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _fetch_all_repos(self, update_info):
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
+        ## We switched from devel to master branch during production. Here we check if we 
+        ## still are on 'devel', if so, switch the branch over to 'master' branch. 
         for update in update_info:
+            if update["identifier"] == "octoprint":
+                try:
+                    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
+                except subprocess.CalledProcessError as err:
+                     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
+                if "devel" in branch_name:
+                    self._logger.info("Install is still on devel branch, going to switch")
+                    # So we are really still on devel, let's switch to master
+                    try:
+                        checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
+                    except subprocess.CalledProcessError as err:
+                        self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+                    self._logger.info("Switched OctoPrint from devel to master!")
+
+            ## Branch check is done, fetch the git repo
             self._fetch_git_repo(update['path'])
         self.last_git_fetch = time.time()
 

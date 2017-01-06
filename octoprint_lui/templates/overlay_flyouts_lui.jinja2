@@ -170,8 +170,6 @@
       <!-- ko allowBindings: false -->
       <div id="webcam_settings_flyout_content" class="flyout_content">
         {% include "flyouts_lui/setting_flyouts/webcam_flyout.jinja2" %}
-      </div>
-      <!-- /ko -->
       <ul class="button-area">
         <li class="button secondary-button">
           <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
@@ -179,11 +177,13 @@
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <a href="#save" data-bind="click: function () { save() }">
             <span>Save</span>
           </a>
         </li>
       </ul>
+      </div>
+      <!-- /ko -->
     </div>
   </aside>
 </div> <!-- end settings flyouts -->

@@ -155,7 +155,7 @@ $(function ()  {
         }
 
         self.requestData = function ()  {
-            OctoPrint.timelapse.get({ data: { unrendered: true } })
+            OctoPrint.timelapse.get(true)
                 .done(self.fromResponse);
         };
 
@@ -281,7 +281,10 @@ $(function ()  {
             //}
 
             OctoPrint.timelapse.saveConfig(payload)
-                .done(self.fromResponse);
+                .done(self.fromResponse)
+                .always(function() {
+                    self.flyout.closeFlyout();
+                });
         };
 
         self.onStartup = function ()  {
@@ -292,10 +295,6 @@ $(function ()  {
         self.onWebcamSettingsShown = function ()  {
             self.requestData();
             self.refreshPreview();
-        };
-
-        self.onBeforeSaveSettings = function ()  {
-            self.save();
         };
 
         self.onBeforeBinding = function(){
