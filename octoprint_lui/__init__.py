@@ -122,6 +122,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_shutdown_timer_value = 0
         self.auto_shutdown_after_movie_done = False
 
+        self.show_changelog = False
+
         ##~ TinyDB
 
         self.filament_database_path = None
@@ -262,6 +264,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 160, 'mode': 'mirror' }) #4=Center
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
+        # Changelog check
+        self.show_changelog = (self._settings.get(["changelog_version"]) != self._plugin_manager.get_plugin_info('lui').version)
+        self._logger.info(self.show_changelog)
 
     ##~ Update
 
@@ -490,6 +495,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "action_door": True,
             "action_filament": True,
             "debug_lui": False,
+            "changelog_version": ""
         }
 
     ##~ OctoPrint UI Plugin
@@ -570,7 +576,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'is_homing': self.is_homing,
                 'reserved_usernames': self.reserved_usernames,
                 'tool_status': self.tool_status,
-                'auto_shutdown': self.auto_shutdown
+                'auto_shutdown': self.auto_shutdown,
+                'show_changelog': self.show_changelog
                 })
             return jsonify(result)
 
@@ -606,6 +613,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     unselect_file = [],
                     auto_shutdown = ["toggle"],
                     auto_shutdown_timer_cancel = [],
+                    changelog_seen = [],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
@@ -619,6 +627,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing
         """
         self._on_powerbutton_press()
+
+    def _on_api_command_changelog_seen(self, *args, **kwargs):
+        self._logger.info("changelog_seen")
+        self._settings.set(["changelog_version"], self._plugin_manager.get_plugin_info('lui').version)
+        self.show_changelog = False
+        self._settings.save()
 
     def _on_api_command_unselect_file(self):
         self._printer.unselect_file()

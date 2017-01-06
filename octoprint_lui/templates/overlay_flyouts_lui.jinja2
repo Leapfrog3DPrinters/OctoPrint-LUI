@@ -495,6 +495,23 @@
     </div>
   </div>
 </aside>
+<aside id="changelog_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4><i class="fa fa-info-circle"></i>Changelog</h4>
+  </div>
+  <div class="flyout-body">
+    <div id="changelog_flyout_content">
+      {% include "flyouts_lui/info_flyouts/changelog_flyout.jinja2" %}
+    </div>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <span>Ok</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>
 <aside id="offline_flyout" class="flyout">
   <div class="flyout-header">
     <h4><i class="fa fa-exclamation-triangle"></i>Service Offline</h4>

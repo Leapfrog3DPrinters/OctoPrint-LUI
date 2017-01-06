@@ -21,6 +21,7 @@ $(function ()  {
 
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
+        self.showChangelog = ko.observable(undefined);
 
         self.errorDescriptionString = ko.pureComputed(function() {
             if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
@@ -342,6 +343,15 @@ $(function ()  {
             self.flyout.showFlyout('startup', true);
         }
 
+        self.showChangelogFlyout = function () {
+            self.flyout.showFlyout('changelog', true)
+                .always(function() {
+                    if (self.showChangelog()) {
+                        self._sendApi({command: "changelog_seen"});
+                    }
+                });
+        }
+
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept();
         }
@@ -405,12 +415,17 @@ $(function ()  {
         }
 
         self.fromResponse = function (data) {
+            console.log(data)
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing)
+            self.showChangelog(data.show_changelog);
             if (!self.isHomed()) {
                 self.showStartupFlyout();
             }
             self.settings.autoShutdown(data.auto_shutdown);
+            if (self.showChangelog()){
+                self.showChangelogFlyout();
+            }
         }
 
         // Api send functions
@@ -498,7 +513,7 @@ $(function ()  {
                 self.activities.remove('Analyzing');
         }
 
-        self.onAfterBinding = function ()  {
+        self.onStartupComplete = function ()  {
             self.requestData();
 
             self.filepath.subscribe(function ()  {
@@ -515,6 +530,6 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
         ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout"]
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout"]
     ]);
 });
