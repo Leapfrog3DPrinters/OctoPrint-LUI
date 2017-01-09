@@ -19,7 +19,7 @@ $(function () {
             OctoPrint.printer.jog(data);
         };
 
-        self.filamentLoadPosition = function ()  {
+        self.headMaintenancePosition = function ()  {
 
             var text = "You are about to move the printer to the maintenance position.";
             var question = "Do want to continue?";
@@ -28,9 +28,9 @@ $(function () {
 
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function ()  {
-                    self.moveToFilamentLoadPosition();
+                    self.moveToHeadMaintenancePosition();
 
-                    self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterMaintenance);
+                    self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
                 });
         };
 
@@ -48,6 +48,12 @@ $(function () {
                     self.flyout.showInfo('Maintenance position', 'Press OK when you are done with cleaning the bed. This will home the printer.', false, self.afterMaintenance);
                 });
         };
+
+        self.afterHeadMaintenance = function () {
+            self._sendApi({
+                command: 'after_head_maintenance'
+            });
+        }
 
         self.afterMaintenance = function()
         {
@@ -74,15 +80,15 @@ $(function () {
 
         self.moveToCleanBedPosition = function () {
             self._sendApi({
-                command: 'move_to_maintenance_position'
+                command: 'move_to_bed_maintenance_position'
             }).done(function ()  {
                 $.notify({ title: "Clean bed", text: "The printer is moving towards the clean bed position." }, "success");
             });
         };
 
-        self.moveToFilamentLoadPosition = function () {
+        self.moveToHeadMaintenancePosition = function () {
             self._sendApi({
-                command: 'move_to_filament_load_position'
+                command: 'move_to_head_maintenance_position'
             }).done(function ()  {
                 $.notify({ title: "Head maintenance", text: "The printhead is moving towards the maintenance position." }, "success");
                 
