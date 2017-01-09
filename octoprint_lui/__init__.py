@@ -193,6 +193,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetching_updates = False
 
     def initialize(self):
+
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
 
@@ -236,6 +237,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.model = 'MacDebug'
 
         self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
+
+        ##~ Now we have control over the printer, also take over control of the power button
+        self._init_powerbutton()
 
         ##~ USB init
         self._init_usb()
@@ -1752,9 +1756,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.is_homed = True
                 self.is_homing = False
                 self.send_client_is_homed()
-                ##~ Now we have control over the printer, also take over control of the power button
-                ##~ TODO: This runs also on normal G28s.
-                self._init_powerbutton()
 
         if self.levelbed_command_sent:
             if "MaxCorrectionValue" in line:
