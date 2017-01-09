@@ -193,9 +193,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetching_updates = False
 
     def initialize(self):
-        # Listen to powerbutton events
-        self._init_powerbutton()
-
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
 
@@ -596,9 +593,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     load_filament_cont = ["tool", "direction"],
                     load_filament_cont_stop = [],
                     update_filament = ["tool", "amount", "profileName"],
-                    move_to_head_maintenance_position = [],
-                    after_head_maintenance = [],
-                    move_to_bed_maintenance_position = [],
+                    move_to_filament_load_position = [],
+                    move_to_maintenance_position = [],
                     temperature_safety_timer_cancel = [],
                     begin_homing = [],
                     get_files = ["origin"],
@@ -965,19 +961,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
 
-    def _on_api_command_move_to_head_maintenance_position(self, *args, **kwargs):
-        self._printer.disconnect()
-        self.powerbutton_handler.disableAuxPower()
+    def _on_api_command_move_to_filament_load_position(self, *args, **kwargs):
         self.move_to_filament_load_position()
 
-    def _on_api_command_after_head_maintenance(self, *args, **kwargs):
-        # Enable auxilary power. This will fully reset the printer, so full homing is required after.
-        self.powerbutton_handler.enableAuxPower()
-        time.sleep(2) # Give it 2 sec to power up
-        self._printer.connect()
-        self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous?
-
-    def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
+    def _on_api_command_move_to_maintenance_position(self, *args, **kwargs):
         self.move_to_maintenance_position()
 
     def _on_api_command_get_files(self, origin, *args, **kwargs):
@@ -1765,6 +1752,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.is_homed = True
                 self.is_homing = False
                 self.send_client_is_homed()
+                ##~ Now we have control over the printer, also take over control of the power button
+                ##~ TODO: This runs also on normal G28s.
+                self._init_powerbutton()
 
         if self.levelbed_command_sent:
             if "MaxCorrectionValue" in line:
@@ -2346,7 +2336,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(event == Events.CONNECTED):
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
-            #TODO: Check if connected after auxilary power reset (e.g. head maintenance) and require homing after
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:
