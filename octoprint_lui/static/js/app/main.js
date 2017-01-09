@@ -511,6 +511,8 @@ $(function () {
     // dropit
     $('#files_menu').dropit();
     $('#timelapse_menu').dropit();
+    $('#logs_menu').dropit();
+
 
     // jQuery overscroll
 

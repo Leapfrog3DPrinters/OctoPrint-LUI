@@ -7,7 +7,8 @@ Change log for OctoPrint-LUI.
 ### This update requires two _consecutive_ updates due to switching of branches. Update version number will stay 1.0.5. after second update.
 
 - Switched main update branch from `devel` to `master`. ***Requires 2 consecutive updates**
-- Added changelog information screen after update. Can be accessed through the Settings -> Update -> Changelog button. 
+- Added changelog information screen after update. Can be accessed through the Settings -> Update -> Changelog button.
+- Added option to download log files or to copy log files to a usb. Settings -> Logs.
 - Added auto shutdown function. Will shutdown the machine after print is finished. Option will reset after a shutdown. Go to Settings -> Printer to turn it on/off.
 - Auto-shut down adds a "!" behind the power icon in the UI. It also adds a warning to the shutdown option.
 - Enhanced the selection of materials during filament swap. Bigger area to tap on.
