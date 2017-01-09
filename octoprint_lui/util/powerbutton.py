@@ -33,3 +33,9 @@ class PowerButtonHandler:
         #TODO: Maybe do some more advanced stuff, like seperate callbacks for different press duration
         if callable(self.callback):
             self.callback()
+
+    def disableAuxPower(self):
+        GPIO.output(PWR_PIN, GPIO.LOW)
+
+    def enableAuxPower(self):
+        GPIO.output(PWR_PIN, GPIO.HIGH)
