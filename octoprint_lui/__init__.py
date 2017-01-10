@@ -963,9 +963,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_filament_timer.cancel()
 
     def _on_api_command_move_to_head_maintenance_position(self, *args, **kwargs):
-        self._printer.disconnect() 
-        self.powerbutton_handler.disableAuxPower() 
         self.move_to_filament_load_position() 
+        self._printer.commands(['M400']) #Wait for movements to complete
+        self._printer.disconnect() 
+        time.sleep(2) # I think this may improve user experience
+        self.powerbutton_handler.disableAuxPower() 
+        
 
     def _on_api_command_after_head_maintenance(self, *args, **kwargs): 
         # Enable auxilary power. This will fully reset the printer, so full homing is required after. 
