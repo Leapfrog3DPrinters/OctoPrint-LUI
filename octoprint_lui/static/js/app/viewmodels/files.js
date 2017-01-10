@@ -1201,7 +1201,7 @@ $(function ()  {
             function gcode_upload_fail(e, data) {
                 $.notify({
                     title: gettext("Failed to upload file"),
-                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\" or \".gco\" or that it is an STL file with the extension \".stl\"."'))
+                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\" or \".gco\."'))
                 },
                     "error"
                 )
