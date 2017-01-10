@@ -115,6 +115,7 @@ $(function () {
 
         //Template observable 
         self.settingsTopic = ko.observable(undefined);
+        self.showDebug = ko.observable(false);
 
         // Webcam
         self.webcam_ffmpegPathText = ko.observable();
@@ -186,12 +187,9 @@ $(function () {
 
         self.appearance_name.subscribeChanged(function(newValue, oldValue){
             if (newValue.toLowerCase() == "debug" || DEBUG_LUI) {
-                $('#settings_debug_mode_check').removeClass('hide');
-                $('#settings_debug_mode_text').removeClass('hide');
-
+                self.showDebug(true);
             } else {
-                $('#settings_debug_mode_check').addClass('hide');
-                $('#settings_debug_mode_text').addClass('hide');
+                self.showDebug(false);
             }
         });
 

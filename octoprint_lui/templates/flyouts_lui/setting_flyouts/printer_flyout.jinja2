@@ -81,7 +81,7 @@
         </div>
     </div>
     {% endif %}
-    <div class="Table-row hide" id="settings_debug_mode_check">
+    <div class="Table-row" id="settings_debug_mode_check" data-bind="visible: showDebug()">
         <div class="Table-item">
             Debug mode
         </div>
@@ -92,7 +92,7 @@
             </div>
         </div>
     </div>
-    <div class="Table-row hide" id="settings_debug_mode_text">
+    <div class="Table-row" id="settings_debug_mode_text" data-bind="visible: showDebug()">
         <div class="Table-item">
             This will require a system restart to take effect. This mode is for debugging and special support request. This mode can change user experience dramatically!
         </div>
