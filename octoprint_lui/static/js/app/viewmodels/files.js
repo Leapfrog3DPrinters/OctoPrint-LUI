@@ -1106,9 +1106,6 @@ $(function ()  {
             return false;
         };
 
-        self.onServerConnect = function(payload) {
-            self.requestData();
-        };
 
         self.onUserLoggedIn = function (user) {
             self.uploadButton.fileupload("enable");
