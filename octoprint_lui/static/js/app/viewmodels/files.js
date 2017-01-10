@@ -26,8 +26,6 @@ $(function ()  {
         self.currentOrigin = ko.observable("local");
 
         self.selectedFile = ko.observable(undefined);
-        self.uploadSdButton = undefined;
-
 
         self.dimensions_warning_title = undefined;
         self.dimensions_warning_message = undefined;
@@ -1201,7 +1199,7 @@ $(function ()  {
             function gcode_upload_fail(e, data) {
                 $.notify({
                     title: gettext("Failed to upload file"),
-                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\" or \".gco\."'))
+                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\"'))
                 },
                     "error"
                 )
@@ -1220,6 +1218,24 @@ $(function ()  {
                 return;
 
             self.uploadButton.fileupload({
+                
+                add: function (e, data) {
+                    var acceptFileTypes = /(\.)(gcode|gco|g)$/i;
+                    var dfd = $.Deferred(),
+                        file = data.files[0];
+                    if (acceptFileTypes.test(file.name)) {
+                        data.submit();
+                    } else {
+                        $.notify({
+                            title: gettext("Invalid filetype"),
+                            text: _.sprintf(gettext('Please select a file with extension \".gcode\", \".gco\." or \".g\".'), {})
+                        },
+                        {
+                            className: "error",
+                            autoHide: false
+                        });
+                    }
+                },
                 url: url,
                 dataType: "json",
                 done: gcode_upload_done,
