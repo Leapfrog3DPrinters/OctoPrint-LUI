@@ -974,7 +974,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Enable auxilary power. This will fully reset the printer, so full homing is required after. 
         self.powerbutton_handler.enableAuxPower() 
 
-        time.sleep(2) # Give it 2 sec to power up 
+        time.sleep(5) # Give it 5 sec to power up 
+
+        #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
 
         self._printer.connect() 
         self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous? 
