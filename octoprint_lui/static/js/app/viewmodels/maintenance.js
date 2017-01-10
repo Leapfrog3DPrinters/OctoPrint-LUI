@@ -5,7 +5,8 @@ $(function () {
         self.flyout = parameters[0];
         self.printerState = parameters[1];
         self.settings = parameters[2];
-        self.filament = parameters[3];
+        self.filament = parameters[4];
+        self.temperatures = parameters[3];
 
         self.sendJogCommand = function (axis, multiplier, distance) {
             if (typeof distance === "undefined")
@@ -29,8 +30,6 @@ $(function () {
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function ()  {
                     self.moveToHeadMaintenancePosition();
-
-                    self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
                 });
         };
 
@@ -86,12 +85,32 @@ $(function () {
             });
         };
 
-        self.moveToHeadMaintenancePosition = function () {
+        self.moveToHeadMaintenancePosition = function (skipHeatCheck) {
+            //TODO: Include temperature check
+            //var tools = self.temperatures.tools();
+
+            //if (!skipHeatCheck &&
+            //    (tools[0]["actual"] >= 50 || tools[1]["actual"] >= 50))
+            //{
+            //    var text = "One of the print heads has not cooled down yet. Print head maintenance may cause serious injury. It is adviced to wait for the print heads to cool down.";
+            //    var question = "Are you sure you want to continue?";
+            //    var title = "Clean bed position"
+            //    var dialog = { 'title': title, 'text': text, 'question': question };
+
+            //    self.flyout.showConfirmationFlyout(dialog, true)
+            //    .done(function () {
+            //        self.moveToHeadMaintenancePosition(true);
+            //    });
+
+            //    return;
+            //}
+
+            // From here only executed if temperatures are < 50, or heat check is ignored
             self._sendApi({
                 command: 'move_to_head_maintenance_position'
             }).done(function ()  {
                 $.notify({ title: "Head maintenance", text: "The printhead is moving towards the maintenance position." }, "success");
-                
+                self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
             });
         };
 
@@ -134,7 +153,7 @@ $(function () {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "filamentViewModel"],
+        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "temperatureViewModel", "filamentViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#maintenance_settings_flyout_content"]

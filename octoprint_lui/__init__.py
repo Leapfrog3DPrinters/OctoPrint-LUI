@@ -963,23 +963,48 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_filament_timer.cancel()
 
     def _on_api_command_move_to_head_maintenance_position(self, *args, **kwargs):
-        self.move_to_filament_load_position() 
-        self._printer.commands(['M400']) #Wait for movements to complete
-        self._printer.disconnect() 
-        time.sleep(2) # I think this may improve user experience
-        self.powerbutton_handler.disableAuxPower() 
-        
+       
+        if self.model == 'Xeed' or self.model == 'Bolt':
+            if self._printer._currentZ < 30:
+                self._printer.commands(["G1 Z30 F1200"])
+
+        if self.model == "Bolt":
+            self._printer.commands(["M605 S3"]) # That reads: more awesomeness.
+            self._printer.home(['x', 'y'])
+            self._printer.commands(["G1 X150 F10000"])
+            self._printer.commands(["G1 Y-33 F15000"])
+            self._printer.commands(["M605 S0"])
+            self.power_down_for_maintenance()
+        elif self.model == "Xeed":
+            self._printer.commands(["G1 X190 Y20 F6000"])
+        elif self.model == "Xcel":
+            self._printer.commands(['G1 Z300 F1200'])
+            self._printer.commands(['G1 X225 Y100 F6000'])
+            self.power_down_for_maintenance()
+   
+    def power_down_for_maintenance(self):
+        if self.powerbutton_handler:
+            self._printer.commands(['M400']) #Wait for movements to complete
+            self._printer.disconnect() 
+            time.sleep(2) # I think this may improve user experience
+            self.powerbutton_handler.disableAuxPower()      
+            self._logger.debug("Auxiliary power down for maintenance")
+
+    def power_up_after_maintenance(self):
+        if self.powerbutton_handler:
+            # Enable auxiliary power. This will fully reset the printer, so full homing is required after. 
+            self.powerbutton_handler.enableAuxPower() 
+            self._logger.debug("Auxiliary power up after maintenance")
+            time.sleep(5) # Give it 5 sec to power up 
+
+            #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
+            self._printer.connect() 
+            self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous? 
+            
 
     def _on_api_command_after_head_maintenance(self, *args, **kwargs): 
-        # Enable auxilary power. This will fully reset the printer, so full homing is required after. 
-        self.powerbutton_handler.enableAuxPower() 
-
-        time.sleep(5) # Give it 5 sec to power up 
-
-        #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
-
-        self._printer.connect() 
-        self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous? 
+        if self.model == "Bolt" or self.model == "Xcel":
+            self.power_up_after_maintenance()
 
     def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
         self.move_to_maintenance_position()
