@@ -39,8 +39,8 @@ $(function () {
         };
 
         self.requestData = function () {
-            // Needs to by synchronous, as response sets a cookie (which may otherwise be overwritten by parallel requests)
-            OctoPrint.browser.passiveLogin({ async: false })
+            // TODO: Maybe move this somewhere else, so it's not executed in parallel with other requests (which may 'corrupt' the cookie)
+            OctoPrint.browser.passiveLogin()
                 .done(self.fromResponse);
         };
 
@@ -75,7 +75,7 @@ $(function () {
             self.loginPass("");
             self.loginRemember(false);
 
-            return OctoPrint.browser.login(username, password, remember, { async: false })
+            return OctoPrint.browser.login(username, password, remember)
                 .done(function(response) {
                     $.notify({title: gettext("Login successful"), text: _.sprintf(gettext('You are now logged in as "%(username)s"'), {username: response.name})}, "success");
                     self.fromResponse(response);
