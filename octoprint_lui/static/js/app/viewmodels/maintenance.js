@@ -87,23 +87,23 @@ $(function () {
 
         self.moveToHeadMaintenancePosition = function (skipHeatCheck) {
             //TODO: Include temperature check
-            //var tools = self.temperatures.tools();
+            var tools = self.temperatures.tools();
 
-            //if (!skipHeatCheck &&
-            //    (tools[0]["actual"] >= 50 || tools[1]["actual"] >= 50))
-            //{
-            //    var text = "One of the print heads has not cooled down yet. Print head maintenance may cause serious injury. It is adviced to wait for the print heads to cool down.";
-            //    var question = "Are you sure you want to continue?";
-            //    var title = "Clean bed position"
-            //    var dialog = { 'title': title, 'text': text, 'question': question };
+            if (!skipHeatCheck &&
+                (tools[0]["actual"]() >= 50 || tools[1]["actual"]() >= 50))
+            {
+                var text = "One of the print heads has not cooled down yet. Print head maintenance may cause serious injury. It is adviced to wait for the print heads to cool down.";
+                var question = "Are you sure you want to continue?";
+                var title = "Clean bed position"
+                var dialog = { 'title': title, 'text': text, 'question': question };
 
-            //    self.flyout.showConfirmationFlyout(dialog, true)
-            //    .done(function () {
-            //        self.moveToHeadMaintenancePosition(true);
-            //    });
+                self.flyout.showConfirmationFlyout(dialog, true)
+                .done(function () {
+                    self.moveToHeadMaintenancePosition(true);
+                });
 
-            //    return;
-            //}
+                return;
+            }
 
             // From here only executed if temperatures are < 50, or heat check is ignored
             self._sendApi({

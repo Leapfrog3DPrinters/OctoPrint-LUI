@@ -1004,12 +1004,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
             self._printer.connect() 
-            self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous? 
             
 
     def _on_api_command_after_head_maintenance(self, *args, **kwargs): 
         if self.model == "Bolt" or self.model == "Xcel":
             self.power_up_after_maintenance()
+
+        self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous? 
 
     def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
         self.move_to_maintenance_position()
