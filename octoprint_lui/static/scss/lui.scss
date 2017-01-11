@@ -593,10 +593,10 @@ input[type=radio] {
   z-index: 99;
 }
 
-#warnings_container {
+.warning_flyout {
   z-index: 97;
 }
-#infos_container {
+.info_flyout {
   z-index: 96;
 }
 

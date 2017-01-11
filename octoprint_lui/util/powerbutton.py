@@ -1,9 +1,12 @@
+from __future__ import print_function
 import subprocess
 
 try:
     import RPi.GPIO as GPIO
 except RuntimeError:
-    print "Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script"
+    print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
+except ImportError:
+    print("Could not find RPi.GPIO. Running on another machine?")
 
 LED_PIN = 22 
 PWR_PIN = 11 # Toggles power supply
@@ -39,3 +42,13 @@ class PowerButtonHandler:
 
     def enableAuxPower(self):
         GPIO.output(PWR_PIN, GPIO.HIGH)
+
+class DummyPowerButtonHandler:
+    def __init__(self, callback):
+        pass
+    def onPress(self, channel):
+        pass
+    def disableAuxPower(self):
+        pass
+    def enableAuxPower(self):
+        pass

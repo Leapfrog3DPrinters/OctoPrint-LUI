@@ -8,6 +8,9 @@ $(function () {
         self.filament = parameters[4];
         self.temperatures = parameters[3];
 
+        self.poweringUpInfo = null;
+        self.movingToMaintenancePositionInfo = null;
+
         self.sendJogCommand = function (axis, multiplier, distance) {
             if (typeof distance === "undefined")
                 distance = $('#jog_distance button.active').data('distance');
@@ -99,7 +102,7 @@ $(function () {
 
                 self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function () {
-                    self.moveToHeadMaintenancePosition(true);
+                    self.moveToHeadMaintenancePosition(true); // Retry, but skip heat check
                 });
 
                 return;
@@ -108,13 +111,18 @@ $(function () {
             // From here only executed if temperatures are < 50, or heat check is ignored
             self._sendApi({
                 command: 'move_to_head_maintenance_position'
-            }).done(function ()  {
-                $.notify({ title: "Head maintenance", text: "The printhead is moving towards the maintenance position." }, "success");
-                self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
             });
+
+            self.movingToMaintenancePositionInfo = self.flyout.showInfo("Maintenance position", "The printhead is moving towards the maintenance position.", true);
         };
 
-        
+        self.completeHeadMaintenance = function()
+        {
+            if (self.movingToMaintenancePositionInfo != undefined) {
+                self.flyout.closeInfo(self.movingToMaintenancePositionInfo);
+            }
+            self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
+        }
 
         self.beginPurgeWizard = function (tool)
         {
@@ -143,6 +151,31 @@ $(function () {
 
         };
 
+        // Handle plugin messages
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
+            if (plugin != "lui") {
+                return;
+            }
+
+            var messageType = data['type'];
+            var messageData = data['data'];
+            switch (messageType) {
+
+                case "head_in_maintenance_position":
+                    self.completeHeadMaintenance();
+                    break;
+                case "powering_up_after_maintenance":
+                    var title = "Reconnecting to printer"
+                    var message = "Please wait while the printer is being reconnected. Note that the printer will home automatically.";
+                    self.poweringUpInfo = self.flyout.showInfo(title, message, true);
+                    break;
+                case "powered_up_after_maintenance":
+                    if (self.poweringUpInfo != undefined) {
+                        self.flyout.closeInfo(self.poweringUpInfo);
+                    }
+                    break;
+            }
+        }
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS

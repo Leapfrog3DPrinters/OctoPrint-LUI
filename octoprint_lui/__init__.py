@@ -177,6 +177,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.calibration_type = None
         self.levelbed_command_sent = False
 
+        ##~Maintenance
+        self.wait_for_maintenance_position = False # Wait for ok after M400 before aux powerdown
+        self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
+        self.connecting_after_maintenance = False #Wait for connected event and notify UI after
+
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
@@ -973,41 +978,54 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if self._printer._currentZ < 30:
                 self._printer.commands(["G1 Z30 F1200"])
 
-        if self.model == "Bolt":
+        if self.model == "Bolt" or self.debug: #TODO: Remove debug
             self._printer.commands(["M605 S3"]) # That reads: more awesomeness.
             self._printer.home(['x', 'y'])
             self._printer.commands(["G1 X150 F10000"])
             self._printer.commands(["G1 Y-33 F15000"])
             self._printer.commands(["M605 S0"])
-            self.power_down_for_maintenance()
         elif self.model == "Xeed":
             self._printer.commands(["G1 X190 Y20 F6000"])
         elif self.model == "Xcel":
             self._printer.commands(['G1 Z300 F1200'])
             self._printer.commands(['G1 X225 Y100 F6000'])
-            self.power_down_for_maintenance()
+            
+        self.wait_for_maintenance_position = True
+        self._printer.commands(['M400']) #Wait for movements to complete
    
-    def power_down_for_maintenance(self):
-        if self.powerbutton_handler:
-            self._printer.commands(['M400']) #Wait for movements to complete
+    def head_in_maintenance_position(self):
+        if self.model == "Bolt" or self.model == "Xcel" or self.debug:
+            self.disconnect_and_powerdown() #UI is updated after power down
+        else:
+            self._send_client_message("head_in_maintenance_position") #Update UI straight away
+
+    def disconnect_and_powerdown(self):
+         if self.powerbutton_handler:
+            self.powerdown_after_disconnect = True
             self._printer.disconnect() 
-            time.sleep(2) # I think this may improve user experience
+
+    def do_powerdown_after_disconnect(self):
+        if self.powerbutton_handler:
             self.powerbutton_handler.disableAuxPower()      
             self._logger.debug("Auxiliary power down for maintenance")
 
+        if self.model == "Bolt" or self.model == "Xcel" or self.debug:
+            self._send_client_message("head_in_maintenance_position")
+
     def power_up_after_maintenance(self):
         if self.powerbutton_handler:
+            self._send_client_message("powering_up_after_maintenance")
             # Enable auxiliary power. This will fully reset the printer, so full homing is required after. 
             self.powerbutton_handler.enableAuxPower() 
             self._logger.debug("Auxiliary power up after maintenance")
             time.sleep(5) # Give it 5 sec to power up 
 
             #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
-            self._printer.connect() 
-            
+            self.connecting_after_maintenance = True
+            self._printer.connect()         
 
     def _on_api_command_after_head_maintenance(self, *args, **kwargs): 
-        if self.model == "Bolt" or self.model == "Xcel":
+        if self.model == "Bolt" or self.model == "Xcel" or self.debug:
             self.power_up_after_maintenance()
 
         self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous? 
@@ -1823,6 +1841,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.levelbed_command_sent = False
                 self.send_client_levelbed_complete()
 
+        if self.wait_for_maintenance_position:
+            if "ok" in line:
+                self.wait_for_maintenance_position = False
+                self.head_in_maintenance_position()
+
         return line
 
     def hook_actiontrigger(self, comm, line, action_trigger):
@@ -2115,6 +2138,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if not self.powerbutton_handler:
                 from octoprint_lui.util.powerbutton import PowerButtonHandler
                 self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
+        elif self.debug:
+            if not self.powerbutton_handler:
+                from octoprint_lui.util.powerbutton import DummyPowerButtonHandler
+                self.powerbutton_handler = DummyPowerButtonHandler(self._on_powerbutton_press)
 
     def _on_powerbutton_press(self):
         self._send_client_message("powerbutton_pressed")
@@ -2395,6 +2422,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(event == Events.CONNECTED):
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
+
+            if self.connecting_after_maintenance:
+                self.connecting_after_maintenance = False
+                self._send_client_message("powered_up_after_maintenance")
+
+        if(event == Events.DISCONNECTED):
+            self.powerdown_after_disconnect = False
+            self.do_powerdown_after_disconnect()
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:
