@@ -172,6 +172,26 @@
           </li>
         </ul>
       </div><!-- /Update -->
+      <!-- Logs -->
+      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('logs')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
+        <ul class="topic_main">
+          <li class="topic_dash">
+            <a href="">
+              <i id="logs_icon" class="fa fa-file-text"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>Logs</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- /Update -->
 
     </div>
     <!-- /Topics -->

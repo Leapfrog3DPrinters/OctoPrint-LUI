@@ -606,6 +606,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     copy_gcode_to_usb = ["filename"],
                     delete_all_uploads = [],
                     copy_timelapse_to_usb = ["filename"],
+                    copy_log_to_usb = ["filename"],
                     delete_all_timelapses = [],
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
@@ -1235,6 +1236,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         src_path = os.path.join(timelapse_folder, filename)
 
         self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress", "timelapse_copy_complete", "timelapse_copy_failed")
+
+    def _on_api_command_copy_log_to_usb(self, filename, *args, **kwargs):
+        if not self.is_media_mounted:
+            return make_response("Could not access the media folder", 400)
+
+        # Rotated log files have also dates as extension, this check out for now. 
+        # if not octoprint.util.is_allowed_file(filename, ["log"]):
+        #     return make_response("Not allowed to copy this file", 400)
+
+        logs_folder = self._settings.global_get_basefolder("logs")
+        src_path = os.path.join(logs_folder, filename)
+
+        self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", "logs_copy_progress", "logs_copy_complete", "logs_copy_failed")
+        
 
     def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
         import shutil
