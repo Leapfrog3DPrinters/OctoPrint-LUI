@@ -16,6 +16,7 @@ Change log for OctoPrint-LUI.
 - Added warning when printer is in Error state on start up. 
 - Printer can be shut down when in Error state on start up.
 - Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment.
+- Fixed: Extruder calibration now shows y-axis alignment in correct order.
 - Fixed: Printer is unresponsive after start up and needs to retry connection.  
 - Fixed: Can't swap filament after a print is finished.
 - Fixed: Bug in OctoPrint-NetworkManager where SSIDs with ":" would crash the SSID parser. Bumped version of NetworkManager to 1.0.1
