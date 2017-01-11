@@ -512,9 +512,13 @@ $(function ()  {
                 self.activities.remove('Analyzing');
         }
 
-        self.onStartupComplete = function ()  {
+        self.onBeforeBinding = function()
+        {
             self.requestData();
+        }
 
+        self.onStartupComplete = function ()  {
+            
             self.filepath.subscribe(function ()  {
                 self.activities.remove('Creating preview');
                 self.updateAnalyzingActivity();

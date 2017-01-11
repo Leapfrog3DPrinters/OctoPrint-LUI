@@ -35,7 +35,8 @@
                 </li>
               </ul>
             </div>
-            {% else %}
+            {%- endif %}
+            {% if not local_addr or debug_lui  %}
             <div class="button-area">
               <ul>
                 <li class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
@@ -43,7 +44,7 @@
                     <span>
                       <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
                     </span>
-                    <input id="gcode_upload" type="file" name="file" class="fileinput-button">
+                    <input id="gcode_upload" type="file" name="file" accept=".gcode,.gco,.g" class="fileinput-button">
                             </a>
                 </li>
               </ul>
