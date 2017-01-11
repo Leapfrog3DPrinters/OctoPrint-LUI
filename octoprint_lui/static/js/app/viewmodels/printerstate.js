@@ -415,7 +415,6 @@ $(function ()  {
         }
 
         self.fromResponse = function (data) {
-            console.log(data)
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing)
             self.showChangelog(data.show_changelog);
@@ -513,9 +512,13 @@ $(function ()  {
                 self.activities.remove('Analyzing');
         }
 
-        self.onStartupComplete = function ()  {
+        self.onBeforeBinding = function()
+        {
             self.requestData();
+        }
 
+        self.onStartupComplete = function ()  {
+            
             self.filepath.subscribe(function ()  {
                 self.activities.remove('Creating preview');
                 self.updateAnalyzingActivity();
@@ -524,6 +527,19 @@ $(function ()  {
 
             self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
             self.filament.subscribe(self.updateAnalyzingActivity);
+        }
+
+        //TODO: Remove!
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            OctoPrint.postJson(url, data);
+        }
+
+        //TODO: Remove!
+        self.doDebuggingAction = function () {
+            self._sendApi({
+                command: "trigger_debugging_action"
+            });
         }
     }
 

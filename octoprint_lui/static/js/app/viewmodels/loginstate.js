@@ -39,6 +39,7 @@ $(function () {
         };
 
         self.requestData = function () {
+            // TODO: Maybe move this somewhere else, so it's not executed in parallel with other requests (which may 'corrupt' the cookie)
             OctoPrint.browser.passiveLogin()
                 .done(self.fromResponse);
         };
