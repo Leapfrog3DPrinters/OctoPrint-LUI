@@ -524,6 +524,19 @@ $(function ()  {
             self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
             self.filament.subscribe(self.updateAnalyzingActivity);
         }
+
+        //TODO: Remove!
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            OctoPrint.postJson(url, data);
+        }
+
+        //TODO: Remove!
+        self.doDebuggingAction = function () {
+            self._sendApi({
+                command: "trigger_debugging_action"
+            });
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
