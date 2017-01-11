@@ -178,6 +178,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.levelbed_command_sent = False
 
         ##~Maintenance
+        self.wait_for_movements_command_sent = False # Generic wait for ok after M400
         self.wait_for_maintenance_position = False # Wait for ok after M400 before aux powerdown
         self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
         self.connecting_after_maintenance = False #Wait for connected event and notify UI after
@@ -1734,6 +1735,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             elif (gcode == "G32"):
                 self._process_G32(cmd)
 
+            elif (gcode == "M400"):
+                self._process_M400(cmd)
+
     def _process_G90_G91(self, cmd):
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
         if cmd == "G90":
@@ -1821,6 +1825,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _process_G32(self, cmd):
         self.levelbed_command_sent = True
 
+    def _process_M400(self, cmd):
+        self.wait_for_movements_command_sent = True
+
+    def _on_movements_complete(self):
+        """ 
+        Fired when a M400 (wait for all movements) completes. Useful for maintenance procedures
+        """
+        if self.wait_for_maintenance_position:
+            self.wait_for_maintenance_position = False
+            self.head_in_maintenance_position()
+
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if self.firmware_info_command_sent:
             if "echo:" in line:
@@ -1841,11 +1856,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.levelbed_command_sent = False
                 self.send_client_levelbed_complete()
 
-        if self.wait_for_maintenance_position:
-            if "ok" in line:
-                self.wait_for_maintenance_position = False
-                self.head_in_maintenance_position()
-
+        if self.wait_for_movements_command_sent and "ok" in line:
+            self.wait_for_movements_command_sent = False
+            self._on_movements_complete()
+            
         return line
 
     def hook_actiontrigger(self, comm, line, action_trigger):
