@@ -432,24 +432,31 @@ $(function () {
         .done(function () {
             log.info("Finalizing application startup");
 
-            //~~ Starting up the app
-            callViewModels(allViewModels, "onStartup");
+            var startup = function() {
+                //~~ Starting up the app
+                callViewModels(allViewModels, "onStartup");
 
-            viewModelMap["settingsViewModel"].requestData()
-            .done(function () {
-                // There appears to be an odd race condition either in JQuery's AJAX implementation or
-                // the browser's implementation of XHR, causing a second GET request from inside the
-                // completion handler of the very same request to never get its completion handler called
-                // if ETag headers are present on the response (the status code of the request does NOT
-                // seem to matter here, only that the ETag header is present).
-                //
-                // Minimal example with which I was able to reproduce this behaviour can be found
-                // at https://gist.github.com/foosel/b2ddb9ebd71b0b63a749444651bfce3f
-                //
-                // Decoupling all consecutive calls from this done event handler hence is an easy way
-                // to avoid this problem. A zero timeout should do the trick nicely.
-                window.setTimeout(bindViewModels, 0);
-            });
+                viewModelMap["settingsViewModel"].requestData()
+                .done(function () {
+                    // There appears to be an odd race condition either in JQuery's AJAX implementation or
+                    // the browser's implementation of XHR, causing a second GET request from inside the
+                    // completion handler of the very same request to never get its completion handler called
+                    // if ETag headers are present on the response (the status code of the request does NOT
+                    // seem to matter here, only that the ETag header is present).
+                    //
+                    // Minimal example with which I was able to reproduce this behaviour can be found
+                    // at https://gist.github.com/foosel/b2ddb9ebd71b0b63a749444651bfce3f
+                    //
+                    // Decoupling all consecutive calls from this done event handler hence is an easy way
+                    // to avoid this problem. A zero timeout should do the trick nicely.
+                    window.setTimeout(bindViewModels, 0);
+               });
+            };
+
+            OctoPrint.browser.passiveLogin()
+                .always(function() {
+                    window.setTimeout(startup, 0);
+                });
         });
 
     // Icon bar selection
@@ -511,6 +518,8 @@ $(function () {
     // dropit
     $('#files_menu').dropit();
     $('#timelapse_menu').dropit();
+    $('#logs_menu').dropit();
+
 
     // jQuery overscroll
 

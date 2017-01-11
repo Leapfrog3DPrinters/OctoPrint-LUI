@@ -415,7 +415,6 @@ $(function ()  {
         }
 
         self.fromResponse = function (data) {
-            console.log(data)
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing)
             self.showChangelog(data.show_changelog);
