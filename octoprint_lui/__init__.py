@@ -182,6 +182,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.wait_for_maintenance_position = False # Wait for ok after M400 before aux powerdown
         self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
         self.connecting_after_maintenance = False #Wait for connected event and notify UI after
+        
 
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
@@ -1022,14 +1023,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             time.sleep(5) # Give it 5 sec to power up 
 
             #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
+            #TODO: Or monitor if /dev/ttyUSB0 exists?
             self.connecting_after_maintenance = True
             self._printer.connect()         
 
+    def auto_home_after_maintenance(self):
+        self.is_homed = False #Reset is_homed, so LUI waits for a G28 complete, and then sends UI update
+        self._printer.home(['x','y','z'])
+        
+        
     def _on_api_command_after_head_maintenance(self, *args, **kwargs): 
         if self.model == "Bolt" or self.model == "Xcel" or self.debug:
             self.power_up_after_maintenance()
-
-        self._printer.home(['x','y']) #TODO: Also home Z? Maybe dangerous? 
+        else:
+            self._printer.home(['x','y','z'])
 
     def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
         self.move_to_maintenance_position()
@@ -2439,7 +2446,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             if self.connecting_after_maintenance:
                 self.connecting_after_maintenance = False
-                self._send_client_message("powered_up_after_maintenance")
+                self.auto_home_after_maintenance()
 
         if(event == Events.DISCONNECTED):
             self.powerdown_after_disconnect = False

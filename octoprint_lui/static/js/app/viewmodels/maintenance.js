@@ -169,7 +169,7 @@ $(function () {
                     var message = "Please wait while the printer is being reconnected. Note that the printer will home automatically.";
                     self.poweringUpInfo = self.flyout.showInfo(title, message, true);
                     break;
-                case "powered_up_after_maintenance":
+                case "is_homed":
                     if (self.poweringUpInfo != undefined) {
                         self.flyout.closeInfo(self.poweringUpInfo);
                     }

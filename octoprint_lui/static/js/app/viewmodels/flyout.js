@@ -152,6 +152,11 @@ $(function () {
         }
         self.deactivateFlyout(template_flyout);
     };
+
+    self.closeFlyout = function(id)
+    {
+        //TODO: Close a specific flyout
+    }
     
     self.closeFlyoutAccept = function () {
         var flyout_ref = self.flyouts.pop()
