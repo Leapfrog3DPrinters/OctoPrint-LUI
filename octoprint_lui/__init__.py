@@ -134,8 +134,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._machine_query = None
         self.machine_info = None
 
-
-
         ##~ Temperature status
         self.tool_status = [
             {'name': 'Right', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
@@ -414,13 +412,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 if "devel" in branch_name:
                     self._logger.info("Install is still on devel branch, going to switch")
                     # So we are really still on devel, let's switch to master
+                    checkout_master_branch = None
                     try:
                         checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
                     except subprocess.CalledProcessError as err:
                         self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
-                    self._logger.info("Switched OctoPrint from devel to master!")
-                    # Set update manually to true so the next time we install the master branch
-                    self.update_info[4]["update"] = True
+                    
+                    if checkout_master_branch:
+                        self._logger.info("Switched OctoPrint from devel to master!")
+                        # Set update manually to true so the next time we install the master branch
+                        self.update_info[4]["update"] = True
+                        self._send_client_message("forced_update")
+                        self._update_plugins("OctoPrint")
+                        
 
             ## Branch check is done, fetch the git repo
             self._fetch_git_repo(update['path'])
