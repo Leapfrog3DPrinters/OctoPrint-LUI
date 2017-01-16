@@ -419,6 +419,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     except subprocess.CalledProcessError as err:
                         self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
                     self._logger.info("Switched OctoPrint from devel to master!")
+                    # Set update manually to true so the next time we install the master branch
+                    self.update_info[4]["update"] = True
 
             ## Branch check is done, fetch the git repo
             self._fetch_git_repo(update['path'])
@@ -2081,6 +2083,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Update software init
         self.last_git_fetch = 0
 
+        # NOTE: The order of this array is used for functions! Keep it the same! 
         self.update_info = [
             {
                 'name': "Leapfrog UI",
