@@ -23,6 +23,7 @@ from tinydb import TinyDB, Query
 import octoprint_lui.util
 
 from octoprint_lui.util import exceptions
+from octoprint_lui.util.firmware import FirmwareUpdateUtility
 
 import octoprint.plugin
 from octoprint.settings import settings
@@ -245,6 +246,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Init Update
         self._init_update()
 
+        ##~ Init firmware update
+        self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder())
+
         ##~ Add actions
         self._add_actions()
 
@@ -271,6 +275,53 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.info(self.show_changelog)
 
     ##~ Update
+
+    @octoprint.plugin.BlueprintPlugin.route("/firmwareupdate", methods=["GET"])
+    def get_firmware_updates(self):
+        self.fw_version_info = self.firmware_update_info.get_latest_version(self.model)
+        current_version = float(self.machine_info["firmware_version"])
+
+        if self.fw_version_info:
+            # Compare latest with current
+            # TODO: Force refresh of current version number?
+            
+            if float(self.fw_version_info["version"]) > current_version:
+                return jsonify(dict({"new_firmware": True, "error": False, "current_version": current_version, "new_version": self.fw_version_info["version"] }))
+            else:             
+                return jsonify(dict({"new_firmware": False, "error": False, "current_version": current_version }))
+        else:
+            # If there's no info found, indicate error
+            return jsonify(dict({"new_firmware": False, "error": True, "current_version": current_version }))
+
+    @octoprint.plugin.BlueprintPlugin.route("/firmwareupdate", methods=["POST"])
+    def do_firmware_update(self):
+        if self.fw_version_info:
+            fw_path = self.firmware_update_info.download_firmware(self.fw_version_info["url"])
+            if fw_path:
+                if self.flash_firmware_update(fw_path):
+                    return make_response(jsonify(), 200)
+                else:
+                    return make_response("Something went wrong while flashing the firmware update", 400)
+            else:
+                return make_response("An error occured while downloading the firmware update", 400)
+        else:
+            return make_response("No firmware update available", 400)
+
+    def flash_firmware_update(self, firmware_path):
+        flash_plugin = self._plugin_manager.get_plugin('flasharduino')
+
+        if flash_plugin:
+            if hasattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file'):
+                board = "m2560"
+                programmer = "wiring"
+                port = "/dev/ttyUSB0"
+                baudrate = "115200"
+                ext_path = os.path.basename(firmware_path)
+                return getattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file')(board, programmer, port, baudrate, firmware_path, ext_path)
+            else:
+                self._logger.warning("Could not flash firmware. FlashArduino plugin not up to date.")    
+        else:
+            self._logger.warning("Could not flash firmware. FlashArduino plugin not loaded.")
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["GET"])
     def get_updates(self):
