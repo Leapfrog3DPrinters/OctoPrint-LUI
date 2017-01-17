@@ -17,6 +17,7 @@ Change log for OctoPrint-LUI.
 - Printer can be shut down when in Error state on start up.
 - Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment.
 - User is prevented from uploading other files than .gcode/.gco/.g
+- Fixed: Shifting after resuming a paused print.
 - Fixed: Extruder calibration now shows y-axis alignment in correct order.
 - Fixed: Powerbutton now works before printer has homed.
 - Fixed: Printer is unresponsive after start up and needs to retry connection.  

@@ -1630,7 +1630,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if self.model == "Bolt":
             if script_name == "beforePrintResumed":
-                return ["G1 F6000"], None
+                return ["G28 X0", "G1 F6000"], None
 
             if script_name == "afterPrintPaused":
                 return ["G28 X0"], None
