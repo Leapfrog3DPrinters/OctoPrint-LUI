@@ -165,7 +165,10 @@ $(function ()  {
                     $.notify({
                         title: gettext("Update completed."),
                         text: _.sprintf(gettext('The firmware has been updated.'), {})
-                    }, "success")
+                    }, "success");
+
+                    // Check if a firmware update is still required
+                    self.printerState.requestData();
                 }).fail(function () {
                     $.notify({
                         title: gettext("Update failed."),
@@ -175,6 +178,11 @@ $(function ()  {
                     self.requestFirmwareData();
                     self.firmwareUpdating(false);
                 });
+        }
+
+        self.showUpdateFlyout = function()
+        {
+            self.settings.showSettingsTopic('update');
         }
 
         self.showUpdateWarning = function () 
@@ -303,9 +311,17 @@ $(function ()  {
         self.onAfterBinding = function () 
         {
             self.flashArduino.hex_path.subscribe(self.onHexPathChanged);
+            self.flashArduino.flashing_complete_callback = self.onFlashingComplete;
 
             // Communicate to the plugin wheter he's allowed to flash
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
+        }
+
+        self.onFlashingComplete = function(success)
+        {
+            // Check if a firmware update is still required
+            if (success)
+                self.printerState.requestData();
         }
 
         self.updateDoneOrError = function() {
@@ -326,6 +342,9 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
+                case "firmware_update_required":
+                    self.showFirmwareUpdateRequired();
+                    break;
                 case "forced_update":
                     self.showUpdateWarning();
                     break;
@@ -410,7 +429,7 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
       ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "flashArduinoViewModel", "printerStateViewModel"],
-      ['#update', '#update_icon']
+      ['#update', '#update_icon', '#firmware_update_required']
     ]);
 
 });

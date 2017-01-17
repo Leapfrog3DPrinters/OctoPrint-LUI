@@ -22,6 +22,8 @@ $(function ()  {
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
         self.showChangelog = ko.observable(undefined);
+        self.firmwareUpdateRequired = ko.observable(false);
+        self.firmwareVersionRequirement = ko.observable(undefined);
 
         self.errorDescriptionString = ko.pureComputed(function() {
             if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
@@ -352,6 +354,16 @@ $(function ()  {
                 });
         }
 
+        self.showFirmwareUpdateRequiredFlyout = function()
+        {
+            self.flyout.showFlyout('firmware_update_required', true);
+        }
+
+        self.closeFirmwareUpdateRequiredFlyout = function () {
+            if (self.flyout.currentFlyoutTemplate == "#filament_update_required_flyout")
+                self.flyout.closeFlyoutAccept();
+        }
+
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept();
         }
@@ -418,12 +430,25 @@ $(function ()  {
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing)
             self.showChangelog(data.show_changelog);
-            if (!self.isHomed()) {
-                self.showStartupFlyout();
-            }
+            self.firmwareUpdateRequired(data.firmware_update_required);
+            self.firmwareVersionRequirement(data.firmware_version_requirement);
             self.settings.autoShutdown(data.auto_shutdown);
-            if (self.showChangelog()){
-                self.showChangelogFlyout();
+
+            // Firmware update required flyout has most priority. After that startup and changelog flyouts.
+            // This fromResponse method is also called after a firmware update
+
+            if (data.firmware_update_required)
+                self.showFirmwareUpdateRequiredFlyout();
+            else {
+                self.closeFirmwareUpdateRequiredFlyout();
+
+                if (!self.isHomed()) {
+                    self.showStartupFlyout();
+                }
+              
+                if (self.showChangelog()) {
+                    self.showChangelogFlyout();
+                }
             }
         }
 

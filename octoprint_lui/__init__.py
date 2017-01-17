@@ -160,6 +160,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homing = False
 
         ##~ Firmware
+        self.firmware_version_requirement = {"Bolt" : 2.6, "WindowsDebug": 2.6 } # If a lower version is found, user is required to update
+
         self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
@@ -301,11 +303,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 if self.flash_firmware_update(fw_path):
                     return make_response(jsonify(), 200)
                 else:
-                    return make_response("Something went wrong while flashing the firmware update", 400)
+                    return make_response(jsonify({ "error": "Something went wrong while flashing the firmware update"}), 400)
             else:
-                return make_response("An error occured while downloading the firmware update", 400)
+                return make_response(jsonify({ "error": "An error occured while downloading the firmware update" }), 400)
         else:
-            return make_response("No firmware update available", 400)
+            return make_response(jsonify({ "error": "No firmware update available" }), 400)
 
     def flash_firmware_update(self, firmware_path):
         flash_plugin = self._plugin_manager.get_plugin('flasharduino')
@@ -630,6 +632,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return jsonify(free=usage.free, total=usage.total)
         else:
             machine_info = self._get_machine_info()
+
+            fw_req = None
+            if self.model in self.firmware_version_requirement:
+                fw_req =  self.firmware_version_requirement[self.model]
+                
             result = dict({
                 'machine_info': machine_info,
                 'filaments': self.filament_database.all(),
@@ -638,9 +645,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'reserved_usernames': self.reserved_usernames,
                 'tool_status': self.tool_status,
                 'auto_shutdown': self.auto_shutdown,
-                'show_changelog': self.show_changelog
+                'show_changelog': self.show_changelog,
+                'firmware_update_required' : self._firmware_update_required(),
+                'firmware_version_requirement': fw_req
                 })
             return jsonify(result)
+
+    def _firmware_update_required(self):
+        
+        if self.debug or not self.model in self.firmware_version_requirement:
+            return False
+        elif "firmware_version" in self.machine_info:
+            return self.firmware_version_requirement[self.model] > float(self.machine_info["firmware_version"])
+        else:
+            return True # Unable to check, require a firmware update
 
     def get_api_commands(self):
             return dict(
