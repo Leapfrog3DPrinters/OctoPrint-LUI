@@ -454,11 +454,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Fetching all repositories")
         for update in update_info:
             if update["identifier"] == "octoprint":
-                #try:
-                #    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
-                #except subprocess.CalledProcessError as err:
-                #     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
-                #if "devel" in branch_name:
                 self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
                 if not self.debug and "devel" in octoprint.__branch__ :
                     self._logger.info("Install is still on devel branch, going to switch")
