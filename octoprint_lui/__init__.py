@@ -11,6 +11,8 @@ import os
 import platform
 import flask
 import sys
+import requests
+import markdown
 
 from collections import OrderedDict
 from pipes import quote
@@ -127,8 +129,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_shutdown_timer_value = 0
         self.auto_shutdown_after_movie_done = False
 
-        self.show_changelog = False
-
         ##~ TinyDB
 
         self.filament_database_path = None
@@ -194,6 +194,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update
         self.fetching_updates = False
+
+        ##~ Changelog
+        self.changelog_filename = 'CHANGELOG.md'
+        self.changelog_path = None
+        self.changelog_contents = []
+        self.show_changelog = False
+        self.plugin_version = None
 
     def initialize(self):
 
@@ -272,8 +279,38 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
         # Changelog check
-        self.show_changelog = (self._settings.get(["changelog_version"]) != self._plugin_manager.get_plugin_info('lui').version)
-        self._logger.info(self.show_changelog)
+        self.changelog_path = os.path.join(self.paths[self.model]["update"], 'OctoPrint-LUI', self.changelog_filename)
+        self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
+        self._update_changelog()
+
+    ##~ Changelog
+    def _update_changelog(self):
+        changelog_version = self._settings.get(["changelog_version"])
+
+        self.show_changelog = changelog_version != self.plugin_version
+        
+        if self.show_changelog:
+            self._logger.info("LUI version changed. Reading changelog.")
+            begin_append = False
+            search = "## " + self.plugin_version
+            endsearch = "## "
+            if os.path.exists(self.changelog_path):
+                with open(self.changelog_path, 'r') as f:
+                    for line in f:   
+                        if begin_append:
+                            if line.startswith(endsearch):
+                                break;
+                            else:
+                                self.changelog_contents.append(line)
+                        elif line.startswith(search):
+                            begin_append = True
+            
+            else:
+                self.changelog_contents.append('Could not find changelog')
+          
+    def _get_changelog_html(self):
+        md = os.linesep.join(self.changelog_contents)
+        return markdown.markdown(md)
 
     ##~ Update
 
@@ -592,7 +629,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'reserved_usernames': self.reserved_usernames,
                 'tool_status': self.tool_status,
                 'auto_shutdown': self.auto_shutdown,
-                'show_changelog': self.show_changelog
+                'show_changelog': self.show_changelog,
+                'changelog_contents': self._get_changelog_html(),
+                'lui_version': self.plugin_version
                 })
             return jsonify(result)
 

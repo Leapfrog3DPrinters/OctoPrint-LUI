@@ -6,83 +6,16 @@
 			</div>
 		</div>
 		<div class="Table-row Table-header">
-			<div class="Table-item">
-				1.0.5 
+			<div class="Table-item" data-bind="text: currentLuiVersion">
+				
 			</div>
 		</div>
+    
 		<div class="Table-row">
 			<div class="Table-item">
-				<strong>This update requires two consecutive updates due to switching of branches. Update version number will stay 1.0.5. after second update.</strong>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				<li>Switched main update branch from <code>devel</code> to <code>master</code>. <strong>Requires 2 consecutive updates</strong></li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				<li>Added changelog information screen after update(this screen). Can be accessed through the Settings -> Update -> Changelog button(<i class="fa fa-info-circle"></i>).</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				<li>Added option to download log files or to copy log files to a usb. Settings -> Logs. </li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				<li>Blocked being able to upload STL files from remote PC. If by any method an STL file is uploaded anyways, added an option to delete STL file in the file browser. </li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-				<li>Added auto shutdown function. Will shutdown the machine after print is finished. Option will reset after a shutdown. Go to Settings -&gt; Printer to turn it on/off.</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Auto-shut down adds a "!" behind the power icon in the UI. It also adds a warning to the shutdown option.</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Enhanced the selection of materials during filament swap. Bigger area to tap on.</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Added warning when printer is in Error state on start up. </li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Printer can be shut down when in Error state on start up.</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment. </li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Fixed: Printer is unresponsive after start up and needs to retry connection.</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Fixed: Can't swap filament after a print is finished.</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Fixed: Bug in OctoPrint-NetworkManager where SSIDs with ":" would crash the SSID parser. Bumped version of NetworkManager to 1.0.1</li>
-			</div>
-		</div>
-		<div class="Table-row">
-			<div class="Table-item">
-					<li>Fixed: G92 X0 Y0 Z0 were not stripped correctly. G92 X0 Y0 Z0, which will zero a specific axis, will bug the printer when in sync/mirror mode and are therefore removed from gcode when sending. </li>
+        <div class="markdown" data-bind="html: changelogContents">
+          
+        </div>
 			</div>
 		</div>
 	</div>
