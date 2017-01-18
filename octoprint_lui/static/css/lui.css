@@ -1878,3 +1878,9 @@ ul.height-calibrator {
     /* IE 9 */
     transform: rotate(360deg);
     /* Firefox 16+, IE 10+, Opera */ } }
+/* Make some exceptions for markdown markup */
+.markdown {
+  font-size: 80%; }
+  .markdown ul {
+    list-style-type: disc;
+    padding-left: 14px; }
