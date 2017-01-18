@@ -81,6 +81,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
         }
 
+        ##~ Server commands
+        self.systemShutdownCommand ="sudo shutdown -h now"
+        self.systemRestartCommand =  "sudo shutdown -r now"
+        self.serverRestartCommand = "sudo service octoprint restart"
+
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
         self.movement_mode = "absolute"
@@ -2138,48 +2143,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _add_actions(self):
         """
-        Adda actions to system settings. Might be removed if
+        Adds actions to system settings. Might be removed if
         we ship custom config file.
         """
         ## Set update actions into the settings
-        ## This is a nifty function to check if a variable is in
-        ## a list of dictionaries.
-        def is_variable_in_dict(variable, dict):
-            return any(True for x in dict if x['action'] == variable)
-
-        actions = self._settings.global_get(["system", "actions"])
+        commands = self._settings.global_get(["server", "commands"])
 
         ## Add shutdown
-        if not is_variable_in_dict('shutdown', actions):
-            shutdown = {
-                "action": "shutdown",
-                "name": "Shutdown",
-                "command": "sudo shutdown -h now",
-                "confirm": True
-            }
-            actions.append(shutdown)
+        if not 'systemShutdownCommand' in commands or not commands['systemShutdownCommand']:
+            self._settings.global_set(["server", "commands", "systemShutdownCommand"], self.systemShutdownCommand)
+            self._logger.info("Shutdown command added")
 
         ## Add reboot
-        if not is_variable_in_dict('reboot', actions):
-            reboot = {
-                "action": "reboot",
-                "name": "Reboot",
-                "command": "sudo shutdown -r now",
-                "confirm": True
-            }
-            actions.append(reboot)
+        if not 'systemRestartCommand' in commands or not commands['systemRestartCommand']:
+            self._settings.global_set(["server", "commands", "systemRestartCommand"], self.systemRestartCommand)
+            self._logger.info("Reboot command added")
 
         ## Add restart service
-        if not is_variable_in_dict('restart_service', actions):
-            restart_service = {
-                "action": "restart_service",
-                "name": "Restart service",
-                "command": "sudo service octoprint restart",
-                "confirm": True
-            }
-            actions.append(restart_service)
-
-        self._settings.global_set(["system", "actions"], actions)
+        if not 'serverRestartCommand' in commands or not commands['serverRestartCommand']:
+            self._settings.global_set(["server", "commands", "serverRestartCommand"], self.serverRestartCommand)
+            self._logger.info("Service restart command added")
 
     def _get_profile_from_name(self, profileName):
         profiles = self._settings.global_get(["temperature", "profiles"])
