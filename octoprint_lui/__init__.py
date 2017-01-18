@@ -250,8 +250,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Init Update
         self._init_update()
 
-        ##~ Add actions
-        self._add_actions()
+        ##~ Add server commands
+        self._add_server_commands()
 
         ##~ Get filament amount stored in config
         self.update_filament_amount()
@@ -2141,13 +2141,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug(self.update_info)
 
 
-    def _add_actions(self):
+    def _add_server_commands(self):
         """
-        Adds actions to system settings. Might be removed if
+        Adds server commands to settings. Might be removed if
         we ship custom config file.
         """
         ## Set update actions into the settings
         commands = self._settings.global_get(["server", "commands"])
+        actions = self._settings.global_get(["system", "actions"])
 
         ## Add shutdown
         if not 'systemShutdownCommand' in commands or not commands['systemShutdownCommand']:
@@ -2163,6 +2164,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if not 'serverRestartCommand' in commands or not commands['serverRestartCommand']:
             self._settings.global_set(["server", "commands", "serverRestartCommand"], self.serverRestartCommand)
             self._logger.info("Service restart command added")
+
+
+        ## Cleanup actions
+        actions_changed = False
+        for index, spec in enumerate(actions):
+            if spec.get("action") == 'restart_service':
+                actions.pop(index)
+                actions_changed = True
+            
+        if actions_changed:
+            self._settings.global_set(["system", "actions"], actions)
+            self._logger.info("Actions cleaned up")
+
+        self._settings.save()
 
     def _get_profile_from_name(self, profileName):
         profiles = self._settings.global_get(["temperature", "profiles"])
