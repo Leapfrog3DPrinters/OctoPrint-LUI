@@ -4,6 +4,7 @@ $(function () {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
+        self.settings = parameters[2];
 
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
@@ -91,7 +92,7 @@ $(function () {
         self.systemReboot = function () {
             console.log("System Reboot called")
             var dialog = {'title': 'Reboot system', 'text': 'You are about to reboot the system.', 'question' : 'Do you want to continue?'};
-            var command = {'actionSource': 'custom', 'action': 'reboot', 'name': 'Reboot', confirm: dialog};
+            var command = {'actionSource': 'core', 'action': 'reboot', 'name': 'Reboot', confirm: dialog};
             self.triggerCommand(command);
         };
 
@@ -99,7 +100,7 @@ $(function () {
             confirm = confirm !== false;
 
             var dialog = { 'title': 'Shutdown system', 'text': 'You are about to shutdown the system.', 'question': 'Do you want to continue?' };
-            var command = { 'actionSource': 'custom', 'action': 'shutdown', 'name': 'Shutdown'}
+            var command = { 'actionSource': 'core', 'action': 'shutdown', 'name': 'Shutdown' }
 
             if (confirm)
                 command.confirm = dialog;
@@ -129,7 +130,7 @@ $(function () {
                         );
 
                         // Will never respond, because it is shutdown immediately. Assume its OK.
-                        OctoPrint.system.executeCommand('custom', 'restart_service', { timeout: 10 });
+                        OctoPrint.system.executeCommand('core', 'restart', { timeout: 10 });
 
                     });
         };
@@ -169,7 +170,7 @@ $(function () {
     // view model class, parameters for constructor, container to bind to
     ADDITIONAL_VIEWMODELS.push([
         SystemViewModel,
-        ["loginStateViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "settingsViewModel"],
         []
     ]);
 });

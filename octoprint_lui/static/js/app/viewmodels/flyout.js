@@ -171,7 +171,7 @@ $(function () {
 
     self.activateFlyout = function(template_flyout) {
         $(template_flyout).addClass('active');
-        $(template_flyout).css("z-index", self.flyouts().length + 1);
+        $(template_flyout).css("z-index", self.flyouts().length);
         self.setOverlay();
     }
 

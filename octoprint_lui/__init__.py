@@ -11,6 +11,8 @@ import os
 import platform
 import flask
 import sys
+import requests
+import markdown
 
 from collections import OrderedDict
 from pipes import quote
@@ -46,6 +48,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Global
         self.from_localhost = False
         self.debug = False
+        self.auto_shutdown = False
 
         ##~ Model specific variables
         self.model = None
@@ -80,14 +83,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
         }
 
+        ##~ Server commands
+        self.systemShutdownCommand ="sudo shutdown -h now"
+        self.systemRestartCommand =  "sudo shutdown -r now"
+        self.serverRestartCommand = "sudo service octoprint restart"
+
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
         self.movement_mode = "absolute"
         self.last_movement_mode = "absolute"
 
         self.relative_extrusion_trigger = False
-        self.current_print_extrusion_amount = None
-        self.last_print_extrusion_amount = 0.0
+        self.current_print_extrusion_amount = [0.0, 0.0]
+        self.last_print_extrusion_amount = [0.0, 0.0]
         self.last_send_filament_amount = None
         self.last_saved_filament_amount = None
         self.loading_for_purging = False
@@ -117,6 +125,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.temperature_safety_timer = None
 
+        self.auto_shutdown_timer = None
+        self.auto_shutdown_timer_value = 0
+        self.auto_shutdown_after_movie_done = False
+
         ##~ TinyDB
 
         self.filament_database_path = None
@@ -126,8 +138,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_database = None
         self._machine_query = None
         self.machine_info = None
-
-
 
         ##~ Temperature status
         self.tool_status = [
@@ -185,7 +195,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Update
         self.fetching_updates = False
 
+        ##~ Changelog
+        self.changelog_filename = 'CHANGELOG.md'
+        self.changelog_path = None
+        self.changelog_contents = []
+        self.show_changelog = False
+        self.plugin_version = None
+
     def initialize(self):
+
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
 
@@ -230,14 +248,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
 
+        ##~ Now we have control over the printer, also take over control of the power button
+        self._init_powerbutton()
+
         ##~ USB init
         self._init_usb()
 
         ##~ Init Update
         self._init_update()
 
-        ##~ Add actions
-        self._add_actions()
+        ##~ Add server commands
+        self._add_server_commands()
 
         ##~ Get filament amount stored in config
         self.update_filament_amount()
@@ -257,6 +278,43 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 160, 'mode': 'mirror' }) #4=Center
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
+        # Changelog check
+        self.changelog_path = os.path.join(self.paths[self.model]["update"], 'OctoPrint-LUI', self.changelog_filename)
+        self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
+        self._update_changelog()
+
+    ##~ Changelog
+    def _update_changelog(self):
+        changelog_version = self._settings.get(["changelog_version"])
+
+        self.show_changelog = changelog_version != self.plugin_version
+        
+        if self.show_changelog:
+            self._logger.info("LUI version changed. Reading changelog.")
+            self._read_changelog_file()
+         
+    def _read_changelog_file(self):
+        if len(self.changelog_contents) == 0:
+            begin_append = False
+            search = "## " + self.plugin_version
+            endsearch = "## "
+            if os.path.exists(self.changelog_path):
+                with open(self.changelog_path, 'r') as f:
+                    for line in f:   
+                        if begin_append:
+                            if line.startswith(endsearch):
+                                break;
+                            else:
+                                self.changelog_contents.append(line)
+                        elif line.startswith(search):
+                            begin_append = True
+            
+            else:
+                self.changelog_contents.append('Could not find changelog')
+ 
+    def _get_changelog_html(self):
+        md = os.linesep.join(self.changelog_contents)
+        return markdown.markdown(md)
 
     ##~ Update
 
@@ -350,6 +408,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         fetch_thread = threading.Thread(target=self._fetch_worker, args=(self.update_info, force))
         fetch_thread.daemon = False
         fetch_thread.start()
+        self.fetching_updates = True
 
     def _create_update_frontend(self, update_info):
         for update in update_info:
@@ -358,6 +417,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _fetch_worker(self, update_info, force):
         if not octoprint_lui.util.is_online():
+            self._logger.debug("Cannot fetch repository. Printer not online.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_internet_offline()
@@ -365,13 +425,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return
 
         if not octoprint_lui.util.github_online():
+            self._logger.debug("Cannot fetch repository. Github not reachable.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_github_offline()
             # Return out of the worker, we can't update - not online
             return
         try:
-            self.fetching_updates = True
             self._fetch_all_repos(update_info)
             update_info_updated = self._update_needed_version_all(update_info)
             self.update_info = update_info_updated
@@ -389,7 +449,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _fetch_all_repos(self, update_info):
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
+        ## We switched from devel to master branch during production. Here we check if we 
+        ## still are on 'devel', if so, switch the branch over to 'master' branch. 
+        self._logger.debug("Fetching all repositories")
         for update in update_info:
+            if update["identifier"] == "octoprint":
+                self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
+                if not self.debug and "devel" in octoprint.__branch__ :
+                    self._logger.info("Install is still on devel branch, going to switch")
+                    # So we are really still on devel, let's switch to master
+                    checkout_master_branch = None
+                    try:
+                        checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
+                    except subprocess.CalledProcessError as err:
+                        self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+                    
+                    if checkout_master_branch:
+                        self._logger.info("Switched OctoPrint from devel to master")
+                        # Set update manually to true so the next time we install the master branch
+                        self.update_info[4]["update"] = True
+                        self._send_client_message("forced_update")
+                        self._update_plugins("OctoPrint")
+                        
+
+            ## Branch check is done, fetch the git repo
             self._fetch_git_repo(update['path'])
         self.last_git_fetch = time.time()
 
@@ -468,6 +551,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "action_door": True,
             "action_filament": True,
             "debug_lui": False,
+            "changelog_version": ""
         }
 
     ##~ OctoPrint UI Plugin
@@ -539,6 +623,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             import psutil
             usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
             return jsonify(free=usage.free, total=usage.total)
+        elif(command == "changelog_contents"):
+            # Force to read changelog file
+            self._read_changelog_file()
+            return jsonify({
+                'changelog_contents': self._get_changelog_html(),
+                'lui_version': self.plugin_version
+                })
         else:
             machine_info = self._get_machine_info()
             result = dict({
@@ -547,7 +638,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'is_homed': self.is_homed,
                 'is_homing': self.is_homing,
                 'reserved_usernames': self.reserved_usernames,
-                'tool_status': self.tool_status
+                'tool_status': self.tool_status,
+                'auto_shutdown': self.auto_shutdown,
+                'show_changelog': self.show_changelog,
+                'changelog_contents': self._get_changelog_html(),
+                'lui_version': self.plugin_version
                 })
             return jsonify(result)
 
@@ -572,6 +667,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     copy_gcode_to_usb = ["filename"],
                     delete_all_uploads = [],
                     copy_timelapse_to_usb = ["filename"],
+                    copy_log_to_usb = ["filename"],
                     delete_all_timelapses = [],
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
@@ -581,6 +677,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     restore_from_calibration_position = [],
                     start_print = ["mode"],
                     unselect_file = [],
+                    auto_shutdown = ["toggle"],
+                    auto_shutdown_timer_cancel = [],
+                    changelog_seen = [],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
@@ -595,8 +694,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         self._on_powerbutton_press()
 
+    def _on_api_command_changelog_seen(self, *args, **kwargs):
+        self._logger.info("changelog_seen")
+        self._settings.set(["changelog_version"], self._plugin_manager.get_plugin_info('lui').version)
+        self.show_changelog = False
+        self._settings.save()
+
     def _on_api_command_unselect_file(self):
         self._printer.unselect_file()
+
+    def _on_api_command_auto_shutdown(self, toggle):
+        self.auto_shutdown = toggle;
+        self._send_client_message("auto_shutdown_toggle", dict(toggle=toggle))
+        self._logger.info("Auto shutdown set to {toggle}".format(toggle=toggle))
 
     def _on_api_command_start_print(self, mode):
         self.print_mode = mode
@@ -853,8 +963,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.model == "Bolt":
             self._printer.commands(["M605 S3"]) # mirror
             self._printer.home(['x'])
-            self._printer.commands(["G1 X20"]) # wipe it
-            self._printer.commands(["G1 X1"]) # wipe it
+            self._printer.commands(["G1 X20 F12000"]) # wipe it
+            self._printer.commands(["G1 X1 F12000"]) # wipe it
             self._printer.commands(["M605 S0"]) # back to normal
             self._printer.home(['y', 'x'])
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
@@ -880,8 +990,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.model == "Bolt":
             self._printer.commands(["M605 S3"]) # mirror
             self._printer.home(['x'])
-            self._printer.commands(["G1 X20"]) # wipe it
-            self._printer.commands(["G1 X1"]) # wipe it
+            self._printer.commands(["G1 X20 F12000"]) # wipe it
+            self._printer.commands(["G1 X1 F12000"]) # wipe it
             self._printer.commands(["M605 S0"]) # back to normal
             self._printer.home(['y', 'x'])
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
@@ -1188,6 +1298,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress", "timelapse_copy_complete", "timelapse_copy_failed")
 
+    def _on_api_command_copy_log_to_usb(self, filename, *args, **kwargs):
+        if not self.is_media_mounted:
+            return make_response("Could not access the media folder", 400)
+
+        # Rotated log files have also dates as extension, this check out for now. 
+        # if not octoprint.util.is_allowed_file(filename, ["log"]):
+        #     return make_response("Not allowed to copy this file", 400)
+
+        logs_folder = self._settings.global_get_basefolder("logs")
+        src_path = os.path.join(logs_folder, filename)
+
+        self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", "logs_copy_progress", "logs_copy_complete", "logs_copy_failed")
+        
+
     def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
         import shutil
 
@@ -1265,6 +1389,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return make_response(jsonify(result = "Could not delete all files"), 500)
         else:
             return make_response(jsonify(result = "OK"), 200);
+
+    def _on_api_command_auto_shutdown_timer_cancel(self):
+        # User cancelled timer. So cancel the timer and send to front-end to close flyout.
+        if self.auto_shutdown_timer:
+            self.auto_shutdown_timer.cancel()
+            self.auto_shutdown_timer = None
+        self.auto_shutdown_after_movie_done = False
+        self._send_client_message('auto_shutdown_timer_cancelled')
 
     ##~ Load and Unload methods
 
@@ -1553,10 +1685,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if self.model == "Bolt":
             if script_name == "beforePrintResumed":
-                return ["G1 F6000"], None
+                return ["G28 X0 Y0", "G1 F6000"], None
 
             if script_name == "afterPrintPaused":
-                return ["G28 X0"], None
+                return ["G28 X0 Y0"], None
 
     def gcode_queuing_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -1564,8 +1696,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         These commands are problamatic with different print modes.
         """
         if gcode and gcode == "G92":
-            cmd = re.sub('[XYZ]0 ', '', cmd)
-            return cmd,
+            new_cmd = re.sub(' [XYZ]0', '', cmd)
+            return new_cmd,
 
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
@@ -1700,9 +1832,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.is_homed = True
                 self.is_homing = False
                 self.send_client_is_homed()
-                ##~ Now we have control over the printer, also take over control of the power button
-                ##~ TODO: This runs also on normal G28s.
-                self._init_powerbutton()
 
         if self.levelbed_command_sent:
             if "MaxCorrectionValue" in line:
@@ -2013,6 +2142,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Update software init
         self.last_git_fetch = 0
 
+        # NOTE: The order of this array is used for functions! Keep it the same! 
         self.update_info = [
             {
                 'name': "Leapfrog UI",
@@ -2061,50 +2191,43 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug(self.update_info)
 
 
-    def _add_actions(self):
+    def _add_server_commands(self):
         """
-        Adda actions to system settings. Might be removed if
+        Adds server commands to settings. Might be removed if
         we ship custom config file.
         """
         ## Set update actions into the settings
-        ## This is a nifty function to check if a variable is in
-        ## a list of dictionaries.
-        def is_variable_in_dict(variable, dict):
-            return any(True for x in dict if x['action'] == variable)
-
+        commands = self._settings.global_get(["server", "commands"])
         actions = self._settings.global_get(["system", "actions"])
 
         ## Add shutdown
-        if not is_variable_in_dict('shutdown', actions):
-            shutdown = {
-                "action": "shutdown",
-                "name": "Shutdown",
-                "command": "sudo shutdown -h now",
-                "confirm": True
-            }
-            actions.append(shutdown)
+        if not 'systemShutdownCommand' in commands or not commands['systemShutdownCommand']:
+            self._settings.global_set(["server", "commands", "systemShutdownCommand"], self.systemShutdownCommand)
+            self._logger.info("Shutdown command added")
 
         ## Add reboot
-        if not is_variable_in_dict('reboot', actions):
-            reboot = {
-                "action": "reboot",
-                "name": "Reboot",
-                "command": "sudo shutdown -r now",
-                "confirm": True
-            }
-            actions.append(reboot)
+        if not 'systemRestartCommand' in commands or not commands['systemRestartCommand']:
+            self._settings.global_set(["server", "commands", "systemRestartCommand"], self.systemRestartCommand)
+            self._logger.info("Reboot command added")
 
         ## Add restart service
-        if not is_variable_in_dict('restart_service', actions):
-            restart_service = {
-                "action": "restart_service",
-                "name": "Restart service",
-                "command": "sudo service octoprint restart",
-                "confirm": True
-            }
-            actions.append(restart_service)
+        if not 'serverRestartCommand' in commands or not commands['serverRestartCommand']:
+            self._settings.global_set(["server", "commands", "serverRestartCommand"], self.serverRestartCommand)
+            self._logger.info("Service restart command added")
 
-        self._settings.global_set(["system", "actions"], actions)
+
+        ## Cleanup actions
+        actions_changed = False
+        for index, spec in enumerate(actions):
+            if spec.get("action") == 'restart_service':
+                actions.pop(index)
+                actions_changed = True
+            
+        if actions_changed:
+            self._settings.global_set(["system", "actions"], actions)
+            self._logger.info("Actions cleaned up")
+
+        self._settings.save()
 
     def _get_profile_from_name(self, profileName):
         profiles = self._settings.global_get(["temperature", "profiles"])
@@ -2250,6 +2373,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.jog({'z': 20})
             self._printer.home(['x', 'y'])
 
+        if (event == Events.PRINT_DONE and self.auto_shutdown):
+            config = self._settings.global_get(["webcam", "timelapse"], merged=True)
+            type = config["type"]
+            self._send_client_message("auto_shutdown_start")
+            # Timelapse not configured, just start the timer
+            if type is None or "off" == type:
+                self._logger.info("Print done, no timelapse configured and auto shutdown on. Starting shutdown timer.")
+                # Start auto shutdown timer
+                self._auto_shutdown_start()
+            else: 
+                # Timelapse is configured, let's not do anything and shutdown after render complete or failed
+                self._send_client_message("auto_shutdown_wait_on_render")
+                self.auto_shutdown_after_movie_done = True
+                return
+
+        if (event == Events.MOVIE_DONE and self.auto_shutdown_after_movie_done):
+            # Start auto shutdown timer
+            self._logger.info("Render movie Done after print done with auto shutdown. Starting shutdown.")
+            self._auto_shutdown_start()
+
+        if (event == Events.MOVIE_FAILED and self.auto_shutdown_after_movie_done):
+            # Start auto shutdown timer and log that the render failed
+            self._logger.warn("Render movie Failed after print done with auto shutdown. Starting shutdown.")
+            self._auto_shutdown_start()
+
         if (event == Events.PRINT_STARTED):
             self.current_print_extrusion_amount = [0.0, 0.0]
 
@@ -2259,6 +2407,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(event == Events.CONNECTED):
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
+
+    def _auto_shutdown_start(self):
+        if not self.auto_shutdown_timer:
+            self.auto_shutdown_timer_value = 180 #3 Minute shutdown
+            self.auto_shutdown_timer = RepeatedTimer(1,
+                                                        self._auto_shutdown_tick,
+                                                        run_first=False,
+                                                        condition=self._auto_shutdown_required,
+                                                        on_condition_false=self._auto_shutdown_condition)
+            self.auto_shutdown_timer.start()
+
+    def _auto_shutdown_tick(self):
+        self.auto_shutdown_timer_value -= 1
+        self._send_client_message("auto_shutdown_timer", { "timer": self.auto_shutdown_timer_value })
+
+    def _auto_shutdown_required(self):
+        return self.auto_shutdown_timer_value > 0
+
+    def _auto_shutdown_condition(self):
+        self._logger.info("Shutdown timer finished. Shutting down...")
+        self._perform_sytem_shutdown()
 
     def _perform_service_restart(self):
         """
@@ -2272,6 +2441,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.exception("Error while restarting")
             self._logger.warn("Restart stdout:\n%s" % e.stdout)
             self._logger.warn("Restart stderr:\n%s" % e.stderr)
+            raise exceptions.RestartFailed()
+
+    def _perform_sytem_shutdown(self):
+        """
+        Perform a restart of the octoprint service restart
+        """
+
+        self._logger.info("Shutting down...")
+        try:
+            octoprint_lui.util.execute("sudo shutdown -h now")
+        except exceptions.ScriptError as e:
+            self._logger.exception("Error while shutting down")
+            self._logger.warn("Shutdown stdout:\n%s" % e.stdout)
+            self._logger.warn("Shutdown stderr:\n%s" % e.stderr)
             raise exceptions.RestartFailed()
 
 

@@ -1,4 +1,4 @@
-<div id="startup_step_prompt" class="startup_step">
+<div id="startup_step_prompt" class="startup_step" data-bind="css: { active: !isHomed() && isOperational() }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -39,13 +39,35 @@
         </ul>
       </div>
     </div>
+
+  </div>
+</div>
+<div id="startup_step_error" class="startup_step" data-bind="css: { active: isErrorOrClosed() }">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        <span>
+          <i class="fa fa-exclamation-triangle"></i>Printer in Error or Closed state
+        </span>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <span data-bind="text: stateString"></span>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <span data-bind="text: errorDescriptionString"></span>
+      </div>
+    </div>
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button secondary-button">
-            <a href="#" data-bind="click: function () { location.reload(true) }">
+          <li class="button failed-button">
+            <a href="#" data-bind="click: function () { system.systemShutdown() }">
               <span>
-                <i class="fa fa-refresh"></i>Retry printer connection
+                <i class="fa fa-power-off"></i>Shutdown printer
               </span>
             </a>
           </li>
@@ -54,7 +76,7 @@
     </div>
   </div>
 </div>
-<div id="startup_step_busy_homing" class="startup_step">
+<div id="startup_step_busy_homing" class="startup_step" data-bind="css: { active: isHoming() }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">

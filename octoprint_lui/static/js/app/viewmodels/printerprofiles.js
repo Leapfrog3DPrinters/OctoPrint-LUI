@@ -85,7 +85,7 @@ $(function () {
         };
 
 
-        self.onUserLoggedIn = self.requestData;
+        self.onStartup = self.requestData;
     }
 
     OCTOPRINT_VIEWMODELS.push([

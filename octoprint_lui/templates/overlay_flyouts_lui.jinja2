@@ -141,6 +141,26 @@
       </ul>
     </div>
   </aside>
+  <aside id="logs_settings_flyout" class="flyout">
+    <div class="flyout-header">
+      <h4 data-bind="text: settingsTopic"></h4>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+    </div>
+    <div class="flyout-body">
+      <!-- ko allowBindings: false -->
+      <div id="logs_settings_flyout_content" class="flyout_content">
+        {% include "flyouts_lui/setting_flyouts/logs_flyout.jinja2" %}
+      </div>
+      <!-- /ko -->
+      <ul class="button-area">
+        <li class="button">
+          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
+            <span>Close</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </aside>
   <aside id="maintenance_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4 data-bind="text: settingsTopic"></h4>
@@ -170,8 +190,6 @@
       <!-- ko allowBindings: false -->
       <div id="webcam_settings_flyout_content" class="flyout_content">
         {% include "flyouts_lui/setting_flyouts/webcam_flyout.jinja2" %}
-      </div>
-      <!-- /ko -->
       <ul class="button-area">
         <li class="button secondary-button">
           <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
@@ -179,11 +197,13 @@
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <a href="#save" data-bind="click: function () { save() }">
             <span>Save</span>
           </a>
         </li>
       </ul>
+      </div>
+      <!-- /ko -->
     </div>
   </aside>
 </div> <!-- end settings flyouts -->
@@ -383,7 +403,7 @@
                       materialProfiles,
                       optionsText: 'name',
                       value: updateLeftTemperatureProfile,
-                      optionsCaption: 'Choose material...'">
+                      optionsCaption: 'Choose material'">
           </select>
         </div>
         <div class="Table-item">
@@ -391,7 +411,7 @@
                       materialProfiles,
                       optionsText: 'name',
                       value: updateRightTemperatureProfile,
-                      optionsCaption: 'Choose material...'">
+                      optionsCaption: 'Choose material'">
           </select>
         </div>
       </div>
@@ -483,6 +503,33 @@
         </div>
       </div>
     </div>
+  </div>
+</aside>
+<aside id="auto_shutdown_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4><i class="fa fa-power-off"></i>Auto shutdown</h4>
+  </div>
+  <div class="flyout-body">
+    <div id="auto_shutdown_flyout_content">
+      {% include "flyouts_lui/info_flyouts/auto_shutdown_flyout.jinja2" %}
+    </div>
+  </div>
+</aside>
+<aside id="changelog_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4><i class="fa fa-info-circle"></i>Changelog</h4>
+  </div>
+  <div class="flyout-body">
+    <div id="changelog_flyout_content">
+      {% include "flyouts_lui/info_flyouts/changelog_flyout.jinja2" %}
+    </div>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <span>Ok</span>
+        </a>
+      </li>
+    </ul>
   </div>
 </aside>
 <aside id="offline_flyout" class="flyout">

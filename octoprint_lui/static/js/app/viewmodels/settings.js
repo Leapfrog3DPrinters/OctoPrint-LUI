@@ -15,6 +15,8 @@ $(function () {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
 
+        self.autoShutdown = ko.observable(undefined);
+
         self.allViewModels = [];
 
         self.receiving = ko.observable(false);
@@ -192,6 +194,30 @@ $(function () {
                 $('#settings_debug_mode_text').addClass('hide');
             }
         });
+
+        self.toggleAutoShutdown = function () {
+            var toggle = self.autoShutdown();
+            var sendAutoShutdownStatus = function() {
+                var data = {
+                    command: "auto_shutdown",
+                    toggle: !toggle
+                };
+                self._sendApi(data);
+            };
+            if (!toggle) {
+                var data = {
+                    title: "Turn on auto shutdown",
+                    text: "You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine."
+                };
+                setTimeout(function(){
+                    self.flyout.showWarning(data.title, data.text)
+                }, 500)
+            }         
+            sendAutoShutdownStatus();
+            return true;
+
+        }
+
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
             var data = {
@@ -697,6 +723,12 @@ $(function () {
             self.isError(data.flags.error);
             self.isReady(data.flags.ready);
             self.isLoading(data.flags.loading);
+        };
+
+        // Api send functions
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            return OctoPrint.postJson(url, data);
         };
 
     }

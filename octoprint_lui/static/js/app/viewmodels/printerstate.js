@@ -7,6 +7,7 @@ $(function ()  {
         self.flyout = parameters[1];
         self.temperatureState = parameters[2];
         self.settings = parameters[3];
+        self.system = parameters[4];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -17,6 +18,20 @@ $(function ()  {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
         self.isSdReady = ko.observable(undefined);
+
+        self.isHomed = ko.observable(undefined);
+        self.isHoming = ko.observable(undefined);
+        self.showChangelog = ko.observable(undefined);
+        self.changelogContents = ko.observable(undefined);
+        self.currentLuiVersion = ko.observable(undefined);
+
+        self.errorDescriptionString = ko.pureComputed(function() {
+            if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
+                return gettext("Your extruder temperature is either very low or your extruder is disconnected. Make sure you are operating within environment specifications or check the connection of your extruder.");
+            } else {
+                return "";
+            }
+        });
 
         self.filename = ko.observable(undefined);
         self.filepath = ko.observable(undefined);
@@ -30,6 +45,8 @@ $(function ()  {
 
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
+        self.autoShutdownTimer = ko.observable(0);
+        self.autoShutdownWaitOnRender = ko.observable(false);
 
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
@@ -324,15 +341,36 @@ $(function ()  {
                 });
         };
 
-        self.showStartupFlyout = function (isHoming) {
-            $('.startup_step').removeClass('active');
-
-            if (isHoming)
-                $('#startup_step_busy_homing').addClass('active');
-            else
-                $('#startup_step_prompt').addClass('active');
-
+        self.showStartupFlyout = function () {
             self.flyout.showFlyout('startup', true);
+        }
+
+        self.updateChangelogContents = function()
+        {
+            OctoPrint.simpleApiGet('lui', {
+                data: {
+                    command: 'changelog_contents'
+                },
+                success: function (data) {
+                    self.changelogContents(data.changelog_contents);
+                    self.currentLuiVersion(data.lui_version);
+                }
+            });
+        }
+
+        self.showChangelogFlyout = function (updateContents) {
+            
+            if (updateContents)
+            {
+                self.updateChangelogContents();
+            }
+
+            self.flyout.showFlyout('changelog', true)
+                .always(function() {
+                    if (self.showChangelog()) {
+                        self._sendApi({command: "changelog_seen"});
+                    }
+                });
         }
 
         self.closeStartupFlyout = function ()  {
@@ -352,6 +390,10 @@ $(function ()  {
         self.showBusyHoming = function ()  {
             $('.startup_step').removeClass('active');
             $('#startup_step_busy_homing').addClass('active');
+        }
+
+        self.cancelAutoShutdown = function () {
+            self._sendApi({command: 'auto_shutdown_timer_cancel'});
         }
 
         self.onDoorOpen = function ()  {
@@ -394,8 +436,18 @@ $(function ()  {
         }
 
         self.fromResponse = function (data) {
-            if (!data.is_homed) {
-                self.showStartupFlyout(data.is_homing);
+            self.isHomed(data.is_homed);
+            self.isHoming(data.is_homing)
+            self.showChangelog(data.show_changelog);
+            self.changelogContents(data.changelog_contents);
+            self.currentLuiVersion(data.lui_version);
+
+            if (!self.isHomed()) {
+                self.showStartupFlyout();
+            }
+            self.settings.autoShutdown(data.auto_shutdown);
+            if (self.showChangelog()){
+                self.showChangelogFlyout();
             }
         }
 
@@ -452,6 +504,26 @@ $(function ()  {
                     case "door_closed":
                         self.onDoorClose();
                         break;
+                    case "auto_shutdown_toggle":
+                        self.settings.autoShutdown(messageData.toggle);
+                        break;
+                    case "auto_shutdown_start":
+                        self.flyout.showFlyout("auto_shutdown", true)
+                        self.autoShutdownTimer(180);
+                        break;
+                    case "auto_shutdown_wait_on_render":
+                        self.autoShutdownWaitOnRender(true);
+                        break;
+                    case "auto_shutdown_timer":
+                        if (!$('#auto_shutdown_flyout').hasClass('active')) {
+                            self.flyout.showFlyout("auto_shutdown", true);
+                        }
+                        self.autoShutdownWaitOnRender(false);
+                        self.autoShutdownTimer(messageData.timer);
+                        break;
+                    case "auto_shutdown_timer_cancelled":
+                        self.flyout.closeFlyout();
+                        break;
                 }
             }
         }
@@ -464,9 +536,13 @@ $(function ()  {
                 self.activities.remove('Analyzing');
         }
 
-        self.onAfterBinding = function ()  {
+        self.onBeforeBinding = function()
+        {
             self.requestData();
+        }
 
+        self.onStartupComplete = function ()  {
+            
             self.filepath.subscribe(function ()  {
                 self.activities.remove('Creating preview');
                 self.updateAnalyzingActivity();
@@ -476,11 +552,24 @@ $(function ()  {
             self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
             self.filament.subscribe(self.updateAnalyzingActivity);
         }
+
+        //TODO: Remove!
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            OctoPrint.postJson(url, data);
+        }
+
+        //TODO: Remove!
+        self.doDebuggingAction = function () {
+            self._sendApi({
+                command: "trigger_debugging_action"
+            });
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout"]
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout"]
     ]);
 });

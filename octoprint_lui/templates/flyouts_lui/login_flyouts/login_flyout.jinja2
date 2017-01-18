@@ -46,6 +46,12 @@
 	    </div>
 	</div>
 	{% endif %}
+	<div class="Table-row Table-header" data-bind="visible: settings.autoShutdown">
+		<div class="Table-item">Auto-shutdown</div>
+	</div>
+	<div class="Table-row" data-bind="visible: settings.autoShutdown">
+		<div class="Table-item">Auto-shutdown is enabled. The printer will automatically shutdown after a print is finished. To change this behaviour visit the Printer section in the Settings.</div>
+	</div>
 	<div class="Table-row" data-bind="visible: loginState.loggedIn()">
 	    <div class="Table-item">        
 	        <ul class="button-area">

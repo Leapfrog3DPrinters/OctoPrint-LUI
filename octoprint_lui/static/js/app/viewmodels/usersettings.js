@@ -6,6 +6,7 @@ $(function () {
         self.users = parameters[1];
         self.flyout = parameters[2];
         self.system = parameters[3];
+        self.settings = parameters[4];
 
         self.userSettingsDialog = undefined;
 
@@ -104,7 +105,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         UserSettingsViewModel,
-        ["loginStateViewModel", "usersViewModel", "flyoutViewModel", "systemViewModel" ],
+        ["loginStateViewModel", "usersViewModel", "flyoutViewModel", "systemViewModel", "settingsViewModel" ],
         ["#login_flyout"]
     ]);
 });

@@ -1125,11 +1125,12 @@ input:not([type=submit]):not([type=file]) {
 select {
   $dark-color: #f2f2f2;
   font-family: agenda-medium, sans-serif;
-  font-size: 1em;
-  padding: 5px;
+  font-size: 1.3em;
+  padding: 10px 10px;
   min-width: 0;
   border: 1px solid $dark-color;
-  border-radius: 3px;
+  appearance: none;
+  outline: none;
 }
 
 
@@ -1980,4 +1981,15 @@ $bed-height: 180px;
     -ms-transform: rotate(360deg);  /* IE 9 */
     transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
   }
+}
+
+/* Make some exceptions for markdown markup */
+.markdown
+{
+    font-size: 80%;
+    ul
+    {
+        list-style-type: disc;
+        padding-left: 14px;
+    }
 }

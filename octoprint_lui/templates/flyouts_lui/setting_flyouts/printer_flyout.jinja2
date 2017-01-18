@@ -13,21 +13,32 @@
             Features
         </div>
     </div>
-  {% if model == "Bolt" or model == "Xcel" or debug_lui %}
-  <div class="Table-row">
-    <div class="Table-item">
-      Check print dimensions
-    </div>
-    <div class="Table-item">
-      <div class="check_toggle">
-        <input type="checkbox" data-bind="checked: feature_modelSizeDetection" id="settings-feature_modelSizeDetection" />
-          <label for="settings-feature_modelSizeDetection"></label>
+    <div class="Table-row">
+        <div class="Table-item">
+          Auto shutdown
+        </div>
+        <div class="Table-item">
+            <div class="check_toggle">
+                <input type="checkbox" data-bind="click: toggleAutoShutdown, checked: autoShutdown, " id="settings-autoShutdown" />
+                <label for="settings-autoShutdown"></label>
+            </div>
         </div>
     </div>
-  </div>
-  {% endif %}
-  {% if model == "Xeed" or debug_lui %}
-  <div class="Table-row">
+    {% if model == "Bolt" or model == "Xcel" or debug_lui %}
+    <div class="Table-row">
+        <div class="Table-item">
+          Check print dimensions
+        </div>
+        <div class="Table-item">
+            <div class="check_toggle">
+                <input type="checkbox" data-bind="checked: feature_modelSizeDetection" id="settings-feature_modelSizeDetection" />
+                <label for="settings-feature_modelSizeDetection"></label>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if model == "Xeed" or debug_lui %}
+    <div class="Table-row">
         <div class="Table-item">
             Door safety feature
         </div>
@@ -38,8 +49,8 @@
             </div>
         </div>
     </div>
-  {% endif %}
-  {% if model == "Xeed" or model == "Xcel" or debug_lui %}
+    {% endif %}
+    {% if model == "Xeed" or model == "Xcel" or debug_lui %}
     <div class="Table-row">
         <div class="Table-item">
             Filament detection
