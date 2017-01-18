@@ -11,7 +11,7 @@ $(function ()  {
         self.printerState = parameters[6];
 
         self.updateinfo = ko.observableArray([]);
-        self.updating = ko.observable(false);
+        self.refreshing = ko.observable(false);
         self.update_needed = ko.observable(false);
         self.updateCounter = 0;
         self.updateTarget = 0;
@@ -22,6 +22,10 @@ $(function ()  {
 
         self.modelName = ko.observable(undefined);
         self.firmwareVersion = ko.observable(undefined);
+        self.firmwareUpdateAvailable = ko.observable(false);
+        self.firmwareRefreshing = ko.observable(false);
+        self.firmwareUpdating = ko.observable(false);
+
 
         self.flashingAllowed = ko.computed(function ()  {
             return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
@@ -35,8 +39,24 @@ $(function ()  {
             }
         };
 
+        self.getFirmwareUpdateText = function () {
+            if (self.firmwareUpdateAvailable()) {
+                return "Update"
+            } else {
+                return "Up-to-date"
+            }
+        };
+
         self.getUpdateIcon = function (data) {
             if (data.update()) {
+                return "fa-refresh"
+            } else {
+                return "fa-check"
+            }
+        };
+
+        self.getFirmwareUpdateIcon = function () {
+            if (self.firmwareUpdateAvailable()) {
                 return "fa-refresh"
             } else {
                 return "fa-check"
@@ -61,6 +81,14 @@ $(function ()  {
 
         self.getUpdateButtonClass = function (data) {
             if (data.update()) {
+                return ""
+            } else {
+                return "ok-button disabled"
+            }
+        };
+
+        self.getFirmwareUpdateButtonClass = function () {
+            if (self.firmwareUpdateAvailable()) {
                 return ""
             } else {
                 return "ok-button disabled"
@@ -126,6 +154,37 @@ $(function ()  {
                 });
         };
 
+        self.firmwareUpdate = function()
+        {
+            self.firmwareUpdating(true);
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+            OctoPrint.postJson(url)
+                .done(function () {
+                    self.firmwareUpdateAvailable(false);
+
+                    $.notify({
+                        title: gettext("Update completed."),
+                        text: _.sprintf(gettext('The firmware has been updated.'), {})
+                    }, "success");
+
+                    // Check if a firmware update is still required
+                    self.printerState.requestData();
+                }).fail(function () {
+                    $.notify({
+                        title: gettext("Update failed."),
+                        text: _.sprintf(gettext('Please check the logs.'), {})
+                    }, "error")
+                }).always(function () {
+                    self.requestFirmwareData();
+                    self.firmwareUpdating(false);
+                });
+        }
+
+        self.showUpdateFlyout = function()
+        {
+            self.settings.showSettingsTopic('update');
+        }
+
         self.showUpdateWarning = function () 
         {
             self.update_warning = self.flyout.showWarning(
@@ -152,8 +211,33 @@ $(function ()  {
             self.lpfrg_software_version(info().find( function (x) { return x.name() === "Leapfrog UI" }).version());
 
             self.modelName(data.machine_info.machine_type);
-            self.firmwareVersion(data.machine_info.firmware_version);
         };
+
+        self.fromFirmwareResponse = function (data)
+        {
+            self.firmwareVersion(data.current_version);
+
+            if(data.new_firmware)
+            {
+                // New firmware found
+                self.firmwareUpdateAvailable(true);
+            }
+            else if(data.error)
+            {
+                // Could not retrieve latest version information
+                $.notify({
+                    title: gettext("Could not retrieve update information"),
+                    text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities. '), {})
+                },
+                        "error"
+                    );
+            }
+            else
+            {
+                // No new firmware found
+                self.firmwareUpdateAvailable(false);
+            }
+        }
 
         self.requestData = function (force) {
             var force = force || false;
@@ -162,6 +246,14 @@ $(function ()  {
                 .done(function(response){
                     self.fromResponse(response);
                 });
+        };
+
+        self.requestFirmwareData = function () {
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+            OctoPrint.get(url)
+                .done(function (response) {
+                    self.fromFirmwareResponse(response);
+                }).always(function () { self.firmwareUpdateDoneOrError(); })
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -181,10 +273,20 @@ $(function ()  {
             }
         };
 
-        self.refreshUpdateInfo = function ()  {
-            self.updating(true);
-            $('#update_spinner').addClass('fa-spin');
-            self.requestData(true);
+        self.refreshUpdateInfo = function () {
+            if (!self.refreshing()) {
+                self.refreshing(true);
+                $('#update_spinner').addClass('fa-spin');
+                self.requestData(true);
+            }
+        }
+
+        self.refreshFirmwareUpdateInfo = function () {
+            if (!self.firmwareRefreshing()) {
+                self.firmwareRefreshing(true);
+                $('#firmware_update_spinner').addClass('fa-spin');
+                self.requestFirmwareData();
+            }
         }
 
         self.onHexPathChanged = function(hex_path)
@@ -194,6 +296,7 @@ $(function ()  {
 
         self.onUpdateSettingsShown = function ()  {
             self.requestData();
+            self.requestFirmwareData();
         };
 
         self.onSettingsHidden = function ()  {
@@ -202,21 +305,33 @@ $(function ()  {
 
         self.onStartup = function ()  {
             self.requestData();
+            self.requestFirmwareData();
         };
 
         self.onAfterBinding = function () 
         {
             self.flashArduino.hex_path.subscribe(self.onHexPathChanged);
+            self.flashArduino.flashing_complete_callback = self.onFlashingComplete;
 
             // Communicate to the plugin wheter he's allowed to flash
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
+        }
 
-            
+        self.onFlashingComplete = function(success)
+        {
+            // Check if a firmware update is still required
+            if (success)
+                self.printerState.requestData();
         }
 
         self.updateDoneOrError = function() {
-            self.updating(false);
+            self.refreshing(false);
             $('#update_spinner').removeClass('fa-spin');
+        }
+
+        self.firmwareUpdateDoneOrError = function () {
+            self.firmwareRefreshing(false);
+            $('#firmware_update_spinner').removeClass('fa-spin');
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -227,6 +342,9 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
+                case "firmware_update_required":
+                    self.showFirmwareUpdateRequired();
+                    break;
                 case "forced_update":
                     self.showUpdateWarning();
                     break;
@@ -238,7 +356,7 @@ $(function ()  {
                 case "internet_offline":
                     $.notify({
                         title: gettext("Printer offline"),
-                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilties. '), {})
+                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities. '), {})
                     },
                         "error"
                     )
@@ -311,7 +429,7 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
       ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "flashArduinoViewModel", "printerStateViewModel"],
-      ['#update', '#update_icon']
+      ['#update', '#update_icon', '#firmware_update_required']
     ]);
 
 });

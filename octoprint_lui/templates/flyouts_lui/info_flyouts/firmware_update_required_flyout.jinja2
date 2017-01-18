@@ -1,0 +1,35 @@
+<div id="firmware_update_required">
+	<div class="Table">
+		<div class="Table-row">
+			<div class="Table-item">
+        <span>
+				  The firmware of your printer is outdated. Please update your firmware to version <span data-bind="text: printerState.firmwareVersionRequirement"></span> or higher.
+        </span>
+			</div>
+		</div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button">
+            <a href="#" data-bind="click: function () {showUpdateFlyout()}">
+              <span>
+                Update
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button failed-button">
+            <a href="#" data-bind="click: function () {system.systemShutdown()}">
+              <span>
+                <i class="fa fa-power-off" style="padding-left: 0.5em;"></i>Shutdown
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+	</div>
+</div>
