@@ -1983,8 +1983,13 @@ $bed-height: 180px;
   }
 }
 
-/* TODO: Make some exceptions for markdown markup */
+/* Make some exceptions for markdown markup */
 .markdown
 {
-
+    font-size: 80%;
+    ul
+    {
+        list-style-type: disc;
+        padding-left: 14px;
+    }
 }

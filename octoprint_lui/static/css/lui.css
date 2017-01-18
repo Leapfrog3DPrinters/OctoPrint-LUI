@@ -1514,5 +1514,10 @@ ul.height-calibrator {
     transform: rotate(360deg);
     /* Firefox 16+, IE 10+, Opera */ } }
 
-/* TODO: Make some exceptions for markdown markup */
+/* Make some exceptions for markdown markup */
+.markdown {
+  font-size: 80%; }
+  .markdown ul {
+    list-style-type: disc;
+    padding-left: 14px; }
 
