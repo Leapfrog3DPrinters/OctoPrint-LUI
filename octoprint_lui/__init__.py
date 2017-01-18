@@ -291,6 +291,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         if self.show_changelog:
             self._logger.info("LUI version changed. Reading changelog.")
+            self._read_changelog_file()
+         
+    def _read_changelog_file(self):
+        if len(self.changelog_contents) == 0:
             begin_append = False
             search = "## " + self.plugin_version
             endsearch = "## "
@@ -307,7 +311,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             
             else:
                 self.changelog_contents.append('Could not find changelog')
-          
+ 
     def _get_changelog_html(self):
         md = os.linesep.join(self.changelog_contents)
         return markdown.markdown(md)
@@ -619,6 +623,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             import psutil
             usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
             return jsonify(free=usage.free, total=usage.total)
+        elif(command == "changelog_contents"):
+            # Force to read changelog file
+            self._read_changelog_file()
+            return jsonify({
+                'changelog_contents': self._get_changelog_html(),
+                'lui_version': self.plugin_version
+                })
         else:
             machine_info = self._get_machine_info()
             result = dict({

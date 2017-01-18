@@ -345,7 +345,26 @@ $(function ()  {
             self.flyout.showFlyout('startup', true);
         }
 
-        self.showChangelogFlyout = function () {
+        self.updateChangelogContents = function()
+        {
+            OctoPrint.simpleApiGet('lui', {
+                data: {
+                    command: 'changelog_contents'
+                },
+                success: function (data) {
+                    self.changelogContents(data.changelog_contents);
+                    self.currentLuiVersion(data.lui_version);
+                }
+            });
+        }
+
+        self.showChangelogFlyout = function (updateContents) {
+            
+            if (updateContents)
+            {
+                self.updateChangelogContents();
+            }
+
             self.flyout.showFlyout('changelog', true)
                 .always(function() {
                     if (self.showChangelog()) {
