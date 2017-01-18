@@ -42,7 +42,11 @@ class FirmwareUpdateUtility(object):
        
     def _get_version_info(self):
         """ Downloads all version info """
-        response = requests.get(self.firmware_version_url)
+        try:
+            response = requests.get(self.firmware_version_url)
+        except requests.ConnectionError:
+            self._logger.warning("Could not get firmware version info. Could not connect to remote server.")
+            return None
 
         if response.status_code == 200:
             try:

@@ -703,7 +703,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'auto_shutdown': self.auto_shutdown,
                 'show_changelog': self.show_changelog,
                 'changelog_contents': self._get_changelog_html(),
-                'lui_version': self.plugin_version
+                'lui_version': self.plugin_version,
                 'firmware_update_required' : self._firmware_update_required(),
                 'firmware_version_requirement': fw_req
                 })

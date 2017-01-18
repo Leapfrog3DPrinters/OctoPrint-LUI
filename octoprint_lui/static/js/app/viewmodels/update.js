@@ -213,7 +213,7 @@ $(function ()  {
             self.modelName(data.machine_info.machine_type);
         };
 
-        self.fromFirmwareResponse = function (data)
+        self.fromFirmwareResponse = function (data, silent)
         {
             self.firmwareVersion(data.current_version);
 
@@ -222,7 +222,7 @@ $(function ()  {
                 // New firmware found
                 self.firmwareUpdateAvailable(true);
             }
-            else if(data.error)
+            else if (data.error && !silent)
             {
                 // Could not retrieve latest version information
                 $.notify({
@@ -248,11 +248,11 @@ $(function ()  {
                 });
         };
 
-        self.requestFirmwareData = function () {
+        self.requestFirmwareData = function (silent) {
             var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
             OctoPrint.get(url)
                 .done(function (response) {
-                    self.fromFirmwareResponse(response);
+                    self.fromFirmwareResponse(response, silent);
                 }).always(function () { self.firmwareUpdateDoneOrError(); })
         };
 
@@ -296,7 +296,7 @@ $(function ()  {
 
         self.onUpdateSettingsShown = function ()  {
             self.requestData();
-            self.requestFirmwareData();
+            self.requestFirmwareData(true); // Request firmware info silently (no notification on failure)
         };
 
         self.onSettingsHidden = function ()  {
@@ -305,7 +305,7 @@ $(function ()  {
 
         self.onStartup = function ()  {
             self.requestData();
-            self.requestFirmwareData();
+            self.requestFirmwareData(true);  // Request firmware info silently (no notification on failure)
         };
 
         self.onAfterBinding = function () 
