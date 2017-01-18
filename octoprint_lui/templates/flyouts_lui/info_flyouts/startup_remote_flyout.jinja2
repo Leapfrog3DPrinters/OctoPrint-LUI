@@ -1,4 +1,4 @@
- <div id="startup_step_prompt" class="startup_step">
+ <div id="startup_step_prompt" class="startup_step" data-bind="css: { active: !isHomed() && !isHoming }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -12,7 +12,7 @@
     </div>
   </div>
 </div>
-<div id="startup_step_busy_homing" class="startup_step">
+<div id="startup_step_busy_homing" class="startup_step" data-bind="css: { active: isHoming }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
