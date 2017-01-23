@@ -996,7 +996,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     #TODO: Remove?
     @octoprint.plugin.BlueprintPlugin.route("/remote_homing", methods=["GET"])
-    def _remote_homing(self):
+    def remote_homing(self):
         if self.debug:
             self._printer.commands('G28')
             self.send_client_is_homing()
