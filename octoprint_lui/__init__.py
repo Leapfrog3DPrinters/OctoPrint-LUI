@@ -759,12 +759,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _firmware_update_required(self):
         
         if self.debug or not self.model in self.firmware_version_requirement:
+            self._logger.debug('No firmware version check. Debug mode on and/or model not found in version requirement.')
             return False
         elif "firmware_version" in self.machine_info:
             version_req = '>=' + str(self.firmware_version_requirement[self.model])
             current_version = str(self.machine_info["firmware_version"])
-            return self._check_version_requirement(current_version, version_req)
+
+            # _check_version_requirement is the requirement is *met*, so invert
+            update_required = not self._check_version_requirement(current_version, version_req)
+            
+            self._logger.debug('Firmware version check. Current version: {0}. Requirement: {1}. Needs update: {2}'.format(current_version, version_req, update_required))
+
+            return update_required
         else:
+            self._logger.warn('Unable to compare firmware versions. Probably firmware doesn\'t send version correctly. Requiring update.')
             return True # Unable to check, require a firmware update
 
     def get_api_commands(self):
