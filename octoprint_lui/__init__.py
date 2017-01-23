@@ -11,6 +11,8 @@ import os
 import platform
 import flask
 import sys
+import requests
+import markdown
 
 from collections import OrderedDict
 from pipes import quote
@@ -81,6 +83,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
         }
 
+        ##~ Server commands
+        self.systemShutdownCommand ="sudo shutdown -h now"
+        self.systemRestartCommand =  "sudo shutdown -r now"
+        self.serverRestartCommand = "sudo service octoprint restart"
+
         ##~ Filament loading variables
         self.extrusion_mode = "absolute"
         self.movement_mode = "absolute"
@@ -122,8 +129,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_shutdown_timer_value = 0
         self.auto_shutdown_after_movie_done = False
 
-        self.show_changelog = False
-
         ##~ TinyDB
 
         self.filament_database_path = None
@@ -133,8 +138,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_database = None
         self._machine_query = None
         self.machine_info = None
-
-
 
         ##~ Temperature status
         self.tool_status = [
@@ -199,6 +202,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Update
         self.fetching_updates = False
 
+        ##~ Changelog
+        self.changelog_filename = 'CHANGELOG.md'
+        self.changelog_path = None
+        self.changelog_contents = []
+        self.show_changelog = False
+        self.plugin_version = None
+
     def initialize(self):
 
         #~~ get debug from yaml
@@ -254,8 +264,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Init Update
         self._init_update()
 
-        ##~ Add actions
-        self._add_actions()
+        ##~ Add server commands
+        self._add_server_commands()
 
         ##~ Get filament amount stored in config
         self.update_filament_amount()
@@ -276,8 +286,42 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
         # Changelog check
-        self.show_changelog = (self._settings.get(["changelog_version"]) != self._plugin_manager.get_plugin_info('lui').version)
-        self._logger.info(self.show_changelog)
+        self.changelog_path = os.path.join(self.paths[self.model]["update"], 'OctoPrint-LUI', self.changelog_filename)
+        self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
+        self._update_changelog()
+
+    ##~ Changelog
+    def _update_changelog(self):
+        changelog_version = self._settings.get(["changelog_version"])
+
+        self.show_changelog = changelog_version != self.plugin_version
+        
+        if self.show_changelog:
+            self._logger.info("LUI version changed. Reading changelog.")
+            self._read_changelog_file()
+         
+    def _read_changelog_file(self):
+        if len(self.changelog_contents) == 0:
+            begin_append = False
+            search = "## " + self.plugin_version
+            endsearch = "## "
+            if os.path.exists(self.changelog_path):
+                with open(self.changelog_path, 'r') as f:
+                    for line in f:   
+                        if begin_append:
+                            if line.startswith(endsearch):
+                                break;
+                            else:
+                                self.changelog_contents.append(line)
+                        elif line.startswith(search):
+                            begin_append = True
+            
+            else:
+                self.changelog_contents.append('Could not find changelog')
+ 
+    def _get_changelog_html(self):
+        md = os.linesep.join(self.changelog_contents)
+        return markdown.markdown(md)
 
     ##~ Update
 
@@ -380,6 +424,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _fetch_worker(self, update_info, force):
         if not octoprint_lui.util.is_online():
+            self._logger.debug("Cannot fetch repository. Printer not online.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_internet_offline()
@@ -387,6 +432,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return
 
         if not octoprint_lui.util.github_online():
+            self._logger.debug("Cannot fetch repository. Github not reachable.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_github_offline()
@@ -412,20 +458,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
         ## We switched from devel to master branch during production. Here we check if we 
         ## still are on 'devel', if so, switch the branch over to 'master' branch. 
+        self._logger.debug("Fetching all repositories")
         for update in update_info:
             if update["identifier"] == "octoprint":
-                try:
-                    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
-                except subprocess.CalledProcessError as err:
-                     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
-                if "devel" in branch_name:
+                self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
+                if not self.debug and "devel" in octoprint.__branch__ :
                     self._logger.info("Install is still on devel branch, going to switch")
                     # So we are really still on devel, let's switch to master
+                    checkout_master_branch = None
                     try:
                         checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
                     except subprocess.CalledProcessError as err:
                         self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
-                    self._logger.info("Switched OctoPrint from devel to master!")
+                    
+                    if checkout_master_branch:
+                        self._logger.info("Switched OctoPrint from devel to master")
+                        # Set update manually to true so the next time we install the master branch
+                        self.update_info[4]["update"] = True
+                        self._send_client_message("forced_update")
+                        self._update_plugins("OctoPrint")
+                        
 
             ## Branch check is done, fetch the git repo
             self._fetch_git_repo(update['path'])
@@ -578,6 +630,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             import psutil
             usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
             return jsonify(free=usage.free, total=usage.total)
+        elif(command == "changelog_contents"):
+            # Force to read changelog file
+            self._read_changelog_file()
+            return jsonify({
+                'changelog_contents': self._get_changelog_html(),
+                'lui_version': self.plugin_version
+                })
         else:
             machine_info = self._get_machine_info()
             result = dict({
@@ -588,7 +647,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'reserved_usernames': self.reserved_usernames,
                 'tool_status': self.tool_status,
                 'auto_shutdown': self.auto_shutdown,
-                'show_changelog': self.show_changelog
+                'show_changelog': self.show_changelog,
+                'changelog_contents': self._get_changelog_html(),
+                'lui_version': self.plugin_version
                 })
             return jsonify(result)
 
@@ -910,8 +971,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.model == "Bolt":
             self._printer.commands(["M605 S3"]) # mirror
             self._printer.home(['x'])
-            self._printer.commands(["G1 X20"]) # wipe it
-            self._printer.commands(["G1 X1"]) # wipe it
+            self._printer.commands(["G1 X20 F12000"]) # wipe it
+            self._printer.commands(["G1 X1 F12000"]) # wipe it
             self._printer.commands(["M605 S0"]) # back to normal
             self._printer.home(['y', 'x'])
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
@@ -937,8 +998,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.model == "Bolt":
             self._printer.commands(["M605 S3"]) # mirror
             self._printer.home(['x'])
-            self._printer.commands(["G1 X20"]) # wipe it
-            self._printer.commands(["G1 X1"]) # wipe it
+            self._printer.commands(["G1 X20 F12000"]) # wipe it
+            self._printer.commands(["G1 X1 F12000"]) # wipe it
             self._printer.commands(["M605 S0"]) # back to normal
             self._printer.home(['y', 'x'])
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
@@ -1693,10 +1754,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if self.model == "Bolt":
             if script_name == "beforePrintResumed":
-                return ["G1 F6000"], None
+                return ["G28 X0 Y0", "G1 F6000"], None
 
             if script_name == "afterPrintPaused":
-                return ["G28 X0"], None
+                return ["G28 X0 Y0"], None
 
     def gcode_queuing_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -2172,6 +2233,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Update software init
         self.last_git_fetch = 0
 
+        # NOTE: The order of this array is used for functions! Keep it the same! 
         self.update_info = [
             {
                 'name': "Leapfrog UI",
@@ -2220,50 +2282,43 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug(self.update_info)
 
 
-    def _add_actions(self):
+    def _add_server_commands(self):
         """
-        Adda actions to system settings. Might be removed if
+        Adds server commands to settings. Might be removed if
         we ship custom config file.
         """
         ## Set update actions into the settings
-        ## This is a nifty function to check if a variable is in
-        ## a list of dictionaries.
-        def is_variable_in_dict(variable, dict):
-            return any(True for x in dict if x['action'] == variable)
-
+        commands = self._settings.global_get(["server", "commands"])
         actions = self._settings.global_get(["system", "actions"])
 
         ## Add shutdown
-        if not is_variable_in_dict('shutdown', actions):
-            shutdown = {
-                "action": "shutdown",
-                "name": "Shutdown",
-                "command": "sudo shutdown -h now",
-                "confirm": True
-            }
-            actions.append(shutdown)
+        if not 'systemShutdownCommand' in commands or not commands['systemShutdownCommand']:
+            self._settings.global_set(["server", "commands", "systemShutdownCommand"], self.systemShutdownCommand)
+            self._logger.info("Shutdown command added")
 
         ## Add reboot
-        if not is_variable_in_dict('reboot', actions):
-            reboot = {
-                "action": "reboot",
-                "name": "Reboot",
-                "command": "sudo shutdown -r now",
-                "confirm": True
-            }
-            actions.append(reboot)
+        if not 'systemRestartCommand' in commands or not commands['systemRestartCommand']:
+            self._settings.global_set(["server", "commands", "systemRestartCommand"], self.systemRestartCommand)
+            self._logger.info("Reboot command added")
 
         ## Add restart service
-        if not is_variable_in_dict('restart_service', actions):
-            restart_service = {
-                "action": "restart_service",
-                "name": "Restart service",
-                "command": "sudo service octoprint restart",
-                "confirm": True
-            }
-            actions.append(restart_service)
+        if not 'serverRestartCommand' in commands or not commands['serverRestartCommand']:
+            self._settings.global_set(["server", "commands", "serverRestartCommand"], self.serverRestartCommand)
+            self._logger.info("Service restart command added")
 
-        self._settings.global_set(["system", "actions"], actions)
+
+        ## Cleanup actions
+        actions_changed = False
+        for index, spec in enumerate(actions):
+            if spec.get("action") == 'restart_service':
+                actions.pop(index)
+                actions_changed = True
+            
+        if actions_changed:
+            self._settings.global_set(["system", "actions"], actions)
+            self._logger.info("Actions cleaned up")
+
+        self._settings.save()
 
     def _get_profile_from_name(self, profileName):
         profiles = self._settings.global_get(["temperature", "profiles"])

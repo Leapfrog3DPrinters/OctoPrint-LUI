@@ -22,6 +22,8 @@ $(function ()  {
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
         self.showChangelog = ko.observable(undefined);
+        self.changelogContents = ko.observable(undefined);
+        self.currentLuiVersion = ko.observable(undefined);
 
         self.errorDescriptionString = ko.pureComputed(function() {
             if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
@@ -343,7 +345,26 @@ $(function ()  {
             self.flyout.showFlyout('startup', true);
         }
 
-        self.showChangelogFlyout = function () {
+        self.updateChangelogContents = function()
+        {
+            OctoPrint.simpleApiGet('lui', {
+                data: {
+                    command: 'changelog_contents'
+                },
+                success: function (data) {
+                    self.changelogContents(data.changelog_contents);
+                    self.currentLuiVersion(data.lui_version);
+                }
+            });
+        }
+
+        self.showChangelogFlyout = function (updateContents) {
+            
+            if (updateContents)
+            {
+                self.updateChangelogContents();
+            }
+
             self.flyout.showFlyout('changelog', true)
                 .always(function() {
                     if (self.showChangelog()) {
@@ -418,6 +439,9 @@ $(function ()  {
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing)
             self.showChangelog(data.show_changelog);
+            self.changelogContents(data.changelog_contents);
+            self.currentLuiVersion(data.lui_version);
+
             if (!self.isHomed()) {
                 self.showStartupFlyout();
             }

@@ -769,7 +769,7 @@ $(function ()  {
                 minZ : 0.0,
                 maxZ : volumeInfo.height()
             };
-            if (LPFRG_MODEL == "Bolt"){
+            if (LPFRG_MODEL == "Bolt" || DEBUG_LUI) {
                 boundaries["minY"] = -35.0;
                 boundaries["minZ"] = -1.0; // This is in just for safety but needs to be checked.
                 boundaries["maxX"] = 373; // This is all to cater for the wiping. TODO FIX IT.

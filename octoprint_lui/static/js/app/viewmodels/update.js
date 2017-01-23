@@ -227,6 +227,9 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
+                case "forced_update":
+                    self.showUpdateWarning();
+                    break;
                 case "firmware_update_found":
                     if(DEBUG_LUI) {
                         self.onFirmwareUpdateFound(messageData.file);

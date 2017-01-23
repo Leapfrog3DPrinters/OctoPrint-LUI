@@ -10,10 +10,10 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="change_log_info" class="fa fa-info-circle" style="padding: 0.4em;" data-bind="click: function () { printerState.showChangelogFlyout() }"></i>
-        </span>      </div>
+          <i id="change_log_info" class="fa fa-info-circle" style="padding: 0.4em;" data-bind="click: function () { printerState.showChangelogFlyout(true) }"></i>
+        </span>      
+      </div>
       <div class="Table-item">
-        <span style="margin-left: auto;">
           <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
         </span>
       </div>
@@ -42,6 +42,10 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
+          <i id="change_log_info" class="fa fa-info-circle" style="padding: 0.4em;" data-bind="click: function () { printerState.showChangelogFlyout(true) }"></i>
+        </span>      
+      </div>
+      <div class="Table-item">
           <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
           <span data-bind="text: modelName"></span>
         </span>
