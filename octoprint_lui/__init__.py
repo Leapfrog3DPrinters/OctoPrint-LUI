@@ -19,12 +19,15 @@ from pipes import quote
 from functools import partial
 from copy import deepcopy
 from flask import jsonify, make_response, render_template, request
+from distutils.version import StrictVersion
+
 
 from tinydb import TinyDB, Query
 
 import octoprint_lui.util
 
 from octoprint_lui.util import exceptions
+from octoprint_lui.util.firmware import FirmwareUpdateUtility
 
 import octoprint.plugin
 from octoprint.settings import settings
@@ -164,6 +167,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homing = False
 
         ##~ Firmware
+        # If a lower version is found, user is required to update
+        # Don't use any signs here. Version requirements are automatically prefixed with '>='
+        self.firmware_version_requirement = {"Bolt" : "2.6", "WindowsDebug": "2.6" }
+
         self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
@@ -228,7 +235,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.machine_database.insert_multiple({ 'property': key, 'value': '' } for key in self.firmware_info_properties.keys())
 
         self.machine_info = self._get_machine_info()
-        self.model = self.machine_info['machine_type']
+        
+        self.model = self.machine_info['machine_type'] if 'machine_type' in self.machine_info else 'Unknown'
+
         if self.model == '':
             ##~ Model
             if sys.platform == "darwin":
@@ -244,7 +253,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # TODO REMOVE
         if self.model == 'Unknown':
-            self.model = 'MacDebug'
+            self.model = 'WindowsDebug'
 
         self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
 
@@ -257,8 +266,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Init Update
         self._init_update()
 
+
         ##~ Add server commands
         self._add_server_commands()
+
+        ##~ Init firmware update
+        self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder())
 
         ##~ Get filament amount stored in config
         self.update_filament_amount()
@@ -279,7 +292,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
 
         # Changelog check
-        self.changelog_path = os.path.join(self.paths[self.model]["update"], 'OctoPrint-LUI', self.changelog_filename)
+        self.changelog_path = None
+        if self.model in self.paths:
+            self.changelog_path = os.path.join(self.paths[self.model]["update"], 'OctoPrint-LUI', self.changelog_filename)
         self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
         self._update_changelog()
 
@@ -317,6 +332,94 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return markdown.markdown(md)
 
     ##~ Update
+
+    def _check_version_requirement(self, current_version, requirement):
+        """Helper function that checks if a given version matches a version requirement"""
+        if requirement.startswith('<='):
+            return StrictVersion(current_version) <= StrictVersion(requirement[2:])
+        elif requirement.startswith('<'):
+            return StrictVersion(current_version) < StrictVersion(requirement[1:])
+        elif requirement.startswith('>='):
+            return StrictVersion(current_version) >= StrictVersion(requirement[2:])
+        elif requirement.startswith('>'):
+            return StrictVersion(current_version) > StrictVersion(requirement[1:])
+        elif requirement.startswith('=='):
+            return StrictVersion(current_version) == StrictVersion(requirement[2:])
+        elif requirement.startswith('='):
+            return StrictVersion(current_version) == StrictVersion(requirement[1:])
+        else:
+            return StrictVersion(current_version) == StrictVersion(requirement)
+
+    @octoprint.plugin.BlueprintPlugin.route("/firmwareupdate", methods=["GET"])
+    def get_firmware_updates(self):
+        self._logger.debug("Checking for new firmware version")
+        self.fw_version_info = self.firmware_update_info.get_latest_version(self.model)
+
+        new_firmware = False
+        new_firmware_version = None
+        error = False
+        requires_lui_update = False
+
+        if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
+            current_version = StrictVersion(self.machine_info["firmware_version"])
+        else:
+            self._logger.warn("No current firmware version stored in machine database. Faking available firmware update .")
+            current_version = None
+
+        if self.fw_version_info:
+            # Compare latest with current
+            self._logger.debug("Current version / latest version: {0} / {1}".format(str(current_version), self.fw_version_info["version"]))
+
+            new_firmware_version = StrictVersion(self.fw_version_info["version"])
+
+            if not current_version or new_firmware_version > current_version:
+                new_firmware = True
+                if "lui_version" in self.fw_version_info and self.fw_version_info["lui_version"]:
+                    requires_lui_update = not self._check_version_requirement(self.plugin_version, self.fw_version_info["lui_version"])
+                    self._logger.debug("LUI version requirement: {0}. Update required: {1}".format(self.fw_version_info["lui_version"], requires_lui_update))   
+        else:
+            # If there's no info found, indicate error
+            error = True
+     
+  
+        return jsonify(dict({
+                    "error": error, 
+                    "new_firmware": new_firmware, 
+                    "current_version": str(current_version) if current_version else None, 
+                    "new_version": str(new_firmware_version) if new_firmware_version else None,
+                    "requires_lui_update": requires_lui_update
+                    }))
+
+
+    @octoprint.plugin.BlueprintPlugin.route("/firmwareupdate", methods=["POST"])
+    def do_firmware_update(self):
+        if self.fw_version_info:
+            fw_path = self.firmware_update_info.download_firmware(self.fw_version_info["url"])
+            if fw_path:
+                if self.flash_firmware_update(fw_path):
+                    return make_response(jsonify(), 200)
+                else:
+                    return make_response(jsonify({ "error": "Something went wrong while flashing the firmware update"}), 400)
+            else:
+                return make_response(jsonify({ "error": "An error occured while downloading the firmware update" }), 400)
+        else:
+            return make_response(jsonify({ "error": "No firmware update available" }), 400)
+
+    def flash_firmware_update(self, firmware_path):
+        flash_plugin = self._plugin_manager.get_plugin('flasharduino')
+
+        if flash_plugin:
+            if hasattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file'):
+                board = "m2560"
+                programmer = "wiring"
+                port = "/dev/ttyUSB0"
+                baudrate = "115200"
+                ext_path = os.path.basename(firmware_path)
+                return getattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file')(board, programmer, port, baudrate, firmware_path, ext_path)
+            else:
+                self._logger.warning("Could not flash firmware. FlashArduino plugin not up to date.")    
+        else:
+            self._logger.warning("Could not flash firmware. FlashArduino plugin not loaded.")
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["GET"])
     def get_updates(self):
@@ -411,13 +514,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetching_updates = True
 
     def _create_update_frontend(self, update_info):
+        update_frontend = []
         for update in update_info:
             update_frontend = [{'name': update['name'], 'update': update['update'], 'version': update['version']} for update in update_info]
         return update_frontend
 
     def _fetch_worker(self, update_info, force):
         if not octoprint_lui.util.is_online():
-            self._logger.debug("Cannot fetch repository. Printer not online.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_internet_offline()
@@ -425,7 +528,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return
 
         if not octoprint_lui.util.github_online():
-            self._logger.debug("Cannot fetch repository. Github not reachable.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_github_offline()
@@ -451,11 +553,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
         ## We switched from devel to master branch during production. Here we check if we 
         ## still are on 'devel', if so, switch the branch over to 'master' branch. 
-        self._logger.debug("Fetching all repositories")
         for update in update_info:
             if update["identifier"] == "octoprint":
-                self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
-                if not self.debug and "devel" in octoprint.__branch__ :
+                try:
+                    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
+                except subprocess.CalledProcessError as err:
+                     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
+                if "devel" in branch_name:
                     self._logger.info("Install is still on devel branch, going to switch")
                     # So we are really still on devel, let's switch to master
                     checkout_master_branch = None
@@ -465,7 +569,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                         self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
                     
                     if checkout_master_branch:
-                        self._logger.info("Switched OctoPrint from devel to master")
+                        self._logger.info("Switched OctoPrint from devel to master!")
                         # Set update manually to true so the next time we install the master branch
                         self.update_info[4]["update"] = True
                         self._send_client_message("forced_update")
@@ -632,6 +736,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 })
         else:
             machine_info = self._get_machine_info()
+
+            fw_req = None
+            if self.model in self.firmware_version_requirement:
+                fw_req =  self.firmware_version_requirement[self.model]
+                
             result = dict({
                 'machine_info': machine_info,
                 'filaments': self.filament_database.all(),
@@ -642,9 +751,35 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'auto_shutdown': self.auto_shutdown,
                 'show_changelog': self.show_changelog,
                 'changelog_contents': self._get_changelog_html(),
-                'lui_version': self.plugin_version
+                'lui_version': self.plugin_version,
+                'firmware_update_required' : self._firmware_update_required(),
+                'firmware_version_requirement': fw_req
                 })
             return jsonify(result)
+
+    def _firmware_update_required(self):
+        
+        if not self.model in self.firmware_version_requirement:
+            self._logger.debug('No firmware version check. Model not found in version requirement.')
+            return False
+        elif "firmware_version" in self.machine_info:
+            version_req = '>=' + str(self.firmware_version_requirement[self.model])
+
+            if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
+                current_version = str(self.machine_info["firmware_version"])
+
+                # _check_version_requirement is the requirement is *met*, so invert
+                update_required = not self._check_version_requirement(current_version, version_req)
+            
+                self._logger.debug('Firmware version check. Current version: {0}. Requirement: {1}. Needs update: {2}'.format(current_version, version_req, update_required))
+            else:
+                self._logger.warn('Could not check firmware version, machine database not up-to-date yet.')
+                update_required = False
+
+            return update_required
+        else:
+            self._logger.warn('Unable to compare firmware versions. Probably firmware doesn\'t send version correctly. Requiring update.')
+            return True # Unable to check, require a firmware update
 
     def get_api_commands(self):
             return dict(
@@ -865,6 +1000,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands('G28')
         self.send_client_is_homing()
 
+    #TODO: Remove?
+    @octoprint.plugin.BlueprintPlugin.route("/remote_homing", methods=["GET"])
+    def remote_homing(self):
+        if self.debug:
+            self._printer.commands('G28')
+            self.send_client_is_homing()
 
     def _on_api_command_temperature_safety_timer_cancel(self):
         if self.temperature_safety_timer:
@@ -2103,6 +2244,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _init_usb(self):
 
+        if not self.model in self.paths:
+            self._logger.warning("Could not add USB storage. No media folder found for current model.")
+            return
+
         # Set media folder relative to printer model
         self.media_folder = self.paths[self.model]["media"]
 
@@ -2141,6 +2286,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update software init
         self.last_git_fetch = 0
+        self.update_info = []
+
+        if not self.model in self.paths:
+            self._logger.warn("Cannot define update information. Update paths not found for current model.")
+            return
 
         # NOTE: The order of this array is used for functions! Keep it the same! 
         self.update_info = [
@@ -2306,6 +2456,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if len(line) > 0:
            self._update_from_m115_properties(line)
+           self.machine_info = self._get_machine_info()
+           self._send_client_message("machine_info_updated", self.machine_info)
 
     def _update_from_m115_properties(self, line):
         line = line.replace(': ', ':')
