@@ -168,11 +168,6 @@ $(function () {
         }
         self.deactivateFlyout(template_flyout);
     };
-
-    self.closeFlyout = function(id)
-    {
-        //TODO: Close a specific flyout
-    }
     
     self.closeFlyoutAccept = function (flyout) {
         if (flyout !== undefined)
