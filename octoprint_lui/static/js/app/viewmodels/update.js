@@ -335,9 +335,10 @@ $(function ()  {
         self.onFlashingComplete = function(success)
         {
             // Check if a firmware update is still required
-            if (success) {
-                self.requestFirmwareData(true); // Silent check
-            }
+            // Can't check new firmware version yet. Requires OctoPrint to reconnect and send a M115 first
+            //if (success) {
+            //    self.requestFirmwareData(true); // Silent check
+            //}
         }
 
         self.updateDoneOrError = function() {
@@ -367,6 +368,12 @@ $(function ()  {
                 case "firmware_update_found":
                     if(DEBUG_LUI) {
                         self.onFirmwareUpdateFound(messageData.file);
+                    }
+                    break;
+                case "machine_info_updated":
+                    //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
+                    if (self.flyout.currentFlyoutTemplate == "#update_settings_flyout") {
+                        self.requestFirmwareData(true); // Silent check
                     }
                     break;
                 case "internet_offline":

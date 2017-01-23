@@ -2451,6 +2451,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if len(line) > 0:
            self._update_from_m115_properties(line)
            self.machine_info = self._get_machine_info()
+           self._send_client_message("machine_info_updated", self.machine_info)
 
     def _update_from_m115_properties(self, line):
         line = line.replace(': ', ':')
