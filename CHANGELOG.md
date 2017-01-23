@@ -2,6 +2,8 @@
 
 Change log for OctoPrint-LUI. 
 
+## 1.0.6
+
 ## 1.0.5
 
 ### This update requires two _consecutive_ updates due to switching of branches. Update version number will stay 1.0.5. after second update.
