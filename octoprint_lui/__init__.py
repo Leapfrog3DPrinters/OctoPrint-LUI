@@ -566,7 +566,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
                 except subprocess.CalledProcessError as err:
                      self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
-                if "devel" in branch_name:
+                if not self.debug and "devel" in branch_name:
                     self._logger.info("Install is still on devel branch, going to switch")
                     # So we are really still on devel, let's switch to master
                     checkout_master_branch = None
@@ -835,7 +835,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing
         """
-        self._on_powerbutton_press()
+        self._printer.commands(['!!DEBUG:mintemp_error0']); # Let's the virtual printer send a MINTEMP message which brings the printer in error state
 
     def _on_api_command_changelog_seen(self, *args, **kwargs):
         self._logger.info("changelog_seen")
