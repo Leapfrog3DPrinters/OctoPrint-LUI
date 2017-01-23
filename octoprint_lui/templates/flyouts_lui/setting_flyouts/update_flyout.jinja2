@@ -112,8 +112,8 @@
               </a>
             </li>
           </ul>
-
-          {% else %}
+          {%- endif %}
+          {%  if not local_addr or debug_lui -%}
           <ul class="button-area">
             <li class="button secondary-button fileinput-button">
               <a href="#">
@@ -125,8 +125,7 @@
           {%- endif %}
         </div>
       </div>
-      <!-- ko if: $parent.fileNameToFlash -->
-      <div class="Table-row">
+      <div class="Table-row" data-bind="visible: $parent.fileNameToFlash">
 
         <div class="Table-item Table-item-grow-5">
           <span data-bind="text: $parent.fileNameToFlash"></span>
@@ -144,7 +143,6 @@
         </div>
 
       </div>
-      <!-- /ko -->
       <div class="Table-row">
         <div class="Table-item">
           <div class="progress">
