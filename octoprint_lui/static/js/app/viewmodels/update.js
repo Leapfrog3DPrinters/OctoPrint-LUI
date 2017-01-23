@@ -220,7 +220,25 @@ $(function ()  {
             if(data.new_firmware)
             {
                 // New firmware found
-                self.firmwareUpdateAvailable(true);
+                if (data.requires_lui_update) {
+                    self.firmwareUpdateAvailable(false);
+                    if(!silent && self.update_needed() > 0)
+                    {
+                        var title = "Firmware update found"
+                        var text = _.sprintf(gettext('A firmware update has been found, but this requires a software update first.'), {  });
+                        var question = "Would you like to update the printer software?";
+
+                        var dialog = { 'title': title, 'text': text, 'question': question };
+
+                        self.flyout.showConfirmationFlyout(dialog)
+                            .done(function () {
+                                self.update('all');
+                            });
+                    }
+                }
+                else {
+                    self.firmwareUpdateAvailable(true);
+                }
             }
             else if (data.error && !silent)
             {
