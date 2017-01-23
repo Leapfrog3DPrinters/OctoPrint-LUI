@@ -2656,8 +2656,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.auto_home_after_maintenance()
 
         if(event == Events.DISCONNECTED):
-            self.powerdown_after_disconnect = False
-            self.do_powerdown_after_disconnect()
+            if self.powerdown_after_disconnect:
+                self.powerdown_after_disconnect = False
+                self.do_powerdown_after_disconnect()
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:

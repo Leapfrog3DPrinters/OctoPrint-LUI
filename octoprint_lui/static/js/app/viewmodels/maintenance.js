@@ -118,10 +118,12 @@ $(function () {
 
         self.completeHeadMaintenance = function()
         {
-            if (self.movingToMaintenancePositionInfo != undefined) {
+            if (self.movingToMaintenancePositionInfo !== undefined) {
                 self.flyout.closeInfo(self.movingToMaintenancePositionInfo);
+                self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
+                self.movingToMaintenancePositionInfo = undefined;
             }
-            self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
+            
         }
 
         self.beginPurgeWizard = function (tool)
