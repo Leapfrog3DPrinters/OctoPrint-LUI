@@ -162,10 +162,7 @@ $(function ()  {
                 .done(function () {
                     self.firmwareUpdateAvailable(false);
 
-                    $.notify({
-                        title: gettext("Update completed."),
-                        text: _.sprintf(gettext('The firmware has been updated.'), {})
-                    }, "success");
+                    // No need to notify. FlashArduino will do that for us
 
                     // Check if a firmware update is still required
                     self.printerState.requestData();
@@ -338,8 +335,9 @@ $(function ()  {
         self.onFlashingComplete = function(success)
         {
             // Check if a firmware update is still required
-            if (success)
-                self.printerState.requestData();
+            if (success) {
+                self.requestFirmwareData(true); // Silent check
+            }
         }
 
         self.updateDoneOrError = function() {
