@@ -167,7 +167,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homing = False
 
         ##~ Firmware
-        self.firmware_version_requirement = {"Bolt" : "2.6", "WindowsDebug": "2.6" } # If a lower version is found, user is required to update
+        # If a lower version is found, user is required to update
+        # Don't use any signs here. Version requirements are automatically prefixed with '>='
+        self.firmware_version_requirement = {"Bolt" : "2.6", "WindowsDebug": "2.6" }
 
         self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
@@ -759,7 +761,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.debug or not self.model in self.firmware_version_requirement:
             return False
         elif "firmware_version" in self.machine_info:
-            return self.firmware_version_requirement[self.model] > float(self.machine_info["firmware_version"])
+            version_req = '>=' + str(self.firmware_version_requirement[self.model])
+            current_version = str(self.machine_info["firmware_version"])
+            return self._check_version_requirement(current_version, version_req)
         else:
             return True # Unable to check, require a firmware update
 
