@@ -373,6 +373,7 @@ $(function ()  {
                 case "machine_info_updated":
                     //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
                     if (self.flyout.currentFlyoutTemplate == "#update_settings_flyout") {
+                        self.printerState.requestData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)
                         self.requestFirmwareData(true); // Silent check
                     }
                     break;
