@@ -383,12 +383,11 @@ $(function ()  {
         }
 
         self.closeFirmwareUpdateRequiredFlyout = function () {
-            if (self.flyout.currentFlyoutTemplate == "#filament_update_required_flyout")
-                self.flyout.closeFlyoutAccept();
+            self.flyout.closeFlyoutAccept("firmware_update_required");
         }
 
         self.closeStartupFlyout = function ()  {
-            self.flyout.closeFlyoutAccept();
+            self.flyout.closeFlyoutAccept('startup');
         }
 
         self.beginHoming = function ()  {

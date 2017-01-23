@@ -355,24 +355,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Checking for new firmware version")
         self.fw_version_info = self.firmware_update_info.get_latest_version(self.model)
 
-        if "firmware_version" in self.machine_info:
-            current_version = StrictVersion(self.machine_info["firmware_version"])
-        else:
-            current_version = StrictVersion("0.1")
-
         new_firmware = False
         new_firmware_version = None
         error = False
         requires_lui_update = False
 
+        if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
+            current_version = StrictVersion(self.machine_info["firmware_version"])
+        else:
+            self._logger.warn("No current firmware version stored in machine database. Faking available firmware update .")
+            current_version = None
+
         if self.fw_version_info:
             # Compare latest with current
-            # TODO: Force refresh of current version number?
             self._logger.debug("Current version / latest version: {0} / {1}".format(str(current_version), self.fw_version_info["version"]))
 
             new_firmware_version = StrictVersion(self.fw_version_info["version"])
 
-            if new_firmware_version > current_version:
+            if not current_version or new_firmware_version > current_version:
                 new_firmware = True
                 if "lui_version" in self.fw_version_info and self.fw_version_info["lui_version"]:
                     requires_lui_update = not self._check_version_requirement(self.plugin_version, self.fw_version_info["lui_version"])
@@ -380,11 +380,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             # If there's no info found, indicate error
             error = True
-
+     
+  
         return jsonify(dict({
                     "error": error, 
                     "new_firmware": new_firmware, 
-                    "current_version": str(current_version), 
+                    "current_version": str(current_version) if current_version else None, 
                     "new_version": str(new_firmware_version) if new_firmware_version else None,
                     "requires_lui_update": requires_lui_update
                     }))
@@ -758,17 +759,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _firmware_update_required(self):
         
-        if self.debug or not self.model in self.firmware_version_requirement:
-            self._logger.debug('No firmware version check. Debug mode on and/or model not found in version requirement.')
+        if not self.model in self.firmware_version_requirement:
+            self._logger.debug('No firmware version check. Model not found in version requirement.')
             return False
         elif "firmware_version" in self.machine_info:
             version_req = '>=' + str(self.firmware_version_requirement[self.model])
-            current_version = str(self.machine_info["firmware_version"])
 
-            # _check_version_requirement is the requirement is *met*, so invert
-            update_required = not self._check_version_requirement(current_version, version_req)
+            if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
+                current_version = str(self.machine_info["firmware_version"])
+
+                # _check_version_requirement is the requirement is *met*, so invert
+                update_required = not self._check_version_requirement(current_version, version_req)
             
-            self._logger.debug('Firmware version check. Current version: {0}. Requirement: {1}. Needs update: {2}'.format(current_version, version_req, update_required))
+                self._logger.debug('Firmware version check. Current version: {0}. Requirement: {1}. Needs update: {2}'.format(current_version, version_req, update_required))
+            else:
+                self._logger.warn('Could not check firmware version, machine database not up-to-date yet.')
+                update_required = False
 
             return update_required
         else:
