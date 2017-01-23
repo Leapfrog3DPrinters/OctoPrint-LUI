@@ -21,31 +21,31 @@ $(function () {
 
         self.filamentLoadPosition = function ()  {
 
-            var text = "You are about to move the printer to the maintenance position.";
-            var question = "Do want to continue?";
-            var title = "Maintenance position"
+            var text = gettext("You are about to move the printer to the maintenance position.");
+            var question = gettext("Do you want to continue?");
+            var title = gettext("Maintenance position");
             var dialog = {'title': title, 'text': text, 'question' : question};
 
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function ()  {
                     self.moveToFilamentLoadPosition();
 
-                    self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterMaintenance);
+                    self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterMaintenance);
                 });
         };
 
         self.cleanBedPosition = function ()  {
 
-            var text = "You are about to move the printer to the clean bed position. This move will home all axis! Make sure there is no print on the bed.";
-            var question = "Do want to continue?";
-            var title = "Clean bed position"
+            var text = gettext("You are about to move the printer to the clean bed position. This move will home all axis! Make sure there is no print on the bed.");
+            var question = gettext("Do want to continue?");
+            var title = gettext("Clean bed position");
             var dialog = {'title': title, 'text': text, 'question' : question};
 
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){
                     self.moveToCleanBedPosition();
 
-                    self.flyout.showInfo('Maintenance position', 'Press OK when you are done with cleaning the bed. This will home the printer.', false, self.afterMaintenance);
+                    self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with cleaning the bed. This will home the printer.'), false, self.afterMaintenance);
                 });
         };
 
@@ -76,7 +76,7 @@ $(function () {
             self._sendApi({
                 command: 'move_to_maintenance_position'
             }).done(function ()  {
-                $.notify({ title: "Clean bed", text: "The printer is moving towards the clean bed position." }, "success");
+                $.notify({ title: gettext("Clean bed"), text: gettext("The printer is moving towards the clean bed position.") }, "success");
             });
         };
 
@@ -84,7 +84,7 @@ $(function () {
             self._sendApi({
                 command: 'move_to_filament_load_position'
             }).done(function ()  {
-                $.notify({ title: "Head maintenance", text: "The printhead is moving towards the maintenance position." }, "success");
+                $.notify({ title: gettext("Head maintenance"), text: gettext("The printhead is moving towards the maintenance position.") }, "success");
                 
             });
         };
@@ -96,9 +96,9 @@ $(function () {
             if (self.filament.getFilamentMaterial(tool) == "None")
                 return;
 
-            var text = "You are about to move the printer to the filament load position.";
-            var question = "Do want to continue?";
-            var title = "Purge nozzle"
+            var text = gettext("You are about to move the printer to the filament load position.");
+            var question = gettext("Do want to continue?");
+            var title = gettext("Purge nozzle");
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)

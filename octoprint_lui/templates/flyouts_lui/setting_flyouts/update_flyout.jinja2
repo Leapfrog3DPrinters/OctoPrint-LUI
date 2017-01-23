@@ -3,7 +3,7 @@
     {% if debug_lui %}
     <div class="Table-row Table-header">
       <div class="Table-item Table-item-grow-5">
-        Version information
+        {{ _('Version information') }}
       </div>
       <div class="Table-item">
           <span data-bind="text: modelName"></span>
@@ -38,7 +38,7 @@
     {% else %}
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Software
+        {{ _('Software') }}
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
@@ -53,7 +53,7 @@
     </div>
     <div class="Table-row">
       <div class="Table-item Table-item-grow-4" style="text-overflow: ellipsis">
-        Leapfrog software
+        {{ _('Leapfrog software') }}
       </div>
       <div class="Table-item text_wrap" data-bind="text: lpfrg_software_version">
       </div>
@@ -73,7 +73,7 @@
     <div class="Table">
       <div class="Table-row Table-header">
         <div class="Table-item">
-          Firmware
+          {{ _('Firmware') }}
         </div>
       </div>
       <div class="Table-row">
@@ -84,7 +84,7 @@
         <!-- /ko -->
         <!-- ko ifnot: $parent.fileNameToFlash -->
         <div class="Table-item Table-item-grow-4">
-          Current version:
+          {{ _('Current version:') }}
         </div>
         <div class="Table-item">
           <span data-bind="text: $parent.firmwareVersion"></span>
@@ -95,7 +95,7 @@
             <li id="settings-flash-arduino-start" class="button" data-bind="css: {disabled: !flash_enable()}">
               <a href="#">
                 <span>
-                  <i class="fa fa-upload"></i>Flash
+                  <i class="fa fa-upload"></i>{{ _('Flash') }}
                 </span>
               </a>
             </li>
@@ -109,7 +109,7 @@
           <ul class="button-area">
             <li class="button secondary-button fileinput-button" data-bind="click: function () { $parent.browseForFirmware() }, css: { disabled: !$parent.files.isUsbAvailable() }">
               <a href="#">
-                <span>Browse USB drive for firmware</span>
+                <span>{{ _('Browse USB drive for firmware') }}</span>
             </a>
             </li>
           </ul>
@@ -118,7 +118,7 @@
           <ul class="button-area">
             <li class="button secondary-button fileinput-button">
               <a href="#">
-                <span>Upload firmware</span>
+                <span>{{ _('Upload firmware') }}</span>
                 <input id="settings-flash-arduino" type="file" accept=".hex" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file", filename="")}}" />
             </a>
             </li>
@@ -129,16 +129,16 @@
       <div class="Table-row">
         <div class="Table-item">
           <div class="progress">
-            <span id="flash_read_progress" class="bg-none" style="width: 100%">Reading</span>
+            <span id="flash_read_progress" class="bg-none" style="width: 100%">{{ _('Reading') }}</span>
           </div>
           <div class="progress">
-            <span id="flash_write_progress" class="bg-none" style="width: 100%">Writing</span>
+            <span id="flash_write_progress" class="bg-none" style="width: 100%">{{ _('Writing') }}</span>
           </div>
           <div class="progress">
-            <span id="flash_verify_progress" class="bg-none" style="width: 100%">Verify</span>
+            <span id="flash_verify_progress" class="bg-none" style="width: 100%">{{ _('Verify') }}</span>
           </div>
           <div class="progress">
-            <span id="flash_done_progress" class="bg-none" style="width: 100%">Done</span>
+            <span id="flash_done_progress" class="bg-none" style="width: 100%">{{ _('Done')}}</span>
           </div>
         </div>
       </div>

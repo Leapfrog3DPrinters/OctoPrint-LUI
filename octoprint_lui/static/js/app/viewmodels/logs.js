@@ -75,16 +75,16 @@ $(function() {
             }).done(function ()  {
                 $.notify(
                     { 
-                        title: 'Log file copied', 
-                        text: 'The log file has been copied to your USB drive.' 
+                        title: gettext('Log file copied'), 
+                        text: gettext('The log file has been copied to your USB drive.')
                     }, 
                     'success'
                 );
             }).fail(function ()  {
                 $.notify(
                     { 
-                        title: 'Copying of log file failed', 
-                        text: 'The log file could not be copied. Please check if there is sufficient space available on the drive and try again.' 
+                        title: gettext('Copying of log file failed'), 
+                        text: gettext('The log file could not be copied. Please check if there is sufficient space available on the drive and try again.')
                     }, 
                     'error'
                 );

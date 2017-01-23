@@ -29,9 +29,9 @@ $(function ()  {
 
         self.getUpdateText = function (data) {
             if (data.update()) {
-                return "Update"
+                return gettext("Update");
             } else {
-                return "Up-to-date"
+                return gettext("Up-to-date");
             }
         };
 
@@ -45,9 +45,9 @@ $(function ()  {
 
         self.getUpdateAllText = ko.pureComputed(function () {
             if (self.update_needed() > 0) {
-                return "Update"
+                return gettext("Update");
             } else {
-                return "Up-to-date"
+                return gettext("Up-to-date");
             }
         });
 
@@ -101,13 +101,13 @@ $(function ()  {
             }
             // Standar behaviour
             if (name == "all") {
-                title = "Update software";
-                text = "You are about to update the printer software. This will take some time and will restart the printer background service when completed.";
-                question = "Do you want to continue?";
+                title = gettext("Update software");
+                text = gettext("You are about to update the printer software. This will take some time and will restart the printer background service when completed.");
+                question = gettext("Do you want to continue?");
             } else { // Development behaviour
-                title = "Update: " + name;
-                text = "You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed.";
-                question = "Do want to update " + name + "?";
+                title = gettext("Update: ") + name;
+                text = gettext("You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed.");
+                question = gettext("Do want to update ") + name + "?";
             }
             var dialog = { 'title': title, 'text': text, 'question': question };
             self.flyout.showConfirmationFlyout(dialog)
@@ -129,8 +129,8 @@ $(function ()  {
         self.showUpdateWarning = function () 
         {
             self.update_warning = self.flyout.showWarning(
-                "Updating", 
-                "System is updating, please wait until the updates are completed...", 
+                gettext("Updating"), 
+                gettext("System is updating, please wait until the updates are completed..."), 
                 true);
         }
 
@@ -167,9 +167,9 @@ $(function ()  {
         self.onFirmwareUpdateFound = function (file) {
 
             if ((!self.flyout.isOpen() || !self.flyout.blocking)) {
-                var title = "Firmware update found"
+                var title = gettext("Firmware update found")
                 var text = _.sprintf(gettext('The USB drive you inserted contains a firmware update with filename "%(filename)s".'), { filename: file["name"] });
-                var question = "Would you like to install this update?";
+                var question = gettext("Would you like to install this update?");
 
                 var dialog = { 'title': title, 'text': text, 'question': question };
 

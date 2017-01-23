@@ -228,13 +228,45 @@ $(function () {
             return result;
         };
 
+
+        self.returnToolString = function(data) {
+            switch (data.name()){
+                case "tool1":
+                    return gettext("Left");
+                case "tool0":
+                    return gettext("Right");
+                case "bed":
+                    return gettext("Bed");
+                default:
+                    return 0;
+            };
+        }
+
+        self.returnToolStatusString = function(tool_num) {
+            if (self.tools().length > 0 && self.tools() != undefined) { 
+                var status = self.toolStatus()[tool_num].status();
+                switch(status) {
+                    case "HEATING":
+                        return gettext("Heating");
+                    case "COOLING":
+                        return gettext("Cooling");
+                    case "IDLE":
+                        return gettext("Idle");
+                    case "READY":
+                        return gettext("Ready");
+                    default:
+                        return "";
+                }
+            }
+        }
+
         self.returnProgressString = function(data) {
             switch (data.name()){
-                case "Left":
+                case "tool1":
                     return self.leftProgress();
-                case "Right":
+                case "tool0":
                     return self.rightProgress();
-                case "Bed":
+                case "bed":
                     return self.bedProgress();
                 default:
                     return 0;
@@ -244,11 +276,11 @@ $(function () {
         self.returnActualTemp = function(data) {
             if (self.tools().length > 0 && self.tools() != undefined) {
                 switch (data.name()){
-                    case "Left":
+                    case "tool1":
                         return self.tools()[1]['actual']().toFixed(0);
-                    case "Right":
+                    case "tool0":
                         return self.tools()[0]['actual']().toFixed(0);
-                    case "Bed":
+                    case "bed":
                         return self.bedTemp['actual']().toFixed(0);
                     default:
                         return 0;
@@ -259,11 +291,11 @@ $(function () {
         self.returnTargetTemp = function(data) {
             if (self.tools().length > 0 && self.tools() != undefined) {
                 switch (data.name()){
-                    case "Left":
+                    case "tool1": 
                         return self.tools()[1]['target']().toFixed(0);
-                    case "Right":
+                    case "tool0":
                         return self.tools()[0]['target']().toFixed(0);
-                    case "Bed":
+                    case "bed":
                         return self.bedTemp['target']().toFixed(0);
                     default:
                         return 0;

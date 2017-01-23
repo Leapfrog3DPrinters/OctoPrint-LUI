@@ -18,7 +18,7 @@
                 <li class="button load-button" data-bind="click: function () { browseLocal() }, css: {'secondary-button': !isOriginLocal()}">
                   <a href="#browse_local">
                     <span>
-                      <i class="fa fa-hdd-o"></i>Local
+                      <i class="fa fa-hdd-o"></i>{{ _('Local') }}
                     </span>
                   </a>
                 </li>
@@ -29,7 +29,7 @@
                 <li class="button load-button" data-bind="click: function () { browseUsb() }, css: {disabled: !isUsbAvailable(), 'secondary-button': isOriginLocal()}">
                   <a href="#browse_usb">
                     <span>
-                      <i class="fa fa-usb"></i>USB
+                      <i class="fa fa-usb"></i>{{ _('USB') }}
                     </span>
                   </a>
                 </li>
@@ -77,22 +77,22 @@
                   <li class="menu_label">
                     <span>
                       <i class="fa fa-sort"></i>
-                      <strong>Sort by</strong>
+                      <strong>{{ _('Sort by') }}</strong>
                     </span>
                   </li>
                   <li>
-                    <a href="" data-bind="click: function () { $root.listHelper.changeSorting('name'); }">Name</a>
+                    <a href="" data-bind="click: function () { $root.listHelper.changeSorting('name'); }">{{ _('Name') }}</a>
                   </li>
                   <li>
-                    <a href="" data-bind="click: function () { $root.listHelper.changeSorting('upload'); }">Upload date</a>
+                    <a href="" data-bind="click: function () { $root.listHelper.changeSorting('upload'); }">{{ _('Upload date') }}</a>
                   </li>
                   <li>
-                    <a href="" data-bind="click: function () { $root.listHelper.changeSorting('size'); }">Size</a>
+                    <a href="" data-bind="click: function () { $root.listHelper.changeSorting('size'); }">{{ _('Size') }}</a>
                   </li>
                   <li class="menu_label">
                     <span>
                       <i class="fa fa-hdd-o"></i>
-                      <strong>Storage</strong>
+                      <strong>{{ _('Storage') }}</strong>
                       <small>
                         <span data-bind="text: freeSpaceString"></span>
                       </small>
@@ -100,7 +100,7 @@
                   </li>
                   <li>
                     <a href="#" data-bind="click: function () { removeAllFiles() }, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
-                      <i class="fa fa-trash"></i>Delete all</a>
+                      <i class="fa fa-trash"></i>{{ _('Delete all') }}</a>
                   </li>
                 </ul>
               </li>
@@ -112,7 +112,7 @@
             <ul class="file_main">
               <li class="file_name">
                 <a href="#file_name">
-                  <span>Loading files...</span>
+                  <span>{{ _('Loading files...') }}</span>
                 </a>
               </li>
               <li class="file_status">
@@ -129,9 +129,9 @@
               <li class="file_name">
                 <a href="#file_name">
                   {% if local_addr %}
-                  <span class="no_files">There are no files on your printer yet. You can load files from a USB drive.</span>
+                  <span class="no_files">{{ _('There are no files on your printer yet. You can load files from a USB drive.') }}</span>
                   {% else %}
-                  <span class="no_files">There are no files on your printer yet. Click upload to load a file from your computer..</span>
+                  <span class="no_files">{{ _('There are no files on your printer yet. Click upload to load a file from your computer..')}}</span>
                   {% endif %}
                 </a>
               </li>
@@ -200,19 +200,19 @@
                   {% if local_addr %}
                   <li class="button">
                     <a href="#" data-bind="click: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
-                      <span>Copy to USB</span>
+                      <span>{{ _('Copy to USB') }}</span>
                     </a>
                   </li>
                   {% else %}
                   <li class="button">
                     <a href="#" data-bind="attr: {href: $root.downloadLink($data), css: {disabled: !$root.downloadLink($data)}}">
-                      <span>Download</span>
+                      <span>{{ _('Download') }}</span>
                     </a>
                   </li>
                   {% endif %}
                   <li class="button failed-button">
                     <a href="#" data-bind="click: function () { if ($root.enableRemove($data)) { $root.removeFile($data); } else { return; } }, css: {disabled: !$root.enableRemove($data)}">
-                      <span>Delete</span>
+                      <span>{{ _('Delete') }}</span>
                     </a>
                   </li>
                 </ul>
@@ -230,7 +230,7 @@
                 <ul class="button-area">
                   <li class="button secondary-button load-button">
                     <a href="#" data-bind="click: function () { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
-                      <span><i class="fa fa-upload"></i>Load</span>
+                      <span><i class="fa fa-upload"></i>{{ _('Load') }}</span>
                     </a>
                   </li>
                 </ul>
@@ -242,14 +242,14 @@
             <ul class="file_main">
               <li class="file_name">
                 <a href="#">
-                  <span data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }, text: name"></span><span style="font-style: italic"> Not supported</span>
+                  <span data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }, text: name"></span><span style="font-style: italic"> {{ _('Not supported') }}</span>
                 </a>
               </li>
               <li class="file_load">
                 <ul class="button-area">
                   <li class="button secondary-button load-button">
                     <a href="#" data-bind="click: function () { if ($root.enableSelect($data)) { $root.removeFile($data); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Remove') }}">
-                      <span><i class="fa fa-trash"></i>Delete</span>
+                      <span><i class="fa fa-trash"></i>{{ _('Delete') }}</span>
                     </a>
                   </li>
                 </ul>

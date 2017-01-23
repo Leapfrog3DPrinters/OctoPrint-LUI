@@ -3,12 +3,12 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Bed calibration
+        {{ _('Bed calibration') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <p>Please make sure there is no print on the bed before you continue.</p>
+        <p>{{ _('Please make sure there is no print on the bed before you continue.') }}</p>
       </div>
     </div>
     <div class="Table-row">
@@ -16,7 +16,7 @@
         <ul class="button-area">
           <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startManualBedCalibration()}">
             <a href="">
-              <span>Continue calibration</span>
+              <span>{{ _('Continue calibration') }}</span>
             </a>
           </li>
         </ul>
@@ -28,13 +28,13 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Bed leveling
+        {{ _('Bed leveling ') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
         <!--TODO improve explanation-->
-        <p>Select the corner you would like to calibrate. The extruder will move into this position. You may adjust the bed by turning the knob below the bed.</p>
+        <p>{{ _('Select the corner you would like to calibrate. The extruder will move into this position. You may adjust the bed by turning the knob below the bed.')}}</p>
       </div>
     </div>
     <div class="Table-row">
@@ -55,12 +55,12 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Bed calibration
+        {{ _('Bed calibration') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <p>Please make sure there is no print on the bed before you continue.</p>
+        <p>{{ _('Please make sure there is no print on the bed before you continue.')}}</p>
       </div>
     </div>
     <div class="Table-row">
@@ -68,7 +68,7 @@
         <ul class="button-area">
           <li class="button" data-bind="click: function () { startAutoBedCalibration() }">
             <a href="">
-              <span>Level bed</span>
+              <span>{{ _('Level bed') }}</span>
             </a>
           </li>
         </ul>
@@ -77,7 +77,7 @@
         <ul class="button-area">
           <li class="button" data-bind="click: function () { startZoffset() } ">
             <a href="">
-              <span>Z-offset wizard</span>
+              <span>{{ _('Z-offset wizard') }}</span>
             </a>
           </li>
         </ul>
@@ -89,12 +89,12 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Bed leveling
+        {{ _('Bed leveling') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <span>The print bed is currently being leveled. Please wait for the process to complete.</span>
+        <span>{{ _('The print bed is currently being leveled. Please wait for the process to complete.')}}</span>
       </div>
     </div>
     <div class="Table-row">
@@ -112,7 +112,7 @@
     </div>
     <div class="Table-row" data-bind="visible: autoBedCalibrationComplete()">
       <div class="Table-item">
-        <span>Bed levelling has completed</span>
+        <span>{{ _('Bed levelling has completed') }}</span>
       </div>
     </div>
   </div>
