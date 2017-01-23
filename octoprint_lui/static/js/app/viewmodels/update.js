@@ -161,18 +161,12 @@ $(function ()  {
             OctoPrint.postJson(url)
                 .done(function () {
                     self.firmwareUpdateAvailable(false);
-
-                    // No need to notify. FlashArduino will do that for us
-
-                    // Check if a firmware update is still required
-                    self.printerState.requestData();
                 }).fail(function () {
                     $.notify({
                         title: gettext("Update failed."),
                         text: _.sprintf(gettext('Please check the logs.'), {})
                     }, "error")
                 }).always(function () {
-                    self.requestFirmwareData();
                     self.firmwareUpdating(false);
                 });
         }
