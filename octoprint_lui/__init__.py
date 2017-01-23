@@ -27,6 +27,7 @@ from tinydb import TinyDB, Query
 import octoprint_lui.util
 
 from octoprint_lui.util import exceptions
+from octoprint_lui.util.firmware import FirmwareUpdateUtility
 
 import octoprint.plugin
 from octoprint.settings import settings
@@ -262,6 +263,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Init Update
         self._init_update()
+
 
         ##~ Add server commands
         self._add_server_commands()
@@ -516,7 +518,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _fetch_worker(self, update_info, force):
         if not octoprint_lui.util.is_online():
-            self._logger.debug("Cannot fetch repository. Printer not online.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_internet_offline()
@@ -524,7 +525,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return
 
         if not octoprint_lui.util.github_online():
-            self._logger.debug("Cannot fetch repository. Github not reachable.")
             # Only send a message to the front end if the user requests the update
             if force:
                 self.send_client_github_offline()
@@ -550,11 +550,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
         ## We switched from devel to master branch during production. Here we check if we 
         ## still are on 'devel', if so, switch the branch over to 'master' branch. 
-        self._logger.debug("Fetching all repositories")
         for update in update_info:
             if update["identifier"] == "octoprint":
-                self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
-                if not self.debug and "devel" in octoprint.__branch__ :
+                try:
+                    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
+                except subprocess.CalledProcessError as err:
+                     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
+                if "devel" in branch_name:
                     self._logger.info("Install is still on devel branch, going to switch")
                     # So we are really still on devel, let's switch to master
                     checkout_master_branch = None
@@ -564,7 +566,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                         self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
                     
                     if checkout_master_branch:
-                        self._logger.info("Switched OctoPrint from devel to master")
+                        self._logger.info("Switched OctoPrint from devel to master!")
                         # Set update manually to true so the next time we install the master branch
                         self.update_info[4]["update"] = True
                         self._send_client_message("forced_update")

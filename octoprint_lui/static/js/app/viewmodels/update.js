@@ -347,6 +347,11 @@ $(function ()  {
             $('#update_spinner').removeClass('fa-spin');
         }
 
+        self.firmwareUpdateDoneOrError = function () {
+            self.firmwareRefreshing(false);
+            $('#firmware_update_spinner').removeClass('fa-spin');
+        }
+
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
                 return;
@@ -355,6 +360,9 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
+                case "firmware_update_required":
+                    self.showFirmwareUpdateRequired();
+                    break;
                 case "forced_update":
                     self.showUpdateWarning();
                     break;
@@ -366,7 +374,7 @@ $(function ()  {
                 case "internet_offline":
                     $.notify({
                         title: gettext("Printer offline"),
-                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilties. '), {})
+                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities. '), {})
                     },
                         "error"
                     )
