@@ -25,10 +25,6 @@ $(function ()  {
         self.changelogContents = ko.observable(undefined);
         self.currentLuiVersion = ko.observable(undefined);
 
-        self.firmwareUpdateRequired = ko.observable(false);
-        self.firmwareVersionRequirement = ko.observable(undefined);
-
-
         self.errorDescriptionString = ko.pureComputed(function() {
             if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
                 return gettext("Your extruder temperature is either very low or your extruder is disconnected. Make sure you are operating within environment specifications or check the connection of your extruder.");
@@ -377,16 +373,6 @@ $(function ()  {
                 });
         }
 
-        self.showFirmwareUpdateRequiredFlyout = function()
-        {
-            self.flyout.showFlyout('firmware_update_required', true);
-        }
-
-        self.closeFirmwareUpdateRequiredFlyout = function () {
-            if (self.flyout.currentFlyoutTemplate == "#filament_update_required_flyout")
-                self.flyout.closeFlyoutAccept();
-        }
-
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept();
         }
@@ -453,30 +439,15 @@ $(function ()  {
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing)
             self.showChangelog(data.show_changelog);
-
             self.changelogContents(data.changelog_contents);
             self.currentLuiVersion(data.lui_version);
 
-            self.firmwareUpdateRequired(data.firmware_update_required);
-            self.firmwareVersionRequirement(data.firmware_version_requirement);
-
+            if (!self.isHomed()) {
+                self.showStartupFlyout();
+            }
             self.settings.autoShutdown(data.auto_shutdown);
-
-            // Firmware update required flyout has most priority. After that startup and changelog flyouts.
-            // This fromResponse method is also called after a firmware update
-
-            if (data.firmware_update_required)
-                self.showFirmwareUpdateRequiredFlyout();
-            else {
-                self.closeFirmwareUpdateRequiredFlyout();
-
-                if (!self.isHomed()) {
-                    self.showStartupFlyout();
-                }
-              
-                if (self.showChangelog()) {
-                    self.showChangelogFlyout();
-                }
+            if (self.showChangelog()){
+                self.showChangelogFlyout();
             }
         }
 
