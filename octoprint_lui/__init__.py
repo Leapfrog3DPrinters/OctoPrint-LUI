@@ -994,6 +994,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands('G28')
         self.send_client_is_homing()
 
+    #TODO: Remove?
+    @octoprint.plugin.BlueprintPlugin.route("/remote_homing", methods=["GET"])
+    def _remote_homing(self):
+        if self.debug:
+            self._printer.commands('G28')
+            self.send_client_is_homing()
 
     def _on_api_command_temperature_safety_timer_cancel(self):
         if self.temperature_safety_timer:
@@ -2444,6 +2450,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if len(line) > 0:
            self._update_from_m115_properties(line)
+           self.machine_info = self._get_machine_info()
 
     def _update_from_m115_properties(self, line):
         line = line.replace(': ', ':')
