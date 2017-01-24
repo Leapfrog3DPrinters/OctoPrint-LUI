@@ -197,13 +197,7 @@ $(function () {
 
         self.toggleAutoShutdown = function () {
             var toggle = self.autoShutdown();
-            var sendAutoShutdownStatus = function() {
-                var data = {
-                    command: "auto_shutdown",
-                    toggle: !toggle
-                };
-                self._sendApi(data);
-            };
+
             if (!toggle) {
                 var data = {
                     title: "Turn on auto shutdown",
@@ -212,12 +206,20 @@ $(function () {
                 setTimeout(function(){
                     self.flyout.showWarning(data.title, data.text)
                 }, 500)
-            }         
-            sendAutoShutdownStatus();
-            return true;
+            }
 
+            self.sendAutoShutdownStatus(!toggle);
+            return true;
         }
 
+        self.sendAutoShutdownStatus = function(toggle)
+        {
+            var data = {
+                command: "auto_shutdown",
+                toggle: toggle
+            };
+            self._sendApi(data);
+        }
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
             var data = {
