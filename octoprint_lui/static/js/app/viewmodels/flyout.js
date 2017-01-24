@@ -80,7 +80,10 @@ $(function () {
         self.setOverlay();
     }
 
-    self.showFlyout = function(flyout, blocking) {
+    self.showFlyout = function (flyout, blocking) {
+
+//TODO: Check if flyout open. If so, push to front and return its deferred
+
       var deferred = $.Deferred();
       var template_flyout = '#'+flyout+'_flyout';
       var blocking = blocking || false;
@@ -136,6 +139,12 @@ $(function () {
 
       return self.confirmationDeferred;
     };
+
+    self.isFlyoutOpen = function (flyout)
+    {
+        var template_flyout = '#' + flyout + '_flyout';
+        return _.some(self.flyouts(), function (f) { return f.template == template_flyout });
+    }
 
     self.closeFlyout = function (flyout) {
 
@@ -212,7 +221,8 @@ $(function () {
         self.setOverlay();
     }
 
-    self.setOverlay = function ()  {
+    self.setOverlay = function () {
+        var flyouts = self.flyouts();
         if (self.warnings().length == 0 && self.infos().length == 0 && self.flyouts().length == 0 &&
             !$('#confirmation_flyout').hasClass('active') && !$(self.template_flyout).hasClass('active'))
             $('.overlay').removeClass('active');

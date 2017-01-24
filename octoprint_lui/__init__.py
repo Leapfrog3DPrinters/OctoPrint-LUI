@@ -169,7 +169,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Firmware
         # If a lower version is found, user is required to update
         # Don't use any signs here. Version requirements are automatically prefixed with '>='
-        self.firmware_version_requirement = {"Bolt" : "2.6", "WindowsDebug": "2.6" }
+        self.firmware_version_requirement = {"Bolt" : "2.6", "WindowsDebug": "0.1" }
 
         self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
@@ -193,7 +193,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
         self.connecting_after_maintenance = False #Wait for connected event and notify UI after
         
-
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
@@ -215,6 +214,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.changelog_contents = []
         self.show_changelog = False
         self.plugin_version = None
+
+        ##~ Error handling
+        self.intended_disconnect = False # When true, disconnect error messages remain hidden
+        self.printer_error_reason = 'unknown_printer_error' # Start with an error. This gets cleared after a succesfull connect.
+        self.printer_error_extruder = None
+        self.requesting_temperature_after_mintemp = False # Force another temperature poll to check if extruder is disconnected or it's just very cold
 
     def initialize(self):
 
@@ -417,11 +422,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if flash_plugin:
             if hasattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file'):
+                self.intended_disconnect = True
+
                 board = "m2560"
                 programmer = "wiring"
                 port = "/dev/ttyUSB0"
                 baudrate = "115200"
                 ext_path = os.path.basename(firmware_path)
+
                 return getattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file')(board, programmer, port, baudrate, firmware_path, ext_path)
             else:
                 self._logger.warning("Could not flash firmware. FlashArduino plugin not up to date.")    
@@ -760,7 +768,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'changelog_contents': self._get_changelog_html(),
                 'lui_version': self.plugin_version,
                 'firmware_update_required' : self._firmware_update_required(),
-                'firmware_version_requirement': fw_req
+                'firmware_version_requirement': fw_req,
+                'printer_error_reason': self.printer_error_reason,
+                'printer_error_extruder': self.printer_error_extruder
                 })
             return jsonify(result)
 
@@ -823,6 +833,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     auto_shutdown = ["toggle"],
                     auto_shutdown_timer_cancel = [],
                     changelog_seen = [],
+                    notify_intended_disconnect = [],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
@@ -1206,6 +1217,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def disconnect_and_powerdown(self):
          if self.powerbutton_handler:
             self.powerdown_after_disconnect = True
+            self.intended_disconnect = True
             self._printer.disconnect() 
 
     def do_powerdown_after_disconnect(self):
@@ -1792,6 +1804,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.set_temperature(self.filament_change_tool, 0)
         self.send_client_cancelled()
 
+    def _on_api_command_notify_intended_disconnect(self):
+        self.intended_disconnect = True
+
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
 
@@ -2148,6 +2163,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.old_temperature_data = deepcopy(self.current_temperature_data)
         self.current_temperature_data = data
         self.check_tool_status()
+
+        if self.requesting_temperature_after_mintemp:
+            self.requesting_temperature_after_mintemp = False
+            self._mintemp_temperature_received()
 
     def check_tool_status(self):
         """
@@ -2602,6 +2621,46 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     hex=octoprint.filemanager.ContentTypeMapping(["hex"], "application/octet-stream")
                 ))
 
+    ##~ Printer Error handling
+    def _handle_error_and_disconnect(self, event, payload):
+        statestring = ""
+        if event == Events.DISCONNECTED and not self.intended_disconnect:
+            self.printer_error_reason = 'unknown_printer_error'
+        elif event == Events.ERROR:
+            self.printer_error_reason = 'unknown_printer_error'
+            if "error" in payload:
+                statestring = payload["error"].lower()
+                if "mintemp" in statestring:
+                    self.printer_error_reason = 'extruder_mintemp'
+                    self.printer_error_extruder = statestring[:1]
+                    self._handle_mintemp()
+                elif "maxtemp" in statestring:
+                    self.printer_error_reason = 'extruder_maxtemp'
+                    self.printer_error_extruder = statestring[:1]
+
+        self._logger.warn('Error or disconnect. Reason: {0}. Statestring: {1}'.format(self.printer_error_reason, statestring))
+        self._logger.debug('Current temperature data: {0}'.format(self.current_temperature_data))
+
+    def _handle_mintemp(self): 
+        tool = "tool" + self.printer_error_extruder
+        self.requesting_temperature_after_mintemp = True
+        self._printer._comm.sendCommand('M105', force=True)
+
+    def _mintemp_temperature_received(self):
+        tool = "tool" + self.printer_error_extruder
+        self._logger.debug('Checking temperature for {0}'.format(tool))
+        if self.current_temperature_data and tool in self.current_temperature_data:
+            if self.current_temperature_data[tool]["actual"] == 0.0:
+                self.printer_error_reason = 'extruder_disconnected'
+
+        # This reason may come in late (because an M105 response is awaited first). Therefore, notify the UI
+        self._send_client_message('printer_error_reason_update', { 'printer_error_reason': self.printer_error_reason, 'printer_error_extruder': self.printer_error_extruder })
+
+    def _reset_printer_error(self):
+        self._logger.debug('Clearing printer error')
+        self.printer_error_reason = None
+        self.printer_error_extruder = None
+
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
         if self.calibration_type:
@@ -2647,7 +2706,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(event == Events.PRINT_STARTED or event == Events.PRINT_RESUMED):
             self.filament_action = False
 
-        if(event == Events.CONNECTED):
+        if(event == Events.CONNECTING):
+            self.intended_disconnect = False
+            self._reset_printer_error()
+        
+        if(event == Events.CONNECTED):            
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
 
@@ -2659,6 +2722,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if self.powerdown_after_disconnect:
                 self.powerdown_after_disconnect = False
                 self.do_powerdown_after_disconnect()
+
+        if(event == Events.ERROR or event == Events.DISCONNECTED):
+            self._handle_error_and_disconnect(event, payload)
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:

@@ -4,6 +4,7 @@ Change log for OctoPrint-LUI.
 
 ## 1.0.6
 
+- Added ability to restore printer after temperature errors
 - Added the ability to automatically update the printer firmware over internet
 - 'Head maintenance' now shutsdown the printer temporarily to improve safety when swapping nozzles.
 

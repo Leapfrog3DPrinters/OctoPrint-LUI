@@ -28,15 +28,6 @@ $(function ()  {
         self.firmwareUpdateRequired = ko.observable(false);
         self.firmwareVersionRequirement = ko.observable(undefined);
 
-
-        self.errorDescriptionString = ko.pureComputed(function() {
-            if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
-                return gettext("Your extruder temperature is either very low or your extruder is disconnected. Make sure you are operating within environment specifications or check the connection of your extruder.");
-            } else {
-                return "";
-            }
-        });
-
         self.filename = ko.observable(undefined);
         self.filepath = ko.observable(undefined);
         self.progress = ko.observable(undefined);
@@ -54,6 +45,11 @@ $(function ()  {
 
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
+
+        self.errorReason = ko.observable(undefined);
+        self.erroredExtruderName = ko.observable(undefined);
+        self.errorStateString = ko.observable(undefined);
+        self.isConnecting = ko.observable(false);
 
         self.currentActivity = ko.pureComputed(function ()  {
             if (self.activities().length > 0)
@@ -219,8 +215,8 @@ $(function ()  {
 
         self._processStateData = function (data) {
             var prevPaused = self.isPaused();
+            var prevErrorOrClosed = self.isErrorOrClosed();
 
-            self.stateString(gettext(data.text));
             self.isErrorOrClosed(data.flags.closedOrError);
             self.isOperational(data.flags.operational);
             self.isPaused(data.flags.paused);
@@ -228,6 +224,15 @@ $(function ()  {
             self.isError(data.flags.error);
             self.isReady(data.flags.ready);
             self.isSdReady(data.flags.sdReady);
+
+            if (self.isErrorOrClosed()) {
+                self.stateString(gettext('Error'));
+                self.errorStateString(gettext(data.text))
+            }
+            else {
+                self.stateString(gettext(data.text));
+                self.errorStateString(undefined);
+            }
 
             if (self.isPaused() != prevPaused) {
                 if (self.isPaused()) {
@@ -237,6 +242,37 @@ $(function ()  {
                     self.titlePrintButton(self.TITLE_PRINT_BUTTON_UNPAUSED);
                     self.titlePauseButton(self.TITLE_PAUSE_BUTTON_UNPAUSED);
                 }
+            }
+
+            if (self.isErrorOrClosed()) {
+                if(!prevErrorOrClosed)
+                    self.requestData(); // Retrieve error reason and based on that, maybe open flyout
+            }
+            else
+            {
+                if (self.isConnecting() && self.isOperational()) {
+                    self.isConnecting(false);
+                    self.requestData(); // Close flyout based on new intel
+                }
+            }
+
+            
+        };
+
+        self.onEventError = function (payload) {
+            if (self.isConnecting()) {
+                $.notify({
+                    title: gettext("Could not restore printer connection"),
+                    text: gettext('The printer connection could not be restored. Please consult your printer\'s manual')
+                }, {
+                    className: "error",
+                    autoHide: false
+                });
+
+                self.isConnecting(false); // Restore connecting state
+            } else 
+            {
+                self.requestData();
             }
         };
 
@@ -346,7 +382,8 @@ $(function ()  {
         };
 
         self.showStartupFlyout = function () {
-            self.flyout.showFlyout('startup', true);
+            if(!self.flyout.isFlyoutOpen('startup'))
+                self.flyout.showFlyout('startup', true);
         }
 
         self.updateChangelogContents = function()
@@ -422,6 +459,22 @@ $(function ()  {
             }
         }
 
+        self.showPrinterErrorFlyout = function () {
+            if (!self.flyout.isFlyoutOpen('printer_error'))
+                self.flyout.showFlyout('printer_error', true);
+        }
+
+        self.closePrinterErrorFlyout = function () {
+            self.flyout.closeFlyout('printer_error');
+            self.isConnecting(false);
+        }
+
+        self.restorePrinterConnection = function()
+        {
+            self.isConnecting(true);
+            OctoPrint.connection.connect(); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
+        }
+
         self.refreshPrintPreview = function(url)
         {
             var filename = self.filepath(); // Includes subfolder
@@ -461,8 +514,14 @@ $(function ()  {
 
             self.settings.autoShutdown(data.auto_shutdown);
 
-            // Firmware update required flyout has most priority. After that startup and changelog flyouts.
-            // This fromResponse method is also called after a firmware update
+
+            // Startup flyout priority:
+            // 1. Printer error
+            // 2. Firmware update required
+            // 3. Changelog
+            // 4. Startup flyout (homing/maintenance)
+            
+            // This fromResponse method is also called after a firmware update and printer error/disconnect
 
             if (data.firmware_update_required)
                 self.showFirmwareUpdateRequiredFlyout();
@@ -476,6 +535,17 @@ $(function ()  {
                 if (self.showChangelog()) {
                     self.showChangelogFlyout();
                 }
+            }
+
+            if (data.printer_error_reason) {
+                self.errorReason(data.printer_error_reason);
+                self.erroredExtruderName(data.printer_error_extruder == 0 ? gettext('right') : gettext('left'));
+                self.showPrinterErrorFlyout();
+            }
+            else {
+                self.closePrinterErrorFlyout();
+                self.erroredExtruderName(undefined);
+                self.errorReason(undefined);
             }
         }
 
@@ -552,6 +622,10 @@ $(function ()  {
                     case "auto_shutdown_timer_cancelled":
                         self.flyout.closeFlyout();
                         break;
+                    case "printer_error_reason_update":
+                        self.errorReason(messageData.printer_error_reason);
+                        self.erroredExtruderName(messageData.printer_error_extruder == 0 ? gettext('right') : gettext('left'));
+                        break;
                 }
             }
         }
@@ -598,6 +672,6 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
         ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout"]
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout", "#printer_error_flyout"]
     ]);
 });
