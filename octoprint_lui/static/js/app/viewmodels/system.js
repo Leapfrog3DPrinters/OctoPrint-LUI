@@ -5,9 +5,19 @@ $(function () {
         self.loginState = parameters[0];
         self.flyout = parameters[1];
         self.settings = parameters[2];
+        
+        self.isPrinting = ko.observable(false);
 
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
+
+        self.fromCurrentData = function (data) {
+            self._processStateData(data.state);
+        };
+
+        self._processStateData = function (data) {
+            self.isPrinting(data.flags.printing);
+        };
 
         self.requestData = function () {
             self.requestCommandData();
@@ -99,13 +109,31 @@ $(function () {
         self.systemShutdown = function (confirm) {
             confirm = confirm !== false;
 
-            var dialog = { 'title': 'Shutdown system', 'text': 'You are about to shutdown the system.', 'question': 'Do you want to continue?' };
             var command = { 'actionSource': 'core', 'action': 'shutdown', 'name': 'Shutdown' }
 
             if (confirm)
-                command.confirm = dialog;
-
-            self.triggerCommand(command);
+            {
+                if (self.isPrinting() && !self.settings.autoShutdown())
+                {
+                    self.flyout.showFlyout('shutdown_confirmation')
+                        .done(function () {
+                            // Enable auto-shutdown
+                            self.settings.autoShutdown(true);
+                            self.settings.sendAutoShutdownStatus();
+                        });
+                }
+                else
+                {
+                    var dialog = { 'title': 'Shutdown system', 'text': gettext('You are about to shutdown the system.'), 'question': gettext('Do you want to continue?') };
+                    command.confirm = dialog;
+                    self.triggerCommand(command);
+                }
+            }
+            else
+            {
+                // Shutdown immediately
+                self.triggerCommand(command);
+            }
         };
 
         self.systemServiceRestart = function () {
@@ -171,6 +199,6 @@ $(function () {
     ADDITIONAL_VIEWMODELS.push([
         SystemViewModel,
         ["loginStateViewModel", "flyoutViewModel", "settingsViewModel"],
-        []
+        ["#shutdown_confirmation"]
     ]);
 });

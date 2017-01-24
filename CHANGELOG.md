@@ -4,6 +4,7 @@ Change log for OctoPrint-LUI.
 
 ## 1.0.6
 
+- When pressing the shutdown button during printing, a request is made to enable auto-shutdown
 - Added the ability to automatically update the printer firmware over internet
 - 'Head maintenance' now shutsdown the printer temporarily to improve safety when swapping nozzles.
 
