@@ -18,6 +18,14 @@ $(function ()  {
         self.isProfileLocked = ko.observable(false);
 
         self.preselectedTemperatureProfile = ko.observable(undefined); // Used for locked profile selection (paused filament swap)
+        self.preselectedTemperatureProfileName = ko.pureComputed(function () {
+            var profile = self.preselectedTemperatureProfile();
+            if (profile)
+                return profile.name;
+            else
+                return gettext("None");
+        });
+
         self.selectedTemperatureProfile = ko.observable(undefined); // Used for free profile selection
         self.selectedTemperatureProfileName = ko.pureComputed(function () {
             var profile = self.selectedTemperatureProfile();

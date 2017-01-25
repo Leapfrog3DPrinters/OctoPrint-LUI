@@ -1950,7 +1950,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _restore_after_load_filament(self):
         target_temp = 0
         if self.paused_filament_swap:
+            # Restore temperature
             target_temp = self.paused_temperatures[self.filament_change_tool]["target"]
+            
+            # Restore tool
+            if self.filament_change_tool != "tool" + self.paused_position["t"]:
+                self._printer.change_tool("tool" + self.paused_position["t"])
+
             # Restore print mode (sync, mirror...)
             self.print_mode = self.paused_print_mode
             self.send_print_mode()
