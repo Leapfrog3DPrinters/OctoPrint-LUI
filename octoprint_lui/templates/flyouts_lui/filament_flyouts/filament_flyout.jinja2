@@ -30,12 +30,17 @@
                     </ul>
                 </div>
                 <div class="swap_process_step" id="load_filament">
-                  Please select the new filament material
-                  <select class="select-material" data-bind="options: materialProfiles,
-                                   optionsText: 'name',
-                                   value: selectedTemperatureProfile,
-                                   optionsCaption: 'Choose material'">
-                    </select>
+                  <div id="material_swap" data-bind="visible: !printerState.isPaused()">
+                    Please select the new filament material
+                    <select class="select-material" data-bind="options: materialProfiles,
+                                     optionsText: 'name',
+                                     value: selectedTemperatureProfile,
+                                     optionsCaption: 'Choose material'">
+                      </select>
+                  </div>
+                  <div data-bind="visible: printerState.isPaused()">
+                    <strong>Material:</strong> <span data-bind="text: selectedTemperatureProfileName()"></span>
+                  </div>
                     Select how much filament is on the spool:
                     <div id="slider_wrapper">
                         <div id="slider" class="noUi-extended"></div>

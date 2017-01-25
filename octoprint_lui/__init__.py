@@ -126,6 +126,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.load_extrusion_speed = 0
         self.filament_in_progress = False
 
+        self.paused_temperatures = None
+        self.paused_materials = None
+        self.paused_print_mode = None
+        self.paused_position = None
+        self.paused_filament_swap = False
+
         self.temperature_safety_timer = None
 
         self.auto_shutdown_timer = None
@@ -853,13 +859,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_start_print(self, mode):
         self.print_mode = mode
-        if mode == "sync":
-            self._printer.commands(["M605 S2"])
-        elif mode == "mirror":
-            self._printer.commands(["M605 S3"])
-        else:
-            self._printer.commands(["M605 S1"])
-
+        self.send_print_mode()
         self._printer.start_print()
 
     def _on_api_command_prepare_for_calibration_position(self):
@@ -1039,7 +1039,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
         # Send to the front end that we are currently changing filament.
-        self.send_client_in_progress()
+        if self._printer.is_paused():
+            self.send_client_filament_in_progress(self.paused_materials)
+        else:
+            self.send_client_filament_in_progress()
+
+        # If paused, we need to restore the current parameters after the filament swap
+        self.paused_filament_swap = self._printer.is_paused()
+
         # Set filament change tool and profile
         self.filament_change_tool = tool
         self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
@@ -1128,8 +1135,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             with self.callback_mutex:
                 del self.callbacks[:]
-            self._printer.set_temperature(self.filament_change_tool, 0.0)
+            self._restore_after_load_filament()
             self.send_client_cancelled()
+
         self._logger.info("Cancel change filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
     def _on_api_command_change_filament_done(self, *args, **kwargs):
@@ -1148,8 +1156,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif self.model != "Bolt" and not self.filament_action: 
             self._printer.home(['y', 'x'])
 
-        self._printer.set_temperature(self.filament_change_tool, 0.0)
+        self._restore_after_load_filament()
         self._logger.info("Change filament done called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+
+    def _get_current_materials(self):
+        """ Returns a dictionary of the currently loaded materials """
+        #TODO: Fancy list comprehension stuff
+        return dict({
+            "tool0": self.filament_database.get(self._filament_query.tool == "tool0")["material"],
+            "tool1": self.filament_database.get(self._filament_query.tool == "tool1")["material"]
+                });
 
     def _on_api_command_update_filament(self, tool, amount, profileName, *args, **kwargs):
         self._logger.info("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
@@ -1789,8 +1805,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _load_filament_cancelled(self):
         # A load or unload action has been cancelled, turn off the heating
         # send cancelled info.
-        self._printer.set_temperature(self.filament_change_tool, 0)
+        self._restore_after_load_filament()
         self.send_client_cancelled()
+
+    def _restore_after_load_filament(self):
+        target_temp = 0
+        if self.paused_filament_swap:
+            target_temp = self.paused_temperatures[self.filament_change_tool]["target"]
+            # Restore print mode (sync, mirror...)
+            self.print_mode = self.paused_print_mode
+            self.send_print_mode()
+        self._printer.set_temperature(self.filament_change_tool, target_temp)
 
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
@@ -1833,8 +1858,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def send_client_skip_unload(self):
         self._send_client_message('skip_unload')
 
-    def send_client_in_progress(self):
-        self._send_client_message('filament_in_progress')
+    def send_client_filament_in_progress(self, materials = None):
+        if materials:
+            self._send_client_message('filament_in_progress', { "paused_materials" : materials })
+        else:
+            self._send_client_message('filament_in_progress')
 
     def send_client_filament_amount(self):
         data = {"extrusion": self.current_print_extrusion_amount, "filament": self.filament_amount}
@@ -1878,15 +1906,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
     def script_hook(self, comm, script_type, script_name):
-        # The printer should get a positive number here. Altough for the user it might feel like - direction,
-        # Thats how the M206 works.
+       
         if not script_type == "gcode":
             return None
 
         if self.model == "Xeed" or self.model == "Xcel":
             zoffset = -self._settings.get_float(["zoffset"])
 
-
+            # The printer should get a positive number here. Altough for the user it might feel like - direction,
+            # Thats how the M206 works.
             if script_name == "beforePrintStarted":
                 return ["M206 Z%.2f" % zoffset], None
 
@@ -2101,7 +2129,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Copied partly from change filament
         # Send to the front end that we are currently changing filament.
-        self.send_client_in_progress()
+        self.send_client_filament_in_progress()
         # Set filament change tool and profile
         self.filament_change_tool = tool
         self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
@@ -2328,6 +2356,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(['G1 X225 Y100 F6000'])
 
         self.restore_movement_mode()
+
+    def send_print_mode(self):
+        if self.print_mode == "sync":
+            self._printer.commands(["M605 S2"])
+        elif self.print_mode == "mirror":
+            self._printer.commands(["M605 S3"])
+        else:
+            self._printer.commands(["M605 S1"])
 
     def _init_usb(self):
 
@@ -2659,6 +2695,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if self.powerdown_after_disconnect:
                 self.powerdown_after_disconnect = False
                 self.do_powerdown_after_disconnect()
+
+        if(event == Events.PRINT_PAUSED):
+            # Make a copy of current parameters, to be restored after a filament swap
+            self.paused_temperatures = deepcopy(self.current_temperature_data)
+            self.paused_materials = self._get_current_materials()
+            self.paused_print_mode = self.print_mode
+            self.paused_position = payload["position"] # Containts x,y,z,e,f,t(ool)
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:
