@@ -38,6 +38,10 @@ $(function ()  {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
+        // These are updated from the filament viewmodel
+        self.leftFilamentMaterial = ko.observable(undefined);
+        self.rightFilamentMaterial = ko.observable(undefined);
+
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
         self.autoShutdownTimer = ko.observable(0);
@@ -354,8 +358,33 @@ $(function ()  {
             self.flyout.showFlyout("mode_select");
         };
 
-        self.pause = function ()  {
-            OctoPrint.job.togglePause();
+        self.pause = function () {
+
+            if (self.isPaused()) {
+                var needed = self.filament();
+
+                var needsLeft = _.some(needed, function (m) { return m.name() == gettext("Tool") + ' 1' });
+                var needsRight = _.some(needed, function (m) { return m.name() == gettext("Tool") + ' 0' });
+                
+                var materialLeft = self.leftFilamentMaterial();
+                var materialRight = self.rightFilamentMaterial();
+
+                var message = undefined;
+                if (self.printMode() != "normal")
+                    message = gettext("Please load filament in both the left and right extruder before you resume your print.")
+                else if (needsLeft && materialLeft  == "None")
+                    message = gettext("Please load filament in the left extruder before you resume your print.")
+                else if (needsRight && materialRight == "None")
+                    message = gettext("Please load filament in the right extruder before you resume your print.")
+                
+                if(message)
+                    $.notify({ title: gettext('Cannot resume print'), text: message }, "error");
+                else
+                    OctoPrint.job.togglePause();
+            }
+            else {
+                OctoPrint.job.togglePause();
+            }
         };
 
         self.cancel = function ()  {
