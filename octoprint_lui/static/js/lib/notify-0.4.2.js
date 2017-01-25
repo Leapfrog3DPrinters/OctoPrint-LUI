@@ -80,7 +80,7 @@
 	var coreStyle = {
 		name: "core",
 		html: "<div class=\"" + pluginClassName + "-wrapper\">\n	<div class=\"" + pluginClassName + "-arrow\"></div>\n	<div class=\"" + pluginClassName + "-container\"></div>\n</div>",
-		css: "." + pluginClassName + "-corner {\n	position: fixed;\n	margin: 0px;\n	z-index: 1050;\n}\n\n." + pluginClassName + "-corner ." + pluginClassName + "-wrapper,\n." + pluginClassName + "-corner ." + pluginClassName + "-container {\n	position: relative;\n	display: block;\n	height: inherit;\n	width: inherit;\n	margin: 0px;\n}\n\n." + pluginClassName + "-wrapper {\n	z-index: 1;\n	position: absolute;\n	display: inline-block;\n	height: 0;\n	width: 0;\n}\n\n." + pluginClassName + "-container {\n	display: none;\n	z-index: 1;\n	position: absolute;\n}\n\n." + pluginClassName + "-hidable {\n	cursor: pointer;\n}\n\n[data-notify-text],[data-notify-html] {\n	position: relative;\n}\n\n." + pluginClassName + "-arrow {\n	position: absolute;\n	z-index: 2;\n	width: 0;\n	height: 0;\n}"
+		css: "." + pluginClassName + "-corner {\n	position: fixed;\n	margin: 5px;\n	z-index: 1050;\n}\n\n." + pluginClassName + "-corner ." + pluginClassName + "-wrapper,\n." + pluginClassName + "-corner ." + pluginClassName + "-container {\n	position: relative;\n	display: block;\n	height: inherit;\n	width: inherit;\n	margin: 3px;\n}\n\n." + pluginClassName + "-wrapper {\n	z-index: 1;\n	position: absolute;\n	display: inline-block;\n	height: 0;\n	width: 0;\n}\n\n." + pluginClassName + "-container {\n	display: none;\n	z-index: 1;\n	position: absolute;\n}\n\n." + pluginClassName + "-hidable {\n	cursor: pointer;\n}\n\n[data-notify-text],[data-notify-html] {\n	position: relative;\n}\n\n." + pluginClassName + "-arrow {\n	position: absolute;\n	z-index: 2;\n	width: 0;\n	height: 0;\n}"
 	};
 
 	var stylePrefixes = {
@@ -89,6 +89,15 @@
 
 	var getStyle = function(name) {
 		return styles[name];
+	};
+
+	var removeStyle = function(name) {
+		if (!name) {
+			throw "Missing Style name";
+		}
+		if (styles[name]) {
+			delete styles[name];
+		}
 	};
 
 	var addStyle = function(name, def) {
@@ -159,7 +168,7 @@
 			type = "text";
 		}
 		attr = "data-notify-" + type;
-		return find(elem, "[" + attr + "]").each(function () {
+		return find(elem, "[" + attr + "]").each(function() {
 			var name;
 			name = $(this).attr(attr);
 			if (!name) {
@@ -197,7 +206,7 @@
 
 	var inherit = function(a, b) {
 		var F;
-		F = function () {};
+		F = function() {};
 		F.prototype = a;
 		return $.extend(true, new F(), b);
 	};
@@ -290,7 +299,7 @@
 		this.run(data);
 	}
 
-	Notification.prototype.loadHTML = function () {
+	Notification.prototype.loadHTML = function() {
 		var style;
 		style = this.getStyle();
 		this.userContainer = $(style.html);
@@ -300,7 +309,7 @@
 	Notification.prototype.show = function(show, userCallback) {
 		var args, callback, elems, fn, hidden;
 		callback = (function(_this) {
-			return function () {
+			return function() {
 				if (!show && !_this.elem) {
 					_this.destroy();
 				}
@@ -329,7 +338,7 @@
 		return elems[fn].apply(elems, args);
 	};
 
-	Notification.prototype.setGlobalPosition = function () {
+	Notification.prototype.setGlobalPosition = function() {
 		var p = this.getPosition();
 		var pMain = p[0];
 		var pAlign = p[1];
@@ -337,7 +346,7 @@
 		var align = positions[pAlign];
 		var key = pMain + "|" + pAlign;
 		var anchor = globalAnchors[key];
-		if (!anchor) {
+		if (!anchor || !document.body.contains(anchor[0])) {
 			anchor = globalAnchors[key] = createElem("div");
 			var css = {};
 			css[main] = 0;
@@ -354,7 +363,7 @@
 		return anchor.prepend(this.wrapper);
 	};
 
-	Notification.prototype.setElementPosition = function () {
+	Notification.prototype.setElementPosition = function() {
 		var arrowColor, arrowCss, arrowSize, color, contH, contW, css, elemH, elemIH, elemIW, elemPos, elemW, gap, j, k, len, len1, mainFull, margin, opp, oppFull, pAlign, pArrow, pMain, pos, posFull, position, ref, wrapPos;
 		position = this.getPosition();
 		pMain = position[0];
@@ -425,7 +434,7 @@
 		}
 	};
 
-	Notification.prototype.getPosition = function () {
+	Notification.prototype.getPosition = function() {
 		var pos, ref, ref1, ref2, ref3, ref4, ref5, text;
 		text = this.options.position || (this.elem ? this.options.elementPosition : this.options.globalPosition);
 		pos = parsePosition(text);
@@ -459,7 +468,7 @@
 		return style;
 	};
 
-	Notification.prototype.updateClasses = function () {
+	Notification.prototype.updateClasses = function() {
 		var classes, style;
 		classes = ["base"];
 		if ($.isArray(this.options.className)) {
@@ -521,8 +530,9 @@
 		}
 	};
 
-	Notification.prototype.destroy = function () {
-		return this.wrapper.remove();
+	Notification.prototype.destroy = function() {
+		this.wrapper.data(pluginClassName, null);
+		this.wrapper.remove();
 	};
 
 	$[pluginName] = function(elem, data, options) {
@@ -537,14 +547,12 @@
 	};
 
 	$.fn[pluginName] = function(data, options) {
-		$(this).each(function () {
-			var inst;
-			inst = getAnchorElement($(this)).data(pluginClassName);
-			if (inst) {
-				return inst.run(data, options);
-			} else {
-				return new Notification($(this), data, options);
+		$(this).each(function() {
+			var prev = getAnchorElement($(this)).data(pluginClassName);
+			if (prev) {
+				prev.destroy();
 			}
+			var curr = new Notification($(this), data, options);
 		});
 		return this;
 	};
@@ -552,6 +560,7 @@
 	$.extend($[pluginName], {
 		defaults: defaults,
 		addStyle: addStyle,
+		removeStyle: removeStyle,
 		pluginOptions: pluginOptions,
 		getStyle: getStyle,
 		insertCSS: insertCSS
@@ -600,12 +609,12 @@
 		}
 	});
 
-	$(function () {
+	$(function() {
 		insertCSS(coreStyle.css).attr("id", "core-notify");
 		$(document).on("click", "." + pluginClassName + "-hidable", function(e) {
-			return $(this).trigger("notify-hide");
+			$(this).trigger("notify-hide");
 		});
-		return $(document).on("notify-hide", "." + pluginClassName + "-wrapper", function(e) {
+		$(document).on("notify-hide", "." + pluginClassName + "-wrapper", function(e) {
 			var elem = $(this).data(pluginClassName);
 			if(elem) {
 				elem.show(false);

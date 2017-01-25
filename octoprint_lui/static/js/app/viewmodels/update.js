@@ -199,7 +199,11 @@ $(function ()  {
             self.update_needed(updates);
             self.updateinfo(info());
 
-            self.lpfrg_software_version(info().find( function (x) { return x.name() === "Leapfrog UI" }).version());
+
+            var lui_update = info().find(function (x) { return x.name() === "Leapfrog UI" })
+
+            if (lui_update !== undefined)
+                self.lpfrg_software_version(lui_update.version());
 
             self.modelName(data.machine_info.machine_type);
         };

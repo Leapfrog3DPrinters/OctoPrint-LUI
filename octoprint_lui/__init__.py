@@ -675,6 +675,107 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "changelog_version": ""
         }
 
+    def find_assets(self, rel_path, file_ext):
+        result = []
+        base_path = os.path.join(self.get_asset_folder(), rel_path)
+
+        for filename in os.listdir(base_path):
+            complete_path = os.path.join(base_path, filename)
+            if os.path.isfile(complete_path) and filename.endswith(file_ext):
+                result.append('plugin/lui/' + rel_path + '/' + filename)
+
+        return result
+
+    def find_minified(self, js_list):
+        result = []
+        base_path = self.get_asset_folder()
+
+        for path in js_list:
+            if path.startswith('plugin/lui/'):
+                strippped_path = path[11:-3]
+            else:
+                strippped_path = path[:-3]
+
+            full_path = os.path.join(base_path, strippped_path + '.min.js')
+            new_path = path[:-3] + '.min.js'
+
+            if os.path.exists(full_path):
+                result.append(new_path)
+            else:
+                result.append(path)
+
+        return result
+            
+                
+    def create_custom_bundles(self):
+        from flask_assets import Bundle
+        
+        jquery_js = [
+                    'plugin/lui/js/lib/jquery/jquery-2.2.4.js', 
+                    'plugin/lui/js/lib/jquery/jquery.ui.widget-1.11.4.js',
+                    'plugin/lui/js/lib/jquery/jquery.iframe-transport.js',
+                    'plugin/lui/js/lib/jquery/jquery.fileupload-9.14.2.js',
+                    'plugin/lui/js/lib/jquery/jquery.slimscroll-1.3.8.js',
+                    'plugin/lui/js/lib/jquery/jquery.keyboard-1.26.14.js',
+                    'plugin/lui/js/lib/jquery/jquery.overscroll-1.7.7.js'
+                    ]
+
+        lib_js = [
+                    'plugin/lui/js/lib/babel-2.3.4.js',
+                    'plugin/lui/js/lib/dropit-1.1.1.js',
+                    'plugin/lui/js/lib/knockout-3.4.1.js',
+                    'plugin/lui/js/lib/knockout.mapping-2.4.1.js',
+                    'plugin/lui/js/lib/lodash-4.17.4.js',
+                    'plugin/lui/js/lib/loglevel-1.4.1.js',
+                    'plugin/lui/js/lib/md5-2.4.0.js',
+                    'plugin/lui/js/lib/modernizr-custom-3.3.1.js',
+                    'plugin/lui/js/lib/moment-with-locales-2.17.1.js',
+                    'plugin/lui/js/lib/notify-0.4.2.js',
+                    'plugin/lui/js/lib/notify-lui.js',
+                    'plugin/lui/js/lib/nouislider-9.2.0.js',
+                    'plugin/lui/js/lib/sockjs-1.1.2.js',
+                    'plugin/lui/js/lib/sprintf-1.0.3.js'
+                    ]
+
+        vm_js = self.find_assets('js/app/viewmodels', '.js')
+
+        app_js = [
+                    'plugin/lui/js/app/util/helpers.js',
+                    'plugin/lui/js/app/util/dataupdate_light.js',
+                    'plugin/lui/js/app/main.js'
+                    ]
+
+        bundle_filter = "js_delimiter_bundler"
+        bundle_min_filter = "rjsmin, js_delimiter_bundler"
+
+        if self.debug:
+            # Include full (debug) libraries
+            lui_jquery_bundle = Bundle(*jquery_js, output="webassets/packed_lui_jquery.js", filters=bundle_filter)
+            lui_lib_bundle = Bundle(*lib_js, output="webassets/packed_lui_lib.js", filters=bundle_filter)
+        else:
+            # Look for minified libraries where possible, and include them (don't minify them again)
+            jquery_min_js = self.find_minified(jquery_js)
+            lib_min_js = self.find_minified(lib_js)
+            lui_jquery_bundle = Bundle(*jquery_min_js, output="webassets/packed_lui_jquery.js", filters=bundle_filter)
+            lui_lib_bundle = Bundle(*lib_min_js, output="webassets/packed_lui_lib.js", filters=bundle_filter)
+
+        # Minify viewmodel and app js files
+        lui_vm_bundle = Bundle(*vm_js, output="webassets/packed_lui_vm.js", filters=bundle_min_filter)
+        lui_app_bundle = Bundle(*app_js, output="webassets/packed_lui_app.js", filters=bundle_min_filter)
+
+        # Register bundles for use in jinja
+        octoprint.server.assets.register('lui_jquery_bundle', lui_jquery_bundle)
+        octoprint.server.assets.register('lui_lib_bundle', lui_lib_bundle)
+        octoprint.server.assets.register('lui_vm_bundle', lui_vm_bundle)
+        octoprint.server.assets.register('lui_app_bundle', lui_app_bundle)
+
+        # In debug mode, libraries are not minified nor bundled
+        octoprint.server.assets.debug = self.debug
+
+    def http_routes_hook(self, routes):
+        self.create_custom_bundles()
+        return []
+
     ##~ OctoPrint UI Plugin
     def will_handle_ui(self, request):
         return True
@@ -2814,4 +2915,5 @@ def __plugin_load__():
         "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_received_hook,
         "octoprint.filemanager.extension_tree": __plugin_implementation__.extension_tree_hook,
+        "octoprint.server.http.routes": __plugin_implementation__.http_routes_hook
     }

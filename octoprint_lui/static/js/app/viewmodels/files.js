@@ -1000,7 +1000,7 @@ $(function ()  {
         };
 
         self.enableRemove = function (data) {
-            return self.loginState.isUser() && !_.contains(self.printerState.busyFiles(), data.origin + ":" + data.name);
+            return self.loginState.isUser() && !_.includes(self.printerState.busyFiles(), data.origin + ":" + data.name);
         };
 
         self.enableSelect = function (data, printAfterSelect) {

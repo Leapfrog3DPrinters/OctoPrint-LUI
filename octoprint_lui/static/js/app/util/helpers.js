@@ -177,7 +177,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
     //~~ sorting
 
     self.changeSorting = function(sorting) {
-        if (!_.contains(_.keys(self.supportedSorting), sorting))
+        if (!_.includes(_.keys(self.supportedSorting), sorting))
             return;
 
         self.currentSorting(sorting);
@@ -190,10 +190,10 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
     //~~ filtering
 
     self.toggleFilter = function(filter) {
-        if (!_.contains(_.keys(self.supportedFilters), filter))
+        if (!_.includes(_.keys(self.supportedFilters), filter))
             return;
 
-        if (_.contains(self.currentFilters(), filter)) {
+        if (_.includes(self.currentFilters(), filter)) {
             self.removeFilter(filter);
         } else {
             self.addFilter(filter);
@@ -201,11 +201,11 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
     };
 
     self.addFilter = function(filter) {
-        if (!_.contains(_.keys(self.supportedFilters), filter))
+        if (!_.includes(_.keys(self.supportedFilters), filter))
             return;
 
         for (var i = 0; i < self.exclusiveFilters.length; i++) {
-            if (_.contains(self.exclusiveFilters[i], filter)) {
+            if (_.includes(self.exclusiveFilters[i], filter)) {
                 for (var j = 0; j < self.exclusiveFilters[i].length; j++) {
                     if (self.exclusiveFilters[i][j] == filter)
                         continue;
@@ -224,7 +224,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
     };
 
     self.removeFilter = function(filter) {
-        if (!_.contains(_.keys(self.supportedFilters), filter))
+        if (!_.includes(_.keys(self.supportedFilters), filter))
             return;
 
         var filters = self.currentFilters();
@@ -251,7 +251,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
         // filter if necessary
         var filters = self.currentFilters();
-        _.each(filters, function(filter) {
+        _.forEach(filters, function(filter) {
             if (typeof filter !== undefined && typeof supportedFilters[filter] !== undefined)
                 result = _.filter(result, supportedFilters[filter]);
         });
@@ -288,7 +288,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
 
     self._loadCurrentSortingFromLocalStorage = function () {
         if ( self._initializeLocalStorage() ) {
-            if (_.contains(_.keys(supportedSorting), localStorage[self.listType + "." + "currentSorting"]))
+            if (_.includes(_.keys(supportedSorting), localStorage[self.listType + "." + "currentSorting"]))
                 self.currentSorting(localStorage[self.listType + "." + "currentSorting"]);
             else
                 self.currentSorting(defaultSorting);
@@ -689,7 +689,7 @@ function callViewModelsIf(allViewModels, method, condition, callback) {
         log.trace("Providing method", method, "on view models to specified callback", callback);
     }
 
-    _.each(allViewModels, function(viewModel) {
+    _.forEach(allViewModels, function(viewModel) {
         if (viewModel.hasOwnProperty(method) && condition(viewModel, method)) {
             if (callback == undefined) {
                 if (parameters != undefined) {
