@@ -117,7 +117,7 @@
 
 		// find the cursor styles
 		var cursorStyles = {};
-		(function () {
+		(function() {
 			var div = dom.createElement('div');
 			var prefixes = ['webkit', 'moz'];
 			var gmail = 'https://mail.google.com/mail/images/2/';
@@ -321,7 +321,7 @@
 
 		moveThumbs(thumbs, sizing, this.scrollLeft, this.scrollTop);
 
-		dwheel.timeout = wait(function () {
+		dwheel.timeout = wait(function() {
 			data.target.data(datakey).dragging = flags.dragging = false;
 			toggleThumbs(thumbs, options, data.wheel = null);
 		}, settings.thumbTimeout);
@@ -484,7 +484,7 @@
 		thumbs = data.thumbs,
 
 		// hides the thumbs after the animation is done
-		done = function ()  {
+		done = function () {
 			if (thumbs && !options.hoverThumbs) {
 				toggleThumbs(thumbs, options, false);
 			}
@@ -602,7 +602,7 @@
 		var $target = $(target), thumbs,
 		data        = $target.data(datakey) || {},
 		style       = $target.attr('style'),
-		fallback    = orCreate ? function ()  {
+		fallback    = orCreate ? function () {
 
 			data = $target.data(datakey);
 			thumbs = data.thumbs;
@@ -765,7 +765,7 @@
 	// of this closure
 	function overscroll(options) {
 		/*jshint validthis:true */
-		return this.removeOverscroll().each(function () {
+		return this.removeOverscroll().each(function() {
 			setup(this, options);
 		});
 	}
@@ -775,7 +775,7 @@
 	// of this closure
 	function removeOverscroll() {
 		/*jshint validthis:true */
-		return this.each(function ()  {
+		return this.each(function () {
 			teardown(this);
 		});
 	}
