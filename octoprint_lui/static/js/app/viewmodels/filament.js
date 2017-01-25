@@ -15,10 +15,12 @@ $(function ()  {
         self.filamentLoadProgress = ko.observable(0);
         self.forPurge = ko.observable(false);
 
-        self.preselectedTemperatureProfile = ko.observable(undefined);
-        self.selectedTemperatureProfile = ko.observable(undefined);
+        self.isProfileLocked = ko.observable(false);
+
+        self.preselectedTemperatureProfile = ko.observable(undefined); // Used for locked profile selection (paused filament swap)
+        self.selectedTemperatureProfile = ko.observable(undefined); // Used for free profile selection
         self.selectedTemperatureProfileName = ko.pureComputed(function () {
-            profile = self.selectedTemperatureProfile();
+            var profile = self.selectedTemperatureProfile();
             if (profile)
                 return profile.name;
             else
@@ -132,6 +134,7 @@ $(function ()  {
         // ------------------
 
         self.showFilamentChangeFlyout = function (tool, forPurge) {
+            self.isProfileLocked(false);
             self.tool(tool);
             self.loadedFilamentAmount(self.getFilamentAmount(tool));
             self.filamentInProgress(true);
@@ -172,10 +175,17 @@ $(function ()  {
         self.lockTemperatureProfile = function(paused_materials)
         {
         //    If it's a paused filament swap, lock the filament material to the one used when starting the print
-        //    var profileName = self.tool() == 'tool1' ? self.leftFilament() : self.rightFilament();
-        //    var profile = self.materialProfiles().find(function (x) { return x.name == profileName; });
 
-            self.selectedTemperatureProfile(paused_materials[self.tool()]);
+            var tool = self.tool();
+
+            if (paused_materials.hasOwnProperty(tool)) {
+                var profile = paused_materials[tool];
+
+                if (profile.hasOwnProperty("name") && profile["name"] != "None") {
+                    self.preselectedTemperatureProfile(profile);
+                    self.isProfileLocked(true);
+                }
+            }
         }
 
         // Below functions swap views for both filament swap and filament detection swap
@@ -269,7 +279,13 @@ $(function ()  {
                 profileName = loadFor;
             }
             else {
-                profile = self.selectedTemperatureProfile();
+                var profile = undefined;
+
+                if (self.isProfileLocked())
+                    profile = self.selectedTemperatureProfile();
+                else
+                    profile = self.preselectedTemperatureProfile()
+
                 profileName = profile.name;
             }
 

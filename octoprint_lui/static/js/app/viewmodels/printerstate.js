@@ -142,23 +142,23 @@ $(function ()  {
         });
 
         self.leftFilament = ko.computed(function ()  {
-            filaments = self.filament();
-            for (var key in filaments) {
-                if (filaments[key].name() == "Tool 1") {
-                    return formatFilament(filaments[key].data());
-                }
-            }
-            return "-"
+            var filaments = self.filament();
+            var filament = _.find(filaments, function (f) { return f.name == "tool1" });
+
+            if (filament)
+                return formatFilament(filament.data());
+            else
+                return "-";
         });
 
         self.rightFilament = ko.computed(function ()  {
-            filaments = self.filament();
-            for (var key in filaments) {
-                if (filaments[key].name() == "Tool 0") {
-                    return formatFilament(filaments[key].data());
-                }
-            }
-            return "-"
+            var filaments = self.filament();
+            var filament = _.find(filaments, function (f) { return f.name == "tool0" });
+
+            if(filament)
+                return formatFilament(filament.data());
+            else
+                return "-";
         });
 
         // self.stateStepString = ko.computed(function ()  {
@@ -307,7 +307,7 @@ $(function ()  {
                     if (!_.startsWith(key, "tool") || !data.filament[key] || !data.filament[key].hasOwnProperty("length") || data.filament[key].length <= 0) continue;
 
                     result.push({
-                        name: ko.observable(gettext("Tool") + " " + key.substr("tool".length)),
+                        name: key,
                         data: ko.observable(data.filament[key])
                     });
                 }
@@ -363,8 +363,8 @@ $(function ()  {
             if (self.isPaused()) {
                 var needed = self.filament();
 
-                var needsLeft = _.some(needed, function (m) { return m.name() == gettext("Tool") + ' 1' });
-                var needsRight = _.some(needed, function (m) { return m.name() == gettext("Tool") + ' 0' });
+                var needsLeft = _.some(needed,  {name: 'tool1' });
+                var needsRight = _.some(needed, {name: 'tool0' });
                 
                 var materialLeft = self.leftFilamentMaterial();
                 var materialRight = self.rightFilamentMaterial();

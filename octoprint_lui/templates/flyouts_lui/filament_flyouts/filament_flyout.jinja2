@@ -30,7 +30,7 @@
                     </ul>
                 </div>
                 <div class="swap_process_step" id="load_filament">
-                  <div id="material_swap" data-bind="visible: !printerState.isPaused()">
+                  <div id="material_swap" data-bind="visible: !isProfileLocked()">
                     {{ _('Please select the new filament material') }}
                     <select class="select-material" data-bind="options: materialProfiles,
                                      optionsText: 'name',
@@ -38,8 +38,8 @@
                                      optionsCaption: '{{ _('Choose material') }}'">
                       </select>
                   </div>
-                  <div data-bind="visible: printerState.isPaused()">
-                    <strong>{{ _('Material:') }}</strong> <span data-bind="text: selectedTemperatureProfileName()"></span>
+                  <div data-bind="visible: isProfileLocked()">
+                    <strong>{{ _('Material:') }}</strong> <span data-bind="text: preselectedTemperatureProfileName()"></span>
                   </div>
                     {{ _('Select how much filament is on the spool:') }}
                     <div id="slider_wrapper">
