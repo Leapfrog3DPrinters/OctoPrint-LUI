@@ -2,6 +2,8 @@
 
 Change log for OctoPrint-LUI. 
 
+## 1.1.0
+
 ## 1.0.6
 
 - When pressing the shutdown button during printing, a request is made to enable auto-shutdown
