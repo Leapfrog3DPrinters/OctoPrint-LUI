@@ -6,6 +6,7 @@
 			</div>
 		</div>
 		<!-- ko foreach: locales -->
+		<!-- ko if: $index() != 0 -->
 		<div class="Table-row file_main" data-bind="click: function() { $root.appearance_defaultLanguage(language)}, css: { 'file_selected': $root.languageSelected($data) } ">
 			<div class="Table-item">
 				<span data-bind="text: display"></span>
@@ -14,6 +15,7 @@
 				<i class="fa fa-check file_ok"></i>
 			</div>
 		</div>
+		<!-- /ko -->
 		<!-- /ko -->
 	</div>
 </div>

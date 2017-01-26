@@ -1040,13 +1040,13 @@ $(function ()  {
                         for (var toolKey in filament) {
                             if (!_.startsWith(toolKey, "tool") || !filament[toolKey] || !filament[toolKey].hasOwnProperty("length") || filament[toolKey]["length"] <= 0) continue;
 
-                            output += "<strong>" + gettext("Filament ") + "</strong> (" + (toolKey == 'tool0' ? 'Right' : 'Left') + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
+                            output += "<strong>" + gettext("Filament") + "</strong> (" + (toolKey == 'tool0' ? gettext('Right') : gettext('Left')) + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
                         }
                     }
                 }
                 output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
             } else {
-                output += "<strong>Analysing job </strong> <i class='fa fa-spinner fa-pulse'></i>"
+                output += "<strong>" + gettext('Analysing job')+ "</strong> <i class='fa fa-spinner fa-pulse'></i>"
             }
             if (data["prints"] && data["prints"]["last"]) {
                 output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";

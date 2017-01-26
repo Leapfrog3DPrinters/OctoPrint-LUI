@@ -407,6 +407,10 @@ $(function () {
             self.isHeating(_.some(tool_status, {'status': 'HEATING'}));         
         };
 
+        self.statusString = ko.pureComputed(function() {
+            return (self.isHeating() ? gettext('Heating') : gettext('Printing'))
+        });
+
         self.onAfterTabChange = function(current, previous) {
             if (current != "#temp") {
                 return;
