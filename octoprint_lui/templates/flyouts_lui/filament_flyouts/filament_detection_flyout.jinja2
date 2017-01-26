@@ -85,7 +85,7 @@
         <div id="swap_process" data-bind="css: { disabled: !printerState.isOperational() }">
           <div class="fd_swap_process_step" id="fd_unload_filament">
             <div class="explain">
-              {{ _('TODO: CHECK IF THIS WORKS Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind="text: filament.loadedFilamentAmount" class="bold"></span> left.') }}
+              {{ _('Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind="text: filament.loadedFilamentAmount" class="bold"></span> left.') }}
             </div>
             <ul class="button-area">
               <li class="button ok-button" id="fd_unload_cmd" data-bind="click: function () { filament.unloadFilament() }, css: { disabled: !loginState.loggedIn() || filament.filamentLoading()}">

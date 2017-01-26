@@ -5,16 +5,15 @@
 				{{ _('Languages') }}
 			</div>
 		</div>
-		<div class="control-group" title="">
-		    <label class="control-label" for="settings-appearanceDefaultLanguage">{{ _('Default Language') }}</label>
-		    <div class="controls">
-		        <select id="settings-appearanceDefaultLanguage" data-bind="options: locales,
-		                               optionsText: function(item) { return item.display + ((item.language != undefined && item.english != undefined) ? ' [' + item.language + ', ' + item.english + ']' : '') },
-		                               optionsValue: 'language',
-		                               value: appearance_defaultLanguage">
-		        </select>
-		        <span class="help-inline">{{ _('Changes to the default interface language will only become active after a reload of the page and only be active if not overridden by the user''s language settings.') }}</span>
-		    </div>
+		<!-- ko foreach: locales -->
+		<div class="Table-row file_main" data-bind="click: function() { $root.appearance_defaultLanguage(language)}, css: { 'file_selected': $root.languageSelected($data) } ">
+			<div class="Table-item">
+				<span data-bind="text: display"></span>
+			</div>
+			<div class="Table-item file_status" data-bind="visible: language == LOCALE">
+				<i class="fa fa-check file_ok"></i>
+			</div>
 		</div>
+		<!-- /ko -->
 	</div>
 </div>

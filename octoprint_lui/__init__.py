@@ -169,7 +169,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Firmware
         # If a lower version is found, user is required to update
         # Don't use any signs here. Version requirements are automatically prefixed with '>='
-        self.firmware_version_requirement = { "WindowsDebug": "2.6" }
+        self.firmware_version_requirement = { "WindowsDebug": "2.6", "MacDebug": "2.6" }
 
 
         self.firmware_info_command_sent = False

@@ -272,7 +272,7 @@ $(function ()  {
 
             if (profile == undefined) {
                 return $.notify({
-                    title: gettext("Filament information updating warning"),
+                    title: gettext("Filament updating warning"),
                     text: _.sprintf(gettext('Please select a material to update.'))},
                     "warning"
                 )

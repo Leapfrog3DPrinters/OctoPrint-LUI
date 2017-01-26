@@ -782,6 +782,10 @@ $(function () {
                 })
         }
 
+        self.languageSelected = function(data) {
+            return (data.language == self.appearance_defaultLanguage());
+        }
+
     }
 
     OCTOPRINT_VIEWMODELS.push([
