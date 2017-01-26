@@ -59,7 +59,7 @@ $(function () {
                 OctoPrint.system.executeCommand(commandSpec.actionSource, commandSpec.action)
                     .done(function () {
                         $.notify({
-                            title: "Success",
+                            title: gettext("Success"),
                             text: _.sprintf(gettext("The command \"%(command)s\" executed successfully"), {command: commandSpec.name})},
                             "success"
                         );
@@ -69,7 +69,7 @@ $(function () {
                         if (!commandSpec.hasOwnProperty("ignore") || !commandSpec.ignore) {
                             // jqXHR.responseText
                             $.notify({
-                                title: "Error",
+                                title: gettext("Error"),
                                 text: _.sprintf(gettext('The command "%(command)s" could not be executed. Please check logs.'), {command: commandSpec.name})},
                                 "error"
                             );
@@ -101,7 +101,7 @@ $(function () {
 
         self.systemReboot = function () {
             console.log("System Reboot called")
-            var dialog = {'title': 'Reboot system', 'text': 'You are about to reboot the system.', 'question' : 'Do you want to continue?'};
+            var dialog = {'title': gettext('Reboot printer'), 'text': gettext('You are about to reboot the printer.'), 'question' : gettext('Do you want to continue?')};
             var command = {'actionSource': 'core', 'action': 'reboot', 'name': 'Reboot', confirm: dialog};
             self.triggerCommand(command);
         };
@@ -124,7 +124,7 @@ $(function () {
                 }
                 else
                 {
-                    var dialog = { 'title': 'Shutdown system', 'text': gettext('You are about to shutdown the system.'), 'question': gettext('Do you want to continue?') };
+                    var dialog = { 'title': gettext('Shutdown printer'), 'text': gettext('You are about to shutdown the printer.'), 'question': gettext('Do you want to continue?') };
                     command.confirm = dialog;
                     self.triggerCommand(command);
                 }
@@ -137,7 +137,7 @@ $(function () {
         };
 
         self.systemServiceRestart = function () {
-            var dialog = {'title': 'Restart system service', 'text': 'You are about to restart the background printer services.', 'question' : 'Do you want to continue?'};
+            var dialog = {'title': gettext('Restart system service'), 'text': gettext('You are about to restart the background printer services.'), 'question' : gettext('Do you want to continue?')};
 
             self.flyout.showConfirmationFlyout(dialog)
                     .done(function ()  {

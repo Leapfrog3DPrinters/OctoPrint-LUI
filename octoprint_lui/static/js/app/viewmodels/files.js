@@ -40,7 +40,7 @@ $(function ()  {
         self.freeSpaceString = ko.computed(function ()  {
             if (!self.freeSpace())
                 return "-";
-            return formatSize(self.freeSpace()) + " free";
+            return formatSize(self.freeSpace()) + gettext(" free");
         });
         self.totalSpaceString = ko.computed(function ()  {
             if (!self.totalSpace())
@@ -176,7 +176,7 @@ $(function ()  {
         }
 
         self.notifyUsbFail = function ()  {
-            $.notify({ title: 'USB access failed', text: 'The USB drive could not be accessed. Please try again.' }, 'error');
+            $.notify({ title: gettex('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
         };
 
         self.browseUsbForFirmware = function ()  {
@@ -556,12 +556,12 @@ $(function ()  {
         self.removeAllFiles = function()
         {
             
-            var text = "You have opted to delete all print jobs.";
+            var text = gettext("You have opted to delete all print jobs.");
             if (self.selectedFile())
-                text += " This will not delete the currently selected file.";
+                text += gettext(" This will not delete the currently selected file.");
 
-            var question = "Do you want to continue?";
-            var title = "Delete all jobs"
+            var question = gettext("Do you want to continue?");
+            var title = gettext("Delete all jobs"); 
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
@@ -608,9 +608,9 @@ $(function ()  {
                 filenameToFocus = fileToFocus.name;
             }
 
-            var text = "You have opted to delete job: " + file.name;
-            var question = "Do you want to delete this job?";
-            var title = "Delete job"
+            var text = gettext("You have opted to delete job: ") + file.name;
+            var question = gettext("Do you want to delete this job?");
+            var title = gettext("Delete job");
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
@@ -797,7 +797,7 @@ $(function ()  {
             var gridsize_y = 300;
             var gridsize_x = 330;
 
-            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>"), {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
+            grid += _.sprintf("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>", {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
 
             // TODO: Out for now, only check massive prints.
             // We can only print half X with sync and mirror mode
@@ -814,26 +814,26 @@ $(function ()  {
             };
 
 
-            grid += _.sprintf(gettext("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx'></div>"),{draw: draw});
+            grid += _.sprintf("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx'></div>",{draw: draw});
 
             grid += "</div></div></div>";
 
             // First check if the size is correct for the mode.
             var sizeTable = "";
             if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
-                info += "Object exceeds print area in width. ";
+                info += gettext("Object exceeds print area in width. ");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object width</div></div>";
-                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>"), formatData);  
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);  
             }
             if (dimensions["depth"] > (boundaries["maxY"] + Math.abs(boundaries["minY"]))) {
                 info += gettext("Object exceeds print area in depth.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object depth</div></div>";
-                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>"), formatData);
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>", formatData);
             }
             if (dimensions["height"] > (boundaries["maxZ"] + Math.abs(boundaries["minZ"]))) {
                 info += gettext("Object exceeds print area in height.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object height</div></div>";
-                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(dimensions.height).2f mm</div></div>"), formatData);
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(dimensions.height).2f mm</div></div>", formatData);
             }
 
 
@@ -844,25 +844,25 @@ $(function ()  {
 
                 if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
                     info += gettext("Object positioned outside print area in width.");
-                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>"), formatData);  
+                    positionTable += gettext("<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>");
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);  
                 }
                 if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
                     info += gettext("Object positioned outside print area in depth.");
-                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>"), formatData);  
+                    positionTable += gettext("<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>");
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);  
                 }
                 if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
                     info += gettext("Object positioned outside print area in heigth.");
-                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>"), formatData);  
+                    positionTable += gettext("<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>");
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);  
                 }
                 
             }
 
             //warn user
             if (info != "") {
-                info += "Please fix the dimension of the job or try a different print mode."
+                info += gettext("Please fix the dimension of the job or try a different print mode.");
                 warning += grid;
                 warning += info;
                 warning += sizeTable;
@@ -880,8 +880,8 @@ $(function ()  {
 
         self.showDimensionWarning = function () {
             if (self.isDualPrint()){
-                var title = "Dual nozzle print"
-                var message = "The job selected uses both nozzles to print, therefore only normal mode is available.";
+                var title = gettext("Dual nozzle print")
+                var message = gettext("The job selected uses both nozzles to print, therefore only normal mode is available.");
                 self.flyout.showInfo(title, message, false);
 
             } else {
@@ -896,13 +896,13 @@ $(function ()  {
         });
 
         self.showSyncMirrorWarning = function() {
-            var title = "Sync or Mirror print";
+            var title = gettext("Sync or Mirror print");
 
             var grid = "<div class='Table-row'><div class='Table-item'>";
             var gridsize_y = 300;
             var gridsize_x = 330;
 
-            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>"), {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
+            grid += _.sprintf("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>", {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
 
             var draw = {
                 width: 165,
@@ -910,11 +910,11 @@ $(function ()  {
                 left: 0,
                 bottom: 0
             };
-            grid += _.sprintf(gettext("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx; background-color: #A9CC3C; border-right: 3px dashed #CC2B14'></div>"),{draw: draw});
+            grid += _.sprintf("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx; background-color: #A9CC3C; border-right: 3px dashed #CC2B14'></div>",{draw: draw});
             grid += "</div></div></div>";
 
-            var info = "<div class='Table-row Table-header'><div class='Table-item'>Info</div></div>";
-            info += "<div class='Table-row'><div class='Table-item'>To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.</div></div>"
+            var info = gettext("<div class='Table-row Table-header'><div class='Table-item'>Info</div></div>");
+            info += gettext("<div class='Table-row'><div class='Table-item'>To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.</div></div>")
             var message = "";
             message += grid;
             message += info;
@@ -1040,13 +1040,13 @@ $(function ()  {
                         for (var toolKey in filament) {
                             if (!_.startsWith(toolKey, "tool") || !filament[toolKey] || !filament[toolKey].hasOwnProperty("length") || filament[toolKey]["length"] <= 0) continue;
 
-                            output += "<strong>" + gettext("Filament ") + "</strong> (" + (toolKey == 'tool0' ? 'Right' : 'Left') + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
+                            output += "<strong>" + gettext("Filament") + "</strong> (" + (toolKey == 'tool0' ? gettext('Right') : gettext('Left')) + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
                         }
                     }
                 }
                 output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
             } else {
-                output += "<strong>Analysing job </strong> <i class='fa fa-spinner fa-pulse'></i>"
+                output += "<strong>" + gettext('Analysing job')+ "</strong> <i class='fa fa-spinner fa-pulse'></i>"
             }
             if (data["prints"] && data["prints"]["last"]) {
                 output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
@@ -1132,9 +1132,9 @@ $(function ()  {
                     self.browseUsb();
             }
             else if (available && (!self.flyout.isOpen() || !self.flyout.blocking)) {
-                var text = "You have inserted a USB drive.";
-                var question = "Would you like to browse through the files?";
-                var title = "USB drive inserted"
+                var text = gettext("You have inserted a USB drive.");
+                var question = gettext("Would you like to browse through the files?");
+                var title = gettext("USB drive inserted");
                 var dialog = { 'title': title, 'text': text, 'question': question };
 
                 self.flyout.showConfirmationFlyout(dialog)
@@ -1305,6 +1305,7 @@ $(function ()  {
                 }
             }
             else if (plugin == "lui") {
+                var copying = gettext("Copying");
                 switch (messageType) {
                     case "media_folder_updated":
                         self.isUsbAvailable(messageData.is_media_mounted);
@@ -1319,37 +1320,37 @@ $(function ()  {
                         self.setProgressBar(messageData.percentage);
 
                         if (messageData.percentage < 100)
-                            self.printerState.activities.push('Copying');
+                            self.printerState.activities.push(copying);
                         else
-                            self.printerState.activities.remove('Copying');
+                            self.printerState.activities.remove(copying);
 
                         break;
                     case "media_file_copy_complete":
                         self.setProgressBar(0);
-                        self.printerState.activities.remove('Copying');
+                        self.printerState.activities.remove(copying);
                         break;
                     case "media_file_copy_failed":
                         self.setProgressBar(0);
-                        self.printerState.activities.remove('Copying');
+                        self.printerState.activities.remove(copying);
                         break;
 
                     case "gcode_copy_progress":
                         self.setProgressBar(messageData.percentage);
 
                         if (messageData.percentage < 100)
-                            self.printerState.activities.push('Copying');
+                            self.printerState.activities.push(copying);
                         else
-                            self.printerState.activities.remove('Copying');
+                            self.printerState.activities.remove(copying);
 
                         break;
 
                     case "gcode_copy_complete":
                         self.setProgressBar(0);
-                        self.printerState.activities.remove('Copying');
+                        self.printerState.activities.remove(copying);
                         break;
                     case "gcode_copy_failed":
                         self.setProgressBar(0);
-                        self.printerState.activities.remove('Copying');
+                        self.printerState.activities.remove(copying);
                         break;
 
                 }

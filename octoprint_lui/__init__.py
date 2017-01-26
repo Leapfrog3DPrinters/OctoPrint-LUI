@@ -144,9 +144,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Temperature status
         self.tool_status = [
-            {'name': 'Right', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
-            {'name': 'Left', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
-            {'name': 'Bed', "status": 'IDLE', "text": "Idle", 'css_class': "bg-none"},
+            {'name': 'tool0', "status": 'IDLE', 'css_class': "bg-none"},
+            {'name': 'tool1', "status": 'IDLE', 'css_class': "bg-none"},
+            {'name': 'bed', "status": 'IDLE', 'css_class': "bg-none"},
         ]
 
         self.old_temperature_data = None
@@ -169,7 +169,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Firmware
         # If a lower version is found, user is required to update
         # Don't use any signs here. Version requirements are automatically prefixed with '>='
-        self.firmware_version_requirement = { "WindowsDebug": "2.6" }
+        self.firmware_version_requirement = { "WindowsDebug": "2.6", "MacDebug": "2.6" }
 
 
         self.firmware_info_command_sent = False
@@ -266,7 +266,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # TODO REMOVE
         if self.model == 'Unknown':
-            self.model = 'WindowsDebug'
+            self.model = 'MacDebug'
 
         self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
 
@@ -2211,25 +2211,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # process the status
             if not heating and data["actual"] <= 35:
                    status = "IDLE"
-                   text = "Idle"
                    css_class = "bg-main"
             elif stable:
                    status = "READY"
-                   text = "Ready"
                    css_class = "bg-green"
             elif abs_delta > 0:
                    status = "HEATING"
-                   text = "Heating"
                    css_class = "bg-orange"
             else:
                    status = "COOLING"
-                   text = "Cooling"
                    css_class = "bg-yellow"
 
             tool_num = self._get_tool_num(tool)
 
             self.tool_status[tool_num]['status'] = status
-            self.tool_status[tool_num]['text'] = text
             self.tool_status[tool_num]['css_class'] = css_class
             self.change_status(tool, status)
         self.send_client_tool_status()

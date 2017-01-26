@@ -80,9 +80,9 @@ $(function ()  {
         self.cancelFilamentDetection = function()
         {
             self.flyout.showConfirmationFlyout({
-                title: 'Cancel print',
+                title: gettext('Cancel print'),
                 text: '',
-                question: 'Are you sure you want to cancel your print?'
+                question: gettext('Are you sure you want to cancel your print?')
             })
                 .done(function ()  {
                     //Cancel print

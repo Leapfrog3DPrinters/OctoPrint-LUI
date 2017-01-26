@@ -2,7 +2,7 @@
 <div class="Table">
 	<div class="Table-row Table-header">
 		<div class="Table-item">
-			Connection
+			{{ _('Connection') }}
 		</div>
 	</div>
 	<div class="Table-row">
@@ -25,7 +25,7 @@
 	</div>
 	<div class="Table-row">
 		<div class="Table-item">
-			Save connection settings
+			{{ _('Save connection settings') }}
 		</div>
 		<div class="Table-item">
 			<div class="check_toggle">
@@ -36,7 +36,7 @@
 	</div>
 	<div class="Table-row">
 		<div class="Table-item">
-			Auto-connect on server startup
+			{{ _('Auto-connect on server startup') }}
 		</div>
 		<div class="Table-item">
 			<div class="check_toggle">
@@ -48,7 +48,7 @@
 	<div class="Table-row">
 		<div class="Table-item">
 			<ul class="button-area">
-				<li class="button" id="printer_connect" data-bind="click: function () { connect() }, enable: loginState.isUser()"><a href=""><span data-bind="text: buttonText()">Connect</span></a></li>
+				<li class="button" id="printer_connect" data-bind="click: function () { connect() }, enable: loginState.isUser()"><a href=""><span data-bind="text: buttonText()">{{ _('Connect') }}</span></a></li>
 			</ul>
 		</div>
 	</div>

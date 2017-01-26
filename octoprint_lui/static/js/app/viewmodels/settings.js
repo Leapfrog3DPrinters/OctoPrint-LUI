@@ -137,6 +137,8 @@ $(function () {
         self.saveTemperatureProfiles = function()
         {
             var names = [];
+            var title = gettext("Materials");
+            var profile = gettext('Profile "');
 
             for (var profile of self.temperature_profiles())
             {
@@ -145,7 +147,7 @@ $(function () {
                 profile.bed = parseInt(profile.bed);
 
                 if (names.indexOf(profile.name.toLowerCase()) > -1) {
-                    $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" already exists. Please ensure each profile has a unique name.' }, 'error');
+                    $.notify({ title: title, text: profile + profile.name + '" already exists. Please ensure each profile has a unique name.' }, 'error');
                     return;
                 }
 
@@ -154,19 +156,19 @@ $(function () {
                 //TODO: 'Soft-code' these values
                 if (LPFRG_MODEL == "Bolt") {
                     if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 360) {
-                        $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" must have an extruder temperature between 150 &deg;C and 360 &deg;C.' }, 'error');
+                        $.notify({ title: title, text: profile + profile.name + gettext('" must have an extruder temperature between 150 &deg;C and 360 &deg;C.') }, 'error');
                         return;
                     }
                 } else
                 {
                     if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 275) {
-                        $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" must have an extruder temperature between 150 &deg;C and 275 &deg;C.' }, 'error');
+                        $.notify({ title: title, text: profile + profile.name + gettext('" must have an extruder temperature between 150 &deg;C and 275 &deg;C.') }, 'error');
                         return;
                     }
                 }
 
                 if (isNaN(profile.bed) || profile.bed < 0) {
-                    $.notify({ title: 'Materials', text: 'Profile "' + profile.name + '" must have a bed temperature of at least 0 &deg;C.' }, 'error');
+                    $.notify({ title: title, text: profile + profile.name + gettext('" must have a bed temperature of at least 0 &deg;C.') }, 'error');
                     return;
                 }
 
@@ -200,8 +202,8 @@ $(function () {
 
             if (!toggle) {
                 var data = {
-                    title: "Turn on auto shutdown",
-                    text: "You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine."
+                    title: gettext("Turn on auto shutdown"),
+                    text: gettext("You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine.")
                 };
                 setTimeout(function(){
                     self.flyout.showWarning(data.title, data.text)
@@ -223,8 +225,8 @@ $(function () {
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
             var data = {
-                title: "Disable print analysis",
-                text: "You are about to disable the print analysis feature. Doing so will allow you to print without the print check. This could result in bad prints and/or potential damages to the printer."
+                title: gettext("Disable print analysis"),
+                text: gettext("You are about to disable the print analysis feature. Doing so will allow you to print without the print check. This could result in bad prints and/or potential damages to the printer.")
             };
             if(!newValue && oldValue) {
                 self.flyout.showConfirmationFlyout(data, true)
@@ -732,6 +734,57 @@ $(function () {
             url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.postJson(url, data);
         };
+
+
+        // Translations code
+
+        self.translations = new ItemListHelper(
+            "settings.translations",
+            {
+                "locale": function (a, b) {
+                    // sorts ascending
+                    if (a["locale"].toLocaleLowerCase() < b["locale"].toLocaleLowerCase()) return -1;
+                    if (a["locale"].toLocaleLowerCase() > b["locale"].toLocaleLowerCase()) return 1;
+                    return 0;
+                }
+            },
+            {
+            },
+            "locale",
+            [],
+            [],
+            0
+        );
+        
+
+        self.translationUploadFilename = ko.observable();
+        self.invalidTranslationArchive = ko.pureComputed(function() {
+            var name = self.translationUploadFilename();
+            return name !== undefined && !(_.endsWith(name.toLocaleLowerCase(), ".zip") || _.endsWith(name.toLocaleLowerCase(), ".tar.gz") || _.endsWith(name.toLocaleLowerCase(), ".tgz") || _.endsWith(name.toLocaleLowerCase(), ".tar"));
+        });
+        self.enableTranslationUpload = ko.pureComputed(function() {
+            var name = self.translationUploadFilename();
+            return name !== undefined && name.trim() != "" && !self.invalidTranslationArchive();
+        });
+
+        var auto_locale = {language: "_default", display: gettext("Autodetect from browser"), english: undefined};
+        self.locales = ko.observableArray([auto_locale].concat(_.sortBy(_.values(AVAILABLE_LOCALES), function(n) {
+            return n.display;
+        })));
+        self.locale_languages = _.keys(AVAILABLE_LOCALES);
+
+
+        self.saveLanguage = function() {
+            self.saveData()
+                .done(function() {
+                    self.flyout.closeFlyout()
+                    location.reload(true);
+                })
+        }
+
+        self.languageSelected = function(data) {
+            return (data.language == self.appearance_defaultLanguage());
+        }
 
     }
 

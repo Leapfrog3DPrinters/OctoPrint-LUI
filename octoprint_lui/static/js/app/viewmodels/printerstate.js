@@ -337,9 +337,9 @@ $(function ()  {
         };
 
         self.enableForcePrint = function () {
-            var title = "By-pass print analysis";
-            var message = "<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer."
-            var question = "Do you want to by-pass the print analysis and start the print?"
+            var title = gettext("By-pass print analysis");
+            var message = gettext("<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer.");
+            var question = gettext("Do you want to by-pass the print analysis and start the print?");
             var dialog = {title: title, text: message, question: question};
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){ 
@@ -448,8 +448,8 @@ $(function ()  {
 
         self.onDoorOpen = function ()  {
             if (self.warningVm === undefined) {
-                self.warningVm = self.flyout.showWarning('Door open',
-                    'Please close the door before you continue printing.');
+                self.warningVm = self.flyout.showWarning(gettext('Door open'),
+                    gettext('Please close the door before you continue printing.'));
             }
         }
         self.onDoorClose = function ()  {
@@ -575,13 +575,13 @@ $(function ()  {
                     case "gcode_preview_rendering":
                         if (messageData.filename == self.filename()) {
                             self.printPreviewUrl(undefined); // Remove old preview
-                            self.activities.push('Previewing');
+                            self.activities.push(gettext('Previewing'));
                         }
                         break;
                     case "gcode_preview_ready":
                         if (messageData.filename == self.filename()) {
                             self.refreshPrintPreview(messageData.previewUrl);
-                            self.activities.remove('Previewing');
+                            self.activities.remove(gettext('Previewing'));
                         }
                         break;
                 }
@@ -646,7 +646,7 @@ $(function ()  {
         self.onStartupComplete = function ()  {
             
             self.filepath.subscribe(function ()  {
-                self.activities.remove('Creating preview');
+                self.activities.remove(gettext('Creating preview'));
                 self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
             });

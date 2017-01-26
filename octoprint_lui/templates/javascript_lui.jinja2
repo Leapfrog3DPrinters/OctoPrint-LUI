@@ -69,3 +69,4 @@
 <script src="{{ url_for("plugin.lui.static", filename="js/app/util/helpers.js") }}"></script>
 <script src="{{ url_for("plugin.lui.static", filename="js/app/util/dataupdate_light.js") }}"></script>
 <script src="{{ url_for("plugin.lui.static", filename="js/app/main.js") }}"></script>
+{% if g.locale %}<script type="text/javascript" src="{{ url_for('localeJs', locale=g.locale, domain='messages') }}"></script>{% endif %}

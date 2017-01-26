@@ -102,11 +102,11 @@ $(function () {
     
     self.showConfirmationFlyout = function(data, leaveFlyout) {
       // Set flyout ko.observables
-      var title = data.title || "Are you sure?";
+      var title = data.title || gettext("Are you sure?");
       var text = data.text || "";
-      var question = data.question || "Are you sure want to proceed?";
-      var ok_text = data.ok_text || "Confirm";
-      var cancel_text = data.cancel_text || "Cancel";
+      var question = data.question || gettext("Are you sure want to proceed?");
+      var ok_text = data.ok_text || gettext("Confirm");
+      var cancel_text = data.cancel_text || gettext("Cancel");
 
       self.confirmation_title(title);
       self.confirmation_text(text);
