@@ -32,7 +32,13 @@ $(function () {
 
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function ()  {
+<<<<<<< HEAD
+                    self.moveToFilamentLoadPosition();
+
+                    self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterMaintenance);
+=======
                     self.moveToHeadMaintenancePosition();
+>>>>>>> 1.0.6
                 });
         };
 
@@ -110,7 +116,14 @@ $(function () {
 
             // From here only executed if temperatures are < 50, or heat check is ignored
             self._sendApi({
+<<<<<<< HEAD
+                command: 'move_to_filament_load_position'
+            }).done(function ()  {
+                $.notify({ title: gettext("Head maintenance"), text: gettext("The printhead is moving towards the maintenance position.") }, "success");
+                
+=======
                 command: 'move_to_head_maintenance_position'
+>>>>>>> 1.0.6
             });
 
             self.movingToMaintenancePositionInfo = self.flyout.showInfo("Maintenance position", "The printhead is moving towards the maintenance position.", true);

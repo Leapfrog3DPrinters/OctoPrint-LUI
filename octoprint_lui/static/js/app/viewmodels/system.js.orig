@@ -109,6 +109,10 @@ $(function () {
         self.systemShutdown = function (confirm) {
             confirm = confirm !== false;
 
+<<<<<<< HEAD
+            var dialog = { 'title': gettext('Shutdown printer'), 'text': gettext('You are about to shutdown the printer.'), 'question': gettext('Do you want to continue?') };
+=======
+>>>>>>> 1.0.6
             var command = { 'actionSource': 'core', 'action': 'shutdown', 'name': 'Shutdown' }
 
             if (confirm)

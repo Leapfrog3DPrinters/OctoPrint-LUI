@@ -87,9 +87,17 @@
         </div>
         <div class="Table-item Table-item-grow-3">
           <ul class="button-area">
+<<<<<<< HEAD
+            <li id="settings-flash-arduino-start" class="button" data-bind="css: {disabled: !flash_enable()}">
+              <a href="#">
+                <span>
+                  <i class="fa fa-upload"></i>{{ _('Flash') }}
+                </span>
+=======
             <li class="button" data-bind="css: $parent.getFirmwareUpdateButtonClass(), click: function () {$parent.firmwareUpdate()}">
               <a href="">
                 <span data-bind="text: $parent.getFirmwareUpdateText()"></span>
+>>>>>>> 1.0.6
               </a>
             </li>
           </ul>
@@ -108,8 +116,13 @@
           <ul class="button-area">
             <li class="button secondary-button fileinput-button" data-bind="click: function () { $parent.browseForFirmware() }, css: { disabled: !$parent.files.isUsbAvailable() }">
               <a href="#">
+<<<<<<< HEAD
                 <span>{{ _('Browse USB drive for firmware') }}</span>
             </a>
+=======
+                <span>Browse USB drive for firmware</span>
+              </a>
+>>>>>>> 1.0.6
             </li>
           </ul>
           {%- endif %}
@@ -117,9 +130,15 @@
           <ul class="button-area">
             <li class="button secondary-button fileinput-button">
               <a href="#">
+<<<<<<< HEAD
                 <span>{{ _('Upload firmware') }}</span>
+                <input id="settings-flash-arduino" type="file" accept=".hex" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file", filename="")}}" />
+            </a>
+=======
+                <span>Upload firmware</span>
                 <input id="settings-flash-arduino" type="file" accept=".hex" name="file" data-url="{{ url_for("plugin.flasharduino.flash_hex_file_from_post")}}" />
               </a>
+>>>>>>> 1.0.6
             </li>
           </ul>
           {%- endif %}

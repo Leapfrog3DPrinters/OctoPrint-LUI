@@ -411,6 +411,40 @@
       </div>
     </div>
   </aside>
+  <aside id="printer_error_flyout" class="flyout">
+    <div class="flyout-header bg-yellow">
+      <h4>
+        <i class="fa fa-exclamation-triangle"></i>{{ _('An error has occured') }}
+      </h4>
+    </div>
+    <div class="flyout-body">
+      <div id="printer_error_flyout_content">
+        {% include "flyouts_lui/info_flyouts/printer_error_flyout.jinja2" %}
+      </div>
+      <div class="printer_error_flyout_footer">
+        <div style="margin-bottom: 15px;" data-bind="style: {visibility: isConnecting() ? 'visible' : 'hidden' }">
+          <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i> Connecting...
+        </div>
+      
+        <ul class="button-area">
+          <li class="button ok-button">
+            <a href="#" data-bind="click: restorePrinterConnection">
+              <span>
+                <i class="fa fa-wrench"></i>{{ _('Restore') }}
+              </span>
+            </a>
+          </li>
+          <li class="button failed-button">
+            <a href="#" data-bind="click: function () { system.systemShutdown() }">
+              <span>
+                <i class="fa fa-power-off"></i>{{ _('Shutdown printer') }}
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
 <aside id="filament_override_flyout" class="flyout">
   <div class="flyout-header">
     <h4>{{ _('Filament material and amount') }}</h4>
@@ -538,6 +572,18 @@
     </div>
   </div>
 </aside>
+<aside id="shutdown_confirmation_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>
+      <i class="fa fa-power-off"></i>Shutdown
+    </h4>
+  </div>
+  <div class="flyout-body">
+    <div id="shutdown_confirmation_flyout_content">
+      {% include "flyouts_lui/info_flyouts/shutdown_confirmation_flyout.jinja2" %}
+    </div>
+  </div>
+</aside>
 <aside id="changelog_flyout" class="flyout">
   <div class="flyout-header">
     <h4><i class="fa fa-info-circle"></i>{{ _('Changelog') }}</h4>
@@ -553,6 +599,18 @@
         </a>
       </li>
     </ul>
+  </div>
+</aside>
+<aside id="firmware_update_required_flyout" class="flyout">
+  <div class="flyout-header bg-yellow">
+    <h4>
+      <i class="fa fa-exclamation-triangle"></i>Firmware update required
+    </h4>
+  </div>
+  <div class="flyout-body">
+    <div id="firmware_update_required_flyout_content">
+      {% include "flyouts_lui/info_flyouts/firmware_update_required_flyout.jinja2" %}
+    </div>
   </div>
 </aside>
 <aside id="offline_flyout" class="flyout">

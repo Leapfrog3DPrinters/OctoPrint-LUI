@@ -80,7 +80,10 @@ $(function () {
         self.setOverlay();
     }
 
-    self.showFlyout = function(flyout, blocking) {
+    self.showFlyout = function (flyout, blocking) {
+
+//TODO: Check if flyout open. If so, push to front and return its deferred
+
       var deferred = $.Deferred();
       var template_flyout = '#'+flyout+'_flyout';
       var blocking = blocking || false;
@@ -137,15 +140,37 @@ $(function () {
       return self.confirmationDeferred;
     };
 
-    self.closeFlyout = function () {
-        var flyout_ref = self.flyouts.pop()
-        var deferred = flyout_ref.deferred
-        var template_flyout = flyout_ref.template
+    self.isFlyoutOpen = function (flyout)
+    {
+        var template_flyout = '#' + flyout + '_flyout';
+        return _.some(self.flyouts(), function (f) { return f.template == template_flyout });
+    }
+
+    self.closeFlyout = function (flyout) {
+
+        if (flyout !== undefined)
+        {
+            var template_flyout = '#' + flyout + '_flyout';
+            var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
+
+            if (!flyout_ref)
+                return;
+
+            self.flyouts.remove(flyout_ref);
+        }
+        else
+        {
+            var flyout_ref = self.flyouts.pop();
+            var template_flyout = flyout_ref.template;
+        }
+
+        var deferred = flyout_ref.deferred;
+        
         if (deferred != undefined) {
             deferred.reject();
             if (self.flyouts().length > 0){
-              self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
-                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking
+                self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template;
+                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking;
               } else {
                 self.blocking = false;
               }
@@ -153,15 +178,30 @@ $(function () {
         self.deactivateFlyout(template_flyout);
     };
     
-    self.closeFlyoutAccept = function () {
-        var flyout_ref = self.flyouts.pop()
-        var deferred = flyout_ref.deferred
-        var template_flyout = flyout_ref.template
+    self.closeFlyoutAccept = function (flyout) {
+        if (flyout !== undefined)
+        {
+            var template_flyout = '#' + flyout + '_flyout';
+            var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
+
+            if (!flyout_ref)
+                return;
+
+            self.flyouts.remove(flyout_ref);
+        }
+        else
+        {
+            var flyout_ref = self.flyouts.pop();
+            var template_flyout = flyout_ref.template;
+        }
+
+        var deferred = flyout_ref.deferred;
+        
         if (deferred != undefined) {
             deferred.resolve();
             if (self.flyouts().length > 0){
-              self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template
-              self.blocking = self.flyouts()[self.flyouts().length - 1].blocking
+                self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template;
+                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking;
             } else {
               self.blocking = false;
             }
@@ -181,7 +221,8 @@ $(function () {
         self.setOverlay();
     }
 
-    self.setOverlay = function ()  {
+    self.setOverlay = function () {
+        var flyouts = self.flyouts();
         if (self.warnings().length == 0 && self.infos().length == 0 && self.flyouts().length == 0 &&
             !$('#confirmation_flyout').hasClass('active') && !$(self.template_flyout).hasClass('active'))
             $('.overlay').removeClass('active');
