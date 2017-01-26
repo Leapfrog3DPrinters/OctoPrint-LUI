@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-26 12:12+0100\n"
-"PO-Revision-Date: 2017-01-26 12:13+0100\n"
+"POT-Creation-Date: 2017-01-26 15:54+0100\n"
+"PO-Revision-Date: 2017-01-26 15:58+0100\n"
 "Last-Translator: \n"
 "Language-Team: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -53,6 +53,7 @@ msgid "Sending file to SD"
 msgstr "Bestand verzenden naar SD"
 
 #: octoprint_lui/static/js/app/main.js:80
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:411
 msgid "Printing"
 msgstr "Printen"
 
@@ -280,11 +281,13 @@ msgid "An error has occured while storing the calibration settings. Please try a
 msgstr "Er is een fout opgetreden tijdens het opslaan van de kalibratie-instellingen. Probeer het opnieuw."
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:62
+#: octoprint_lui/static/js/app/viewmodels/files.js:1043
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:237
 msgid "Right"
 msgstr "Rechts"
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:64
+#: octoprint_lui/static/js/app/viewmodels/files.js:1043
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:235
 msgid "Left"
 msgstr "Links"
@@ -522,19 +525,20 @@ msgid "Filename"
 msgstr "Bestandsnaam"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:1038
+#: octoprint_lui/static/js/app/viewmodels/files.js:1043
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:278
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:38
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:157
 msgid "Filament"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1043
-msgid "Filament "
-msgstr ""
-
 #: octoprint_lui/static/js/app/viewmodels/files.js:1047
 msgid "Est. Print Time"
 msgstr "Geschatte Print Tijd"
+
+#: octoprint_lui/static/js/app/viewmodels/files.js:1049
+msgid "Analysing job"
+msgstr "Print opdracht analyseren"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:1052
 msgid "Last Printed"
@@ -976,7 +980,7 @@ msgstr "Het commando \"%(command)s\" is succesvol uitgevoerd"
 #: octoprint_lui/static/js/app/viewmodels/system.js:73
 #, python-format
 msgid "The command \"%(command)s\" could not be executed. Please check logs."
-msgstr "Het commando \"%(command)s\" kon niet worden uitgevoerd. Gelieve de logs de raadplegen."
+msgstr "Het commando \"%(command)s\" kon niet worden uitgevoerd.. Raadpleeg de log bestanden."
 
 #: octoprint_lui/static/js/app/viewmodels/system.js:104
 msgid "Reboot printer"
@@ -1020,6 +1024,7 @@ msgid "Hotend"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:250
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:411
 msgid "Heating"
 msgstr "Opwarmen"
 
@@ -1574,11 +1579,11 @@ msgstr "Filament wisselen:"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:18
 msgid "Please wait while the printer is heating and until the command has been executed."
-msgstr "Gelieve te wachten totdat de printer klaar is met opwarmenen de commando's zijn uitgevoerd."
+msgstr "Wacht totdat de printer klaar is met opwarmen en de actie is uitgevoerd."
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:25
 msgid "Please press unload to release the filament from the extruder. The spool that you are unloading has"
-msgstr "Druk op Uitladen om het filament uit de extruder te laden. De spel die wordt uitgeladen heeft"
+msgstr "Druk op Uitladen om het filament uit de extruder te laden. De spoel die wordt uitgeladen heeft"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:25
 msgid "left."
@@ -2099,7 +2104,7 @@ msgstr "Browse USB-stick voor firmware"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:120
 msgid "Upload firmware"
-msgstr ""
+msgstr "Firmware uploaden"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:149
 msgid "Reading"
@@ -2130,7 +2135,7 @@ msgstr "Gebruiker verwijderen"
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:47
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:58
 msgid "Add user"
-msgstr ""
+msgstr "Gebruiker toevoegen"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:79
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:150

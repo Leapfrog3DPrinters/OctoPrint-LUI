@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-26 12:12+0100\n"
+"POT-Creation-Date: 2017-01-26 15:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,6 +51,7 @@ msgid "Sending file to SD"
 msgstr ""
 
 #: octoprint_lui/static/js/app/main.js:80
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:411
 msgid "Printing"
 msgstr ""
 
@@ -285,11 +286,13 @@ msgid ""
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:62
+#: octoprint_lui/static/js/app/viewmodels/files.js:1043
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:237
 msgid "Right"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:64
+#: octoprint_lui/static/js/app/viewmodels/files.js:1043
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:235
 msgid "Left"
 msgstr ""
@@ -540,18 +543,19 @@ msgid "Filename"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:1038
+#: octoprint_lui/static/js/app/viewmodels/files.js:1043
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:278
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:38
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:157
 msgid "Filament"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1043
-msgid "Filament "
-msgstr ""
-
 #: octoprint_lui/static/js/app/viewmodels/files.js:1047
 msgid "Est. Print Time"
+msgstr ""
+
+#: octoprint_lui/static/js/app/viewmodels/files.js:1049
+msgid "Analysing job"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:1052
@@ -1067,6 +1071,7 @@ msgid "Hotend"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:250
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:411
 msgid "Heating"
 msgstr ""
 
