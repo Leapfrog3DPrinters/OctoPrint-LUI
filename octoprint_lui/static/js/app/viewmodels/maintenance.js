@@ -95,9 +95,9 @@ $(function () {
             if (!skipHeatCheck &&
                 (tools[0]["actual"]() >= 50 || tools[1]["actual"]() >= 50))
             {
-                var text = "One of the print heads has not cooled down yet. Print head maintenance may cause serious injury. It is adviced to wait for the print heads to cool down.";
-                var question = "Are you sure you want to continue?";
-                var title = "Clean bed position"
+                var text = gettext("One of the print heads has not cooled down yet. Print head maintenance may cause serious injury. It is adviced to wait for the print heads to cool down.");
+                var question = gettext("Are you sure you want to continue?");
+                var title = gettext("Clean bed position")
                 var dialog = { 'title': title, 'text': text, 'question': question };
 
                 self.flyout.showConfirmationFlyout(dialog, true)
@@ -113,14 +113,14 @@ $(function () {
                 command: 'move_to_head_maintenance_position'
             });
 
-            self.movingToMaintenancePositionInfo = self.flyout.showInfo("Maintenance position", "The printhead is moving towards the maintenance position.", true);
+            self.movingToMaintenancePositionInfo = self.flyout.showInfo(gettext("Maintenance position"), gettext("The printhead is moving towards the maintenance position."), true);
         };
 
         self.completeHeadMaintenance = function()
         {
             if (self.movingToMaintenancePositionInfo !== undefined) {
                 self.flyout.closeInfo(self.movingToMaintenancePositionInfo);
-                self.flyout.showInfo('Maintenance position', 'Press OK when you are done with the print head maintenance. This will home the printer.', false, self.afterHeadMaintenance);
+                self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterHeadMaintenance);
                 self.movingToMaintenancePositionInfo = undefined;
             }
             
@@ -167,8 +167,8 @@ $(function () {
                     self.completeHeadMaintenance();
                     break;
                 case "powering_up_after_maintenance":
-                    var title = "Reconnecting to printer"
-                    var message = "Please wait while the printer is being reconnected. Note that the printer will home automatically.";
+                    var title = gettext("Reconnecting to printer");
+                    var message = gettext("Please wait while the printer is being reconnected. Note that the printer will home automatically.");
                     self.poweringUpInfo = self.flyout.showInfo(title, message, true);
                     break;
                 case "is_homed":

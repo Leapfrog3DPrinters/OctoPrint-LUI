@@ -41,9 +41,9 @@ $(function ()  {
 
         self.getFirmwareUpdateText = function () {
             if (self.firmwareUpdateAvailable()) {
-                return "Update"
+                return gettext("Update");
             } else {
-                return "Up-to-date"
+                return gettext("Up-to-date");
             }
         };
 
@@ -215,9 +215,9 @@ $(function ()  {
                     self.firmwareUpdateAvailable(false);
                     if(!silent && self.update_needed() > 0)
                     {
-                        var title = "Firmware update found"
+                        var title = gettext("Firmware update found");
                         var text = _.sprintf(gettext('A firmware update has been found, but this requires a software update first.'), {  });
-                        var question = "Would you like to update the printer software?";
+                        var question = gettext("Would you like to update the printer software?");
 
                         var dialog = { 'title': title, 'text': text, 'question': question };
 

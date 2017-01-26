@@ -124,7 +124,7 @@ $(function () {
                 }
                 else
                 {
-                    var dialog = { 'title': 'Shutdown system', 'text': gettext('You are about to shutdown the system.'), 'question': gettext('Do you want to continue?') };
+                    var dialog = { 'title': gettext('Shutdown printer'), 'text': gettext('You are about to shutdown the printer.'), 'question': gettext('Do you want to continue?') };
                     command.confirm = dialog;
                     self.triggerCommand(command);
                 }
