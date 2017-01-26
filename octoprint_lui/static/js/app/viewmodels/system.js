@@ -91,7 +91,7 @@ $(function () {
 
         self.systemReboot = function () {
             console.log("System Reboot called")
-            var dialog = {'title': gettext('Reboot system'), 'text': gettext('You are about to reboot the system.'), 'question' : gettext('Do you want to continue?')};
+            var dialog = {'title': gettext('Reboot printer'), 'text': gettext('You are about to reboot the printer.'), 'question' : gettext('Do you want to continue?')};
             var command = {'actionSource': 'core', 'action': 'reboot', 'name': 'Reboot', confirm: dialog};
             self.triggerCommand(command);
         };
@@ -99,7 +99,7 @@ $(function () {
         self.systemShutdown = function (confirm) {
             confirm = confirm !== false;
 
-            var dialog = { 'title': gettext('Shutdown system'), 'text': gettext('You are about to shutdown the system.'), 'question': gettext('Do you want to continue?') };
+            var dialog = { 'title': gettext('Shutdown printer'), 'text': gettext('You are about to shutdown the printer.'), 'question': gettext('Do you want to continue?') };
             var command = { 'actionSource': 'core', 'action': 'shutdown', 'name': 'Shutdown' }
 
             if (confirm)

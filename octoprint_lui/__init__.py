@@ -692,7 +692,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing
         """
-        self._on_powerbutton_press()
+        self._send_client_message("filament_action_detected", dict(tool="tool0"))
 
     def _on_api_command_changelog_seen(self, *args, **kwargs):
         self._logger.info("changelog_seen")

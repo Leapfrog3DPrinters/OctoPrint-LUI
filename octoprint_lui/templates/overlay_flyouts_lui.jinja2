@@ -206,6 +206,29 @@
       <!-- /ko -->
     </div>
   </aside>
+  <aside id="languages_settings_flyout" class="flyout">
+    <div class="flyout-header">
+      <h4 data-bind="text: settingsTopic"></h4>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+    </div>
+    <div class="flyout-body">
+      <div id="languages_settings_flyout_content" class="flyout_content">
+        {% include "flyouts_lui/setting_flyouts/languages_flyout.jinja2" %}
+      <ul class="button-area">
+        <li class="button secondary-button">
+          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
+            <span>{{ _('Cancel') }}</span>
+          </a>
+        </li>
+        <li class="button">
+          <a href="#save" data-bind="click: function () { saveLanguage() }">
+            <span>{{ _('Save') }}</span>
+          </a>
+        </li>
+      </ul>
+      </div>
+    </div>
+  </aside>
 </div> <!-- end settings flyouts -->
   <aside id="login_flyout" class="flyout">
     <div class="flyout-header">
@@ -403,7 +426,7 @@
                       materialProfiles,
                       optionsText: 'name',
                       value: updateLeftTemperatureProfile,
-                      optionsCaption: 'Choose material'">
+                      optionsCaption: '{{ _('Choose material') }}'">
           </select>
         </div>
         <div class="Table-item">
@@ -411,7 +434,7 @@
                       materialProfiles,
                       optionsText: 'name',
                       value: updateRightTemperatureProfile,
-                      optionsCaption: 'Choose material'">
+                      optionsCaption: '{{ _('Choose material') }}'">
           </select>
         </div>
       </div>

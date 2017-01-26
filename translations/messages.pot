@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-23 17:49+0100\n"
+"POT-Creation-Date: 2017-01-25 14:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -299,6 +299,7 @@ msgid "Loaded"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:118
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:60
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:215
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:252
 msgid "Delete"
@@ -582,7 +583,7 @@ msgid "Filename"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:1038
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:255
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:278
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:38
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:157
 msgid "Filament"
@@ -679,6 +680,7 @@ msgstr ""
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:48
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:113
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:196
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:220
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:123
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/auto_shutdown_flyout.jinja2:23
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:144
@@ -1008,6 +1010,10 @@ msgstr ""
 #: octoprint_lui/static/js/app/viewmodels/settings.js:698
 #, python-format
 msgid "Command \"%(name)s\" sent"
+msgstr ""
+
+#: octoprint_lui/static/js/app/viewmodels/settings.js:768
+msgid "Autodetect from browser"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/system.js:52
@@ -1373,6 +1379,7 @@ msgstr ""
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:53
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:118
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:201
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:225
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2:205
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/zoffset_flyout.jinja2:50
 msgid "Save"
@@ -1383,71 +1390,71 @@ msgstr ""
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:138
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:158
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:178
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:283
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:301
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:319
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:358
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:456
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:306
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:324
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:342
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:381
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:479
 msgid "Close"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:212
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:235
 msgid "System"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:225
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:248
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:111
 msgid "Back"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:237
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:260
 msgid "Filament Detection Warning"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:247
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:270
 msgid "Cancel Print"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:265
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:336
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:353
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:288
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:359
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:376
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:114
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:178
 msgid "Abort"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:273
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:296
 msgid "Firmware files"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:291
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:314
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:72
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:119
 msgid "Info"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:309
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:332
 msgid "Z-offset Wizard"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:327
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:350
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2:6
 msgid "Extruder calibration"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:344
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:367
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:6
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:58
 msgid "Bed calibration"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:366
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:389
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:132
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:83
 msgid "Start print"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:379
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:402
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:5
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:83
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:5
@@ -1455,55 +1462,55 @@ msgstr ""
 msgid "Printer startup"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:393
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:416
 msgid "Filament material and amount"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:398
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:421
 msgid "Filament settings"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:419
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:423
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:442
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:446
 msgid "Amount"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:434
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:457
 msgid "Update left"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:445
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:468
 msgid "Update right"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:464
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:487
 msgid "Confirmation"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:510
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:533
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/printer_flyout.jinja2:18
 msgid "Auto shutdown"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:520
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:543
 msgid "Changelog"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:529
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:597
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:639
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:552
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:620
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:662
 msgid "Ok"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:537
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:560
 msgid "Service Offline"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:575
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:598
 msgid "Warning"
 msgstr ""
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:617
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:640
 msgid "Information"
 msgstr ""
 
@@ -2014,15 +2021,18 @@ msgstr ""
 msgid "Resume"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/setting_flyouts/logs_flyout.jinja2:5
-msgid "Log files"
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:5
+#: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:205
+msgid "Languages"
 msgstr ""
 
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:18
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/logs_flyout.jinja2:18
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:80
 msgid "Sort by"
 msgstr ""
 
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:22
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/logs_flyout.jinja2:22
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/printer_flyout.jinja2:3
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:4
@@ -2030,8 +2040,28 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:25
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/logs_flyout.jinja2:25
 msgid "Changed date"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:34
+msgid "Default Language"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:41
+msgid ""
+"Changes to the default interface language will only become active after a"
+" reload of the page and only be active if not overridden by the users "
+"language settings."
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:57
+msgid "Last update:"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/logs_flyout.jinja2:5
+msgid "Log files"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/maintenance_flyout.jinja2:10

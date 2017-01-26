@@ -733,6 +733,53 @@ $(function () {
             return OctoPrint.postJson(url, data);
         };
 
+
+        // Translations code
+
+        self.translations = new ItemListHelper(
+            "settings.translations",
+            {
+                "locale": function (a, b) {
+                    // sorts ascending
+                    if (a["locale"].toLocaleLowerCase() < b["locale"].toLocaleLowerCase()) return -1;
+                    if (a["locale"].toLocaleLowerCase() > b["locale"].toLocaleLowerCase()) return 1;
+                    return 0;
+                }
+            },
+            {
+            },
+            "locale",
+            [],
+            [],
+            0
+        );
+        
+
+        self.translationUploadFilename = ko.observable();
+        self.invalidTranslationArchive = ko.pureComputed(function() {
+            var name = self.translationUploadFilename();
+            return name !== undefined && !(_.endsWith(name.toLocaleLowerCase(), ".zip") || _.endsWith(name.toLocaleLowerCase(), ".tar.gz") || _.endsWith(name.toLocaleLowerCase(), ".tgz") || _.endsWith(name.toLocaleLowerCase(), ".tar"));
+        });
+        self.enableTranslationUpload = ko.pureComputed(function() {
+            var name = self.translationUploadFilename();
+            return name !== undefined && name.trim() != "" && !self.invalidTranslationArchive();
+        });
+
+        var auto_locale = {language: "_default", display: gettext("Autodetect from browser"), english: undefined};
+        self.locales = ko.observableArray([auto_locale].concat(_.sortBy(_.values(AVAILABLE_LOCALES), function(n) {
+            return n.display;
+        })));
+        self.locale_languages = _.keys(AVAILABLE_LOCALES);
+
+
+        self.saveLanguage = function() {
+            self.saveData()
+                .done(function() {
+                    self.flyout.closeFlyout()
+                    location.reload(true);
+                })
+        }
+
     }
 
     OCTOPRINT_VIEWMODELS.push([

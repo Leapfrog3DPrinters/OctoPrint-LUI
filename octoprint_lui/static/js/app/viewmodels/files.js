@@ -797,7 +797,7 @@ $(function ()  {
             var gridsize_y = 300;
             var gridsize_x = 330;
 
-            grid += _.sprintf(gettext("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>"), {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
+            grid += _.sprintf("<div class='grid' style='max-width: %(gridsize_x).2fpx; height: %(gridsize_y).2fpx;'>", {gridsize_x: gridsize_x, gridsize_y: gridsize_y});
 
             // TODO: Out for now, only check massive prints.
             // We can only print half X with sync and mirror mode
@@ -814,7 +814,7 @@ $(function ()  {
             };
 
 
-            grid += _.sprintf(gettext("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx'></div>"),{draw: draw});
+            grid += _.sprintf("<div class='print_model' style='width: %(draw.width).2fpx; height: %(draw.depth).2fpx; left: %(draw.left).2fpx; bottom: %(draw.bottom).2fpx'></div>",{draw: draw});
 
             grid += "</div></div></div>";
 
@@ -823,17 +823,17 @@ $(function ()  {
             if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
                 info += gettext("Object exceeds print area in width. ");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object width</div></div>";
-                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>"), formatData);  
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);  
             }
             if (dimensions["depth"] > (boundaries["maxY"] + Math.abs(boundaries["minY"]))) {
                 info += gettext("Object exceeds print area in depth.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object depth</div></div>";
-                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>"), formatData);
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(dimensions.depth).2f mm</div></div>", formatData);
             }
             if (dimensions["height"] > (boundaries["maxZ"] + Math.abs(boundaries["minZ"]))) {
                 info += gettext("Object exceeds print area in height.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object height</div></div>";
-                sizeTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>%(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(dimensions.height).2f mm</div></div>"), formatData);
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(dimensions.height).2f mm</div></div>", formatData);
             }
 
 
@@ -844,18 +844,18 @@ $(function ()  {
 
                 if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
                     info += gettext("Object positioned outside print area in width.");
-                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>"), formatData);  
+                    positionTable += gettext("<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>");
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);  
                 }
                 if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
                     info += gettext("Object positioned outside print area in depth.");
-                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>"), formatData);  
+                    positionTable += gettext("<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>");
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);  
                 }
                 if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
                     info += gettext("Object positioned outside print area in heigth.");
-                    positionTable += "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>";
-                    positionTable += _.sprintf(gettext("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>"), formatData);  
+                    positionTable += gettext("<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>");
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);  
                 }
                 
             }
@@ -896,7 +896,7 @@ $(function ()  {
         });
 
         self.showSyncMirrorWarning = function() {
-            var title = "Sync or Mirror print";
+            var title = gettext("Sync or Mirror print");
 
             var grid = "<div class='Table-row'><div class='Table-item'>";
             var gridsize_y = 300;
