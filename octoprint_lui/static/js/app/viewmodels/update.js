@@ -320,10 +320,16 @@ $(function ()  {
         self.onAfterBinding = function () 
         {
             self.flashArduino.hex_path.subscribe(self.onHexPathChanged);
+            self.flashArduino.flashing_begin_callback = self.onFlashingBegin;
             self.flashArduino.flashing_complete_callback = self.onFlashingComplete;
 
             // Communicate to the plugin wheter he's allowed to flash
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
+        }
+
+        self.onFlashingBegin = function()
+        {
+            self._sendApi({ command: 'notify_intended_disconnect' });
         }
 
         self.onFlashingComplete = function(success)
@@ -344,6 +350,11 @@ $(function ()  {
             self.firmwareRefreshing(false);
             $('#firmware_update_spinner').removeClass('fa-spin');
         }
+
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            return OctoPrint.postJson(url, data);
+        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
