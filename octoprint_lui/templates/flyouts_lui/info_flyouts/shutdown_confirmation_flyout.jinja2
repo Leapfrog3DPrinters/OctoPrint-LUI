@@ -1,0 +1,35 @@
+<div id="shutdown_confirmation">
+	<div class="Table">
+		<div class="Table-row Table-header">
+			<div class="Table-item">
+        {{ _('Shutdown system') }}
+      </div>
+		</div>
+		<div class="Table-row">
+			<div class="Table-item">
+				<span>{{ ('A print job is currently busy. Would you like to use auto-shutdown when your printjob finishes or would you like to cancel the print and shutdown immediately?') }}</span>
+			</div>
+		</div>
+		<div class="Table-row">
+			<div class="Table-item">
+				<ul class="button-area">
+          <li class="button ok-button">
+            <a href="#cancel" data-bind="click: function() { flyout.closeFlyoutAccept('shutdown_confirmation') }">
+              <span>{{ _('Auto-shutdown') }}</span>
+            </a>
+          </li>
+				  <li class="button failed-button">
+				    <a href="#save" data-bind="click: function() { systemShutdown(false); }">
+				      <span>{{ _('Shutdown now') }}</span>
+				    </a>
+				  </li>
+          <li class="button secondary-button">
+            <a href="#cancel" data-bind="click: function() { flyout.closeFlyout('shutdown_confirmation') }">
+              <span>{{ _('Cancel') }}</span>
+            </a>
+          </li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
