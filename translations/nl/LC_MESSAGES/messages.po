@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-26 15:54+0100\n"
-"PO-Revision-Date: 2017-01-26 15:58+0100\n"
+"PO-Revision-Date: 2017-01-26 17:42+0100\n"
 "Last-Translator: \n"
 "Language-Team: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1017,7 +1017,7 @@ msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:58
 msgid "Loading..."
-msgstr "Laden..."
+msgstr "Laden…"
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:89
 msgid "Hotend"
