@@ -8,13 +8,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-26 10:40+0100\n"
-"PO-Revision-Date: 2017-01-26 10:41+0100\n"
+"POT-Creation-Date: 2017-01-26 12:09+0100\n"
+"PO-Revision-Date: 2017-01-26 12:10+0100\n"
 "Last-Translator: \n"
 "Language-Team: nl\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 1.3\n"
@@ -2204,10 +2204,6 @@ msgstr "Hervatten"
 msgid "Languages"
 msgstr "Talen"
 
-#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:9
-msgid "Default Language"
-msgstr "Standaard taal"
-
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/logs_flyout.jinja2:5
 msgid "Log files"
 msgstr "Log bestanden"
@@ -2433,6 +2429,10 @@ msgstr ""
 msgid "Rescan"
 msgstr "Opnieuw scannen"
 
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:69
+msgid "Wired"
+msgstr "Ethernet"
+
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:82
 msgid "Connect to Wifi Network"
 msgstr "Wifi Netwerk verbinden"
@@ -2584,46 +2584,3 @@ msgstr "Geavanceerd"
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:185
 msgid "Logs"
 msgstr ""
-
-#~ msgid "Head maintenance"
-#~ msgstr "Hoofd onderhoud"
-
-#~ msgid ""
-#~ "Your extruder temperature is either very low or your extruder is "
-#~ "disconnected. Make sure you are operating within environment "
-#~ "specifications or check the connection of your extruder."
-#~ msgstr ""
-#~ "De temperatuur van de extruders zijn heel erg laag of een extruder is "
-#~ "losgekoppeld. Zorg ervoor dat u de printer bediend in de opgegeven "
-#~ "temperatuur specificaties of controleer de connectie van de extruders. "
-
-#~ msgid "Reboot system"
-#~ msgstr "Herstart printer"
-
-#~ msgid "Flash"
-#~ msgstr "Flash"
-
-#~ msgid "Local"
-#~ msgstr "Printer"
-
-#~ msgid "You are about to reboot the system."
-#~ msgstr "U staat op het punt op het systeem te herstarten."
-
-#~ msgid "You are about to shutdown the system."
-#~ msgstr "U staat op het punt om de printer af te sluiten."
-
-#~ msgid ""
-#~ "The printer seems not connected to the internet. Please make sure the "
-#~ "network has internet capabilties. "
-#~ msgstr ""
-#~ "De printer lijkt niet aangesloten op het internet. Zorg ervoor dat het "
-#~ "netwerk internet mogelijkheden heeft."
-
-#~ msgid ""
-#~ "TODO: CHECK IF THIS WORKS Please press unload to release the filament "
-#~ "from the extruder. The spool that you are unloading has <span data-bind="
-#~ "\"text: filament.loadedFilamentAmount\" class=\"bold\"></span> left."
-#~ msgstr ""
-#~ "Druk op Uitladen om het filament uit de extruder te laden. De spoel die u "
-#~ "uitlaadt heeft nog <span data-bind=\"text: filament.loadedFilamentAmount"
-#~ "\" class=\"bold\"></span> erop."

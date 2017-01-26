@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-26 10:40+0100\n"
+"POT-Creation-Date: 2017-01-26 12:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2094,10 +2094,6 @@ msgstr ""
 msgid "Languages"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/setting_flyouts/languages_flyout.jinja2:9
-msgid "Default Language"
-msgstr ""
-
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/logs_flyout.jinja2:5
 msgid "Log files"
 msgstr ""
@@ -2316,6 +2312,10 @@ msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:52
 msgid "Rescan"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:69
+msgid "Wired"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:82
