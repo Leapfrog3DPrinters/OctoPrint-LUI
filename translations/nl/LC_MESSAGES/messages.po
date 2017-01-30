@@ -8,15 +8,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-27 11:03+0100\n"
-"PO-Revision-Date: 2017-01-26 17:42+0100\n"
+"POT-Creation-Date: 2017-01-30 11:08+0100\n"
+"PO-Revision-Date: 2017-01-30 11:18+0100\n"
 "Last-Translator: \n"
 "Language-Team: nl\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+"Language: nl\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: octoprint_lui/static/js/app/main.js:72
 msgid "Offline"
@@ -240,7 +242,7 @@ msgstr "minder dan een minuut"
 
 #: octoprint_lui/static/js/app/util/helpers.js:508
 msgid "YYYY-MM-DD HH:mm"
-msgstr ""
+msgstr "DD-MM-YYYY HH:mm"
 
 #: octoprint_lui/static/js/app/util/helpers.js:526
 #: octoprint_lui/static/js/app/util/helpers.js:531
@@ -462,37 +464,58 @@ msgstr "Dimensie controle voor %(mode)s mode mislukt"
 msgid "Object exceeds print area in width. "
 msgstr "Object is breder dan het print oppervlak."
 
+#: octoprint_lui/static/js/app/viewmodels/files.js:825
+#: octoprint_lui/static/js/app/viewmodels/files.js:847
+msgid "Print area width"
+msgstr "Print oppervlak breedte"
+
+#: octoprint_lui/static/js/app/viewmodels/files.js:825
+msgid "Object width"
+msgstr "Object breedte"
+
 #: octoprint_lui/static/js/app/viewmodels/files.js:829
 msgid "Object exceeds print area in depth."
 msgstr "Object is dieper dan het print oppervlak."
 
+#: octoprint_lui/static/js/app/viewmodels/files.js:830
+#: octoprint_lui/static/js/app/viewmodels/files.js:852
+msgid "Print area depth"
+msgstr "Print oppervlak diepte"
+
+#: octoprint_lui/static/js/app/viewmodels/files.js:830
+msgid "Object depth"
+msgstr "Object diepte"
+
 #: octoprint_lui/static/js/app/viewmodels/files.js:834
 msgid "Object exceeds print area in height."
 msgstr "Object is hoger dan het print volume."
+
+#: octoprint_lui/static/js/app/viewmodels/files.js:835
+#: octoprint_lui/static/js/app/viewmodels/files.js:857
+msgid "Print area height"
+msgstr "Print oppervlak hoogte"
+
+#: octoprint_lui/static/js/app/viewmodels/files.js:835
+msgid "Object height"
+msgstr "Object hoogte"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:846
 msgid "Object positioned outside print area in width."
 msgstr "Object is buiten het print oppervlak gepositioneerd in de breedte."
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:847
-msgid "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>"
-msgstr "<div class='Table-row Table-header'><div class='Table-item'>Print oppervlakte breedte</div><div class='Table-item'>Object positie</div></div>"
+#: octoprint_lui/static/js/app/viewmodels/files.js:852
+#: octoprint_lui/static/js/app/viewmodels/files.js:857
+msgid "Object position"
+msgstr "Object positie"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:851
 msgid "Object positioned outside print area in depth."
 msgstr "Object is buiten het print oppervlak gepositioneerd in de diepte."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:852
-msgid "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>"
-msgstr "<div class='Table-row Table-header'><div class='Table-item'>Print oppervlakte diepte</div><div class='Table-item'>Object positie</div></div>"
-
 #: octoprint_lui/static/js/app/viewmodels/files.js:856
 msgid "Object positioned outside print area in heigth."
 msgstr "Object is buiten het print oppervlak gepositioneerd in de hoogte."
-
-#: octoprint_lui/static/js/app/viewmodels/files.js:857
-msgid "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>"
-msgstr "<div class='Table-row Table-header'><div class='Table-item'>Print area hoogte</div><div class='Table-item'>Object positie</div></div>"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:865
 msgid "Please fix the dimension of the job or try a different print mode."
@@ -511,12 +534,11 @@ msgid "Sync or Mirror print"
 msgstr "Sync of Mirror print"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:916
-msgid "<div class='Table-row Table-header'><div class='Table-item'>Info</div></div>"
-msgstr "<div class='Table-row Table-header'><div class='Table-item'>Informatie</div></div>"
-
-#: octoprint_lui/static/js/app/viewmodels/files.js:917
-msgid "<div class='Table-row'><div class='Table-item'>To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.</div></div>"
-msgstr "<div class='Table-row'><div class='Table-item'>Om er zeker van te zijn dat de print opdracht een succes is, zorg er voor dat de print in het linker gedeelte van het print oppervlak is gepositioneerd en met 1 extruder is gesliced.</div></div>"
+#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:314
+#: octoprint_lui/templates/tabs_lui/print_lui.jinja2:72
+#: octoprint_lui/templates/tabs_lui/print_lui.jinja2:119
+msgid "Info"
+msgstr "Informatie"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:1033
 msgid "Filename"
@@ -827,8 +849,8 @@ msgid "By-pass print analysis"
 msgstr "Print dimensie analyse uitschakelen"
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:341
-msgid "<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer."
-msgstr "<i class='fa fa-exclamation-triangle'></i> U probeert een print te starten terwijl de analyse nog niet voltooid is. Hierdoor kunt u een print starten in een modus die niet ondersteunt kan zijn. </br> Dit kan leiden tot onsuccesvolle prints."
+msgid " You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. This could potentially damage your printer."
+msgstr "U probeert een print te starten terwijl de analyse nog niet voltooid is. Hierdoor kunt u een print starten in een modus die niet ondersteunt kan zijn. Dit kan leiden tot onsuccesvolle prints."
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:342
 msgid "Do you want to by-pass the print analysis and start the print?"
@@ -844,12 +866,12 @@ msgid "Are you sure you want to cancel this print?"
 msgstr "Weet u zeker dat u deze print opdracht wil afbreken? "
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:365
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:22
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:24
 msgid "Yes"
 msgstr "Ja"
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:366
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:37
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:39
 msgid "No"
 msgstr "Nee"
 
@@ -1371,12 +1393,6 @@ msgstr "Afbreken"
 msgid "Firmware files"
 msgstr "Firmware bestanden"
 
-#: octoprint_lui/templates/overlay_flyouts_lui.jinja2:314
-#: octoprint_lui/templates/tabs_lui/print_lui.jinja2:72
-#: octoprint_lui/templates/tabs_lui/print_lui.jinja2:119
-msgid "Info"
-msgstr "Informatie"
-
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:332
 msgid "Z-offset Wizard"
 msgstr ""
@@ -1473,7 +1489,7 @@ msgid "Information"
 msgstr "Informatie"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:7
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:186
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:188
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/printer_flyout.jinja2:56
 msgid "Filament detection"
 msgstr "Filament detectie"
@@ -1483,53 +1499,57 @@ msgid "A filament error has been detected in the"
 msgstr "Een filament fout is opgetreden in extruder "
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:14
-msgid "tool. Please check if you have sufficient filament. <br /> <span class=\"bold\">Is your spool empty?</span>"
-msgstr "Controller de hoeveelheid beschikbare filament.<br /> <span class=\"bold\">Is de spoel leeg?</span>"
+msgid "tool. Please check if you have sufficient filament. "
+msgstr "Controller de hoeveelheid beschikbare filament."
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:28
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:208
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:16
+msgid "Is your spool empty?"
+msgstr "Is de spoel leeg?"
+
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:30
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:210
 msgid "Swap filament"
 msgstr "Wissel filament"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:42
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:215
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:44
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:217
 msgid "Purge filament"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:51
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:53
 msgid "The printer will cooldown after:"
 msgstr "De printer zal afkoelen na:"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:67
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:69
 msgid "Swapping filament: "
 msgstr "Wisselen filament: "
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:74
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:76
 msgid "Material: "
 msgstr "Materiaal:"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:80
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:82
 msgid "Heating up to swap filament and (un)loading."
 msgstr "Opwarmen om het filament te wisselen."
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:88
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:90
 msgid "Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind=\"text: filament.loadedFilamentAmount\" class=\"bold\"></span> left."
 msgstr "Druk op Uitladen om het filament uit de extruder te laden. De spoel die u uitlaad heeft nog <span data-bind=\"text: filament.loadedFilamentAmount\" class=\"bold\"></span> erop."
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:94
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:96
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:28
 msgid "Unload"
 msgstr "Uitladen"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:101
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:103
 msgid "Select how much filament is on the new spool:"
 msgstr "Selecteer hoeveel filament er op de spoel bevindt:"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:115
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:117
 msgid "Insert the filament in the filament drawer past both wheels."
 msgstr "Voer het filament in de filament-lade in to voorbij de twee wielen."
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:119
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:121
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:69
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:45
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:173
@@ -1538,32 +1558,32 @@ msgstr "Voer het filament in de filament-lade in to voorbij de twee wielen."
 msgid "Load"
 msgstr "Laden"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:133
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:135
 msgid "Load extra filament"
 msgstr "Laadt extra filament"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:140
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:142
 msgid "Stop loading"
 msgstr "Stop laden"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:151
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:153
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:90
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:158
 msgid "Done"
 msgstr "Gereed"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:160
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:162
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:97
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2:224
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:98
 msgid "Status"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:193
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:195
 msgid "Would you like to resume the print?"
 msgstr "Wilt u de print opdracht hervatten?"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:202
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:204
 msgid "Resume printing"
 msgstr "Print opdracht hervatten"
 
@@ -2348,3 +2368,17 @@ msgstr "Geavanceerd"
 msgid "Logs"
 msgstr ""
 
+#~ msgid "<div class='Table-row Table-header'><div class='Table-item'>Print area depth</div><div class='Table-item'>Object position</div></div>"
+#~ msgstr "<div class='Table-row Table-header'><div class='Table-item'>Print oppervlakte diepte</div><div class='Table-item'>Object positie</div></div>"
+
+#~ msgid "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>"
+#~ msgstr "<div class='Table-row Table-header'><div class='Table-item'>Print area hoogte</div><div class='Table-item'>Object positie</div></div>"
+
+#~ msgid "<div class='Table-row Table-header'><div class='Table-item'></div><div class='Table-item'></div></div>"
+#~ msgstr "<div class='Table-row Table-header'><div class='Table-item'>Print oppervlakte breedte</div><div class='Table-item'>Object positie</div></div>"
+
+#~ msgid "<div class='Table-row Table-header'><div class='Table-item'>Info</div></div>"
+#~ msgstr "<div class='Table-row Table-header'><div class='Table-item'>Informatie</div></div>"
+
+#~ msgid "<div class='Table-row'><div class='Table-item'>To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.</div></div>"
+#~ msgstr "<div class='Table-row'><div class='Table-item'>Om er zeker van te zijn dat de print opdracht een succes is, zorg er voor dat de print in het linker gedeelte van het print oppervlak is gepositioneerd en met 1 extruder is gesliced.</div></div>"

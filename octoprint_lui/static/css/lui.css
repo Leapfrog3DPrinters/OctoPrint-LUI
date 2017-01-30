@@ -76,7 +76,7 @@ a {
 
 .icon-bar a {
   text-align: center;
-  font-size: 1em;
+  font-size: 0.9em;
   padding: 1rem;
   background: #434A54;
   display: -webkit-box;
@@ -101,7 +101,7 @@ a {
 
 .icon-bar i {
   display: block;
-  font-size: 2.5rem;
+  font-size: 2rem;
   color: #ffffff;
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
   padding-right: 0.5em; }
@@ -531,10 +531,10 @@ input[type=radio] {
 #confirmation_flyout {
   z-index: 99; }
 
-#warnings_container {
+.warning_flyout {
   z-index: 97; }
 
-#infos_container {
+.info_flyout {
   z-index: 96; }
 
 /* 
