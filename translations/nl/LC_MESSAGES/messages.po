@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-30 13:19+0100\n"
-"PO-Revision-Date: 2017-01-30 13:26+0100\n"
+"PO-Revision-Date: 2017-01-30 17:15+0100\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
@@ -766,7 +766,7 @@ msgstr "De printer verplaatst zich nu naar de positie om onderhoud te doen aan d
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:126
 msgid "Press OK when you are done with the print head maintenance. This will home the printer."
-msgstr "Druk op Ok wanneer u klaar bent met de het onderhoud. Dit zal de printer homen."
+msgstr "Druk op Ok wanneer u klaar bent met het onderhoud. Dit zal de printer homen."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:137
 msgid "You are about to move the printer to the filament load position."
@@ -1085,13 +1085,13 @@ msgstr ""
 #: octoprint_lui/static/js/app/viewmodels/update.js:69
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:165
 msgid "Update"
-msgstr ""
+msgstr "Update"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:39
 #: octoprint_lui/static/js/app/viewmodels/update.js:47
 #: octoprint_lui/static/js/app/viewmodels/update.js:71
 msgid "Up-to-date"
-msgstr ""
+msgstr "Up-to-date"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:135
 msgid "Update software"
@@ -1760,7 +1760,7 @@ msgstr "De "
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:6
 msgid " print head seems to be disconnected."
-msgstr "extruder lijkt niet verbonden."
+msgstr " extruder lijkt niet verbonden."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:13
 msgid "Please ensure that the "
@@ -2314,7 +2314,7 @@ msgstr "Geschat"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:22
 msgid "Time left"
-msgstr "Resterende tijd"
+msgstr "Resterend"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:26
 msgid "Print time"
