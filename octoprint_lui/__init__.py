@@ -55,37 +55,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Model specific variables
         self.model = None
-
-        mac_path = os.path.expanduser('~')
-
-        self.paths = {
-            "Xeed" : {
-                "update": "/home/lily/" ,
-                "media": "/media/"
-            },
-            "Bolt" : {
-                "update": "/home/pi/" ,
-                "media": "/media/pi/"
-            },
-            "Xcel" : {
-                "update": "/home/pi/" ,
-                "media": "/media/pi/"
-            },
-            "Debug" : {
-                "update": "/home/pi/" ,
-                "media": "/media/pi/"
-            },
-            "MacDebug" :
-            {
-                "update": "{mac_path}/lpfrg/".format(mac_path=mac_path),
-                "media": "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path),
-            },
-            "WindowsDebug" : {
-                "update": "C:\\Users\\erikh\\OneDrive\\Programmatuur\\",
-                "media": "C:\\Tijdelijk\\usb\\"
-            },
-        }
-
+        self.platform = None
+        self.update_basefolder = None
+        self.media_folder = None
+        self.current_printer_profile = None
+        
         ##~ Server commands
         self.systemShutdownCommand ="sudo shutdown -h now"
         self.systemRestartCommand =  "sudo shutdown -r now"
@@ -189,6 +163,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.levelbed_command_sent = False
 
         ##~Maintenance
+        self.manual_bed_calibration_tool = None
         self.wait_for_movements_command_sent = False # Generic wait for ok after M400
         self.wait_for_maintenance_position = False # Wait for ok after M400 before aux powerdown
         self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
@@ -250,26 +225,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.machine_info = self._get_machine_info()
         
-        self.model = self.machine_info['machine_type'] if 'machine_type' in self.machine_info else 'Unknown'
-
-        if self.model == '':
-            ##~ Model
-            if sys.platform == "darwin":
-                self.model = "MacDebug"
-            elif sys.platform == "win32":
-                self.model = "WindowsDebug"
-            elif os.path.exists('/home/pi'):
-                self.model = "Bolt"
-            elif sys.platform == "linux2":
-                self.model = "Xeed"
-            else:
-                self.model = "Xeed"
-
-        # TODO REMOVE
-        if self.model == 'Unknown':
-            self.model = 'MacDebug'
-
-        self._logger.info("Platform: {platform}, model: {model}".format(platform=sys.platform, model=self.model))
+        self._init_model()
+        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
         ##~ Now we have control over the printer, also take over control of the power button
         self._init_powerbutton()
@@ -279,7 +236,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Init Update
         self._init_update()
-
 
         ##~ Add server commands
         self._add_server_commands()
@@ -291,26 +247,33 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_filament_amount()
 
         ##~ Usernames that cannot be removed
-        self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel']
-
-        ##~ Bed calibration positions
-        ## TODO: Make these dynamic. Maybe extend with Z and use it as generic positions table?
-        self.manual_bed_calibration_tool = None
-        self.manual_bed_calibration_positions = dict()
-        self.manual_bed_calibration_positions["Bolt"] = []
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 70, 'Y': 250, 'mode': 'normal' }) # 0=Top left
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 305, 'Y': 250, 'mode': 'normal' }) # 1=Top right
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 70, 'Y': 70, 'mode': 'normal' }) # 2=Bottom left
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool0', 'X': 305, 'Y': 70, 'mode': 'normal' }) #3=Bottom right
-        self.manual_bed_calibration_positions["Bolt"].append({ 'tool': 'tool1', 'X': 175, 'Y': 160, 'mode': 'mirror' }) #4=Center
-        self.manual_bed_calibration_positions["WindowsDebug"] = deepcopy(self.manual_bed_calibration_positions["Bolt"])
+        self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel', 'lpfrg']
 
         # Changelog check
         self.changelog_path = None
-        if self.model in self.paths:
-            self.changelog_path = os.path.join(self.paths[self.model]["update"], 'OctoPrint-LUI', self.changelog_filename)
+        self.changelog_path = os.path.join(self.update_basefolder, 'OctoPrint-LUI', self.changelog_filename)
         self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
         self._update_changelog()
+
+    def _init_model(self):
+        self.model = self.machine_info['machine_type'] if 'machine_type' in self.machine_info else 'Unknown'
+
+        if sys.platform == "darwin":
+            self.platform = "MacDebug"
+            mac_path = os.path.expanduser("~")
+            self.update_basefolder = "{mac_path}/lpfrg/".format(mac_path=mac_path)
+            self.media_folder = "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path),
+        elif sys.platform == "win32":
+            self.platform = "WindowsDebug"
+            self.update_basefolder = "C:\\Users\\erikh\\OneDrive\\Programmatuur\\"
+            self.media_folder = "C:\\Tijdelijk\\usb\\"
+        else:
+            self.platform = "RPi"
+            self.update_basefolder = "/home/pi/"
+            self.media_folder = "/media/pi/"
+
+        self.current_printer_profile = self._printer._printerProfileManager.get_current_or_default()
+        self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"]
 
     ##~ Changelog
     def _update_changelog(self):
@@ -993,9 +956,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.start_print()
 
     def _on_api_command_prepare_for_calibration_position(self):
-        if self.model == "Bolt":
-            self._printer.commands(["M605 S0"])
-            self.print_mode = "normal"
+        
+        self._printer.commands(["M605 S0"])
+        self.print_mode = "normal"
 
         self.set_movement_mode("absolute")
         self._printer.home(['x', 'y', 'z'])
@@ -1005,7 +968,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_move_to_calibration_position(self, corner_num):
         # TODO HERE
-        corner = self.manual_bed_calibration_positions[self.model][corner_num]
+        corner = self.manual_bed_calibration_positions[corner_num]
         self._printer.commands(['G1 Z5 F1200'])
 
         if self.model == "Bolt":
@@ -1307,28 +1270,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_filament_timer.cancel()
 
     def _on_api_command_move_to_head_maintenance_position(self, *args, **kwargs):
-       
-        if self.model == 'Xeed' or self.model == 'Bolt':
-            if self._printer._currentZ < 30:
-                self._printer.commands(["G1 Z30 F1200"])
 
-        if self.model == "Bolt" or self.debug: #TODO: Remove debug
-            self._printer.commands(["M605 S3"]) # That reads: more awesomeness.
-            self._printer.home(['x', 'y'])
-            self._printer.commands(["G1 X120 F10000"])
-            self._printer.commands(["G1 Y-33 F15000"])
-            self._printer.commands(["M605 S0"])
-        elif self.model == "Xeed":
-            self._printer.commands(["G1 X190 Y20 F6000"])
-        elif self.model == "Xcel":
-            self._printer.commands(['G1 Z300 F1200'])
-            self._printer.commands(['G1 X225 Y100 F6000'])
-            
+        self.execute_printer_script('head_maintenance_position', { "currentZ": self._printer._currentZ })
         self.wait_for_maintenance_position = True
         self._printer.commands(['M400']) #Wait for movements to complete
    
+    def execute_printer_script(self, script_name, context = None):
+        full_script_name = self.model.lower() + "_" + script_name + ".jinja2"
+        self._logger.debug("Executing script {0}".format(full_script_name))
+        self._printer.script(full_script_name, context, must_be_set = False)
+
     def head_in_maintenance_position(self):
-        if self.model == "Bolt" or self.model == "Xcel" or self.debug:
+        if self.powerbutton_handler:
             self.disconnect_and_powerdown() #UI is updated after power down
         else:
             self._send_client_message("head_in_maintenance_position") #Update UI straight away
@@ -1343,8 +1296,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.powerbutton_handler:
             self.powerbutton_handler.disableAuxPower()      
             self._logger.debug("Auxiliary power down for maintenance")
-
-        if self.model == "Bolt" or self.model == "Xcel" or self.debug:
             self._send_client_message("head_in_maintenance_position")
 
     def power_up_after_maintenance(self):
@@ -1366,7 +1317,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         
     def _on_api_command_after_head_maintenance(self, *args, **kwargs): 
-        if self.model == "Bolt" or self.model == "Xcel" or self.debug:
+        if self.powerbutton_handler:
             self.power_up_after_maintenance()
         else:
             self._printer.home(['x','y','z'])
@@ -1562,7 +1513,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 continue
 
             #Check disk space
-            if self.model == 'WindowsDebug':
+            if self.platform == 'WindowsDebug':
                 mount_bytes_available = 14 * 1024 * 1024 * 1024;
             else:
                 disk_info = os.statvfs(mount_path)
@@ -1747,38 +1698,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Always set load_amount to 0
             self.load_amount = 0
             self.set_extrusion_mode("relative")
+            load_change = None
 
             if self.loading_for_purging:
                 self._logger.debug("load_filament for purging")
                 load_initial=dict(amount=18.0, speed=2000)
-                load_change = None
                 self.load_amount_stop = 2
                 self.loading_for_purging = False
-            elif self.model == "Xeed": ## Switch on model for filament loading
-                self._logger.debug("load_filament for Xeed")
-                # We can set one change of extrusion and speed during the timer
-                # Start with load_initial and change to load_change at load_change['start']
-                load_initial=dict(amount=18.0, speed=2000)
-                load_change=dict(start=1900, amount=2.5, speed=300)
-
-                # Total amount being loaded
-                self.load_amount_stop = 2100
-            elif self.model == "Xcel":
-                self._logger.debug("load_filament for Xcel")
-                # We can set one change of extrusion and speed during the timer
-                # Start with load_initial and change to load_change at load_change['start']
-                # TODO: Check amounts
-                load_initial=dict(amount=18.0, speed=2000)
-                load_change=dict(start=2400, amount=2.5, speed=300)
-
-                # Total amount being loaded
-                self.load_amount_stop = 2800
             else:
-                self._logger.debug("load_filament for Bolt")
-                # Bolt loading
-                load_initial=dict(amount=2.5, speed=240)
-                load_change = None
-                self.load_amount_stop = 200
+                self._logger.debug("load_filament")
+                load_initial = self.current_printer_profile["filament"]["load_initial"]
+
+                if "load_change" in self.current_printer_profile["filament"]:
+                    load_change = self.current_printer_profile["filament"]["load_change"]
+
+                self.load_amount_stop = self.current_printer_profile["filament"]["load_amount_stop"]
 
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5,
@@ -1797,28 +1731,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             ## This is xeed load function, TODO: Bolt! function and switch
             self.load_amount = 0
             self.set_extrusion_mode("relative")
+            self.unload_change = None
 
-            if self.model == "Xeed":
-                # We can set one change of extrusion and speed during the timer
-                # Start with load_initial and change to load_change at load_change['start']
-                unload_initial=dict(amount= -2.5, speed=300)
-                unload_change=dict(start=30, amount= -18, speed=2000)
+            unload_initial = self.current_printer_profile["filament"]["unload_initial"]
 
-                # Total amount being loaded
-                self.load_amount_stop = 2100
-            if self.model == "Xcel":
-                # We can set one change of extrusion and speed during the timer
-                # Start with load_initial and change to load_change at load_change['start']
-                unload_initial=dict(amount= -2.5, speed=300)
-                unload_change=dict(start=30, amount= -18, speed=2000)
+            if "unload_change" in self.current_printer_profile["filament"]:
+                unload_change = self.current_printer_profile["filament"]["unload_change"]
 
-                # Total amount being loaded
-                self.load_amount_stop = 2600
-            else:
-                # Bolt stuff
-                unload_initial=dict(amount= -2.5, speed=300)
-                unload_change = None
-                self.load_amount_stop = 150 #
+            self.load_amount_stop = self.current_printer_profile["filament"]["unload_amount_stop"]
+            
 
             # Before unloading, always purge the machine 10 mm
             self._printer.commands(["G1 E10 F300"])
@@ -2468,14 +2389,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_movement_mode()
 
     def _init_usb(self):
-
-        if not self.model in self.paths:
-            self._logger.warning("Could not add USB storage. No media folder found for current model.")
-            return
-
-        # Set media folder relative to printer model
-        self.media_folder = self.paths[self.model]["media"]
-
         # Add the LocalFileStorage to allow to browse the drive's files and folders
 
         try:
@@ -2498,7 +2411,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._on_media_folder_updated(None)
 
     def _init_powerbutton(self):
-        if self.model == "Bolt" or self.model == "Xcel":
+        if self.platform == "RPi" and self.active_printer_profile["hasPowerButton"]:
             ## ~ Only initialise if it's not done yet.
             if not self.powerbutton_handler:
                 from octoprint_lui.util.powerbutton import PowerButtonHandler
@@ -2517,51 +2430,47 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.last_git_fetch = 0
         self.update_info = []
 
-        if not self.model in self.paths:
-            self._logger.warn("Cannot define update information. Update paths not found for current model.")
-            return
-
         # NOTE: The order of this array is used for functions! Keep it the same! 
         self.update_info = [
             {
                 'name': "Leapfrog UI",
                 'identifier': 'lui',
                 'version': self._plugin_manager.get_plugin_info('lui').version,
-                'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
+                'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'Network Manager',
                 'identifier': 'networkmanager',
                 'version': self._plugin_manager.get_plugin_info('networkmanager').version,
-                'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
+                'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'Flash Firmware Module',
                 'identifier': 'flasharduino',
                 'version': self._plugin_manager.get_plugin_info('flasharduino').version,
-                'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
+                'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'G-code Render Module',
                 'identifier': 'gcoderender',
                 'version': self._plugin_manager.get_plugin_info('gcoderender').version,
-                'path': '{path}OctoPrint-gcodeRender'.format(path=self.paths[self.model]['update']),
+                'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'OctoPrint',
                 'identifier': 'octoprint',
                 'version': VERSION,
-                'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
+                'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             }
         ]
 
