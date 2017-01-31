@@ -18,7 +18,10 @@ class FirmwareUpdateUtility(object):
         if all_versions:
             if "firmware_versions" in all_versions and model in all_versions["firmware_versions"]:
                 model_versions = sorted(all_versions["firmware_versions"][model], key=lambda info: info["version"], reverse=True)
-                return model_versions[0]
+                if len(model_versions) > 0:
+                    return model_versions[0]
+                else:
+                    return None
             else:
                 self._logger.warning("Could not find model \"{0}\" in version information".format(model))
                 return None
