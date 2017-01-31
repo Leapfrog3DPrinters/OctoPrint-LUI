@@ -255,6 +255,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._update_changelog()
 
     def _init_model(self):
+        """Sets the model and platform variables, and prepares the octoprint to work with a certain printer."""
         self.model = self.machine_info['machine_type'] if 'machine_type' in self.machine_info else 'Unknown'
 
         if sys.platform == "darwin":
@@ -273,6 +274,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.current_printer_profile = self._printer._printerProfileManager.get_current_or_default()
         self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"]
+
+    def _update_user_folder(self):
+        """Updates the OctoPrint user folder with up-to-date printerprofiles and gcode scripts. Future: also config migrations"""
+        pass
 
     ##~ Changelog
     def _update_changelog(self):
