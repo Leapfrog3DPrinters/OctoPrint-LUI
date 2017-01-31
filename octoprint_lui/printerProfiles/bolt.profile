@@ -32,11 +32,14 @@ volume:
   origin: lowerleft
   width: 330.0
 hasPowerButton: true
+default_stepper_timeout: 60
 filament:
+  stepper_timeout: 300
   load_initial:
     amount: 2.5
     speed: 240
-  load_amount_stop: 200    
+  load_amount_stop: 200
+  cont_load_amount_stop: 100    
   unload_initial:
     amount: -2.5
     speed: 300
