@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-31 09:55+0100\n"
-"PO-Revision-Date: 2017-01-31 09:56+0100\n"
+"PO-Revision-Date: 2017-01-31 10:55+0100\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
@@ -196,12 +196,12 @@ msgstr "%(hours)d uur"
 #: octoprint_lui/static/js/app/util/helpers.js:492
 #, python-format
 msgid "%(hours)d hours"
-msgstr "%(hours)d uren"
+msgstr "%(hours)d uur"
 
 #: octoprint_lui/static/js/app/util/helpers.js:474
 #, python-format
 msgid "%(hours)d.5 hours"
-msgstr "%(hours)d.5 uren"
+msgstr "%(hours)d.5 uur"
 
 #: octoprint_lui/static/js/app/util/helpers.js:485
 msgid "1 day"
@@ -1663,7 +1663,7 @@ msgstr "U heeft "
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:10
 msgid " to print."
-msgstr "geselecteerd om te printen."
+msgstr " geselecteerd om te printen."
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:41
 msgid "Printing mode"
