@@ -7,20 +7,20 @@ import threading
 import re
 import subprocess
 import netaddr
-import os
+import os, sys, shutil
 import platform
 import flask
-import sys
 import requests
 import markdown
 
+from random import choice
 from collections import OrderedDict
 from pipes import quote
 from functools import partial
 from copy import deepcopy
 from flask import jsonify, make_response, render_template, request
 from distutils.version import StrictVersion
-
+from distutils.dir_util import copy_tree
 
 from tinydb import TinyDB, Query
 
@@ -155,6 +155,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_properties["extruder_offset_y"] = "Y"
         self.firmware_info_properties["bed_width_correction"] = "bed_width_correction"
 
+        ##~ Usernames that cannot be removed
+        self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel', 'lpfrg']
+        self.local_username = 'lpfrg'
+
         ##~ USB and file browser
         self.is_media_mounted = False
 
@@ -222,10 +226,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("No machine database found creating one...")
             self.machine_database.insert_multiple({ 'property': key, 'value': '' } for key in self.firmware_info_properties.keys())
 
+        ##~ Read model and prepare environment
         self.machine_info = self._get_machine_info()
-        
-        self._init_model()
+        self._set_model()
         self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
+
+        ##~ With model data in place, update scripts, printer profiles, users etc. if it's the first run of a new version
+        self._first_run()
+
+        ##~ Read the machine specific settings
+        self._init_model()
 
         ##~ Now we have control over the printer, also take over control of the power button
         self._init_powerbutton()
@@ -245,8 +255,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Get filament amount stored in config
         self.update_filament_amount()
 
-        ##~ Usernames that cannot be removed
-        self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel', 'lpfrg']
+       
 
         # Changelog check
         self.changelog_path = None
@@ -254,8 +263,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
         self._update_changelog()
 
-    def _init_model(self):
-        """Sets the model and platform variables, and prepares the octoprint to work with a certain printer."""
+    def _set_model(self):
+        """Sets the model and platform variables"""
         self.model = self.machine_info['machine_type'] if 'machine_type' in self.machine_info else 'Unknown'
 
         if sys.platform == "darwin":
@@ -270,14 +279,56 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self.platform = "RPi"
             self.update_basefolder = "/home/pi/"
-            self.media_folder = "/media/pi/"
+            self.media_folder = "/media/pi/"    
 
+    def _first_run(self):
+        """Updates the OctoPrint user folder with up-to-date printerprofiles and gcode scripts. Future: also config migrations"""
+        had_first_run =  self._settings.get(["had_first_run"])
+        if not had_first_run or StrictVersion(had_first_run) < StrictVersion(self.plugin_version):
+            self._logger.debug("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
+
+            scripts_src_folder = os.path.join(self._basefolder, "gcodes/scripts", self.model.lower())
+            scripts_dst_folder = os.path.join(self._settings.global_get_basefolder("scripts"), "gcode") # copytree will check if exists and make it if necessary
+
+            if os.path.exists(scripts_src_folder):
+                try:
+                    copy_tree(scripts_folder, scripts_dst_folder)
+                    self._logger.debug("Scripts folder updated")
+                except:
+                    self._logger.exception("Could not update scripts folder")
+            else:
+                self._logger.warn("No scripts found for model {0}. Ensure the foldername is in lowercase.".format(self.model))
+            
+            profile_src_path = os.path.join(self._basefolder, "printerProfiles", self.model.lower() + ".profile") 
+            profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
+            if os.path.exists(profile_src_path):
+                try:
+                    shutil.copyfile(profile_src_path, profile_dst_path)
+                    self._logger.debug("Printer profile updated")
+                except:
+                    self._logger.exception("Could not update printer profile")
+            else:
+                self._logger.warn("No printer profile found for model {0}. Ensure the filename is in lowercase.".format(self.model))
+
+            self._configure_local_user()
+            self._settings.set(["had_first_run"], self.plugin_version)
+
+    def _configure_local_user(self):
+        """ Configures the local user which is used for autologin on the machine """
+
+        self._settings.global_set_boolean(["accessControl", "enabled"], True)
+        self._user_manager.enable()
+        local_password_chars = string.ascii_lowercase + string.ascii_uppercase + string.digits
+        local_password = "".join(choice(local_password_chars) for _ in range(16))
+        self._user_manager.addUser(self.local_username, local_password, True, ["user", "admin"], overwrite=True)
+
+        self._settings.global_set(["accessControl", "autologinLocal"], True) 
+        self._settings.global_set(["accessControl", "autologinAs"], self.local_username) 
+
+    def _init_model(self):
+        """ Reads the printer profile and any machine specific configurations """
         self.current_printer_profile = self._printer._printerProfileManager.get_current_or_default()
         self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"]
-
-    def _update_user_folder(self):
-        """Updates the OctoPrint user folder with up-to-date printerprofiles and gcode scripts. Future: also config migrations"""
-        pass
 
     ##~ Changelog
     def _update_changelog(self):
@@ -858,15 +909,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         corner = self.manual_bed_calibration_positions[corner_num]
         self._printer.commands(['G1 Z5 F1200'])
 
-        if self.model == "Bolt":
-            if corner["mode"] == 'normal' and not self.print_mode == "normal":
-                self._printer.commands(["M605 S0"])
-                self._printer.home(['x'])
-                self.print_mode = "normal"
-            elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
-                self._printer.commands(["M605 S3"])
-                self._printer.home(['x'])
-                self.print_mode = "mirror"
+        if corner["mode"] == 'normal' and not self.print_mode == "normal":
+            self._printer.commands(["M605 S0"])
+            self._printer.home(['x'])
+            self.print_mode = "normal"
+        elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
+            self._printer.commands(["M605 S3"])
+            self._printer.home(['x'])
+            self.print_mode = "mirror"
 
         if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
             self._printer.home(['x'])
@@ -881,8 +931,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands(["M605 S1"])
         self._printer.home(['y', 'x'])
 
-        if self.model == "Bolt":
-            self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
+        if self.current_printer_profile["default_stepper_timeout"]:
+            self._printer.commands(["M84 S{0}".format(self.current_printer_profile["default_stepper_timeout"])]) # Reset stepper disable timeout
             self._printer.commands(["M84"]) # And disable them right away for now
 
         self.restore_movement_mode()
@@ -1089,17 +1139,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Cancel all heat up and reset
         # Loading has already started, so just cancel the loading
         # which will stop heating already.
-        if self.model == "Bolt":
-            self._printer.commands(["M605 S3"]) # mirror
-            self._printer.home(['x'])
-            self._printer.commands(["G1 X20 F12000"]) # wipe it
-            self._printer.commands(["G1 X1 F12000"]) # wipe it
-            self._printer.commands(["M605 S0"]) # back to normal
-            self._printer.home(['y', 'x'])
-            self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
-            self._printer.commands(["M84"]) # And disable them right away for now
-        elif self.model != "Bolt" and not self.filament_action:
-            self._printer.home(['x','y'])
+        context = { "filamentAction": self.filament_action,
+                    "stepperTimeout": self.current_printer_profile["default_stepper_timeout"] if "default_stepper_timeout" in self.current_printer_profile else None }
+
+        self.execute_printer_script("change_filament_done", context)
 
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
@@ -1116,17 +1159,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Still don't know if this is the best spot TODO
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
-        if self.model == "Bolt":
-            self._printer.commands(["M605 S3"]) # mirror
-            self._printer.home(['x'])
-            self._printer.commands(["G1 X20 F12000"]) # wipe it
-            self._printer.commands(["G1 X1 F12000"]) # wipe it
-            self._printer.commands(["M605 S0"]) # back to normal
-            self._printer.home(['y', 'x'])
-            self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
-            self._printer.commands(["M84"]) # And disable them right away for now
-        elif self.model != "Bolt" and not self.filament_action: 
-            self._printer.home(['y', 'x'])
+
+        context = { "filamentAction": self.filament_action,
+                    "stepperTimeout": self.current_printer_profile["default_stepper_timeout"] if "default_stepper_timeout" in self.current_printer_profile else None }
+
+        self.execute_printer_script("change_filament_done", context)
 
         self._printer.set_temperature(self.filament_change_tool, 0.0)
         self._logger.info("Change filament done called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
@@ -1210,7 +1247,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x','y','z'])
 
     def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
-        self.move_to_maintenance_position()
+        self.move_to_bed_maintenance_position()
 
     def _on_api_command_get_files(self, origin, *args, **kwargs):
 
@@ -1650,7 +1687,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             #This method can also be used for the Bolt!
             self.load_amount = 0
-            self.load_amount_stop = 400 if self.model == 'Xcel' else 100 # Safety timer on continuious loading
+            self.load_amount_stop = self.current_printer_profile["filament"]["cont_load_amount_stop"]
             load_cont_initial = dict(amount=2.5 * direction, speed=240)
             self.set_extrusion_mode("relative")
             load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
@@ -1819,28 +1856,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_database.update({'amount': self.filament_amount[tool_num]}, self._filament_query.tool == tool)
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
-    def script_hook(self, comm, script_type, script_name):
-        # The printer should get a positive number here. Altough for the user it might feel like - direction,
-        # Thats how the M206 works.
-        if not script_type == "gcode":
-            return None
+    def execute_print_event_scripts(self, event):
+        """ Executes a LUI print script based on a given print/printer event """
 
-        if self.model == "Xeed" or self.model == "Xcel":
-            zoffset = -self._settings.get_float(["zoffset"])
+        context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
 
+        # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise) 
+        if event == Events.PRINT_STARTED:
+            self.execute_printer_script("before_print_started", context)
 
-            if script_name == "beforePrintStarted":
-                return ["M206 Z%.2f" % zoffset], None
+        if event == Events.CONNECTED:
+            self.execute_printer_script("after_printer_connected", context)
 
-            if script_name == "afterPrinterConnected":
-                return ["M206 Z%.2f" % zoffset], None
+        if event == Events.PRINT_RESUMED:
+            self.execute_printer_script("before_print_resumed", context)
 
-        if self.model == "Bolt":
-            if script_name == "beforePrintResumed":
-                return ["G28 X0 Y0", "G1 F6000"], None
-
-            if script_name == "afterPrintPaused":
-                return ["G28 X0 Y0"], None
+        if event == Events.PRINT_PAUSED:
+             self.execute_printer_script("after_print_paused", context)
 
     def gcode_queuing_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -2202,17 +2234,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return tool_num
 
     ##~ Printer Control functions
-    def move_to_maintenance_position(self):
+    def move_to_bed_maintenance_position(self):
         self.set_movement_mode("absolute")
-        # First home X and Y
-        self._printer.home(['x', 'y'])
-        if self.model == "Bolt" or self.model == "Xeed":
-            self._printer.commands(['G1 Z180 F1200'])
-        if self.model == "Xeed":
-            self._printer.commands(["G1 X115 Y15 F6000"])
-        if self.model == "Xcel":
-            # TODO CHECK VALUES
-            self._printer.commands(['G1 Z1800 F1200'])
+        self.execute_printer_script("bed_maintenance_position")
         self.restore_movement_mode()
 
     def set_movement_mode(self, mode):
@@ -2246,27 +2270,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_movement_mode("absolute")
 
         self.z_before_filament_load = self._printer._currentZ
-        if self.model == 'Xeed' or self.model == 'Bolt':
-            if self._printer._currentZ < 30:
-                self._printer.commands(["G1 Z30 F1200"])
 
+        context = { "currentZ": self._printer._currentZ,
+                    "stepperTimeout": self.current_printer_profile["filament"]["stepper_timeout"] if "stepper_timeout" in self.current_printer_profile["filament"] else None,
+                    "filamentChangeTool": self.filament_change_tool
+                    }
 
-        if self.model == "Bolt":
-            self._printer.commands(["M605 S3"]) # That reads: more awesomeness.
-            self._printer.commands(["M84 S300"]) # Set stepper disable timeout to 5min
-            self._printer.home(['x', 'y'])
-            self._printer.commands(["G1 X1 F10000"])
-            self._printer.commands(["G1 Y-33 F15000"])
-            self._printer.commands(["M605 S0"])
-            if self.filament_change_tool:
-                self._printer.change_tool(self.filament_change_tool)
-        elif self.model == "Xeed":
-            self._printer.commands(["G1 X190 Y20 F6000"])
-            if self.filament_change_tool:
-                self._printer.change_tool(self.filament_change_tool)
-        elif self.model == "Xcel":
-            self._printer.commands(['G1 Z300 F1200'])
-            self._printer.commands(['G1 X225 Y100 F6000'])
+        self.execute_printer_script("filament_load_position", context)
 
         self.restore_movement_mode()
 
@@ -2635,6 +2645,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if(event == Events.ERROR or event == Events.DISCONNECTED):
             self._handle_error_and_disconnect(event, payload)
+
+        self.execute_print_event_scripts(event)
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:

@@ -1,0 +1,14 @@
+{% if currentZ < 30  %}
+G1 Z30 F1200
+{% endif %}
+M605 S3; That reads: more awesomeness.
+{% if stepperTimeout %}
+M84 S{{ stepperTimeout }}; Set stepper disable timeout to 5min
+{% endif %}
+G28 X0 Y0; Home x,y
+G1 X1 F10000
+G1 Y-33 F15000
+M605 S0; Restore movement mode
+{% if filamentChangeTool  %}
+T{{ filamentChangeTool }}
+{% endif %}

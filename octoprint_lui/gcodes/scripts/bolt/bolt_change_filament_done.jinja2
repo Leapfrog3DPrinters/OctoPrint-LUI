@@ -1,0 +1,10 @@
+M605 S3; Mirror
+G28 X0; Home X
+G1 X20 F12000; wipe it
+G1 X1 F12000; wipe it
+M605 S0; back to normal
+G28 X0 Y0; Home X, Y
+{% if stepperTimeout %}
+M84 S{{ stepperTimeout }}; Reset stepper disable timeout
+M84; And disable them right away for now
+{% endif %}
