@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-31 09:55+0100\n"
-"PO-Revision-Date: 2017-01-31 14:19+0100\n"
+"PO-Revision-Date: 2017-01-31 14:29+0100\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
@@ -308,7 +308,7 @@ msgstr "Wissel"
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:146
 msgid "Purge"
-msgstr ""
+msgstr "Purge"
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:282
 msgid "Filament updating warning"
@@ -774,7 +774,7 @@ msgstr "U staat op het punt om de printer naar de positie te verplaatsen waar er
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:139
 msgid "Purge nozzle"
-msgstr ""
+msgstr "Purge nozzle"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:174
 msgid "Reconnecting to printer"
@@ -824,7 +824,7 @@ msgstr "Per tijdseenheid"
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:190
 msgid "sec"
-msgstr ""
+msgstr "sec"
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:229
 #: octoprint_lui/static/js/app/viewmodels/system.js:73
@@ -1022,7 +1022,7 @@ msgstr "U staat op het punt de achtergrondservice van de printer te herstarten."
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:246
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/materials_flyout.jinja2:10
 msgid "Bed"
-msgstr ""
+msgstr "Bed"
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:58
 msgid "Loading..."
@@ -1030,7 +1030,7 @@ msgstr "Laden…"
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:92
 msgid "Hotend"
-msgstr ""
+msgstr "Hotend"
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:257
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:419
@@ -1084,7 +1084,7 @@ msgstr "Up-to-date"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:135
 msgid "Update software"
-msgstr ""
+msgstr "Update software"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:136
 msgid "You are about to update the printer software. This will take some time and will restart the printer background service when completed."
@@ -1092,7 +1092,7 @@ msgstr "U staat op het punt om de printersoftware the updaten. Dit zal enkele mi
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:140
 msgid "Update: "
-msgstr ""
+msgstr "Update: "
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:141
 msgid "You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed."
@@ -1156,11 +1156,11 @@ msgstr "Wilt u deze update installeren?"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:405
 msgid "Printer offline"
-msgstr ""
+msgstr "Printer offline"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:414
 msgid "Update server offline"
-msgstr ""
+msgstr "Update server offline"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:415
 msgid "The update server seems to be offline. Please retry updating after or check the status at github.com/Leapfrog3DPrinters"
@@ -1273,7 +1273,7 @@ msgstr "De postroll van de timelapse wordt nu opgenomen, een moment geduld..."
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:341
 #, python-format
 msgid "%(minutes)d min"
-msgstr ""
+msgstr "%(minutes)d min"
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:342
 #, python-format
@@ -1283,7 +1283,7 @@ msgstr ""
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:344
 #, python-format
 msgid "%(seconds)d sec"
-msgstr ""
+msgstr "%(seconds)d sec"
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:345
 #, python-format
@@ -1320,7 +1320,7 @@ msgstr "Nieuwe timelapse %(movie_prefix)s is gereed met renderen."
 #: octoprint_lui/templates/footer_lui.jinja2:4
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:177
 msgid "Print"
-msgstr ""
+msgstr "Print"
 
 #: octoprint_lui/templates/footer_lui.jinja2:8
 msgid "Jobs"
@@ -1384,7 +1384,7 @@ msgstr "Firmwarebestanden"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:332
 msgid "Z-offset Wizard"
-msgstr ""
+msgstr "Z-offset Wizard"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:350
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2:6
@@ -1401,7 +1401,7 @@ msgstr "Bedkalibratie"
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:132
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:83
 msgid "Start print"
-msgstr ""
+msgstr "Start print"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:402
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:5
@@ -1457,17 +1457,17 @@ msgstr "Automatisch afsluiten"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:589
 msgid "Changelog"
-msgstr ""
+msgstr "Changelog"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:598
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:678
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:720
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:618
 msgid "Service Offline"
-msgstr ""
+msgstr "Service Offline"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:656
 msgid "Warning"
@@ -1503,7 +1503,7 @@ msgstr "Wissel filament"
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:44
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:217
 msgid "Purge filament"
-msgstr ""
+msgstr "Purge filament"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:53
 msgid "The printer will cooldown after:"
@@ -1566,7 +1566,7 @@ msgstr "Gereed"
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2:224
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:98
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:195
 msgid "Would you like to resume the print?"
@@ -1578,7 +1578,7 @@ msgstr "Printopdracht hervatten"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:6
 msgid "Purging: "
-msgstr ""
+msgstr "Purging: "
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:11
 msgid "Swapping filament:"
@@ -1642,7 +1642,7 @@ msgstr "Grootte"
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:61
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:209
 msgid "Download"
-msgstr ""
+msgstr "Download"
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:64
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:251
@@ -1737,11 +1737,11 @@ msgstr "Doel"
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/info_flyout.jinja2:39
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/webcam_flyout.jinja2:35
 msgid "Livestream"
-msgstr ""
+msgstr "Livestream"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/info_flyout.jinja2:53
 msgid "Terminal"
-msgstr ""
+msgstr "Terminal"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:6
 msgid "The right print head seems to be disconnected."
@@ -1863,7 +1863,7 @@ msgstr "Seriële poort"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/advanced_flyout.jinja2:16
 msgid "Baudrate"
-msgstr ""
+msgstr "Baudrate"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/advanced_flyout.jinja2:22
 msgid "Printer Profile"
@@ -1896,11 +1896,11 @@ msgstr "Selecteer de hoek die u wilt kalibreren. De extruder zal naar deze posit
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:71
 msgid "Level bed"
-msgstr ""
+msgstr "Level bed"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:80
 msgid "Z-offset wizard"
-msgstr ""
+msgstr "Z-offset wizard"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:92
 msgid "Bed leveling"
@@ -1972,7 +1972,7 @@ msgstr "Wacht totdat de printopdracht voltooid is."
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2:221
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:95
 msgid "Print Status"
-msgstr ""
+msgstr "Print Status"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2:232
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:106
@@ -2039,7 +2039,7 @@ msgstr "Materiaal"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/materials_flyout.jinja2:7
 msgid "Extruder"
-msgstr ""
+msgstr "Extruder"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/materials_flyout.jinja2:39
 msgid "Add profile"
@@ -2087,15 +2087,15 @@ msgstr "Versie-informatie"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:40
 msgid "Software"
-msgstr ""
+msgstr "Software"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:54
 msgid "Leapfrog software"
-msgstr ""
+msgstr "Leapfrog software"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:74
 msgid "Firmware"
-msgstr ""
+msgstr "Firmware"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:84
 msgid "Current version:"
@@ -2125,7 +2125,7 @@ msgstr "Verifiëren"
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:94
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:165
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:18
 msgid "Change password"
@@ -2198,7 +2198,7 @@ msgstr "Opnieuw"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:5
 msgid "Wifi"
-msgstr ""
+msgstr "Wifi"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:52
 msgid "Rescan"
@@ -2214,7 +2214,7 @@ msgstr "Wifi-netwerk verbinden"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:92
 msgid "SSID:"
-msgstr ""
+msgstr "SSID:"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:100
 msgid "Password:"
@@ -2222,7 +2222,7 @@ msgstr "Wachtwoord:"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/zoffset_flyout.jinja2:4
 msgid "Z-offset"
-msgstr ""
+msgstr "Z-offset"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/zoffset_flyout.jinja2:9
 msgid "Place a 0.05 flusher between the nozzle and the bed. Press the button Start Calibration, the bed will home and then move close to the nozzle. Use the up arrow until the nozzle is against the flusher. You can use the down arrow if you think you are too close. Press \"Save\" to save the new z-offset."
@@ -2243,15 +2243,15 @@ msgstr "Kalibratie z-offset"
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:21
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:14
 msgid "Printer"
-msgstr ""
+msgstr "Printer"
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:32
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:45
 msgid "Upload"
-msgstr ""
+msgstr "Upload"
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:57
 msgid "Search..."
@@ -2307,11 +2307,11 @@ msgstr "Printtijd"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:40
 msgid "L"
-msgstr ""
+msgstr "L"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:43
 msgid "R"
-msgstr ""
+msgstr "R"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:52
 msgid "Select print job"
@@ -2335,7 +2335,7 @@ msgstr "Wissel rechts"
 
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:76
 msgid "Webcam"
-msgstr ""
+msgstr "Webcam"
 
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:97
 msgid "Users"
@@ -2351,7 +2351,7 @@ msgstr "Geavanceerd"
 
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:185
 msgid "Logs"
-msgstr ""
+msgstr "Logs"
 
 #~ msgid "<div class='Table-row Table-header'><div class='Table-item'>Print area width</div><div class='Table-item'>Object position</div></div>"
 #~ msgstr "<div class='Table-row Table-header'><div class='Table-item'>Printoppervlakte breedte</div><div class='Table-item'>Object positie</div></div>"

@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-31 09:55+0100\n"
-"PO-Revision-Date: 2017-01-31 10:03+0100\n"
+"PO-Revision-Date: 2017-01-31 14:32+0100\n"
 "Last-Translator: \n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -168,7 +168,7 @@ msgstr "Ausgewählte Datei: \"%(filename)s\""
 #: octoprint_lui/static/js/app/util/helpers.js:391
 #, python-format
 msgid "%(hour)02d:%(minute)02d:%(second)02d"
-msgstr ""
+msgstr "%(hour)02d:%(minute)02d:%(second)02d"
 
 #: octoprint_lui/static/js/app/util/helpers.js:449
 #: octoprint_lui/static/js/app/util/helpers.js:456
@@ -506,9 +506,8 @@ msgstr "Objekt wurde außerhalb der Weite des Druckbereichs positioniert."
 #: octoprint_lui/static/js/app/viewmodels/files.js:847
 #: octoprint_lui/static/js/app/viewmodels/files.js:852
 #: octoprint_lui/static/js/app/viewmodels/files.js:857
-#, fuzzy
 msgid "Object position"
-msgstr "Reinigungsposition für die Druckunterlage"
+msgstr "Objektposition"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:851
 msgid "Object positioned outside print area in depth."
@@ -850,9 +849,8 @@ msgid "By-pass print analysis"
 msgstr "Druckanalyse umgehen"
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:341
-#, fuzzy
 msgid " You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. This could potentially damage your printer."
-msgstr "<i class='fa fa-exclamation-triangle'></i> Sie versuchen einen Druck zu starten obwohl die Analyse noch nicht abgeschlossen wurde.  Sie starten somit möglicherweise einen Druckauftrag in einem Modus, der nicht kompatibel ist. </br> Dies könnte ihren Drucker potentiell beschädigen."
+msgstr "Sie versuchen einen Druck zu starten obwohl die Analyse noch nicht abgeschlossen wurde.  Sie starten somit möglicherweise einen Druckauftrag in einem Modus, der nicht kompatibel ist.  Dies könnte ihren Drucker potentiell beschädigen."
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:342
 msgid "Do you want to by-pass the print analysis and start the print?"
@@ -1490,13 +1488,12 @@ msgid "A filament error has been detected in the"
 msgstr "Ein Filamentfehler wurde entdeckt im"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:14
-#, fuzzy
 msgid "tool. Please check if you have sufficient filament. "
-msgstr "Werkzeug. Überprüfen Sie bitte ob sich genügend Filament auf der Spule befindet. <br /> <span class=\"bold\">Is your spool empty?</span>"
+msgstr "Werkzeug. Überprüfen Sie bitte ob sich genügend Filament auf der Spule befindet. "
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:16
 msgid "Is your spool empty?"
-msgstr ""
+msgstr "Ist Ihre Spule leer?"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:30
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:210
@@ -1903,7 +1900,7 @@ msgstr "Druckunterlage kalibrieren"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:80
 msgid "Z-offset wizard"
-msgstr ""
+msgstr "Z-offset wizard"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:92
 msgid "Bed leveling"
