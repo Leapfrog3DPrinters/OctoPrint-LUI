@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-31 09:55+0100\n"
-"PO-Revision-Date: 2017-01-31 10:55+0100\n"
+"PO-Revision-Date: 2017-01-31 14:19+0100\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
@@ -168,7 +168,7 @@ msgstr "Bestand geslecteerd: \"%(filename)s\""
 #: octoprint_lui/static/js/app/util/helpers.js:391
 #, python-format
 msgid "%(hour)02d:%(minute)02d:%(second)02d"
-msgstr ""
+msgstr "%(hour)02d:%(minute)02d:%(second)02d"
 
 #: octoprint_lui/static/js/app/util/helpers.js:449
 #: octoprint_lui/static/js/app/util/helpers.js:456
