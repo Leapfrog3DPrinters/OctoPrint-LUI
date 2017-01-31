@@ -436,11 +436,6 @@ $(function ()  {
 
             self.settings.showSettingsTopic('maintenance', true)
         }
-        
-        self.showBusyHoming = function ()  {
-            $('.startup_step').removeClass('active');
-            $('#startup_step_busy_homing').addClass('active');
-        }
 
         self.cancelAutoShutdown = function () {
             self._sendApi({command: 'auto_shutdown_timer_cancel'});
@@ -590,11 +585,14 @@ $(function ()  {
 
                 switch (messageType) {
                     case "is_homed":
+                        self.isHomed(true);
+                        self.isHoming(false);
                         //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
                         self.closeStartupFlyout();
                         break;
                     case "is_homing":
-                        self.showBusyHoming();
+                        self.isHomed(false);
+                        self.isHoming(true);
                         break;
                     case "door_open":
                         self.onDoorOpen();

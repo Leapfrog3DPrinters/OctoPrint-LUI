@@ -2622,8 +2622,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         statestring = ""
         if event == Events.DISCONNECTED and not self.intended_disconnect:
             self.printer_error_reason = 'unknown_printer_error'
+            self.is_homed = False
+            self.is_homing = False
         elif event == Events.ERROR:
             self.printer_error_reason = 'unknown_printer_error'
+            self.is_homed = False
+            self.is_homing = False
             if "error" in payload:
                 statestring = payload["error"].lower()
                 if "mintemp" in statestring:
