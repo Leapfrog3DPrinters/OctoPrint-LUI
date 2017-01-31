@@ -48,19 +48,19 @@ manualBedCalibrationPositions:
   - tool: tool1
     X: 70
     Y: 250
-    mode: 'normal'
+    mode: 'fullcontrol'
   - tool: tool0
     X: 305
     Y: 250
-    mode: 'normal'
+    mode: 'fullcontrol'
   - tool: tool1
     X: 70
     Y: 70
-    mode: 'normal'
+    mode: 'fullcontrol'
   - tool: tool0
     X: 305
     Y: 70
-    mode: 'normal'
+    mode: 'fullcontrol'
   - tool: tool1
     X: 175
     Y: 160

@@ -206,6 +206,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
+        self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
 
         #~~ Register plugin as PrinterCallback instance
         self._printer.register_callback(self)
@@ -230,7 +231,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Read model and prepare environment
         self.machine_info = self._get_machine_info()
         self._set_model()
-        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
         ##~ With model data in place, update scripts, printer profiles, users etc. if it's the first run of a new version
         self._first_run()
@@ -256,12 +256,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Get filament amount stored in config
         self.update_filament_amount()
 
-       
-
         # Changelog check
         self.changelog_path = None
         self.changelog_path = os.path.join(self.update_basefolder, 'OctoPrint-LUI', self.changelog_filename)
-        self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
         self._update_changelog()
 
     def _set_model(self):
@@ -282,49 +279,64 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.update_basefolder = "/home/pi/"
             self.media_folder = "/media/pi/"    
 
+        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
+
     def _first_run(self):
-        """Updates the OctoPrint user folder with up-to-date printerprofiles and gcode scripts. Future: also config migrations"""
+        """Checks if it is the first run of a new version and updates any material if necessary"""
         had_first_run =  self._settings.get(["had_first_run"])
-        if not had_first_run or StrictVersion(had_first_run) < StrictVersion(self.plugin_version):
-            self._logger.debug("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
-
-            scripts_src_folder = os.path.join(self._basefolder, "gcodes/scripts", self.model.lower())
-            scripts_dst_folder = os.path.join(self._settings.global_get_basefolder("scripts"), "gcode") # copytree will check if exists and make it if necessary
-
-            if os.path.exists(scripts_src_folder):
-                try:
-                    copy_tree(scripts_folder, scripts_dst_folder)
-                    self._logger.debug("Scripts folder updated")
-                except:
-                    self._logger.exception("Could not update scripts folder")
+        if self.debug or not had_first_run or StrictVersion(had_first_run) < StrictVersion(self.plugin_version):
+            if self.debug:
+                self._logger.debug("Simulating first run")
             else:
-                self._logger.warn("No scripts found for model {0}. Ensure the foldername is in lowercase.".format(self.model))
-            
-            profile_src_path = os.path.join(self._basefolder, "printerProfiles", self.model.lower() + ".profile") 
-            profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
-            if os.path.exists(profile_src_path):
-                try:
-                    shutil.copyfile(profile_src_path, profile_dst_path)
-                    self._logger.debug("Printer profile updated")
-                except:
-                    self._logger.exception("Could not update printer profile")
-            else:
-                self._logger.warn("No printer profile found for model {0}. Ensure the filename is in lowercase.".format(self.model))
+                self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
 
+            self._update_printer_scripts_profiles()
             self._configure_local_user()
+
             self._settings.set(["had_first_run"], self.plugin_version)
+            self._settings.save()
+
+    def _update_printer_scripts_profiles(self):
+        """ Copies machine specific files to printerprofiles and scripts folders based on current model """
+        scripts_src_folder = os.path.join(self._basefolder, "gcodes/scripts", self.model.lower())
+        scripts_dst_folder = os.path.join(self._settings.global_get_basefolder("scripts"), "gcode") # copytree will check if exists and make it if necessary
+
+        if os.path.exists(scripts_src_folder):
+            try:
+                copy_tree(scripts_src_folder, scripts_dst_folder)
+                self._logger.debug("Scripts folder updated")
+            except:
+                self._logger.exception("Could not update scripts folder")
+        else:
+            self._logger.warn("No scripts found for model {0}. Ensure the foldername is in lowercase.".format(self.model))
+            
+        profile_src_path = os.path.join(self._basefolder, "printerProfiles", self.model.lower() + ".profile") 
+        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
+        if os.path.exists(profile_src_path):
+            try:
+                shutil.copyfile(profile_src_path, profile_dst_path)
+                self._logger.debug("Printer profile updated")
+            except:
+                self._logger.exception("Could not update printer profile")
+        else:
+            self._logger.warn("No printer profile found for model {0}. Ensure the filename is in lowercase.".format(self.model))
 
     def _configure_local_user(self):
         """ Configures the local user which is used for autologin on the machine """
+        import string
 
         self._settings.global_set_boolean(["accessControl", "enabled"], True)
         self._user_manager.enable()
+
         local_password_chars = string.ascii_lowercase + string.ascii_uppercase + string.digits
         local_password = "".join(choice(local_password_chars) for _ in range(16))
         self._user_manager.addUser(self.local_username, local_password, True, ["user", "admin"], overwrite=True)
 
         self._settings.global_set(["accessControl", "autologinLocal"], True) 
         self._settings.global_set(["accessControl", "autologinAs"], self.local_username) 
+        self._settings.save()
+
+        self._logger.debug("Local user configured with username: {0}".format(self.local_username))
 
     def _init_model(self):
         """ Reads the printer profile and any machine specific configurations """
@@ -691,7 +703,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "action_door": True,
             "action_filament": True,
             "debug_lui": False,
-            "changelog_version": ""
+            "changelog_version": "",
+            "had_first_run": ""
         }
 
     def find_assets(self, rel_path, file_ext):
@@ -1001,20 +1014,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.info("Auto shutdown set to {toggle}".format(toggle=toggle))
 
     def _on_api_command_start_print(self, mode):
-        self.print_mode = mode
-        if mode == "sync":
-            self._printer.commands(["M605 S2"])
-        elif mode == "mirror":
-            self._printer.commands(["M605 S3"])
-        else:
-            self._printer.commands(["M605 S1"])
-
+        self.set_print_mode(mode)
         self._printer.start_print()
 
     def _on_api_command_prepare_for_calibration_position(self):
         
-        self._printer.commands(["M605 S0"])
-        self.print_mode = "normal"
+        self.set_print_mode('fullcontrol')
 
         self.set_movement_mode("absolute")
         self._printer.home(['x', 'y', 'z'])
@@ -1027,14 +1032,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         corner = self.manual_bed_calibration_positions[corner_num]
         self._printer.commands(['G1 Z5 F1200'])
 
-        if corner["mode"] == 'normal' and not self.print_mode == "normal":
-            self._printer.commands(["M605 S0"])
+        if corner["mode"] == 'fullcontrol' and not self.print_mode == "fullcontrol":
+            self.set_print_mode('fullcontrol')
             self._printer.home(['x'])
-            self.print_mode = "normal"
         elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
-            self._printer.commands(["M605 S3"])
+            self.set_print_mode('mirror')
             self._printer.home(['x'])
-            self.print_mode = "mirror"
 
         if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
             self._printer.home(['x'])
@@ -1046,7 +1049,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_restore_from_calibration_position(self):
         self._printer.commands(['G1 Z5 F1200'])
-        self._printer.commands(["M605 S1"])
+        self.set_print_mode('normal')
         self._printer.home(['y', 'x'])
 
         if self.current_printer_profile["default_stepper_timeout"]:
@@ -1068,7 +1071,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         abs_path = self._copy_calibration_file(calibration_src_filename)
 
         if abs_path:
-            self._printer.commands(["M605 S1"])
+            self.set_print_mode('normal')
             self._preheat_for_calibration()
             self._printer.select_file(abs_path, False, True)
 
@@ -1136,10 +1139,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_set_calibration_values(self, width_correction, extruder_offset_y, persist = False):
         self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
 
-        if self.model == "Bolt":
-            #TODO: Consider changing firmware to accept positive value for S (M115, M219 and EEPROM_printSettings)
-            self._printer.commands("M219 S%f" % -width_correction)
-            self._printer.commands("M50 Y%f" % extruder_offset_y)
+        #TODO: Consider changing firmware to accept positive value for S (M115, M219 and EEPROM_printSettings)
+        self._printer.commands("M219 S%f" % -width_correction)
+        self._printer.commands("M50 Y%f" % extruder_offset_y)
 
         if persist:
             self._printer.commands("M500")
@@ -2125,7 +2127,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.is_homing = True
 
     def _process_M115(self, cmd):
-        #self._logger.info("Command: %s" % cmd)
+        self._logger.debug("Command: %s" % cmd)
         self.firmware_info_command_sent = True
 
     def _process_G32(self, cmd):
@@ -2491,7 +2493,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ## Commenting the auto update during start up atm to see if we can fix corrupt .git/objects
         ##self.update_info_list()
-        self._logger.debug(self.update_info)
+        #self._logger.debug(self.update_info)
 
 
     def _add_server_commands(self):
@@ -2606,11 +2608,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_command_sent = False
         self._logger.info("M115 data received: %s" % line)
         line = line[5:].rstrip() # Strip echo and newline
-
+       
         if len(line) > 0:
-           self._update_from_m115_properties(line)
-           self.machine_info = self._get_machine_info()
-           self._send_client_message("machine_info_updated", self.machine_info)
+            oldModelName = self.model
+            self._update_from_m115_properties(line)
+            self.machine_info = self._get_machine_info()
+
+            if not oldModelName.lower() == self.machine_info["machine_type"].lower():
+                
+                self.model = self.machine_info["machine_type"]
+                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
+
+                self._init_model()
+                self._update_printer_scripts_profiles()
+
+            self._send_client_message("machine_info_updated", self.machine_info)
 
     def _update_from_m115_properties(self, line):
         line = line.replace(': ', ':')
@@ -2709,6 +2721,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.printer_error_reason = None
         self.printer_error_extruder = None
 
+    def set_print_mode(self, print_mode):
+        self.print_mode = print_mode
+        if print_mode == "sync":
+            self._printer.commands(["M605 S2"])
+        elif print_mode == "mirror":
+            self._printer.commands(["M605 S3"])
+        elif print_mode == "fullcontrol":
+            self._printer.commands(["M605 S0"])
+        else:
+            self._printer.commands(["M605 S1"])
+
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
         if self.calibration_type:
@@ -2718,8 +2741,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = [0.0, 0.0]
             self.save_filament_amount()
-            if self.model == "Bolt":
-                self._printer.commands(["M605 S1"])
+            self.set_print_mode('normal')
             self._printer.jog({'z': 20})
             self._printer.home(['x', 'y'])
 
@@ -2764,7 +2786,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.send_M999_on_reconnect = False
 
             self._get_firmware_info()
-            self._printer.commands(["M605 S1"])
+            self.set_print_mode('normal')
 
             if self.connecting_after_maintenance:
                 self.connecting_after_maintenance = False
@@ -2852,7 +2874,6 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_queuing_hook,
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
-        "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook,
         "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_received_hook,
         "octoprint.filemanager.extension_tree": __plugin_implementation__.extension_tree_hook,
