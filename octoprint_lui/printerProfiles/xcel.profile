@@ -31,6 +31,24 @@ volume:
   height: 2000.0
   origin: lowerleft
   width: 350.0
+boundaries:
+  minX: 0
+  maxX: 350
+  minY: 0
+  maxY: 245
+  minZ: 0
+  maxZ: 2000
+requireOverscroll: false
+filamentRollLength: 8000
+autoBedCalibration: true
+extruderCalibration: false
+modelSizeDetection: true
+doorSafety: false
+filamentDetection: true
+filamentQuickLoad: false
+dualX: true
+materialMinTemp: 150
+materialMaxTemp: 275
 filament:
   load_initial:
     amount: 18

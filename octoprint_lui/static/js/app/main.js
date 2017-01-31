@@ -523,7 +523,7 @@ $(function () {
 
     // jQuery overscroll
 
-    if (LPFRG_MODEL == "Xeed") {    
+    if (printer_profile["requireOverscroll"]) {    
         $(".flyout-body").overscroll({
                 direction: 'vertical',
                 showThumbs: false

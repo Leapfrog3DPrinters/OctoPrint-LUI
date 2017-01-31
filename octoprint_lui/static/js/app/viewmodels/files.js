@@ -760,20 +760,20 @@ $(function ()  {
                 return true;
             }
 
-            // set print volume boundaries
-            var boundaries = {
-                minX : 0.0,
-                maxX : volumeInfo.width(),
-                minY : 0.0,
-                maxY : volumeInfo.depth(),
-                minZ : 0.0,
-                maxZ : volumeInfo.height()
-            };
-            if (LPFRG_MODEL == "Bolt" || DEBUG_LUI) {
-                boundaries["minY"] = -35.0;
-                boundaries["minZ"] = -1.0; // This is in just for safety but needs to be checked.
-                boundaries["maxX"] = 373; // This is all to cater for the wiping. TODO FIX IT.
+            var boundaryInfo = printerProfile.boundaries;
+            if (!boundaryInfo) {
+                return true;
             }
+
+            var boundaries = {
+                minX: boundaryInfo.minX(),
+                maxX: boundaryInfo.maxX(),
+                minY: boundaryInfo.minY(),
+                maxY: boundaryInfo.maxY(),
+                minZ: boundaryInfo.minZ(),
+                maxZ: boundaryInfo.maxZ()
+            };
+
             if (volumeInfo.origin() == "center") {
                 boundaries["maxX"] = volumeInfo.width() / 2;
                 boundaries["minX"] = -1 * boundaries["maxX"];

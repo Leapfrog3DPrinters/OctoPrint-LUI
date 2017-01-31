@@ -12,6 +12,14 @@ $(function () {
                 height: 200,
                 origin: "lowerleft"
             },
+            boundaries: { 
+                minX: 0,
+                maxX: 200,
+                minY: 0,
+                maxY: 200,
+                minZ: 0,
+                maxZ: 200
+                  },
             heatedBed: true,
             axes: {
                 x: {speed: 6000, inverted: false},

@@ -31,8 +31,26 @@ volume:
   height: 205.0
   origin: lowerleft
   width: 330.0
+boundaries:
+  minX: 0
+  maxX: 373
+  minY: -35
+  maxY: 320
+  minZ: -1.0
+  maxZ: 205
+requireOverscroll: false
 hasPowerButton: true
+filamentRollLength: 320
 default_stepper_timeout: 60
+autoBedCalibration: false
+extruderCalibration: true
+modelSizeDetection: true
+doorSafety: false
+filamentDetection: false
+filamentQuickLoad: false
+dualX: true
+materialMinTemp: 150
+materialMaxTemp: 360
 filament:
   stepper_timeout: 300
   load_initial:

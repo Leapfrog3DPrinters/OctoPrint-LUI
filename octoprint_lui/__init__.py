@@ -318,6 +318,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.debug("Printer profile updated")
             except:
                 self._logger.exception("Could not update printer profile")
+            
+            self._printer._printerProfileManager.set_default(self.model.lower())
+            self._printer._printerProfileManager.select(self.model.lower())
+
         else:
             self._logger.warn("No printer profile found for model {0}. Ensure the filename is in lowercase.".format(self.model))
 
@@ -341,7 +345,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _init_model(self):
         """ Reads the printer profile and any machine specific configurations """
         self.current_printer_profile = self._printer._printerProfileManager.get_current_or_default()
-        self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"]
+        self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"] if "manualBedCalibrationPositions" in self.current_printer_profile else None
 
     ##~ Changelog
     def _update_changelog(self):
@@ -835,7 +839,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             from_localhost = netaddr.IPAddress(remote_address) in localhost
 
-        response = make_response(render_template("index_lui.jinja2", local_addr=from_localhost, model=self.model, debug_lui=self.debug, **render_kwargs))
+
+        args = {
+            "local_addr": from_localhost,
+            "debug_lui": self.debug,
+            "model": self.model,
+            "printer_profile": self.current_printer_profile
+        }
+
+        args.update(render_kwargs)
+
+        response = make_response(render_template("index_lui.jinja2", **args))
 
         if from_localhost:
             from octoprint.server.util.flask import add_non_caching_response_headers
