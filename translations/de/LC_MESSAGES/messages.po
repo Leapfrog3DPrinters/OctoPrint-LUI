@@ -8,16 +8,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-30 13:19+0100\n"
-"PO-Revision-Date: 2017-01-27 11:21+0100\n"
+"POT-Creation-Date: 2017-01-31 09:55+0100\n"
+"PO-Revision-Date: 2017-01-31 10:03+0100\n"
 "Last-Translator: \n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.2.0\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: octoprint_lui/static/js/app/main.js:86
 msgid "Offline"
@@ -465,13 +466,12 @@ msgstr "Objekt überschreitet den Druckbereich in der Weite."
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:825
 #: octoprint_lui/static/js/app/viewmodels/files.js:847
-#, fuzzy
 msgid "Print area width"
-msgstr "Objekt überschreitet den Druckbereich in der Weite."
+msgstr "Druckbereichweite"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:825
 msgid "Object width"
-msgstr ""
+msgstr "Objektbreite"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:829
 msgid "Object exceeds print area in depth."
@@ -479,13 +479,12 @@ msgstr "Objekt überschreitet den Druckbereich in der Tiefe."
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:830
 #: octoprint_lui/static/js/app/viewmodels/files.js:852
-#, fuzzy
 msgid "Print area depth"
-msgstr "Objekt überschreitet den Druckbereich in der Tiefe."
+msgstr "Druckbereichtiefe"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:830
 msgid "Object depth"
-msgstr ""
+msgstr "Objekttiefe"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:834
 msgid "Object exceeds print area in height."
@@ -493,13 +492,12 @@ msgstr "Objekt überschreitet den Druckbereich in der Höhe."
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:835
 #: octoprint_lui/static/js/app/viewmodels/files.js:857
-#, fuzzy
 msgid "Print area height"
-msgstr "Objekt überschreitet den Druckbereich in der Höhe."
+msgstr "Druckbereichhöhe."
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:835
 msgid "Object height"
-msgstr ""
+msgstr "Objekthöhe"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:846
 msgid "Object positioned outside print area in width."
@@ -879,30 +877,20 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nein"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:451
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:446
 msgid "Door open"
 msgstr "Tür öffnen"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:452
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:447
 msgid "Please close the door before you continue printing."
 msgstr "Bitte schließen sie die Tür bevor Sie den Druck fortsetzen."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:542
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:627
-msgid "right"
-msgstr "rechts"
-
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:542
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:627
-msgid "left"
-msgstr "links"
-
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:578
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:584
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:573
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:579
 msgid "Previewing"
 msgstr "Vorschau"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:649
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:647
 msgid "Creating preview"
 msgstr "Vorschau wird erstellt"
 
@@ -1016,7 +1004,6 @@ msgstr "Sie sind dabei einen Neustart des Druckers durchzuführen."
 
 #: octoprint_lui/static/js/app/viewmodels/system.js:130
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:440
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:70
 msgid "Shutdown printer"
 msgstr "Drucker wird heruntergefahren."
 
@@ -1420,7 +1407,7 @@ msgstr "Druck starten"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:402
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:5
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:83
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:49
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:5
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:19
 msgid "Printer startup"
@@ -1760,36 +1747,36 @@ msgid "Terminal"
 msgstr "Terminal"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:6
-msgid "The "
-msgstr " "
+msgid "The right print head seems to be disconnected."
+msgstr "Der rechte Druckkopf scheint nicht verbunden zu sein."
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:6
-msgid " print head seems to be disconnected."
-msgstr "Der Druckkopf schein tnicht verbunden zu sein."
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:9
+msgid "The left print head seems to be disconnected."
+msgstr "Der linke Druckkopf scheint nicht verbunden zu sein."
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:13
-msgid "Please ensure that the "
-msgstr "Bitte stellen Sie sicher, dass der"
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:16
+msgid "Please ensure that the right print head is properly connected and press restore."
+msgstr "Stellen Sie sicher dass der rechte Druckkopf ordentlich verbunden wurde und drücken Sie auf wiederherstellen"
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:13
-msgid " print head is properly connected and press restore."
-msgstr "Druckkopf ordentlich verbunden wurde und drücken Sie auf wiederherstellen"
-
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:24
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:40
-msgid "A temperature error has occured."
-msgstr "Ein Temperatur-Fehler ist aufgetreten"
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:19
+msgid "Please ensure that the left print head is properly connected and press restore."
+msgstr "Stellen Sie sicher dass der linke Druckkopf ordentlich verbunden wurde und drücken Sie auf wiederherstellen"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:30
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:46
+msgid "A temperature error has occured."
+msgstr "Ein Temperatur-Fehler ist aufgetreten"
+
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:36
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:52
 msgid "Please ensure that the ambient temperature of the printer is within specifications (see the printer's manual) and the print heads are properly connected."
 msgstr "Bitte stellen Sie sicher, dass die Umgebungstemperatur im Toleranzbereich des Druckers ist (siehe Handbuch) und die Druckköpfe korrekt angeschlossen sind."
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:56
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:62
 msgid "An unkown error has occured"
 msgstr "Ein unbekannter Fehler ist aufgetreten"
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:62
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:68
 msgid "An unknown error has occured while communicating with your printer. You can try to restore the connection."
 msgstr "Ein unbekannter Fehler ist während der Kommunikation mit dem Drucker aufgetreten. Sie können versuchen die Verbindung wiederherzustellen."
 
@@ -1820,11 +1807,7 @@ msgstr "Ausgangsposition "
 msgid "Maintenance"
 msgstr "Wartung"
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:50
-msgid "Printer in Error or Closed state"
-msgstr "Drucker im Fehler- oder Geschlossen-Zustand"
-
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:90
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:56
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:26
 msgid "Please wait while the printer is homing."
 msgstr "Bitte warten Sie während die Extruder und die Druckunterlage sich zu Ausgangsposition bewegen."
@@ -2385,9 +2368,20 @@ msgstr "Logs"
 #~ msgid "<div class='Table-row Table-header'><div class='Table-item'>Print area height</div><div class='Table-item'>Object position</div></div>"
 #~ msgstr "<div class='Table-row Table-header'><div class='Table-item'>Höhe des Druckbereichs</div><div class='Table-item'>Objektposition</div></div>"
 
-#~ msgid "<div class='Table-row Table-header'><div class='Table-item'>Info</div></div>"
-#~ msgstr ""
-
 #~ msgid "<div class='Table-row'><div class='Table-item'>To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.</div></div>"
 #~ msgstr "<div class='Table-row'><div class='Table-item'>Um sicherzustellen, dass ihr Synchron-oder Spiegeldruck gelingt, vergewissern Sie sich ob ihr Modell auf der linken Seite mit für eine Düse gesliced wurde.</div></div>"
 
+#~ msgid "right"
+#~ msgstr "rechts"
+
+#~ msgid "left"
+#~ msgstr "links"
+
+#~ msgid "The "
+#~ msgstr " "
+
+#~ msgid "Please ensure that the "
+#~ msgstr "Bitte stellen Sie sicher, dass der"
+
+#~ msgid "Printer in Error or Closed state"
+#~ msgstr "Drucker im Fehler- oder Geschlossen-Zustand"

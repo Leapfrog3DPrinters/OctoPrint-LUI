@@ -2,15 +2,21 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        <span>
-          {{ _('The ') }}<span data-bind="text: erroredExtruderName"></span>{{ _(' print head seems to be disconnected.') }}
+        <span data-bind="visible: erroredExtruder() == 0">
+          {{ _('The right print head seems to be disconnected.') }}
+        </span>
+        <span data-bind="visible: erroredExtruder() == 1">
+          {{ _('The left print head seems to be disconnected.') }}
         </span>
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <span>
-          {{ _('Please ensure that the ') }}<span data-bind="text: erroredExtruderName"></span>{{ _(' print head is properly connected and press restore.') }}
+        <span data-bind="visible: erroredExtruder() == 0">
+          {{ _('Please ensure that the right print head is properly connected and press restore.') }}
+        </span>
+        <span data-bind="visible: erroredExtruder() == 1">
+          {{ _('Please ensure that the left print head is properly connected and press restore.') }}
         </span>
       </div>
     </div>

@@ -1197,7 +1197,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.model == "Bolt" or self.debug: #TODO: Remove debug
             self._printer.commands(["M605 S3"]) # That reads: more awesomeness.
             self._printer.home(['x', 'y'])
-            self._printer.commands(["G1 X150 F10000"])
+            self._printer.commands(["G1 X120 F10000"])
             self._printer.commands(["G1 Y-33 F15000"])
             self._printer.commands(["M605 S0"])
         elif self.model == "Xeed":

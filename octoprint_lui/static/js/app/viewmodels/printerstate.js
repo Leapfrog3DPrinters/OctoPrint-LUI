@@ -47,7 +47,7 @@ $(function ()  {
         self.warningVm = undefined;
 
         self.errorReason = ko.observable(undefined);
-        self.erroredExtruderName = ko.observable(undefined);
+        self.erroredExtruder = ko.observable(undefined);
         self.errorStateString = ko.observable(undefined);
         self.isConnecting = ko.observable(false);
 
@@ -534,12 +534,12 @@ $(function ()  {
 
             if (data.printer_error_reason) {
                 self.errorReason(data.printer_error_reason);
-                self.erroredExtruderName(data.printer_error_extruder == 0 ? gettext('right') : gettext('left'));
+                self.erroredExtruder(data.printer_error_extruder);
                 self.showPrinterErrorFlyout();
             }
             else {
                 self.closePrinterErrorFlyout();
-                self.erroredExtruderName(undefined);
+                self.erroredExtruder(undefined);
                 self.errorReason(undefined);
             }
         }
@@ -622,7 +622,7 @@ $(function ()  {
                         break;
                     case "printer_error_reason_update":
                         self.errorReason(messageData.printer_error_reason);
-                        self.erroredExtruderName(messageData.printer_error_extruder == 0 ? gettext('right') : gettext('left'));
+                        self.erroredExtruder(messageData.printer_error_extruder);
                         break;
                 }
             }

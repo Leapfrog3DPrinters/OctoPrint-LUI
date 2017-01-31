@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-01-30 13:19+0100\n"
-"PO-Revision-Date: 2017-01-30 17:15+0100\n"
+"POT-Creation-Date: 2017-01-31 09:55+0100\n"
+"PO-Revision-Date: 2017-01-31 09:56+0100\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
@@ -875,30 +875,20 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nee"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:451
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:446
 msgid "Door open"
 msgstr "Deur open"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:452
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:447
 msgid "Please close the door before you continue printing."
 msgstr "Sluit de deur om de printopdracht te hervatten."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:542
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:627
-msgid "right"
-msgstr "rechts"
-
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:542
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:627
-msgid "left"
-msgstr "links"
-
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:578
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:584
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:573
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:579
 msgid "Previewing"
 msgstr "Voorvertoning"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:649
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:647
 msgid "Creating preview"
 msgstr "Creëren van voorvertoning"
 
@@ -1012,7 +1002,6 @@ msgstr "U staat op het punt om de printer te herstarten."
 
 #: octoprint_lui/static/js/app/viewmodels/system.js:130
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:440
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:70
 msgid "Shutdown printer"
 msgstr "Printer afsluiten"
 
@@ -1416,7 +1405,7 @@ msgstr ""
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:402
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:5
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:83
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:49
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:5
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:19
 msgid "Printer startup"
@@ -1755,36 +1744,36 @@ msgid "Terminal"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:6
-msgid "The "
-msgstr "De "
+msgid "The right print head seems to be disconnected."
+msgstr "De rechter extruder lijkt niet verbonden."
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:6
-msgid " print head seems to be disconnected."
-msgstr " extruder lijkt niet verbonden."
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:9
+msgid "The left print head seems to be disconnected."
+msgstr "De linker extruder lijkt niet verbonden."
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:13
-msgid "Please ensure that the "
-msgstr "Controleer of extruder "
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:16
+msgid "Please ensure that the right print head is properly connected and press restore."
+msgstr "Controleer of de rechter extruder correct verbonden is en druk op Herstellen."
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:13
-msgid " print head is properly connected and press restore."
-msgstr "correct verbonden is en druk op Herstellen."
-
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:24
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:40
-msgid "A temperature error has occured."
-msgstr "Er is een temperatuurfout opgetreden."
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:19
+msgid "Please ensure that the left print head is properly connected and press restore."
+msgstr "Controleer of de linker extruder correct verbonden is en druk op Herstellen."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:30
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:46
+msgid "A temperature error has occured."
+msgstr "Er is een temperatuurfout opgetreden."
+
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:36
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:52
 msgid "Please ensure that the ambient temperature of the printer is within specifications (see the printer's manual) and the print heads are properly connected."
 msgstr "Zorg ervoor dat de omgevingstemperatuur van de printer binnen de specificaties valt (zie handleiding van de printer) en de extruders goed zijn aangesloten."
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:56
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:62
 msgid "An unkown error has occured"
 msgstr "Er is een onbekende fout opgetreden"
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:62
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_flyout.jinja2:68
 msgid "An unknown error has occured while communicating with your printer. You can try to restore the connection."
 msgstr "Er is een onbekende fout opgetreden tijdens de communicatie met de printer. U kunt de printercommunicatie proberen te herstellen."
 
@@ -1815,11 +1804,7 @@ msgstr "Begin homen"
 msgid "Maintenance"
 msgstr "Onderhoud"
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:50
-msgid "Printer in Error or Closed state"
-msgstr "Printer in Error of Gesloten status"
-
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:90
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:56
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:26
 msgid "Please wait while the printer is homing."
 msgstr "Wacht totdat de printer is gehomed."
@@ -2382,3 +2367,18 @@ msgstr ""
 
 #~ msgid "<div class='Table-row'><div class='Table-item'>To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.</div></div>"
 #~ msgstr "<div class='Table-row'><div class='Table-item'>Om er zeker van te zijn dat de printopdracht een succes is, zorg er voor dat de print in het linker gedeelte van het printoppervlak is gepositioneerd en met 1 extruder is gesliced.</div></div>"
+
+#~ msgid "right"
+#~ msgstr "rechts"
+
+#~ msgid "left"
+#~ msgstr "links"
+
+#~ msgid "The "
+#~ msgstr "De "
+
+#~ msgid "Please ensure that the "
+#~ msgstr "Controleer of extruder "
+
+#~ msgid "Printer in Error or Closed state"
+#~ msgstr "Printer in Error of Gesloten status"
