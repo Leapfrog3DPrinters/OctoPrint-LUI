@@ -147,25 +147,21 @@ $(function () {
                 profile.bed = parseInt(profile.bed);
 
                 if (names.indexOf(profile.name.toLowerCase()) > -1) {
-                    $.notify({ title: title, text: profile + profile.name + '" already exists. Please ensure each profile has a unique name.' }, 'error');
+                    $.notify({ title: title, text: "\""  + profile.name + gettext('" already exists. Please ensure each profile has a unique name.') }, 'error');
                     return;
                 }
 
                 names.push(profile.name.toLowerCase());
 
-                //TODO: 'Soft-code' these values
-                if (LPFRG_MODEL == "Bolt") {
-                    if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 360) {
-                        $.notify({ title: title, text: profile + profile.name + gettext('" must have an extruder temperature between 150 &deg;C and 360 &deg;C.') }, 'error');
-                        return;
-                    }
-                } else
-                {
-                    if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 275) {
-                        $.notify({ title: title, text: profile + profile.name + gettext('" must have an extruder temperature between 150 &deg;C and 275 &deg;C.') }, 'error');
-                        return;
-                    }
+                var printerProfile = self.printerProfiles.currentProfileData();
+
+                var minTemp = printerProfile["materialMinTemp"]();
+                var maxTemp = printerProfile["materialMaxTemp"]();
+                if (isNaN(profile.extruder) || profile.extruder < minTemp || profile.extruder > maxTemp) {
+                    $.notify({ title: title, text: "\"" + profile.name + _.sprintf(gettext('" must have an extruder temperature between %(mintemp)s &deg;C and %(maxtemp)s &deg;C.'), { "mintemp": minTemp, "maxtemp": maxTemp }) }, 'error');
+                    return;
                 }
+                
 
                 if (isNaN(profile.bed) || profile.bed < 0) {
                     $.notify({ title: title, text: profile + profile.name + gettext('" must have a bed temperature of at least 0 &deg;C.') }, 'error');

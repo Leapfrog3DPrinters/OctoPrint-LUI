@@ -26,11 +26,29 @@ model: Xcel
 name: Xcel
 volume:
   custom_box: false
-  depth: 245.0
+  depth: 220.0
   formFactor: rectangular
-  height: 2000.0
+  height: 230.0
   origin: lowerleft
-  width: 350.0
+  width: 280.0
+boundaries:
+  minX: 0
+  maxX: 280
+  minY: 0
+  maxY: 220
+  minZ: 0
+  maxZ: 230
+requireOverscroll: true
+filamentRollLength: 320
+autoBedCalibration: true
+extruderCalibration: false
+modelSizeDetection: false
+doorSafety: true
+filamentDetection: true
+filamentQuickLoad: true
+dualX: true
+materialMinTemp: 150
+materialMaxTemp: 275
 filament:
   load_initial:
     amount: 18

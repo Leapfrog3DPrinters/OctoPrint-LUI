@@ -58,7 +58,7 @@
                             </div>
                         </div>
                     </div>
-                    {% if model == "Xeed" %}
+                    {% if printer_profile["filamentQuickLoad"] %}
                     <div class="explain">{{ _('Insert the filament in the filament drawer past both wheels of the extruder feeder in the drawer.') }}</div>
                     {% else %}
                     <div class="explain">{{ _('Load filament through the side panel. When the filament reaches the print head press "Load" to load the filament in the head. To improve grip apply pressure on the filament after pressing "Load".') }}</div>
