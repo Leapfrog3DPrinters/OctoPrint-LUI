@@ -54,6 +54,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_shutdown = False
 
         ##~ Model specific variables
+        self.supported_models = ['bolt', 'xeed', 'xcel']
+        self.default_model = 'bolt'
         self.model = None
         self.platform = None
         self.update_basefolder = None
@@ -263,7 +265,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _set_model(self):
         """Sets the model and platform variables"""
-        self.model = self.machine_info['machine_type'] if 'machine_type' in self.machine_info else 'Unknown'
+        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info else 'Unknown'
+
+        if not self.model in self.supported_models:
+            self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
+            self.model = self.default_model
 
         if sys.platform == "darwin":
             self.platform = "MacDebug"
@@ -2442,7 +2448,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._on_media_folder_updated(None)
 
     def _init_powerbutton(self):
-        if self.platform == "RPi" and self.current_printer_profile["hasPowerButton"]:
+        if self.platform == "RPi" and "hasPowerButton" in self.current_printer_profile and self.current_printer_profile["hasPowerButton"]:
             ## ~ Only initialise if it's not done yet.
             if not self.powerbutton_handler:
                 from octoprint_lui.util.powerbutton import PowerButtonHandler
@@ -2669,7 +2675,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 if key == "bed_width_correction":
                     value = -float(value)
 
-                self._logger.info("{}: {}".format(key, value))
+                self._logger.debug("{}: {}".format(key, value))
 
                 self.machine_database.update({'value': value }, self._machine_query.property == key)
             else:

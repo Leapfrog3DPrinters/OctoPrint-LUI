@@ -14,7 +14,7 @@ axes:
 color: default
 extruder:
   count: 2
-  nozzleDiameter: 2.2
+  nozzleDiameter: 0.35
   offsets:
   - - 0.0
     - 0.0
