@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-31 09:55+0100\n"
-"PO-Revision-Date: 2017-01-31 14:32+0100\n"
+"PO-Revision-Date: 2017-02-01 15:17+0100\n"
 "Last-Translator: \n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -1035,7 +1035,7 @@ msgstr "Hotend"
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:257
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:419
 msgid "Heating"
-msgstr "Auheizung"
+msgstr "Aufheizen"
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:259
 msgid "Cooling"
@@ -1395,7 +1395,7 @@ msgstr "Extruder-Kalibrierung"
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:6
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2:58
 msgid "Bed calibration"
-msgstr "Druckbett-Kalibrierung"
+msgstr "Druckunterlage-Kalibrierung"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:389
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:132
@@ -1659,11 +1659,11 @@ msgstr "Druck starten."
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:10
 msgid "You have selected "
-msgstr "Sie haben ausgewählt zu drucken."
+msgstr "Sie haben ausgewählt"
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:10
 msgid " to print."
-msgstr "..."
+msgstr " zu drucken."
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:41
 msgid "Printing mode"
@@ -1699,7 +1699,7 @@ msgstr "Modus."
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:115
 msgid "Are you sure you want to start this print?"
-msgstr "Sind Siecher, dass Sie diesen Druckauftrag starten möchten?"
+msgstr "Sind Sie sicher, dass Sie diesen Druckauftrag starten möchten?"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/auto_shutdown_flyout.jinja2:5
 msgid "Preparing to auto shutdown ... "
@@ -1788,7 +1788,7 @@ msgstr "Automatische Abschaltung"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:10
 msgid "Before you can start using the printer, a homing sequence needs to be executed. This means the bed will move to its upper position."
-msgstr "Bevor Sie den Drucker benutzen können bewegen Sich Druckunterlage und Extruder auf die Ausgangsposition. Das heißt, dass die Druckunterlage nach oben fährt."
+msgstr "Bevor Sie den Drucker benutzen können bewegen sich Druckunterlage und Extruder auf die Ausgangsposition. Das heißt, dass die Druckunterlage nach oben fährt."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:15
 msgid "Please confirm there is no print on the bed."
@@ -2295,7 +2295,7 @@ msgstr "Name des Druckauftrags"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:18
 msgid "Estimated"
-msgstr "Geschätzt"
+msgstr "Geschätzte Zeit"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:22
 msgid "Time left"
@@ -2343,7 +2343,7 @@ msgstr "Benutzer"
 
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:118
 msgid "Wireless"
-msgstr "Kabellos"
+msgstr "W-LAN"
 
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:140
 msgid "Advanced"
