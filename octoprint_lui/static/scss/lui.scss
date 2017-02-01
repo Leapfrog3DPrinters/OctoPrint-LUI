@@ -743,6 +743,16 @@ input[type=radio] {
   }
 }
 
+.Table-condensed .Table-item
+{
+    padding: 0.3em 0.1em;
+
+    input
+    {
+        padding: 12px 5px !important;
+    }
+}
+
 #user-list .Table, #settings_plugin_networkmanager .Table {
   min-height: 13em; //TODO make better.
   justify-content: flex-start;

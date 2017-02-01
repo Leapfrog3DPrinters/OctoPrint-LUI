@@ -1,15 +1,15 @@
-<div class="Table">
+<div class="Table Table-condensed">
     <div class="Table-row Table-header">
         <div class="Table-item Table-item-grow-2">
           <span style="width: 100%; text-align: left;">{{ _('Material') }}</span>
         </div>
         <div class="Table-item Table-item-grow-2">
-          <span style="width: 100%; text-align: center;">{{ _('Extruder') }}</span>
+          <span style="width: 100%; text-align: left;">{{ _('Extruder') }}</span>
         </div>
         <div class="Table-item Table-item-grow-2">
-          <span style="width: 100%; text-align: center;">{{ _('Bed') }}</span>
+          <span style="width: 100%; text-align: left;">{{ _('Bed') }}</span>
         </div>
-        <div class="Table-item" style="flex-basis: 150px; max-width: 150px;">
+        <div class="Table-item" style="flex-basis: 110px; max-width: 110px;">
           <span style="width: 100%; text-align: right;">(&deg;C)</span>
         </div>
     </div>
@@ -20,7 +20,7 @@
     {% endif %}
   <div class="Table-row" data-bind="css: {disabled: $parent.disableRemove($data)}">
         <div class="Table-item profile_name">
-            <input type="text" data-bind="value: name">
+            <input type="text" data-bind="value: name" style="padding: ">
         </div>
         <div class="Table-item extruder_temp">
             <input type="number" data-bind="value: extruder">
@@ -28,7 +28,7 @@
         <div class="Table-item bed_temp">
             <input type="number" data-bind="value: bed">
         </div>
-        <div class="Table-item" style="flex-basis: 150px; max-width: 150px;">
+        <div class="Table-item" style="flex-basis: 110px; max-width: 110px;">
             <ul class="button-area">
                 <li class="button failed-button"><a href="#delete" data-bind="click: $parent.settings.removeTemperatureProfile"><span data-bind="text: $root.materialButtonText($data)"></span></a></li>
             </ul>
