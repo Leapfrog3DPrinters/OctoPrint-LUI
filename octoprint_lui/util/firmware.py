@@ -16,8 +16,8 @@ class FirmwareUpdateUtility(object):
         all_versions = self._get_version_info()
 
         if all_versions:
-            if "firmware_versions" in all_versions and model in all_versions["firmware_versions"]:
-                model_versions = sorted(all_versions["firmware_versions"][model], key=lambda info: info["version"], reverse=True)
+            if "firmware_versions" in all_versions and model.lower() in all_versions["firmware_versions"]:
+                model_versions = sorted(all_versions["firmware_versions"][model.lower()], key=lambda info: info["version"], reverse=True)
                 if len(model_versions) > 0:
                     return model_versions[0]
                 else:
