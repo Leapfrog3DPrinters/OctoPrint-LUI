@@ -289,18 +289,32 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _first_run(self):
         """Checks if it is the first run of a new version and updates any material if necessary"""
-        had_first_run =  self._settings.get(["had_first_run"])
-        if self.debug or not had_first_run or StrictVersion(had_first_run) < StrictVersion(self.plugin_version):
+        had_first_run_version =  self._settings.get(["had_first_run"])
+        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
+        if self.debug or not had_first_run or StrictVersion(had_first_run_version) < StrictVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
             if self.debug:
-                self._logger.debug("Simulating first run")
+                self._logger.debug("Simulating first run for debugging.")
+            elif not os.path.exists(profile_dst_path):
+                self._logger.info("Printer profile not found. Simulating first run.")
             else:
                 self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
+
+
+            self._disable_ssh()
+            #TODO: Maybe move branch switch for OctoPrint here?
 
             self._update_printer_scripts_profiles()
             self._configure_local_user()
 
             self._settings.set(["had_first_run"], self.plugin_version)
             self._settings.save()
+
+    def _disable_ssh(self):
+        if self.platform == "RPi" and not self.debug and os.path.exists("/etc/init/ssh.conf"):
+            try:
+                octoprint_lui.util.execute("sudo mv /etc/init/ssh.conf /etc/init/ssh.conf.disabled")
+            except:
+                self._logger.exception("Could not disable SSH")
 
     def _update_printer_scripts_profiles(self):
         """ Copies machine specific files to printerprofiles and scripts folders based on current model """
