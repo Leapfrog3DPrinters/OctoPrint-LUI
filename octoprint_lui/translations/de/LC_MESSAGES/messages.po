@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-31 09:55+0100\n"
-"PO-Revision-Date: 2017-02-01 15:17+0100\n"
+"PO-Revision-Date: 2017-02-01 15:54+0100\n"
 "Last-Translator: \n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -2291,7 +2291,7 @@ msgstr "Druckauftrag"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:9
 msgid "Job name"
-msgstr "Name des Druckauftrags"
+msgstr "Name"
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:18
 msgid "Estimated"
