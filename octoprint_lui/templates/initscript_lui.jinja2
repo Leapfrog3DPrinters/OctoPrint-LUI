@@ -12,7 +12,8 @@
   var CONFIG_DEBUG = {%  if debug -%} true; {% else %} false; {%- endif %}
   var CONFIG_SD_SUPPORT = {% if enableSdSupport -%} true; {% else %} false; {%- endif %}
 
-  var FILAMENT_ROLL_LENGTH = {{ printer_profile["filamentRollLength"] }}
+  var FILAMENT_ROLL_LENGTH = {{ printer_profile["filamentRollLength"] }};
+  var REQUIRE_OVERSCROLL = {%  if printer_profile["requireOverscroll"] -%} true; {% else %} false; {%- endif %}
 
   var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
   var SOCKJS_DEBUG = CONFIG_DEBUG;

@@ -523,7 +523,7 @@ $(function () {
 
     // jQuery overscroll
 
-    if (printer_profile["requireOverscroll"]) {    
+    if (REQUIRE_OVERSCROLL) {    
         $(".flyout-body").overscroll({
                 direction: 'vertical',
                 showThumbs: false
