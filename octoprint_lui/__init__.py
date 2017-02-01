@@ -288,7 +288,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """Checks if it is the first run of a new version and updates any material if necessary"""
         had_first_run_version =  self._settings.get(["had_first_run"])
         profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
-        if self.debug or not had_first_run or StrictVersion(had_first_run_version) < StrictVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
+        if self.debug or not had_first_run_version or StrictVersion(had_first_run_version) < StrictVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
             if self.debug:
                 self._logger.debug("Simulating first run for debugging.")
             elif not os.path.exists(profile_dst_path):
