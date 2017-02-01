@@ -249,9 +249,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Init Update
         self._init_update()
 
-        ##~ Add server commands
-        self._add_server_commands()
-
         ##~ Init firmware update
         self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder())
 
@@ -299,7 +296,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
 
-
+            ##~ Fix stuff
+            self._add_server_commands()
             self._disable_ssh()
             #TODO: Maybe move branch switch for OctoPrint here?
 
