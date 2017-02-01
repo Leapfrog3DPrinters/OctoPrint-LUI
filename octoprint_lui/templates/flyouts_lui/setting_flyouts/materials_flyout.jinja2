@@ -9,7 +9,9 @@
         <div class="Table-item Table-item-grow-2">
           <span style="width: 100%; text-align: center;">{{ _('Bed') }}</span>
         </div>
-        <div class="Table-item">(&deg;C)</div>
+        <div class="Table-item" style="flex-basis: 150px; max-width: 150px;">
+          <span style="width: 100%; text-align: right;">(&deg;C)</span>
+        </div>
     </div>
     {% if local_addr %}
     <!-- ko keyboardForeach: settings.temperature_profiles -->
@@ -26,7 +28,7 @@
         <div class="Table-item bed_temp">
             <input type="number" data-bind="value: bed">
         </div>
-        <div class="Table-item" style="flex-basis: 40px;">
+        <div class="Table-item" style="flex-basis: 150px; max-width: 150px;">
             <ul class="button-area">
                 <li class="button failed-button"><a href="#delete" data-bind="click: $parent.settings.removeTemperatureProfile"><span data-bind="text: $root.materialButtonText($data)"></span></a></li>
             </ul>

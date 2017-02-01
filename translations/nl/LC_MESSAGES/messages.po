@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-01-31 09:55+0100\n"
-"PO-Revision-Date: 2017-01-31 14:29+0100\n"
+"PO-Revision-Date: 2017-02-01 16:47+0100\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
@@ -1728,7 +1728,7 @@ msgstr "Temperatuur"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/info_flyout.jinja2:9
 msgid "Actual"
-msgstr "Actueel"
+msgstr "Huidig"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/info_flyout.jinja2:12
 msgid "Target"

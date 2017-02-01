@@ -2,13 +2,12 @@
 <div id="temp">
     <div class="Table">
         <div class="Table-row Table-header">
-            <div class="Table-item Table-item-grow-9">{{ _('Temperature') }}</div>
-            <div class="Table-item"></div>
+            <div class="Table-item Table-item-grow-6">{{ _('Temperature') }}</div>
 
-            <div class="Table-item Table-item-grow-2" style="font-size:0.7em; font-weight: normal;">
+            <div class="Table-item" style="font-size:0.7em; font-weight: normal; flex-basis: 60px; max-width: 60px;">
                 <span>{{ _('Actual') }}</span>
             </div>
-            <div class="Table-item Table-item-grow-2" style="font-size:0.7em; font-weight: normal;">
+            <div class="Table-item" style="font-size:0.7em; font-weight: normal; flex-basis: 60px; max-width: 60px;">
                 <span>{{ _('Target') }}</span>
             </div>
         </div>
@@ -20,10 +19,10 @@
                     <span style="width: 0%" data-bind="text: $parent.returnToolStatusString($index()), style: { width: $parent.returnProgressString($data) + '%'}, visible: $parent.isOperational(), css: css_class"></span>
                 </div>
             </div>
-            <div class="Table-item" style='flex-basis: 50px; max-width: 50px;'>
+            <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
                 <span data-bind="text:  $parent.returnActualTemp($data) "></span>
             </div>
-            <div class="Table-item" style='flex-basis: 50px; max-width: 50px;'>
+            <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
                 <span data-bind="text:  $parent.returnTargetTemp($data) "></span>
             </div>
         </div>
