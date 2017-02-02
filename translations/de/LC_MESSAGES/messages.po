@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-02-02 13:52+0100\n"
-"PO-Revision-Date: 2017-02-02 14:00+0100\n"
+"POT-Creation-Date: 2017-02-02 17:56+0100\n"
+"PO-Revision-Date: 2017-02-02 18:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -715,8 +715,8 @@ msgid "The log file could not be copied. Please check if there is sufficient spa
 msgstr "Die Log-Datei konnte nicht kopiert werden. Bitte überprüfen Sie Ob genug Platz auf ihrem USB-Speichermedium ist und versuchen es erneut."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:28
-msgid "You are about to move the printer to the maintenance position."
-msgstr "Sie sind dabei die Extruder zur Wartungsposition zu bewegen."
+msgid "You are about to move the printer to the maintenance position. This will turn off the power of the printer temporarily, shutting down the LED lights with it. "
+msgstr "Sie sind dabei die Extruder zur Reinigungsposition zu bewegen. Dies schaltet die Stromversorgung des Druckers vorübergehend aus und schaltet die LED-Leuchten damit ab. Alles bewegt sich zur Ausgangsposition! Stellen Sie sicher, dass sich nichts mehr auf der Druckunterlage befindet."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:30
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:50
@@ -883,12 +883,12 @@ msgstr "Tür öffnen"
 msgid "Please close the door before you continue printing."
 msgstr "Bitte schließen sie die Tür bevor Sie den Druck fortsetzen."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:573
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:579
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:574
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:580
 msgid "Previewing"
 msgstr "Vorschau"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:647
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:648
 msgid "Creating preview"
 msgstr "Vorschau wird erstellt"
 
@@ -2396,3 +2396,6 @@ msgstr "Rechts tauschen"
 
 #~ msgid "Printer in Error or Closed state"
 #~ msgstr "Drucker im Fehler- oder Geschlossen-Zustand"
+
+#~ msgid "You are about to move the printer to the maintenance position."
+#~ msgstr "Sie sind dabei die Extruder zur Wartungsposition zu bewegen."
