@@ -221,6 +221,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.printer_error_reason = 'unknown_printer_error' # Start with an error. This gets cleared after a succesfull connect.
         self.printer_error_extruder = None
         self.requesting_temperature_after_mintemp = False # Force another temperature poll to check if extruder is disconnected or it's just very cold
+        self.send_M999_on_reconnect = False
 
     def initialize(self):
 
@@ -835,6 +836,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     auto_shutdown_timer_cancel = [],
                     changelog_seen = [],
                     notify_intended_disconnect = [],
+                    connect_after_error = [],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
@@ -1808,6 +1810,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_notify_intended_disconnect(self):
         self.intended_disconnect = True
 
+    def _on_api_command_connect_after_error(self):
+        self.send_M999_on_reconnect = True
+        self._printer.connect()
+        
+
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
 
@@ -2711,6 +2718,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._reset_printer_error()
         
         if(event == Events.CONNECTED):            
+            if self.send_M999_on_reconnect:
+                self._printer.commands(['M999'])
+                self.send_M999_on_reconnect = False
+
             self._get_firmware_info()
             self._printer.commands(["M605 S1"])
 

@@ -467,7 +467,8 @@ $(function ()  {
         self.restorePrinterConnection = function()
         {
             self.isConnecting(true);
-            OctoPrint.connection.connect(); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
+            self._sendApi({ command: 'connect_after_error' }); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
+
         }
 
         self.refreshPrintPreview = function(url)

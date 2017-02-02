@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: OctoPrint-LUI 1.0.6\n"
+"Project-Id-Version: OctoPrint-LUI 1.0.7\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-02-02 13:52+0100\n"
+"POT-Creation-Date: 2017-02-02 17:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -726,7 +726,10 @@ msgid ""
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:28
-msgid "You are about to move the printer to the maintenance position."
+msgid ""
+"You are about to move the printer to the maintenance position. This will "
+"turn off the power of the printer temporarily, shutting down the LED "
+"lights with it. "
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:30
@@ -910,12 +913,12 @@ msgstr ""
 msgid "Please close the door before you continue printing."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:573
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:579
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:574
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:580
 msgid "Previewing"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:647
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:648
 msgid "Creating preview"
 msgstr ""
 

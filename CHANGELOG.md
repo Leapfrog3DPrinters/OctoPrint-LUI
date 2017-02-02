@@ -2,6 +2,24 @@
 
 Change log for OctoPrint-LUI. 
 
+## 1.0.7
+
+### Bug fix release of 1.0.6
+
+- Added text in the maintenance warning to clarify that the maintenance position will turn off the power of the print electronics temporarily. 
+- Fixed OctoPrint-flashArduino not updating correctly. Added new setup.py and bumped version to 1.0.2
+- Fixed Thermistor errors that could be resolved without a thermistor plugged in. 
+
+### 1.0.6 additions:
+
+- Added UI translations. Dutch and German are now available. Settings -> Languages.
+- Added ability to restore printer after temperature errors
+- When pressing the shutdown button during printing, a request is made to enable auto-shutdown
+- Added the ability to automatically update the printer firmware over internet.
+- 'Head maintenance' now shutsdown the printer temporarily to improve safety when swapping nozzles.
+- Updated OctoPrint branch to 1.3.1(master) with cherry-pick commit from maintenance to enable UI translations. 
+- OctoPrint-flashArduino(lui-branch) updated to allow flashing through the internet. Version to 1.0.1.
+
 ## 1.0.6
 
 

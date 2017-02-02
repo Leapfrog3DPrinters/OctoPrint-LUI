@@ -25,7 +25,7 @@ $(function () {
 
         self.headMaintenancePosition = function () {
 
-            var text = gettext("You are about to move the printer to the maintenance position.");
+            var text = gettext("You are about to move the printer to the maintenance position. This will turn off the power of the printer temporarily, shutting down the LED lights with it. ");
             var question = gettext("Do you want to continue?");
             var title = gettext("Maintenance position");
             var dialog = {'title': title, 'text': text, 'question' : question};
