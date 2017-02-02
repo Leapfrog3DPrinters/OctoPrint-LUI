@@ -2,7 +2,7 @@
 
 Change log for OctoPrint-LUI. 
 
-## 1.0.7
+## 1.1.0
 
 ### Bug fix release of 1.0.6
 
