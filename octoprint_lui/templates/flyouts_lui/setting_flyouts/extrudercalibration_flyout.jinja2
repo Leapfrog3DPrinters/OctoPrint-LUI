@@ -3,25 +3,25 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Extruder calibration
+        {{ _('Extruder calibration') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        Make sure the print bed is empty and calibrated. Also ensure both extruders are loaded with differently colored filament. Apply a print adhesive to the bed and press Start calibration.
+        {{ _('Make sure the print bed is empty and calibrated. Also ensure both extruders are loaded with differently colored filament. Apply a print adhesive to the bed and press Start calibration.') }}
       </div>
     </div>
     <div class="Table-row" data-bind="visible: filament.leftFilament() == 'None'">
       <div class="Table-item">
         <span>
-          <i class="fa fa-exclamation-triangle"></i> Please load filament in the left extruder before you continue.
+          <i class="fa fa-exclamation-triangle"></i>{{ _(' Please load filament in the left extruder before you continue.') }}
         </span>
       </div>
     </div>
     <div class="Table-row" data-bind="visible: filament.rightFilament() == 'None'">
       <div class="Table-item">
         <span>
-          <i class="fa fa-exclamation-triangle"></i> Please load filament in the right extruder before you continue.
+          <i class="fa fa-exclamation-triangle"></i> {{ _('Please load filament in the right extruder before you continue.') }}
         </span>
       </div>
     </div>
@@ -30,7 +30,7 @@
         <ul class="button-area">
           <li class="button ok-button" data-bind="css: {disabled: !mayStartLargeCalibration() || !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startLargeExtruderCalibration()}">
             <a href="#">
-              <span>Start calibration</span>
+              <span>{{ _('Start calibration') }}</span>
             </a>
           </li>
         </ul>
@@ -42,12 +42,12 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        X-axis calibration
+        {{ _('X-axis calibration') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <p data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">Please indicate which line on the print bed is aligned best.</p>
+        <p data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">{{ _('Please indicate which line on the print bed is aligned best.') }}</p>
       </div>
     </div>
     <div class="Table-row">
@@ -78,7 +78,7 @@
         <ul class="button-area">
           <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { prepareSmallExtruderCalibration()}">
             <a href="">
-              <span>Next</span>
+              <span>{{ _('Next') }}</span>
             </a>
           </li>
         </ul>
@@ -90,12 +90,12 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Printing calibration pattern
+        {{ _('Printing calibration pattern') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        Make sure the print bed is empty. Apply a print adhesive to the bed and press next.
+        {{ _('Make sure the print bed is empty. Apply a print adhesive to the bed and press next.') }}
       </div>
     </div>
     <div class="Table-row">
@@ -103,7 +103,7 @@
         <ul class="button-area">
           <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startSmallExtruderCalibration()}">
             <a href="">
-              <span>Next</span>
+              <span>{{ _('Next') }}</span>
             </a>
           </li>
         </ul>
@@ -115,12 +115,12 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        X-axis calibration
+        {{ _('X-axis calibration') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <p  data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">Please indicate which line on the print bed is aligned best horizontally.</p>
+        <p  data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">{{ _('Please indicate which line on the print bed is aligned best horizontally.') }}</p>
       </div>
     </div>
     <div class="Table-row">
@@ -152,7 +152,7 @@
         <ul class="button-area">
           <li class="button" data-bind="click: function () {showSmallYCalibration()}">
             <a href="">
-              <span>Next</span>
+              <span>{{ _('Next') }}</span>
             </a>
           </li>
         </ul>
@@ -164,12 +164,12 @@
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Y-axis calibration
+        {{ _('Y-axis calibration') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <p  data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">Please indicate which line on the print bed is aligned best vertically.</p>
+        <p  data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">{{ _('Please indicate which line on the print bed is aligned best vertically.') }}</p>
       </div>
     </div>
     <div class="Table-row">
@@ -202,7 +202,7 @@
         <ul class="button-area">
           <li class="button ok-button" data-bind="click: function () {saveCalibration()}">
             <a href="">
-              <span>Save</span>
+              <span>{{ _('Save') }}</span>
             </a>
           </li>
         </ul>
@@ -213,15 +213,15 @@
 
 <div class="bolt-bed-width-calibration-step" data-bind="visible: isPrintingCalibration(), with: printerState">
 
-  <p>Please wait until the print has completed.</p>
+  <p>{{ _('Please wait until the print has completed.') }}</p>
 
   <div class="status_block print_progress" data-bind="visible: isPrinting() || isPaused()">
     <div class="Table">
       <div class="Table-row Table-header">
-        <div class="Table-item">Print Status</div>
+        <div class="Table-item">{{ _('Print Status') }}</div>
       </div>
       <div class="Table-row">
-        <div class="Table-item">Status</div>
+        <div class="Table-item">{{ _('Status') }}</div>
         <div class="Table-item Table-item-grow-4">
           <div class="progress progress-striped progress-animate">
             <span class="bg-main" data-bind="text: temperatureState.isHeating() ? 'Heating' : 'Printing', css: {'bg-orange': temperatureState.isHeating()}, style: {width: temperatureState.totalProgress() + '%'}"></span>
@@ -229,7 +229,7 @@
         </div>
       </div>
       <div class="Table-row">
-        <div class="Table-item">Total</div>
+        <div class="Table-item">{{ _('Total') }}</div>
         <div class="Table-item Table-item-grow-4">
           <div class="progress">
             <span class="bg-main" data-bind="style: { width: progressString() + '%' }"></span>

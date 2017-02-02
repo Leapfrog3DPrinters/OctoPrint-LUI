@@ -11,7 +11,7 @@ $(function ()  {
         self.printerState = parameters[6];
 
         self.updateinfo = ko.observableArray([]);
-        self.updating = ko.observable(false);
+        self.refreshing = ko.observable(false);
         self.update_needed = ko.observable(false);
         self.updateCounter = 0;
         self.updateTarget = 0;
@@ -22,6 +22,10 @@ $(function ()  {
 
         self.modelName = ko.observable(undefined);
         self.firmwareVersion = ko.observable(undefined);
+        self.firmwareUpdateAvailable = ko.observable(false);
+        self.firmwareRefreshing = ko.observable(false);
+        self.firmwareUpdating = ko.observable(false);
+
 
         self.flashingAllowed = ko.computed(function ()  {
             return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
@@ -29,9 +33,17 @@ $(function ()  {
 
         self.getUpdateText = function (data) {
             if (data.update()) {
-                return "Update"
+                return gettext("Update");
             } else {
-                return "Up-to-date"
+                return gettext("Up-to-date");
+            }
+        };
+
+        self.getFirmwareUpdateText = function () {
+            if (self.firmwareUpdateAvailable()) {
+                return gettext("Update");
+            } else {
+                return gettext("Up-to-date");
             }
         };
 
@@ -43,11 +55,19 @@ $(function ()  {
             }
         };
 
+        self.getFirmwareUpdateIcon = function () {
+            if (self.firmwareUpdateAvailable()) {
+                return "fa-refresh"
+            } else {
+                return "fa-check"
+            }
+        };
+
         self.getUpdateAllText = ko.pureComputed(function () {
             if (self.update_needed() > 0) {
-                return "Update"
+                return gettext("Update");
             } else {
-                return "Up-to-date"
+                return gettext("Up-to-date");
             }
         });
 
@@ -61,6 +81,14 @@ $(function ()  {
 
         self.getUpdateButtonClass = function (data) {
             if (data.update()) {
+                return ""
+            } else {
+                return "ok-button disabled"
+            }
+        };
+
+        self.getFirmwareUpdateButtonClass = function () {
+            if (self.firmwareUpdateAvailable()) {
                 return ""
             } else {
                 return "ok-button disabled"
@@ -101,13 +129,13 @@ $(function ()  {
             }
             // Standar behaviour
             if (name == "all") {
-                title = "Update software";
-                text = "You are about to update the printer software. This will take some time and will restart the printer background service when completed.";
-                question = "Do you want to continue?";
+                title = gettext("Update software");
+                text = gettext("You are about to update the printer software. This will take some time and will restart the printer background service when completed.");
+                question = gettext("Do you want to continue?");
             } else { // Development behaviour
-                title = "Update: " + name;
-                text = "You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed.";
-                question = "Do want to update " + name + "?";
+                title = gettext("Update: ") + name;
+                text = gettext("You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed.");
+                question = gettext("Do want to update ") + name + "?";
             }
             var dialog = { 'title': title, 'text': text, 'question': question };
             self.flyout.showConfirmationFlyout(dialog)
@@ -126,11 +154,33 @@ $(function ()  {
                 });
         };
 
+        self.firmwareUpdate = function()
+        {
+            self.firmwareUpdating(true);
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+            OctoPrint.postJson(url)
+                .done(function () {
+                    self.firmwareUpdateAvailable(false);
+                }).fail(function () {
+                    $.notify({
+                        title: gettext("Update failed."),
+                        text: _.sprintf(gettext('Please check the logs.'), {})
+                    }, "error")
+                }).always(function () {
+                    self.firmwareUpdating(false);
+                });
+        }
+
+        self.showUpdateFlyout = function()
+        {
+            self.settings.showSettingsTopic('update');
+        }
+
         self.showUpdateWarning = function () 
         {
             self.update_warning = self.flyout.showWarning(
-                "Updating", 
-                "System is updating, please wait until the updates are completed...", 
+                gettext("Updating"), 
+                gettext("System is updating, please wait until the updates are completed..."), 
                 true);
         }
 
@@ -152,8 +202,51 @@ $(function ()  {
             self.lpfrg_software_version(info().find( function (x) { return x.name() === "Leapfrog UI" }).version());
 
             self.modelName(data.machine_info.machine_type);
-            self.firmwareVersion(data.machine_info.firmware_version);
         };
+
+        self.fromFirmwareResponse = function (data, silent)
+        {
+            self.firmwareVersion(data.current_version);
+
+            if(data.new_firmware)
+            {
+                // New firmware found
+                if (data.requires_lui_update) {
+                    self.firmwareUpdateAvailable(false);
+                    if(!silent && self.update_needed() > 0)
+                    {
+                        var title = gettext("Firmware update found");
+                        var text = _.sprintf(gettext('A firmware update has been found, but this requires a software update first.'), {  });
+                        var question = gettext("Would you like to update the printer software?");
+
+                        var dialog = { 'title': title, 'text': text, 'question': question };
+
+                        self.flyout.showConfirmationFlyout(dialog)
+                            .done(function () {
+                                self.update('all');
+                            });
+                    }
+                }
+                else {
+                    self.firmwareUpdateAvailable(true);
+                }
+            }
+            else if (data.error && !silent)
+            {
+                // Could not retrieve latest version information
+                $.notify({
+                    title: gettext("Could not retrieve update information"),
+                    text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities. '), {})
+                },
+                        "error"
+                    );
+            }
+            else
+            {
+                // No new firmware found
+                self.firmwareUpdateAvailable(false);
+            }
+        }
 
         self.requestData = function (force) {
             var force = force || false;
@@ -164,12 +257,20 @@ $(function ()  {
                 });
         };
 
+        self.requestFirmwareData = function (silent) {
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+            OctoPrint.get(url)
+                .done(function (response) {
+                    self.fromFirmwareResponse(response, silent);
+                }).always(function () { self.firmwareUpdateDoneOrError(); })
+        };
+
         self.onFirmwareUpdateFound = function (file) {
 
             if ((!self.flyout.isOpen() || !self.flyout.blocking)) {
-                var title = "Firmware update found"
+                var title = gettext("Firmware update found")
                 var text = _.sprintf(gettext('The USB drive you inserted contains a firmware update with filename "%(filename)s".'), { filename: file["name"] });
-                var question = "Would you like to install this update?";
+                var question = gettext("Would you like to install this update?");
 
                 var dialog = { 'title': title, 'text': text, 'question': question };
 
@@ -181,10 +282,20 @@ $(function ()  {
             }
         };
 
-        self.refreshUpdateInfo = function ()  {
-            self.updating(true);
-            $('#update_spinner').addClass('fa-spin');
-            self.requestData(true);
+        self.refreshUpdateInfo = function () {
+            if (!self.refreshing()) {
+                self.refreshing(true);
+                $('#update_spinner').addClass('fa-spin');
+                self.requestData(true);
+            }
+        }
+
+        self.refreshFirmwareUpdateInfo = function () {
+            if (!self.firmwareRefreshing()) {
+                self.firmwareRefreshing(true);
+                $('#firmware_update_spinner').addClass('fa-spin');
+                self.requestFirmwareData();
+            }
         }
 
         self.onHexPathChanged = function(hex_path)
@@ -194,6 +305,7 @@ $(function ()  {
 
         self.onUpdateSettingsShown = function ()  {
             self.requestData();
+            self.requestFirmwareData(true); // Request firmware info silently (no notification on failure)
         };
 
         self.onSettingsHidden = function ()  {
@@ -202,22 +314,47 @@ $(function ()  {
 
         self.onStartup = function ()  {
             self.requestData();
+            self.requestFirmwareData(true);  // Request firmware info silently (no notification on failure)
         };
 
         self.onAfterBinding = function () 
         {
             self.flashArduino.hex_path.subscribe(self.onHexPathChanged);
+            self.flashArduino.flashing_begin_callback = self.onFlashingBegin;
+            self.flashArduino.flashing_complete_callback = self.onFlashingComplete;
 
             // Communicate to the plugin wheter he's allowed to flash
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
+        }
 
-            
+        self.onFlashingBegin = function()
+        {
+            self._sendApi({ command: 'notify_intended_disconnect' });
+        }
+
+        self.onFlashingComplete = function(success)
+        {
+            // Check if a firmware update is still required
+            // Can't check new firmware version yet. Requires OctoPrint to reconnect and send a M115 first
+            //if (success) {
+            //    self.requestFirmwareData(true); // Silent check
+            //}
         }
 
         self.updateDoneOrError = function() {
-            self.updating(false);
+            self.refreshing(false);
             $('#update_spinner').removeClass('fa-spin');
         }
+
+        self.firmwareUpdateDoneOrError = function () {
+            self.firmwareRefreshing(false);
+            $('#firmware_update_spinner').removeClass('fa-spin');
+        }
+
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            return OctoPrint.postJson(url, data);
+        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
@@ -227,6 +364,9 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
+                case "firmware_update_required":
+                    self.showFirmwareUpdateRequired();
+                    break;
                 case "forced_update":
                     self.showUpdateWarning();
                     break;
@@ -235,10 +375,17 @@ $(function ()  {
                         self.onFirmwareUpdateFound(messageData.file);
                     }
                     break;
+                case "machine_info_updated":
+                    //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
+                    if (self.flyout.currentFlyoutTemplate == "#update_settings_flyout") {
+                        self.printerState.requestData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)
+                        self.requestFirmwareData(true); // Silent check
+                    }
+                    break;
                 case "internet_offline":
                     $.notify({
                         title: gettext("Printer offline"),
-                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilties. '), {})
+                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities. '), {})
                     },
                         "error"
                     )
@@ -311,7 +458,7 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
       ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "flashArduinoViewModel", "printerStateViewModel"],
-      ['#update', '#update_icon']
+      ['#update', '#update_icon', '#firmware_update_required']
     ]);
 
 });

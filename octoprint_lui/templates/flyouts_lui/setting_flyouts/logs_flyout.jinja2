@@ -2,7 +2,7 @@
 	<div class="Table">
 		<div class="Table-row Table-header">
 			<div class="Table-item">
-				Log files
+				{{ _('Log files') }}
 			</div>
 			<div class="Table-item">
 			  <div id="sort" class="file_sort">
@@ -15,14 +15,14 @@
 			          <li class="menu_label">
 			            <span>
 			              <i class="fa fa-sort"></i>
-			              <strong>Sort by</strong>
+			              <strong>{{ _('Sort by') }}</strong>
 			            </span>
 			          </li>
 			          <li>
-			            <a href="" data-bind="click: function () { $root.listHelper.changeSorting('name'); }">Name</a>
+			            <a href="" data-bind="click: function () { $root.listHelper.changeSorting('name'); }">{{ _('Name') }}</a>
 			          </li>
 			          <li>
-			            <a href="" data-bind="click: function () { $root.listHelper.changeSorting('modification'); }">Changed date</a>
+			            <a href="" data-bind="click: function () { $root.listHelper.changeSorting('modification'); }">{{ _('Changed date') }}</a>
 			          </li>
 			        </ul>
 			      </li>

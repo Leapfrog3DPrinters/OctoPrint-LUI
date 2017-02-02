@@ -112,8 +112,8 @@ a {
 
 .icon-bar a {
   text-align: center;
-  font-size: 1em;
-  padding:1rem;
+  font-size: 0.9em;
+  padding:1rem 0.7rem;
   background:$main-color;
   display: flex;
   justify-content: center;
@@ -145,7 +145,7 @@ a {
 
 .icon-bar i {
   display: block;
-  font-size: 2.5rem;
+  font-size: 2rem;
   color:$second-color;
   text-shadow:2px 2px 0 rgba(0,0,0,0.1);
   padding-right: 0.5em;
@@ -593,10 +593,10 @@ input[type=radio] {
   z-index: 99;
 }
 
-#warnings_container {
+.warning_flyout {
   z-index: 97;
 }
-#infos_container {
+.info_flyout {
   z-index: 96;
 }
 
@@ -741,6 +741,16 @@ input[type=radio] {
       white-space: nowrap; 
       text-overflow: ellipsis;
   }
+}
+
+.Table-condensed .Table-item
+{
+    padding: 0.3em 0.1em;
+
+    input
+    {
+        padding: 12px 5px !important;
+    }
 }
 
 #user-list .Table, #settings_plugin_networkmanager .Table {
@@ -1032,7 +1042,10 @@ input[type=radio] {
 /*
   #Status
 */
-
+.print_status .Table-item
+{
+    line-height: 1.3;
+}
 
 
 /* 

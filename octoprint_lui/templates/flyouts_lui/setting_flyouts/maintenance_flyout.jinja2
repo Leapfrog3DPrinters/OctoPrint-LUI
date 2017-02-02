@@ -1,13 +1,13 @@
 <div id="maintenance_control" class="Table active">
   <div class="Table-header Table-row">
-    <div class="Table-item">Maintenance</div>
+    <div class="Table-item">{{ _('Maintenance') }}</div>
   </div>
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function () { filamentLoadPosition() }">
+        <li class="button" data-bind="click: function () { headMaintenancePosition() }">
           <a href="">
-            <span>Head maintenance position</span>
+            <span>{{ _('Head maintenance position') }}</span>
           </a>
         </li>
       </ul>
@@ -18,7 +18,7 @@
       <ul class="button-area">
         <li class="button" data-bind="click: function () { cleanBedPosition() }">
           <a href="">
-            <span>Clean bed position</span>
+            <span>{{ _('Clean bed position') }}</span>
           </a>
         </li>
       </ul>
@@ -29,7 +29,7 @@
       <ul class="button-area">
         <li class="button" data-bind="click: function () { setFilamentAmount() } ">
           <a href="#">
-            <span>Set filament amount</span>
+            <span>{{ _('Set filament amount') }}</span>
           </a>
         </li>
       </ul>
@@ -41,7 +41,7 @@
       <ul class="button-area">
         <li class="button" data-bind="click: function () { calibrateExtruders() }">
           <a href="#">
-            <span>Calibrate extruders</span>
+            <span>{{ _('Calibrate extruders') }}</span>
           </a>
         </li>
       </ul>
@@ -53,7 +53,7 @@
       <ul class="button-area">
         <li class="button" data-bind="click: function () { calibrateBed() }">
           <a href="#">
-            <span>Calibrate bed</span>
+            <span>{{ _('Calibrate bed') }}</span>
           </a>
         </li>
       </ul>
@@ -65,7 +65,7 @@
         <li class="button">
           <a href="#" data-bind="click: function () { beginPurgeWizard('tool1'); }, css: {disabled: filament.leftFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() } ">
             <span>
-              <i class="fa fa-arrow-down"></i>Purge left</span>
+              <i class="fa fa-arrow-down"></i>{{ _('Purge left') }}</span>
           </a>
         </li>
       </ul>
@@ -75,7 +75,7 @@
         <li class="button">
           <a href="#" data-bind="click: function () { beginPurgeWizard('tool0'); }, css: {disabled: filament.rightFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() }">
             <span>
-              <i class="fa fa-arrow-down"></i>Purge right</span>
+              <i class="fa fa-arrow-down"></i>{{ _('Purge right') }}</span>
           </a>
         </li>
       </ul>

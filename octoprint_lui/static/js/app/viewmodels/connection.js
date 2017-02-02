@@ -111,10 +111,15 @@ $(function () {
                     });
             } else {
                 self.requestData();
-                OctoPrint.connection.disconnect();
+                self._sendApi({ command: 'notify_intended_disconnect' }).always(function () {
+                    OctoPrint.connection.disconnect();
+                });
             }
         };
-
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            return OctoPrint.postJson(url, data);
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([

@@ -2,6 +2,17 @@
 
 Change log for OctoPrint-LUI. 
 
+## 1.0.6
+
+
+- Added UI translations. Dutch and German are now available. Settings -> Languages.
+- Added ability to restore printer after temperature errors
+- When pressing the shutdown button during printing, a request is made to enable auto-shutdown
+- Added the ability to automatically update the printer firmware over internet.
+- 'Head maintenance' now shutsdown the printer temporarily to improve safety when swapping nozzles.
+- Updated OctoPrint branch to 1.3.1(master) with cherry-pick commit from maintenance to enable UI translations. 
+- OctoPrint-flashArduino(lui-branch) updated to allow flashing through the internet. Version to 1.0.1.
+
 ## 1.0.5
 
 ### This update requires two _consecutive_ updates due to switching of branches. Update version number will stay 1.0.5. after second update.

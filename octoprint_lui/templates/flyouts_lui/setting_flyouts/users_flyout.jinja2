@@ -1,8 +1,8 @@
 <div  id="user-list">
   <div class="Table">
     <div class="Table-row Table-header">
-      <div class="Table-item Table-item-grow-6">Name</div>
-      <div class="Table-item Table-item-grow-3">Admin</div>
+      <div class="Table-item Table-item-grow-6">{{ _('Name') }}</div>
+      <div class="Table-item Table-item-grow-3">{{ _('Admin') }}</div>
       <div class="Table-item"></div>
       <div class="Table-item"></div>
     </div>
@@ -55,7 +55,7 @@
 <div id="settings-usersDialogAddUser" class="hide Table">
   <div class="Table-row Table-header">
     <div class="Table-item">
-      Add user
+      {{ _('Add user') }}
     </div>
   </div>
   <div class="Table-row">
@@ -91,7 +91,7 @@
   </div>
   <div class="Table-row">
     <div class="Table-item">
-      <span style="flex: 1">Admin</span>
+      <span style="flex: 1">{{ _('Admin') }}</span>
       <div class="check_toggle">
         <input type="checkbox" id="settings-usersDialogAddUserAdmin" data-bind="checked: $root.users.editorAdmin" />
         <label for="settings-usersDialogAddUserAdmin"></label>
@@ -162,7 +162,7 @@
   </div>
   <div class="Table-row">
     <div class="Table-item">
-      <span style="flex: 1">Admin</span>
+      <span style="flex: 1">{{ _('Admin') }}</span>
       <div class="check_toggle">
         <input type="checkbox" id="settings-usersDialogChangePasswordAdmin" data-bind="checked: $root.users.editorAdmin" />
         <label for="settings-usersDialogChangePasswordAdmin"></label>

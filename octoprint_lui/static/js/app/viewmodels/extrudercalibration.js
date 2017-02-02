@@ -129,11 +129,11 @@ $(function ()  {
                 .done(function () 
                 {
                     self.flyout.closeFlyoutAccept();
-                    $.notify({ title: 'Calibration stored', text: 'The printer has been calibrated successfully.' }, "success");
+                    $.notify({ title: gettext('Calibration stored'), text: gettext('The printer has been calibrated successfully.') }, "success");
                 
                 }).fail(function()
                 {
-                    $.notify({ title: 'Calibration failed', text: 'An error has occured while storing the calibration settings. Please try again.' }, "error");
+                    $.notify({ title: gettext('Calibration failed'), text: gettext('An error has occured while storing the calibration settings. Please try again.') }, "error");
                 }).always(function ()  { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
         };
 

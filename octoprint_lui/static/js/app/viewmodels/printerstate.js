@@ -25,13 +25,8 @@ $(function ()  {
         self.changelogContents = ko.observable(undefined);
         self.currentLuiVersion = ko.observable(undefined);
 
-        self.errorDescriptionString = ko.pureComputed(function() {
-            if ( _.includes(self.stateString().toLowerCase(), "mintemp")) {
-                return gettext("Your extruder temperature is either very low or your extruder is disconnected. Make sure you are operating within environment specifications or check the connection of your extruder.");
-            } else {
-                return "";
-            }
-        });
+        self.firmwareUpdateRequired = ko.observable(false);
+        self.firmwareVersionRequirement = ko.observable(undefined);
 
         self.filename = ko.observable(undefined);
         self.filepath = ko.observable(undefined);
@@ -50,6 +45,11 @@ $(function ()  {
 
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
+
+        self.errorReason = ko.observable(undefined);
+        self.erroredExtruder = ko.observable(undefined);
+        self.errorStateString = ko.observable(undefined);
+        self.isConnecting = ko.observable(false);
 
         self.currentActivity = ko.pureComputed(function ()  {
             if (self.activities().length > 0)
@@ -215,8 +215,8 @@ $(function ()  {
 
         self._processStateData = function (data) {
             var prevPaused = self.isPaused();
+            var prevErrorOrClosed = self.isErrorOrClosed();
 
-            self.stateString(gettext(data.text));
             self.isErrorOrClosed(data.flags.closedOrError);
             self.isOperational(data.flags.operational);
             self.isPaused(data.flags.paused);
@@ -224,6 +224,15 @@ $(function ()  {
             self.isError(data.flags.error);
             self.isReady(data.flags.ready);
             self.isSdReady(data.flags.sdReady);
+
+            if (self.isErrorOrClosed()) {
+                self.stateString(gettext('Error'));
+                self.errorStateString(gettext(data.text))
+            }
+            else {
+                self.stateString(gettext(data.text));
+                self.errorStateString(undefined);
+            }
 
             if (self.isPaused() != prevPaused) {
                 if (self.isPaused()) {
@@ -233,6 +242,37 @@ $(function ()  {
                     self.titlePrintButton(self.TITLE_PRINT_BUTTON_UNPAUSED);
                     self.titlePauseButton(self.TITLE_PAUSE_BUTTON_UNPAUSED);
                 }
+            }
+
+            if (self.isErrorOrClosed()) {
+                if(!prevErrorOrClosed)
+                    self.requestData(); // Retrieve error reason and based on that, maybe open flyout
+            }
+            else
+            {
+                if (self.isConnecting() && self.isOperational()) {
+                    self.isConnecting(false);
+                    self.requestData(); // Close flyout based on new intel
+                }
+            }
+
+            
+        };
+
+        self.onEventError = function (payload) {
+            if (self.isConnecting()) {
+                $.notify({
+                    title: gettext("Could not restore printer connection"),
+                    text: gettext('The printer connection could not be restored. Please consult your printer\'s manual')
+                }, {
+                    className: "error",
+                    autoHide: false
+                });
+
+                self.isConnecting(false); // Restore connecting state
+            } else 
+            {
+                self.requestData();
             }
         };
 
@@ -297,9 +337,9 @@ $(function ()  {
         };
 
         self.enableForcePrint = function () {
-            var title = "By-pass print analysis";
-            var message = "<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer."
-            var question = "Do you want to by-pass the print analysis and start the print?"
+            var title = gettext("By-pass print analysis");
+            var message = "<i class='fa fa-exclamation-triangle'></i>" + gettext(" You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. This could potentially damage your printer.");
+            var question = gettext("Do you want to by-pass the print analysis and start the print?");
             var dialog = {title: title, text: message, question: question};
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){ 
@@ -342,7 +382,8 @@ $(function ()  {
         };
 
         self.showStartupFlyout = function () {
-            self.flyout.showFlyout('startup', true);
+            if(!self.flyout.isFlyoutOpen('startup'))
+                self.flyout.showFlyout('startup', true);
         }
 
         self.updateChangelogContents = function()
@@ -373,8 +414,17 @@ $(function ()  {
                 });
         }
 
+        self.showFirmwareUpdateRequiredFlyout = function()
+        {
+            self.flyout.showFlyout('firmware_update_required', true);
+        }
+
+        self.closeFirmwareUpdateRequiredFlyout = function () {
+            self.flyout.closeFlyoutAccept("firmware_update_required");
+        }
+
         self.closeStartupFlyout = function ()  {
-            self.flyout.closeFlyoutAccept();
+            self.flyout.closeFlyoutAccept('startup');
         }
 
         self.beginHoming = function ()  {
@@ -386,11 +436,6 @@ $(function ()  {
 
             self.settings.showSettingsTopic('maintenance', true)
         }
-        
-        self.showBusyHoming = function ()  {
-            $('.startup_step').removeClass('active');
-            $('#startup_step_busy_homing').addClass('active');
-        }
 
         self.cancelAutoShutdown = function () {
             self._sendApi({command: 'auto_shutdown_timer_cancel'});
@@ -398,8 +443,8 @@ $(function ()  {
 
         self.onDoorOpen = function ()  {
             if (self.warningVm === undefined) {
-                self.warningVm = self.flyout.showWarning('Door open',
-                    'Please close the door before you continue printing.');
+                self.warningVm = self.flyout.showWarning(gettext('Door open'),
+                    gettext('Please close the door before you continue printing.'));
             }
         }
         self.onDoorClose = function ()  {
@@ -407,6 +452,22 @@ $(function ()  {
                 self.flyout.closeWarning(self.warningVm);
                 self.warningVm = undefined;
             }
+        }
+
+        self.showPrinterErrorFlyout = function () {
+            if (!self.flyout.isFlyoutOpen('printer_error'))
+                self.flyout.showFlyout('printer_error', true);
+        }
+
+        self.closePrinterErrorFlyout = function () {
+            self.flyout.closeFlyout('printer_error');
+            self.isConnecting(false);
+        }
+
+        self.restorePrinterConnection = function()
+        {
+            self.isConnecting(true);
+            OctoPrint.connection.connect(); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
         }
 
         self.refreshPrintPreview = function(url)
@@ -439,15 +500,47 @@ $(function ()  {
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing)
             self.showChangelog(data.show_changelog);
+
             self.changelogContents(data.changelog_contents);
             self.currentLuiVersion(data.lui_version);
 
-            if (!self.isHomed()) {
-                self.showStartupFlyout();
-            }
+            self.firmwareUpdateRequired(data.firmware_update_required);
+            self.firmwareVersionRequirement(data.firmware_version_requirement);
+
             self.settings.autoShutdown(data.auto_shutdown);
-            if (self.showChangelog()){
-                self.showChangelogFlyout();
+
+
+            // Startup flyout priority:
+            // 1. Printer error
+            // 2. Firmware update required
+            // 3. Changelog
+            // 4. Startup flyout (homing/maintenance)
+            
+            // This fromResponse method is also called after a firmware update and printer error/disconnect
+
+            if (data.firmware_update_required)
+                self.showFirmwareUpdateRequiredFlyout();
+            else {
+                self.closeFirmwareUpdateRequiredFlyout();
+
+                if (!self.isHomed()) {
+                    self.showStartupFlyout();
+                }
+              
+                if (self.showChangelog()) {
+                    self.showChangelogFlyout();
+                }
+            }
+
+            if (data.printer_error_reason) {
+                self.errorReason(data.printer_error_reason);
+                self.erroredExtruder(data.printer_error_extruder);
+                self.showPrinterErrorFlyout();
+            }
+            else {
+                self.closePrinterErrorFlyout();
+                self.erroredExtruder(undefined);
+                self.errorReason(undefined);
             }
         }
 
@@ -477,13 +570,13 @@ $(function ()  {
                     case "gcode_preview_rendering":
                         if (messageData.filename == self.filename()) {
                             self.printPreviewUrl(undefined); // Remove old preview
-                            self.activities.push('Previewing');
+                            self.activities.push(gettext('Previewing'));
                         }
                         break;
                     case "gcode_preview_ready":
                         if (messageData.filename == self.filename()) {
                             self.refreshPrintPreview(messageData.previewUrl);
-                            self.activities.remove('Previewing');
+                            self.activities.remove(gettext('Previewing'));
                         }
                         break;
                 }
@@ -492,11 +585,14 @@ $(function ()  {
 
                 switch (messageType) {
                     case "is_homed":
-                        if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
-                            self.closeStartupFlyout();
+                        self.isHomed(true);
+                        self.isHoming(false);
+                        //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
+                        self.closeStartupFlyout();
                         break;
                     case "is_homing":
-                        self.showBusyHoming();
+                        self.isHomed(false);
+                        self.isHoming(true);
                         break;
                     case "door_open":
                         self.onDoorOpen();
@@ -524,6 +620,10 @@ $(function ()  {
                     case "auto_shutdown_timer_cancelled":
                         self.flyout.closeFlyout();
                         break;
+                    case "printer_error_reason_update":
+                        self.errorReason(messageData.printer_error_reason);
+                        self.erroredExtruder(messageData.printer_error_extruder);
+                        break;
                 }
             }
         }
@@ -544,7 +644,7 @@ $(function ()  {
         self.onStartupComplete = function ()  {
             
             self.filepath.subscribe(function ()  {
-                self.activities.remove('Creating preview');
+                self.activities.remove(gettext('Creating preview'));
                 self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
             });
@@ -570,6 +670,6 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
         ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout"]
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout", "#printer_error_flyout"]
     ]);
 });

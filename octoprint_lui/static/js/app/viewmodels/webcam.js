@@ -208,9 +208,9 @@ $(function ()  {
 
         self.removeAll = function ()  {
 
-            var text = "You have opted to delete all finished timelapses.";
-            var question = "Do you want to continue?";
-            var title = "Delete all timelapses"
+            var text = gettext("You have opted to delete all finished timelapses.");
+            var question = gettext("Do you want to continue?");
+            var title = gettext("Delete all timelapses");
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog, true)
@@ -245,9 +245,9 @@ $(function ()  {
                 filename: filename
             }).done(function ()  {
                 self.setProgressBar(0);
-                $.notify({ title: 'Timelapse copied', text: 'The timelapse has been copied to your USB drive.' }, 'success');
+                $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
             }).fail(function ()  {
-                $.notify({ title: 'Copying of timelapse failed', text: 'The timelapse could not be copied. Plese check if there is sufficient space available on the drive and try again.' }, 'error');
+                $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
             }).always(function ()  {
                 self.isCopying(false);
             });
