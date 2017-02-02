@@ -59,9 +59,9 @@ $(function ()  {
         self.toolText = ko.pureComputed(function ()  {
             if (self.tool() != undefined) {
                 if (self.tool() === "tool0")
-                    return "Right"
+                    return gettext("Right");
                 else
-                    return "Left"
+                    return gettext("Left");
             }
         });
 
@@ -113,9 +113,9 @@ $(function ()  {
 
         self.materialButtonText = function(data) {
             if (self.disableRemove(data)) {
-                return "Loaded";
+                return gettext("Loaded");
             } else {
-                return "Delete";
+                return gettext("Delete");
             }
         };
 
@@ -131,7 +131,7 @@ $(function ()  {
             self.changeFilament(tool);
 
             if (!forPurge) {
-                self.filamentActionText("Swap");
+                self.filamentActionText(gettext("Swap"));
                 self.showUnload();
                 slider.noUiSlider.set(FILAMENT_ROLL_LENGTH)
 
@@ -140,7 +140,7 @@ $(function ()  {
             }
             else {
                 $('.swap_process_step').removeClass('active');
-                self.filamentActionText("Purge");
+                self.filamentActionText(gettext("Purge"));
                 self.loadFilament('purge');
             }
 
@@ -272,7 +272,7 @@ $(function ()  {
 
             if (profile == undefined) {
                 return $.notify({
-                    title: gettext("Filament information updating warning"),
+                    title: gettext("Filament updating warning"),
                     text: _.sprintf(gettext('Please select a material to update.'))},
                     "warning"
                 )
@@ -348,7 +348,7 @@ $(function ()  {
                     break;
                 case "filament_loading":
                     // Show loading info
-                    self.filamentLoadingText("Loading filament...")
+                    self.filamentLoadingText(gettext("Loading filament..."));
                     break;
                 case "filament_load_progress":
                     self.filamentInProgress(true);
@@ -363,7 +363,7 @@ $(function ()  {
                     break;
                 case "filament_unloading":
                     // Show unloading 
-                    self.filamentLoadingText("Unloading filament...");
+                    self.filamentLoadingText(gettext("Unloading filament..."));
                     break;
                 case "filament_finished":
                     self.filamentInProgress(false);

@@ -39,6 +39,7 @@ $(function () {
         };
 
         self.requestData = function () {
+            // TODO: Maybe move this somewhere else, so it's not executed in parallel with other requests (which may 'corrupt' the cookie)
             OctoPrint.browser.passiveLogin()
                 .done(self.fromResponse);
         };
@@ -103,23 +104,11 @@ $(function () {
             }
         };
 
-        self.onLoginUserKeyup = function(data, event) {
-            if (event.keyCode == 13) {
-                self.elementPasswordInput.focus();
-            }
-        };
-
-        self.onLoginPassKeyup = function(data, event) {
-            if (event.keyCode == 13) {
-                self.login();
-            }
-        };
-
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
         };
 
-        self.onStartupComplete = self.onServerConnect = self.onServerReconnect = function () {
+        self.onStartupComplete = self.onServerConnect = function () {
             if (self.allViewModels == undefined) return;
             self.requestData();
         };

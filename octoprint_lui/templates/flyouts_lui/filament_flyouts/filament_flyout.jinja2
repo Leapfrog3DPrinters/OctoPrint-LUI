@@ -3,40 +3,40 @@
         <div class="Table-item">
           <!-- ko if: forPurge() -->
           <div>
-            Purging: <span data-bind="text: toolText"></span>
+            {{ _('Purging: ') }}<span data-bind="text: toolText"></span>
           </div>
           <!-- /ko-->
           <!-- ko if: !forPurge() -->
           <div>
-            Swapping filament: <span data-bind="text: toolText"></span>
+            {{ _('Swapping filament:') }} <span data-bind="text: toolText"></span>
           </div>    
           <!-- /ko-->
         </div>
     </div>
     <div class="Table-row " id="swap-info">
         <div class="Table-item">
-            Please wait while the printer is heating and until the command has been executed.
+            {{ _('Please wait while the printer is heating and until the command has been executed.') }}
         </div>
     </div>
     <div class="Table-row active" id="swap-load-unload">
         <div class="Table-item">
             <div id="swap_process" data-bind="css: { disabled: !printerState.isOperational() }">
                 <div class="swap_process_step" id="unload_filament">
-                    <div class="explain">Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind="text: loadedFilamentAmount" class="bold"></span> left.</div>
+                    <div class="explain">{{ _('Please press unload to release the filament from the extruder. The spool that you are unloading has') }} <span data-bind="text: loadedFilamentAmount" class="bold"></span> {{ _('left.') }} </div>
                     <ul class="button-area">
                         <li class="button ok-button" id="unload_cmd" data-bind="click: function () { unloadFilament() }, css: { disabled: !loginState.loggedIn() || filamentLoading()}">
-                            <a href="#"><span><i class="fa fa-arrow-up"></i>Unload</span></a>
+                            <a href="#"><span><i class="fa fa-arrow-up"></i>{{ _('Unload') }}</span></a>
                         </li>
                     </ul>
                 </div>
                 <div class="swap_process_step" id="load_filament">
-                  Please select the new filament material
+                  {{ _('Please select the new filament material') }}
                   <select class="select-material" data-bind="options: materialProfiles,
                                    optionsText: 'name',
                                    value: selectedTemperatureProfile,
-                                   optionsCaption: 'Choose material...'">
+                                   optionsCaption: '{{ _('Choose material') }}'">
                     </select>
-                    Select how much filament is on the spool:
+                    {{ _('Select how much filament is on the spool:') }}
                     <div id="slider_wrapper">
                         <div id="slider" class="noUi-extended"></div>
                     </div>
@@ -44,7 +44,7 @@
                         <div class="Table-row">
                             <div class="Table-item">
                                 <div>
-                                    The new spool is around <span id="new_filament_percent"></span> full, and therefor has <span id="new_filament_amount"></span> m on it.
+                                    {{ _('The new spool is around <span id="new_filament_percent"></span> full, and therefor has <span id="new_filament_amount"></span> m on it.') }}
                                     
                                 </div>
                             </div>
@@ -59,14 +59,14 @@
                         </div>
                     </div>
                     {% if model == "Xeed" %}
-                    <div class="explain">Insert the filament in the filament drawer past both wheels of the extruder feeder in the drawer.</div>
+                    <div class="explain">{{ _('Insert the filament in the filament drawer past both wheels of the extruder feeder in the drawer.') }}</div>
                     {% else %}
-                    <div class="explain">Load filament through the side panel. When the filament reaches the print head press 'Load' to load the filament in the head. To improve grip apply pressure on the filament after pressing 'Load'.</div>
+                    <div class="explain">{{ _('Load filament through the side panel. When the filament reaches the print head press "Load" to load the filament in the head. To improve grip apply pressure on the filament after pressing "Load".') }}</div>
                     {% endif %}
 
                     <ul class="button-area">
                         <li class="button ok-button" id="load_cmd" data-bind="click: function () { loadFilament(false); }, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
-                            <a href="#"><span>Load</span></a>
+                            <a href="#"><span>{{ _('Load') }}</span></a>
                         </li>
                     </ul>
                 </div>
@@ -77,29 +77,29 @@
         <div class="Table-item">
             <ul class="button-area">
                 <li class="button" data-bind="click: function () { loadFilamentCont() }, css: { disabled: filamentLoadCont()}">
-                    <a href="#"><span><i class="fa fa-arrow-down"></i>Extrude more filament</span></a>
+                    <a href="#"><span><i class="fa fa-arrow-down"></i>{{ _('Extrude more filament') }}</span></a>
                 </li>
                 <li class="button failed-button" data-bind="click: function () { loadFilamentContStop() }, css: { disabled: !filamentLoadCont()}">
-                    <a href="#"><span><i class="fa fa-close"></i>Stop extruding</span></a>
+                    <a href="#"><span><i class="fa fa-close"></i>{{ _('Stop extruding') }}</span></a>
                 </li>
             </ul>
         </div>
         <div class="Table-item">
             <ul class="button-area">
                 <li class="button ok-button" data-bind="click: function () { finishedLoading() }, css: { disabled: !loginState.loggedIn()}">
-                    <a href="#"><span><i class="fa fa-check"></i>Done</span></a>
+                    <a href="#"><span><i class="fa fa-check"></i>{{ _('Done') }}</span></a>
                 </li>
             </ul>
         </div>
     </div>
     <!-- ko if: filamentLoading -->
     <div class="Table-row Table-header">
-        <div class="Table-item">Status</div>
+        <div class="Table-item">{{ _('Status') }}</div>
     </div> 
     <div id="tool_heating" class = "Table-row"> 
         <div class="Table-item Table-item-grow-3">
             <div class="progress progress-large">
-                <span style="width: 100%" data-bind="text: temperatureState.toolStatus()[toolNum()].text, css: temperatureState.toolStatus()[toolNum()].css_class, style: { width: temperatureState.toolProgress()[toolNum()]() + '%' }"></span>
+                <span style="width: 100%" data-bind="text: temperatureState.returnToolStatusString(toolNum()), css: temperatureState.toolStatus()[toolNum()].css_class, style: { width: temperatureState.toolProgress()[toolNum()]() + '%' }"></span>
             </div>
         </div>
     </div>

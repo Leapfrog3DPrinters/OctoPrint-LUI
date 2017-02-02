@@ -1,0 +1,35 @@
+<div id="auto-shutdown">
+	<div class="Table">
+		<div class="Table-row Table-header">
+			<div class="Table-item">
+				{{ _('Preparing to auto shutdown ... ') }}
+			</div>
+		</div>
+		<div class="Table-row" data-bind="visible: autoShutdownWaitOnRender() ">
+			<div class="Table-item">
+				<span>{{ _('Time-lapse is still being rendered. Waiting on completion of render to start auto-shutdown. Shutting down the printer during time-lapse render will result in a failed time-lapse.') }}</span>
+			</div>
+		</div>
+		<div class="Table-row" data-bind="visible: ( autoShutdownTimer() > 0 && autoShutdownTimer() != 180 )">
+			<div class="Table-item">
+				<span>{{ _('Print is about to shut down. Shutting down in: ') }}<span data-bind="text: autoShutdownTimer"></span>{{ _(' seconds.') }}</span>
+			</div>
+		</div>
+		<div class="Table-row">
+			<div class="Table-item">
+				<ul class="button-area">
+				  <li class="button secondary-button">
+				    <a href="#cancel" data-bind="click: function () { cancelAutoShutdown() }">
+				      <span>{{ _('Cancel') }}</span>
+				    </a>
+				  </li>
+				  <li class="button" data-bind="disabled: autoShutdownWaitOnRender() ">
+				    <a href="#save" data-bind="click: function () { system.systemShutdown() }">
+				      <span>{{ _('Shutdown now') }}</span>
+				    </a>
+				  </li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>

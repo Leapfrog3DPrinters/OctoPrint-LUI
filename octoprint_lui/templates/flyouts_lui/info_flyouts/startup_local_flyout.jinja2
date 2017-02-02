@@ -1,18 +1,18 @@
-<div id="startup_step_prompt" class="startup_step">
+<div id="startup_step_prompt" class="startup_step" data-bind="css: { active: !isHomed() && !isHoming() && isOperational() }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Printer startup
+        {{ _('Printer startup') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        Before you can start using the printer, a homing sequence needs to be executed. This means the bed will move to its upper position.
+        {{ _('Before you can start using the printer, a homing sequence needs to be executed. This means the bed will move to its upper position.') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <span class="bold">Please confirm there is no print on the bed.</span>
+        <span class="bold">{{ _('Please confirm there is no print on the bed.') }}</span>
       </div>
     </div>
     <div class="Table-row">
@@ -21,18 +21,7 @@
           <li class="button ok-button">
             <a href="#" data-bind="click: function () { beginHoming() }">
               <span>
-                <i class="fa fa-home"></i>Begin homing
-              </span>
-            </a>
-          </li>
-        </ul>
-      </div>
-      <div class="Table-item">
-        <ul class="button-area">
-          <li class="button secondary-button">
-            <a href="#" data-bind="click: function () { beginMaintenance() }">
-              <span>
-                <i class="fa fa-wrench"></i>Maintenance
+                <i class="fa fa-home"></i>{{ _('Begin homing') }}
               </span>
             </a>
           </li>
@@ -43,29 +32,30 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button secondary-button">
-            <a href="#" data-bind="click: function () { location.reload(true) }">
+            <a href="#" data-bind="click: function () { beginMaintenance() }">
               <span>
-                <i class="fa fa-refresh"></i>Retry printer connection
+                <i class="fa fa-wrench"></i>{{ _('Maintenance') }}
               </span>
             </a>
           </li>
         </ul>
       </div>
     </div>
+
   </div>
 </div>
-<div id="startup_step_busy_homing" class="startup_step">
+<div id="startup_step_busy_homing" class="startup_step" data-bind="css: { active: isHoming() }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
-        Printer startup
+        {{ _('Printer startup') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
         <span>
           <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
-          Please wait while the printer is homing.
+          {{ _('Please wait while the printer is homing.') }}
         </span>
       </div>
     </div>

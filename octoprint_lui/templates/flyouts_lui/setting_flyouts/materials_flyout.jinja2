@@ -1,15 +1,17 @@
-<div class="Table">
+<div class="Table Table-condensed">
     <div class="Table-row Table-header">
-        <div class="Table-item Table-item-grow-2">
-          <span style="width: 100%; text-align: left;">Material</span>
+        <div class="Table-item Table-item-grow-3">
+          <span style="width: 100%; text-align: left;">{{ _('Material') }}</span>
+        </div>
+        <div class="Table-item Table-item-grow-3">
+          <span style="width: 100%; text-align: left;">{{ _('Extruder') }}</span>
         </div>
         <div class="Table-item Table-item-grow-2">
-          <span style="width: 100%; text-align: center;">Extruder</span>
+          <span style="width: 100%; text-align: left;">{{ _('Bed') }}</span>
         </div>
-        <div class="Table-item Table-item-grow-2">
-          <span style="width: 100%; text-align: center;">Bed</span>
+        <div class="Table-item" style="flex-basis: 110px; max-width: 105px;">
+          <span style="width: 100%; text-align: right;">(&deg;C)</span>
         </div>
-        <div class="Table-item">(&deg;C)</div>
     </div>
     {% if local_addr %}
     <!-- ko keyboardForeach: settings.temperature_profiles -->
@@ -17,16 +19,16 @@
     <!-- ko foreach: settings.temperature_profiles -->
     {% endif %}
   <div class="Table-row" data-bind="css: {disabled: $parent.disableRemove($data)}">
-        <div class="Table-item profile_name">
-            <input type="text" data-bind="value: name">
+        <div class="Table-item Table-item-grow-3 profile_name">
+            <input type="text" data-bind="value: name" style="padding: ">
         </div>
-        <div class="Table-item extruder_temp">
+        <div class="Table-item Table-item-grow-3 extruder_temp">
             <input type="number" data-bind="value: extruder">
         </div>
-        <div class="Table-item bed_temp">
+        <div class="Table-item Table-item-grow-2 bed_temp">
             <input type="number" data-bind="value: bed">
         </div>
-        <div class="Table-item" style="flex-basis: 40px;">
+        <div class="Table-item" style="flex-basis: 110px; max-width: 105px;">
             <ul class="button-area">
                 <li class="button failed-button"><a href="#delete" data-bind="click: $parent.settings.removeTemperatureProfile"><span data-bind="text: $root.materialButtonText($data)"></span></a></li>
             </ul>
@@ -36,5 +38,5 @@
   
 </div>
 <ul class="button-area">
-    <li class="button"><a href="#save" data-bind="click: function () { settings.addTemperatureProfile() }"><span><i class="fa fa-plus"></i>Add profile</span></a>
+    <li class="button"><a href="#save" data-bind="click: function () { settings.addTemperatureProfile() }"><span><i class="fa fa-plus"></i>{{ _('Add profile') }}</span></a>
 </ul>   

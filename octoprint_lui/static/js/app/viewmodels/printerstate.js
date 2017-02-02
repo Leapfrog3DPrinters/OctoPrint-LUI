@@ -7,6 +7,7 @@ $(function ()  {
         self.flyout = parameters[1];
         self.temperatureState = parameters[2];
         self.settings = parameters[3];
+        self.system = parameters[4];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -17,6 +18,15 @@ $(function ()  {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
         self.isSdReady = ko.observable(undefined);
+
+        self.isHomed = ko.observable(undefined);
+        self.isHoming = ko.observable(undefined);
+        self.showChangelog = ko.observable(undefined);
+        self.changelogContents = ko.observable(undefined);
+        self.currentLuiVersion = ko.observable(undefined);
+
+        self.firmwareUpdateRequired = ko.observable(false);
+        self.firmwareVersionRequirement = ko.observable(undefined);
 
         self.filename = ko.observable(undefined);
         self.filepath = ko.observable(undefined);
@@ -30,9 +40,16 @@ $(function ()  {
 
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
+        self.autoShutdownTimer = ko.observable(0);
+        self.autoShutdownWaitOnRender = ko.observable(false);
 
         self.printPreviewUrl = ko.observable(undefined);
         self.warningVm = undefined;
+
+        self.errorReason = ko.observable(undefined);
+        self.erroredExtruder = ko.observable(undefined);
+        self.errorStateString = ko.observable(undefined);
+        self.isConnecting = ko.observable(false);
 
         self.currentActivity = ko.pureComputed(function ()  {
             if (self.activities().length > 0)
@@ -198,8 +215,8 @@ $(function ()  {
 
         self._processStateData = function (data) {
             var prevPaused = self.isPaused();
+            var prevErrorOrClosed = self.isErrorOrClosed();
 
-            self.stateString(gettext(data.text));
             self.isErrorOrClosed(data.flags.closedOrError);
             self.isOperational(data.flags.operational);
             self.isPaused(data.flags.paused);
@@ -207,6 +224,15 @@ $(function ()  {
             self.isError(data.flags.error);
             self.isReady(data.flags.ready);
             self.isSdReady(data.flags.sdReady);
+
+            if (self.isErrorOrClosed()) {
+                self.stateString(gettext('Error'));
+                self.errorStateString(gettext(data.text))
+            }
+            else {
+                self.stateString(gettext(data.text));
+                self.errorStateString(undefined);
+            }
 
             if (self.isPaused() != prevPaused) {
                 if (self.isPaused()) {
@@ -216,6 +242,37 @@ $(function ()  {
                     self.titlePrintButton(self.TITLE_PRINT_BUTTON_UNPAUSED);
                     self.titlePauseButton(self.TITLE_PAUSE_BUTTON_UNPAUSED);
                 }
+            }
+
+            if (self.isErrorOrClosed()) {
+                if(!prevErrorOrClosed)
+                    self.requestData(); // Retrieve error reason and based on that, maybe open flyout
+            }
+            else
+            {
+                if (self.isConnecting() && self.isOperational()) {
+                    self.isConnecting(false);
+                    self.requestData(); // Close flyout based on new intel
+                }
+            }
+
+            
+        };
+
+        self.onEventError = function (payload) {
+            if (self.isConnecting()) {
+                $.notify({
+                    title: gettext("Could not restore printer connection"),
+                    text: gettext('The printer connection could not be restored. Please consult your printer\'s manual')
+                }, {
+                    className: "error",
+                    autoHide: false
+                });
+
+                self.isConnecting(false); // Restore connecting state
+            } else 
+            {
+                self.requestData();
             }
         };
 
@@ -280,9 +337,9 @@ $(function ()  {
         };
 
         self.enableForcePrint = function () {
-            var title = "By-pass print analysis";
-            var message = "<i class='fa fa-exclamation-triangle'></i> You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. </br> This could potentially damage your printer."
-            var question = "Do you want to by-pass the print analysis and start the print?"
+            var title = gettext("By-pass print analysis");
+            var message = "<i class='fa fa-exclamation-triangle'></i>" + gettext(" You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. This could potentially damage your printer.");
+            var question = gettext("Do you want to by-pass the print analysis and start the print?");
             var dialog = {title: title, text: message, question: question};
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function(){ 
@@ -324,19 +381,50 @@ $(function ()  {
                 });
         };
 
-        self.showStartupFlyout = function (isHoming) {
-            $('.startup_step').removeClass('active');
+        self.showStartupFlyout = function () {
+            if(!self.flyout.isFlyoutOpen('startup'))
+                self.flyout.showFlyout('startup', true);
+        }
 
-            if (isHoming)
-                $('#startup_step_busy_homing').addClass('active');
-            else
-                $('#startup_step_prompt').addClass('active');
+        self.updateChangelogContents = function()
+        {
+            OctoPrint.simpleApiGet('lui', {
+                data: {
+                    command: 'changelog_contents'
+                },
+                success: function (data) {
+                    self.changelogContents(data.changelog_contents);
+                    self.currentLuiVersion(data.lui_version);
+                }
+            });
+        }
 
-            self.flyout.showFlyout('startup', true);
+        self.showChangelogFlyout = function (updateContents) {
+            
+            if (updateContents)
+            {
+                self.updateChangelogContents();
+            }
+
+            self.flyout.showFlyout('changelog', true)
+                .always(function() {
+                    if (self.showChangelog()) {
+                        self._sendApi({command: "changelog_seen"});
+                    }
+                });
+        }
+
+        self.showFirmwareUpdateRequiredFlyout = function()
+        {
+            self.flyout.showFlyout('firmware_update_required', true);
+        }
+
+        self.closeFirmwareUpdateRequiredFlyout = function () {
+            self.flyout.closeFlyoutAccept("firmware_update_required");
         }
 
         self.closeStartupFlyout = function ()  {
-            self.flyout.closeFlyoutAccept();
+            self.flyout.closeFlyoutAccept('startup');
         }
 
         self.beginHoming = function ()  {
@@ -348,16 +436,15 @@ $(function ()  {
 
             self.settings.showSettingsTopic('maintenance', true)
         }
-        
-        self.showBusyHoming = function ()  {
-            $('.startup_step').removeClass('active');
-            $('#startup_step_busy_homing').addClass('active');
+
+        self.cancelAutoShutdown = function () {
+            self._sendApi({command: 'auto_shutdown_timer_cancel'});
         }
 
         self.onDoorOpen = function ()  {
             if (self.warningVm === undefined) {
-                self.warningVm = self.flyout.showWarning('Door open',
-                    'Please close the door before you continue printing.');
+                self.warningVm = self.flyout.showWarning(gettext('Door open'),
+                    gettext('Please close the door before you continue printing.'));
             }
         }
         self.onDoorClose = function ()  {
@@ -365,6 +452,23 @@ $(function ()  {
                 self.flyout.closeWarning(self.warningVm);
                 self.warningVm = undefined;
             }
+        }
+
+        self.showPrinterErrorFlyout = function () {
+            if (!self.flyout.isFlyoutOpen('printer_error'))
+                self.flyout.showFlyout('printer_error', true);
+        }
+
+        self.closePrinterErrorFlyout = function () {
+            self.flyout.closeFlyout('printer_error');
+            self.isConnecting(false);
+        }
+
+        self.restorePrinterConnection = function()
+        {
+            self.isConnecting(true);
+            self._sendApi({ command: 'connect_after_error' }); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
+
         }
 
         self.refreshPrintPreview = function(url)
@@ -394,8 +498,50 @@ $(function ()  {
         }
 
         self.fromResponse = function (data) {
-            if (!data.is_homed) {
-                self.showStartupFlyout(data.is_homing);
+            self.isHomed(data.is_homed);
+            self.isHoming(data.is_homing)
+            self.showChangelog(data.show_changelog);
+
+            self.changelogContents(data.changelog_contents);
+            self.currentLuiVersion(data.lui_version);
+
+            self.firmwareUpdateRequired(data.firmware_update_required);
+            self.firmwareVersionRequirement(data.firmware_version_requirement);
+
+            self.settings.autoShutdown(data.auto_shutdown);
+
+
+            // Startup flyout priority:
+            // 1. Printer error
+            // 2. Firmware update required
+            // 3. Changelog
+            // 4. Startup flyout (homing/maintenance)
+            
+            // This fromResponse method is also called after a firmware update and printer error/disconnect
+
+            if (data.firmware_update_required)
+                self.showFirmwareUpdateRequiredFlyout();
+            else {
+                self.closeFirmwareUpdateRequiredFlyout();
+
+                if (!self.isHomed()) {
+                    self.showStartupFlyout();
+                }
+              
+                if (self.showChangelog()) {
+                    self.showChangelogFlyout();
+                }
+            }
+
+            if (data.printer_error_reason) {
+                self.errorReason(data.printer_error_reason);
+                self.erroredExtruder(data.printer_error_extruder);
+                self.showPrinterErrorFlyout();
+            }
+            else {
+                self.closePrinterErrorFlyout();
+                self.erroredExtruder(undefined);
+                self.errorReason(undefined);
             }
         }
 
@@ -425,13 +571,13 @@ $(function ()  {
                     case "gcode_preview_rendering":
                         if (messageData.filename == self.filename()) {
                             self.printPreviewUrl(undefined); // Remove old preview
-                            self.activities.push('Previewing');
+                            self.activities.push(gettext('Previewing'));
                         }
                         break;
                     case "gcode_preview_ready":
                         if (messageData.filename == self.filename()) {
                             self.refreshPrintPreview(messageData.previewUrl);
-                            self.activities.remove('Previewing');
+                            self.activities.remove(gettext('Previewing'));
                         }
                         break;
                 }
@@ -440,17 +586,44 @@ $(function ()  {
 
                 switch (messageType) {
                     case "is_homed":
-                        if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
-                            self.closeStartupFlyout();
+                        self.isHomed(true);
+                        self.isHoming(false);
+                        //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
+                        self.closeStartupFlyout();
                         break;
                     case "is_homing":
-                        self.showBusyHoming();
+                        self.isHomed(false);
+                        self.isHoming(true);
                         break;
                     case "door_open":
                         self.onDoorOpen();
                         break;
                     case "door_closed":
                         self.onDoorClose();
+                        break;
+                    case "auto_shutdown_toggle":
+                        self.settings.autoShutdown(messageData.toggle);
+                        break;
+                    case "auto_shutdown_start":
+                        self.flyout.showFlyout("auto_shutdown", true)
+                        self.autoShutdownTimer(180);
+                        break;
+                    case "auto_shutdown_wait_on_render":
+                        self.autoShutdownWaitOnRender(true);
+                        break;
+                    case "auto_shutdown_timer":
+                        if (!$('#auto_shutdown_flyout').hasClass('active')) {
+                            self.flyout.showFlyout("auto_shutdown", true);
+                        }
+                        self.autoShutdownWaitOnRender(false);
+                        self.autoShutdownTimer(messageData.timer);
+                        break;
+                    case "auto_shutdown_timer_cancelled":
+                        self.flyout.closeFlyout();
+                        break;
+                    case "printer_error_reason_update":
+                        self.errorReason(messageData.printer_error_reason);
+                        self.erroredExtruder(messageData.printer_error_extruder);
                         break;
                 }
             }
@@ -464,11 +637,15 @@ $(function ()  {
                 self.activities.remove('Analyzing');
         }
 
-        self.onAfterBinding = function ()  {
+        self.onBeforeBinding = function()
+        {
             self.requestData();
+        }
 
+        self.onStartupComplete = function ()  {
+            
             self.filepath.subscribe(function ()  {
-                self.activities.remove('Creating preview');
+                self.activities.remove(gettext('Creating preview'));
                 self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
             });
@@ -476,11 +653,24 @@ $(function ()  {
             self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
             self.filament.subscribe(self.updateAnalyzingActivity);
         }
+
+        //TODO: Remove!
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            OctoPrint.postJson(url, data);
+        }
+
+        //TODO: Remove!
+        self.doDebuggingAction = function () {
+            self._sendApi({
+                command: "trigger_debugging_action"
+            });
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout"]
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout", "#printer_error_flyout"]
     ]);
 });

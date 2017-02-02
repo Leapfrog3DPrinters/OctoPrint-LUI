@@ -1,0 +1,22 @@
+<div id="changelog">
+	<div class="Table">
+		<div class="Table-row" data-bind="visible: showChangelog()">
+			<div class="Table-item">
+				You have recently updated the software, find the changelog below.
+			</div>
+		</div>
+		<div class="Table-row Table-header">
+			<div class="Table-item" data-bind="text: currentLuiVersion">
+				
+			</div>
+		</div>
+    
+		<div class="Table-row">
+			<div class="Table-item">
+        <div class="markdown" data-bind="html: changelogContents">
+          
+        </div>
+			</div>
+		</div>
+	</div>
+</div>

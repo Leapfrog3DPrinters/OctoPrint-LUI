@@ -134,9 +134,8 @@ function DataUpdater(allViewModels) {
         }
 
         if ($('#offline_flyout').hasClass('active')) {
-            hideOfflineFlyout();
-            callViewModels(self.allViewModels, "onServerReconnect");
-            callViewModels(self.allViewModels, "onDataUpdaterReconnect");
+            // Lets just try to reload straight away when we reconnect after an offline period.
+            return location.reload(true);
         } else {
             callViewModels(self.allViewModels, "onServerConnect");
         }
