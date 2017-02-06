@@ -785,7 +785,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         octoprint.server.assets.register('lui_css_bundle', lui_css_bundle)
 
         # In debug mode, libraries are not minified nor bundled
-        octoprint.server.assets.debug = False#self.debug
+        octoprint.server.assets.debug = self.debug
 
     def http_routes_hook(self, routes):
         self.create_custom_bundles()

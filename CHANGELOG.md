@@ -4,6 +4,9 @@ Change log for OctoPrint-LUI.
 
 ## 1.1.0
 
+- Startup time improved by bundling javascript and CSS files
+- Updated all javascript libraries to the most recent versions
+
 ### Bug fix release of 1.0.6
 
 - Added text in the maintenance warning to clarify that the maintenance position will turn off the power of the print electronics temporarily. 
