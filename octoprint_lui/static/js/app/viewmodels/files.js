@@ -1090,7 +1090,7 @@ $(function ()  {
                     }
 
                     if (entry["type"] == "folder" && entry["children"]) {
-                        return _.any(entry["children"], recursiveSearch);
+                        return _.some(entry["children"], recursiveSearch);
                     } else {
                         return entry["name"].toLocaleLowerCase().indexOf(query) > -1;
                     }

@@ -618,7 +618,7 @@ $(function () {
         }
 
         self.onEventSettingsUpdated = function () {
-            var preventSettingsRefresh = _.any(self.allViewModels, function(viewModel) {
+            var preventSettingsRefresh = _.some(self.allViewModels, function(viewModel) {
                 if (viewModel.hasOwnProperty("onSettingsPreventRefresh")) {
                     try {
                         return viewModel["onSettingsPreventRefresh"]();

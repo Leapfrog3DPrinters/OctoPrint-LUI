@@ -585,7 +585,7 @@ function hasDataChanged(data, oldData) {
     }
 
     if (_.isPlainObject(data)) {
-        return _.any(_.keys(data), function(key) {return hasDataChanged(data[key], oldData[key]);});
+        return _.some(_.keys(data), function(key) {return hasDataChanged(data[key], oldData[key]);});
     } else {
         return !_.isEqual(data, oldData);
     }
