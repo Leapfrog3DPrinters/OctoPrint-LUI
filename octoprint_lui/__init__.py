@@ -745,6 +745,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/app/main.js'
                     ]
 
+        css = [
+                'plugin/lui/css/lui.css',
+                'plugin/lui/css/font-awesome.css',
+                'plugin/lui/css/notifyjs-lui.css',
+                'plugin/lui/css/keyboard-dark.css',
+                'plugin/lui/css/nouislider.css',
+                'plugin/lui/css/dropit.css'
+                ]
+                
+
         bundle_filter = "js_delimiter_bundler"
         bundle_min_filter = "rjsmin, js_delimiter_bundler"
 
@@ -752,25 +762,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Include full (debug) libraries
             lui_jquery_bundle = Bundle(*jquery_js, output="webassets/packed_lui_jquery.js", filters=bundle_filter)
             lui_lib_bundle = Bundle(*lib_js, output="webassets/packed_lui_lib.js", filters=bundle_filter)
+            lui_lib_bundle = Bundle(*lib_js, output="webassets/packed_lui_lib.js", filters=bundle_filter)
         else:
             # Look for minified libraries where possible, and include them (don't minify them again)
             jquery_min_js = self.find_minified(jquery_js)
             lib_min_js = self.find_minified(lib_js)
+
             lui_jquery_bundle = Bundle(*jquery_min_js, output="webassets/packed_lui_jquery.js", filters=bundle_filter)
             lui_lib_bundle = Bundle(*lib_min_js, output="webassets/packed_lui_lib.js", filters=bundle_filter)
+            
 
         # Minify viewmodel and app js files
         lui_vm_bundle = Bundle(*vm_js, output="webassets/packed_lui_vm.js", filters=bundle_min_filter)
         lui_app_bundle = Bundle(*app_js, output="webassets/packed_lui_app.js", filters=bundle_min_filter)
+        lui_css_bundle = Bundle(*css, output="webassets/packed.css", filters="cssrewrite, cssmin")
 
         # Register bundles for use in jinja
         octoprint.server.assets.register('lui_jquery_bundle', lui_jquery_bundle)
         octoprint.server.assets.register('lui_lib_bundle', lui_lib_bundle)
         octoprint.server.assets.register('lui_vm_bundle', lui_vm_bundle)
         octoprint.server.assets.register('lui_app_bundle', lui_app_bundle)
+        octoprint.server.assets.register('lui_css_bundle', lui_css_bundle)
 
         # In debug mode, libraries are not minified nor bundled
-        octoprint.server.assets.debug = self.debug
+        octoprint.server.assets.debug = False#self.debug
 
     def http_routes_hook(self, routes):
         self.create_custom_bundles()

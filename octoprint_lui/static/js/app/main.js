@@ -90,7 +90,7 @@ $(function () {
 
     //~ Set menu hover css rules for non touch devices
     if (!isTouchDevice()){
-        var style_sheet = $('link[href="/plugin/lui/static/css/lui.css"]')[0].sheet
+        var style_sheet = $('link[rel="stylesheet"]')[0].sheet
         addCSSRule(style_sheet, ".icon-bar a:hover", "color: #434A54; background-color: #FFFFFF;");
         addCSSRule(style_sheet, ".icon-bar a:hover i", "color: #434A54;");
     }
