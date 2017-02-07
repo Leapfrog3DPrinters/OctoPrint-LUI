@@ -750,7 +750,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'plugin/lui/css/font-awesome.css',
                 'plugin/lui/css/notifyjs-lui.css',
                 'plugin/lui/css/keyboard-lui.css',
-                'plugin/lui/css/nouislider.css',
+                'plugin/lui/css/nouislider-lui.css',
                 'plugin/lui/css/dropit.css'
                 ]
                 
