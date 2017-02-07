@@ -290,9 +290,9 @@ $(function ()  {
                 var profile = undefined;
 
                 if (self.isProfileLocked())
-                    profile = self.selectedTemperatureProfile();
+                    profile = self.preselectedTemperatureProfile();
                 else
-                    profile = self.preselectedTemperatureProfile()
+                    profile = self.selectedTemperatureProfile()
 
                 profileName = profile.name;
             }
