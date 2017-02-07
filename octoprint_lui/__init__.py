@@ -1810,7 +1810,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.unload_change = None
 
             unload_initial = self.current_printer_profile["filament"]["unload_initial"]
-
+            unload_change = None
             if "unload_change" in self.current_printer_profile["filament"]:
                 unload_change = self.current_printer_profile["filament"]["unload_change"]
 
