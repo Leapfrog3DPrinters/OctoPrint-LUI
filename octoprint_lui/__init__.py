@@ -1192,12 +1192,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.info("Change filament called with tool: {tool}, profile: {profile} and {args}, {kwargs}".format(tool=tool, profile=self.filament_loaded_profile['material']['name'], args=args, kwargs=kwargs))
 
     def _on_api_command_unload_filament(self, *args, **kwargs):
+
         # Heat up to old profile temperature and unload filament
         temp = int(self.filament_loaded_profile['material']['extruder'])
-
         self.heat_to_temperature(self.filament_change_tool,
                                 temp,
                                 self.unload_filament)
+
         self._logger.info("Unload filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
     def _on_api_command_load_filament(self, profileName, amount, *args, **kwargs):
@@ -1949,10 +1950,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _restore_after_load_filament(self):
         target_temp = 0
+        self._logger.debug("Restoring after filament change. Filament change tool: {0}. Paused position: {1}".format(self.filament_change_tool, self.paused_position))
+        
         if self.paused_filament_swap:
             # Restore temperature
             target_temp = self.paused_temperatures[self.filament_change_tool]["target"]
             
+            # Restore Z
+            self.restore_z_after_filament_load()
+
             # Restore tool
             if self.filament_change_tool != "tool" + str(self.paused_position["t"]):
                 self._printer.change_tool("tool" + str(self.paused_position["t"]))
