@@ -1252,7 +1252,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x'])
             self._printer.commands(["G1 X20 F12000"]) # wipe it
             self._printer.commands(["G1 X1 F12000"]) # wipe it
-            self._printer.commands(["M605 S0"]) # back to normal
+            self._printer.commands(["M605 S1"]) # back to normal
             self._printer.home(['y', 'x'])
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
             self._printer.commands(["M84"]) # And disable them right away for now
@@ -1280,7 +1280,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x'])
             self._printer.commands(["G1 X20 F12000"]) # wipe it
             self._printer.commands(["G1 X1 F12000"]) # wipe it
-            self._printer.commands(["M605 S0"]) # back to normal
+            self._printer.commands(["M605 S1"]) # back to normal
+            self._printer.commands(["T0"]) # back to normal
             self._printer.home(['y', 'x'])
             self._printer.commands(["M84 S60"]) # Reset stepper disable timeout to 60sec
             self._printer.commands(["M84"]) # And disable them right away for now
@@ -1334,7 +1335,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x', 'y'])
             self._printer.commands(["G1 X120 F10000"])
             self._printer.commands(["G1 Y-33 F15000"])
-            self._printer.commands(["M605 S0"])
+            self._printer.commands(["M605 S1"])
         elif self.model == "Xeed":
             self._printer.commands(["G1 X190 Y20 F6000"])
         elif self.model == "Xcel":
@@ -1959,9 +1960,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Restore Z
             self.restore_z_after_filament_load()
 
-            # Restore tool
-            if self.filament_change_tool != "tool" + str(self.paused_position["t"]):
-                self._printer.change_tool("tool" + str(self.paused_position["t"]))
+            # Restore tool (always, because the sequence inbetween may have changed the current tool)
+            self._printer.change_tool("tool" + str(self.paused_position["t"]))
 
             # Restore print mode (sync, mirror...)
             self.print_mode = self.paused_print_mode
@@ -2494,7 +2494,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.home(['x', 'y'])
             self._printer.commands(["G1 X1 F10000"])
             self._printer.commands(["G1 Y-33 F15000"])
-            self._printer.commands(["M605 S0"])
+            self._printer.commands(["M605 S1"])
             if self.filament_change_tool:
                 self._printer.change_tool(self.filament_change_tool)
         elif self.model == "Xeed":
