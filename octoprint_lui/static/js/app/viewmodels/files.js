@@ -914,7 +914,7 @@ $(function ()  {
             grid += "</div></div></div>";
 
             var info = "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Info') + "</div></div>";
-            info += "<div class='Table-row'><div class='Table-item'>" + gettexT('To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.') + "</div></div>";
+            info += "<div class='Table-row'><div class='Table-item'>" + gettext('To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.') + "</div></div>";
             var message = "";
             message += grid;
             message += info;
