@@ -234,6 +234,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_info = self._get_machine_info()
         self._set_model()
 
+        ##~ Init Update
+        self._init_update()
+
         ##~ With model data in place, update scripts, printer profiles, users etc. if it's the first run of a new version
         self._first_run()
 
@@ -245,9 +248,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ USB init
         self._init_usb()
-
-        ##~ Init Update
-        self._init_update()
 
         ##~ Init firmware update
         self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder())
@@ -299,7 +299,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             ##~ Fix stuff
             self._add_server_commands()
             self._disable_ssh()
-            #TODO: Maybe move branch switch for OctoPrint here?
+            self._check_branches()
 
             self._update_printer_scripts_profiles()
             self._configure_local_user()
@@ -308,11 +308,48 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._settings.save()
 
     def _disable_ssh(self):
-        if self.platform == "RPi" and not self.debug and os.path.exists("/etc/init/ssh.conf"):
+        if not self._settings.get_boolean(['skip_ssh_check']) and self.platform == "RPi" and os.path.exists("/etc/init/ssh.conf"):
             try:
                 octoprint_lui.util.execute("sudo mv /etc/init/ssh.conf /etc/init/ssh.conf.disabled")
             except:
                 self._logger.exception("Could not disable SSH")
+
+    def _check_branches(self):
+        if self._settings.get_boolean(['skip_branch_check']):
+            return
+
+        to_update = []
+
+        for update in self.update_info:
+            if update["identifier"] == "octoprint":
+                branch_name = octoprint.__branch__
+            else:
+                try:
+                    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
+                except subprocess.CalledProcessError as err:
+                     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
+                     continue
+
+            self._logger.debug('Checking branch of {0}. Current branch: {1}'.format(update["name"], branch_name))
+
+            if branch_name != update["target_branch"]:
+                self._logger.info("{0} is not on {1} branch, going to switch.".format(update["name"], update["target_branch"]))
+                # So we are really still on devel, let's switch to master
+                checkout_master_branch = None
+                try:
+                    checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
+                except subprocess.CalledProcessError as err:
+                    self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+                    
+                if checkout_master_branch:
+                    self._logger.info("Switched OctoPrint from devel to master")
+                    # Set update manually to true so the next time we install the master branch
+                    update["update"] = True
+                    to_update.append(update)
+
+        if len(to_update) > 0:
+            self._send_client_message("forced_update")
+            self._update_plugins(to_update)
 
     def _update_printer_scripts_profiles(self):
         """ Copies machine specific files to printerprofiles and scripts folders based on current model """
@@ -539,7 +576,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _update_plugins(self, plugin):
         plugins_to_update = []
-        if plugin == "all":
+        
+        if isinstance(plugin, list):
+            plugins_to_update = plugin
+        elif plugin == "all":
             for update in self.update_info:
                 if update["update"]:
                     plugins_to_update.append(update)
@@ -623,35 +663,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _fetch_all_repos(self, update_info):
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
-        ## We switched from devel to master branch during production. Here we check if we 
-        ## still are on 'devel', if so, switch the branch over to 'master' branch. 
         self._logger.debug("Fetching all repositories")
         for update in update_info:
-            if update["identifier"] == "octoprint":
-                #try:
-                #    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
-                #except subprocess.CalledProcessError as err:
-                #     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
-                #if "devel" in branch_name:
-                self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
-                if not self.debug and "devel" in octoprint.__branch__ :
-                    self._logger.info("Install is still on devel branch, going to switch")
-                    # So we are really still on devel, let's switch to master
-                    checkout_master_branch = None
-                    try:
-                        checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
-                    except subprocess.CalledProcessError as err:
-                        self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
-                    
-                    if checkout_master_branch:
-                        self._logger.info("Switched OctoPrint from devel to master")
-                        # Set update manually to true so the next time we install the master branch
-                        self.update_info[4]["update"] = True
-                        self._send_client_message("forced_update")
-                        self._update_plugins("OctoPrint")
-                        
-
-            ## Branch check is done, fetch the git repo
             self._fetch_git_repo(update['path'])
         self.last_git_fetch = time.time()
 
@@ -731,7 +744,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "action_filament": True,
             "debug_lui": False,
             "changelog_version": "",
-            "had_first_run": ""
+            "had_first_run": "",
+            "skip_branch_check": False,
+            "skip_ssh_check": False
         }
 
     def find_assets(self, rel_path, file_ext):
@@ -2491,6 +2506,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'identifier': 'lui',
                 'version': self._plugin_manager.get_plugin_info('lui').version,
                 'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
+                'target_branch': 'master',
                 'update': False,
                 "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
@@ -2499,6 +2515,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'identifier': 'networkmanager',
                 'version': self._plugin_manager.get_plugin_info('networkmanager').version,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
+                'target_branch': 'master',
                 'update': False,
                 "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
@@ -2507,6 +2524,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'identifier': 'flasharduino',
                 'version': self._plugin_manager.get_plugin_info('flasharduino').version,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
+                'target_branch': 'lui-branch',
                 'update': False,
                 "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
@@ -2515,6 +2533,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'identifier': 'gcoderender',
                 'version': self._plugin_manager.get_plugin_info('gcoderender').version,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
+                'target_branch': 'master',
                 'update': False,
                 "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
@@ -2523,6 +2542,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'identifier': 'octoprint',
                 'version': VERSION,
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
+                'target_branch': 'master',
                 'update': False,
                 "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             }
