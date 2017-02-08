@@ -35,7 +35,7 @@
       </ul>
     </div>
   </div>
-  {% if model == "Bolt" or model.endswith("Debug") %} <!-- for now only available for Bolt -->
+  {% if printer_profile["extruderCalibration"] %} <!-- for now only available for Bolt -->
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">

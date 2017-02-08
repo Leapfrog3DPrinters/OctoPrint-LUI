@@ -64,12 +64,6 @@ $(function ()  {
             OctoPrint.postJson(url, data);
         };
 
-        self.moveToMaintenancePosition = function () {
-            self._sendApi({
-                command: 'move_to_maintenance_position'
-            });
-        };
-
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS

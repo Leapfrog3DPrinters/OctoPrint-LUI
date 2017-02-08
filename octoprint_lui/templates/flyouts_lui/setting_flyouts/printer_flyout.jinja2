@@ -24,7 +24,7 @@
             </div>
         </div>
     </div>
-    {% if model == "Bolt" or model == "Xcel" or debug_lui %}
+    {% if printer_profile["modelSizeDetection"] or debug_lui %}
     <div class="Table-row">
         <div class="Table-item">
           {{ _('Check print dimensions') }}
@@ -36,9 +36,9 @@
             </div>
         </div>
     </div>
-    {% endif %}
-    {% if model == "Xeed" or debug_lui %}
-    <div class="Table-row">
+  {% endif %}
+  {% if printer_profile["doorSafety"] or debug_lui %}
+  <div class="Table-row">
         <div class="Table-item">
             {{ _('Door safety feature') }}
         </div>
@@ -49,9 +49,9 @@
             </div>
         </div>
     </div>
-    {% endif %}
-    {% if model == "Xeed" or model == "Xcel" or debug_lui %}
-    <div class="Table-row">
+  {% endif %}
+  {% if printer_profile["filamentDetection"] or debug_lui %}
+  <div class="Table-row">
         <div class="Table-item">
             {{ _('Filament detection') }}
         </div>
