@@ -1,8 +1,11 @@
 {% if paused_position %}
-M605 S{{ paused_print_mode }}											Restore print mode
+M605 S{{ paused_print_mode }};											Restore print mode
 {% if paused_print_mode < 2 %}
 T{{ paused_position['t'] }};											Set tool (only for normal and full control modes)
 {% endif %}
+{% if paused_position['e'] %}
+G92 E{{ paused_position['e'] }};										Reset E coordinate
+{% endif %}									
 G28 X0 Y0
 G1 X{{ paused_position['x'] }} Y{{ paused_position['y'] }} F10000;		Return to last known position (x,y)
 G1 Z{{ paused_position['z'] }} F1000;									Return to last known position (z)	

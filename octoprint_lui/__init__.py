@@ -2049,25 +2049,29 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_database.update({'amount': self.filament_amount[tool_num]}, self._filament_query.tool == tool)
 
     ## ~ Gcode script hook. Used for Z-offset Xeed
-    def execute_print_event_scripts(self, event):
+    def script_hook(self, comm, script_type, script_name):
         """ Executes a LUI print script based on a given print/printer event """
+        if not script_type == "gcode":
+            return None
 
         # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise) 
-        if event == Events.PRINT_STARTED:
+        if script_name == "beforePrintStarted":
             context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
             self.execute_printer_script("before_print_started", context)
 
-        if event == Events.CONNECTED:
+        if script_name == "afterPrinterConnected":
             context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
             self.execute_printer_script("after_printer_connected", context)
 
-        if event == Events.PRINT_RESUMED:
+        if script_name == "beforePrintResumed":
             self._logger.debug('Print resumed. Print mode: {0} Paused position: {1}'.format(self.paused_print_mode, self.paused_position))
             context = { "paused_position": self.paused_position, "paused_print_mode": self._print_mode_to_M605_param(self.paused_print_mode) }
             self.execute_printer_script("before_print_resumed", context)
 
-        if event == Events.PRINT_PAUSED:
+        if script_name == "afterPrintPaused":
              self.execute_printer_script("after_print_paused")
+
+        return None, None
 
     def gcode_queuing_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -2881,8 +2885,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.paused_print_mode = self.print_mode
             self.paused_position = payload["position"] # Containts x,y,z,e,f,t(ool)
 
-        self.execute_print_event_scripts(event)
-
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:
             self.auto_shutdown_timer_value = 180 #3 Minute shutdown
@@ -2955,6 +2957,7 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_queuing_hook,
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_sent_hook,
+        "octoprint.comm.protocol.scripts": __plugin_implementation__.script_hook,
         "octoprint.comm.protocol.action": __plugin_implementation__.hook_actiontrigger,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_received_hook,
         "octoprint.filemanager.extension_tree": __plugin_implementation__.extension_tree_hook,
