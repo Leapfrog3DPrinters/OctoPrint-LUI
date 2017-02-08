@@ -34,7 +34,7 @@
             </div>
         </div>
     </div> #}
-    {% if model == "Bolt" or debug_lui %} 
+    {% if printer_profile["dualX"] %}
     <div class="Table" data-bind="visible: gcodeAnalysisFinished() || printerState.forcePrint()">
         <div class="Table-row Table-header">
             <div class="Table-item">
