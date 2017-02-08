@@ -1956,18 +1956,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Restoring after filament change. Filament change tool: {0}. Paused position: {1}".format(self.filament_change_tool, self.paused_position))
         
         if self.paused_filament_swap:
-            # Restore temperature
+            # Restore temperature. Coordinates are restored by beforePrintResumed
             target_temp = self.paused_temperatures[self.filament_change_tool]["target"]
-            
-            # Restore Z
-            self.restore_z_after_filament_load()
 
-            # Restore tool (always, because the sequence inbetween may have changed the current tool)
-            self._printer.change_tool("tool" + str(self.paused_position["t"]))
-
-            # Restore print mode (sync, mirror...)
-            self.print_mode = self.paused_print_mode
-            self.send_print_mode()
         self._printer.set_temperature(self.filament_change_tool, target_temp)
 
     ##~ Helpers to send client messages
@@ -2061,20 +2052,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def execute_print_event_scripts(self, event):
         """ Executes a LUI print script based on a given print/printer event """
 
-        context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
-
         # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise) 
         if event == Events.PRINT_STARTED:
+            context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
             self.execute_printer_script("before_print_started", context)
 
         if event == Events.CONNECTED:
+            context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
             self.execute_printer_script("after_printer_connected", context)
 
         if event == Events.PRINT_RESUMED:
+            self._logger.debug('Print resumed. Print mode: {0} Paused position: {1}'.format(self.paused_print_mode, self.paused_position))
+            context = { "paused_position": self.paused_position, "paused_print_mode": self._print_mode_to_M605_param(self.paused_print_mode) }
             self.execute_printer_script("before_print_resumed", context)
 
         if event == Events.PRINT_PAUSED:
-             self.execute_printer_script("after_print_paused", context)
+             self.execute_printer_script("after_print_paused")
 
     def gcode_queuing_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -2482,14 +2475,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.restore_movement_mode()
 
-    def send_print_mode(self):
-        if self.print_mode == "sync":
-            self._printer.commands(["M605 S2"])
-        elif self.print_mode == "mirror":
-            self._printer.commands(["M605 S3"])
-        else:
-            self._printer.commands(["M605 S1"])
-
     def _init_usb(self):
         # Add the LocalFileStorage to allow to browse the drive's files and folders
 
@@ -2808,14 +2793,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def set_print_mode(self, print_mode):
         self.print_mode = print_mode
+        param = self._print_mode_to_M605_param(print_mode)
+        self._printer.commands(["M605 S{0}".format(param)])
+
+    def _print_mode_to_M605_param(self, print_mode):
         if print_mode == "sync":
-            self._printer.commands(["M605 S2"])
+            return 2;
         elif print_mode == "mirror":
-            self._printer.commands(["M605 S3"])
+            return 3;
         elif print_mode == "fullcontrol":
-            self._printer.commands(["M605 S0"])
+            return 0;
         else:
-            self._printer.commands(["M605 S1"])
+            return 1;
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
