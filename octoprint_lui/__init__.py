@@ -300,6 +300,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._add_server_commands()
             self._disable_ssh()
             self._check_branches()
+            self._disable_chrome_pinch()
 
             self._update_printer_scripts_profiles()
             self._configure_local_user()
@@ -350,6 +351,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if len(to_update) > 0:
             self._send_client_message("forced_update")
             self._update_plugins(to_update)
+
+    def _disable_chrome_pinch(self):
+        autostart_path = "/home/pi/.config/autostart/chromium.desktop"
+        disable_str = " --disable-pinch"
+        if self.platform == "RPi" and os.path.exists(autostart_path):
+            try:
+                octoprint_lui.util.execute("sudo grep -q '\\{search}' '{path}' || sudo sed -i '3s@$@{search}@' '{path}'".format(search=disable_str, path=autostart_path))
+            except:
+                self._logger.exception("Could not disable pinch to zoom")
 
     def _update_printer_scripts_profiles(self):
         """ Copies machine specific files to printerprofiles and scripts folders based on current model """
@@ -646,7 +656,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Return out of the worker, we can't update - not online
             return
         try:
-            self._fetch_all_repos(update_info)
+            # Try and see if it works without fetching now
+            #self._fetch_all_repos(update_info)
             update_info_updated = self._update_needed_version_all(update_info)
             self.update_info = update_info_updated
         except Exception as e:
@@ -677,41 +688,34 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return update_info
 
     def _is_update_needed(self, path):
-        local = None
-        remote = None
-        base = None
-
         try:
-            local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+            branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'])
         except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
+            self._logger.warn("Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output))
 
-        try:
-            remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
+        if branch_name:
+            local = None
+            remote = None
 
-        try:
-            base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
-        except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for base:{path}. Output: {output}".format(path=path, output = e.output))
+            try:
+                local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
+            except subprocess.CalledProcessError as e:
+                self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
 
-        if not local or not remote or not base:
-            return True ## If anything failed, at least try to pull
+            try:
+                remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
+                remote_s = remote_r.split()
+                if len(remote_s) > 0:
+                    remote = remote_s[0]
+            except subprocess.CalledProcessError as e:
+                self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
 
-        if (local == remote):
-            ##~ Remote and local are the same, git is up-to-date
-            self._logger.debug("Git with path: {path} is up-to-date".format(path=path))
-            return False
-        elif(local == base):
-            ##~ Local is behind, we need to pull
-            self._logger.debug("Git with path: {path} needs to be pulled".format(path=path))
+            if not local or not remote:
+                return True ## If anything failed, at least try to pull
+            else: 
+                return local != remote
+        else:
             return True
-        elif(remote == base):
-            ##~ This should never happen and should actually call a fresh reset of the git TODO
-            self._logger.debug("Git with path: {path} needs to be pushed".format(path=path))
-            return True
-
 
     def _fetch_git_repo(self, path):
         # Set octoprint git remote to Leapfrog:
