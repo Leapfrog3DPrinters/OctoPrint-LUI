@@ -872,7 +872,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint UI Plugin
     def will_handle_ui(self, request):
-        return False
+        return True
 
     def on_ui_render(self, now, request, render_kwargs):
         remote_address = get_remote_address(request)
@@ -2513,7 +2513,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
                 'target_branch': 'master',
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'Network Manager',
@@ -2522,7 +2522,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
                 'target_branch': 'master',
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'Flash Firmware Module',
@@ -2531,7 +2531,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
                 'target_branch': 'lui-branch',
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'G-code Render Module',
@@ -2540,7 +2540,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'target_branch': 'master',
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'OctoPrint',
@@ -2549,7 +2549,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'target_branch': 'master',
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             }
         ]
 
