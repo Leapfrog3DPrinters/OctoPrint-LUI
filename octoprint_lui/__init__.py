@@ -606,39 +606,36 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return update_info
 
     def _is_update_needed(self, path):
-        local = None
-        remote = None
-        base = None
-
+        branch_name = None
         try:
-            local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+            branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
+            branch_name = branch_name.strip('\n')
         except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
+            self._logger.warn("Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output))
 
-        try:
-            remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
+        if branch_name:
+            local = None
+            remote = None
 
-        try:
-            base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
-        except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for base:{path}. Output: {output}".format(path=path, output = e.output))
+            try:
+                local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
+                local = local.strip('\n')
+            except subprocess.CalledProcessError as e:
+                self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
 
-        if not local or not remote or not base:
-            return True ## If anything failed, at least try to pull
+            try:
+                remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
+                remote_s = remote_r.split()
+                if len(remote_s) > 0:
+                    remote = remote_s[0]
+            except subprocess.CalledProcessError as e:
+                self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
 
-        if (local == remote):
-            ##~ Remote and local are the same, git is up-to-date
-            self._logger.debug("Git with path: {path} is up-to-date".format(path=path))
-            return False
-        elif(local == base):
-            ##~ Local is behind, we need to pull
-            self._logger.debug("Git with path: {path} needs to be pulled".format(path=path))
-            return True
-        elif(remote == base):
-            ##~ This should never happen and should actually call a fresh reset of the git TODO
-            self._logger.debug("Git with path: {path} needs to be pushed".format(path=path))
+            if not local or not remote:
+                return True ## If anything failed, at least try to pull
+            else: 
+                return local != remote
+        else:
             return True
 
 
