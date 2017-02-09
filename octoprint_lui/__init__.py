@@ -327,6 +327,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 try:
                     branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
+                    branch_name = branch_name.strip('\n')
                 except subprocess.CalledProcessError as err:
                      self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
                      continue
@@ -691,6 +692,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         branch_name = None
         try:
             branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
+            branch_name = branch_name.strip('\n')
         except subprocess.CalledProcessError as e:
             self._logger.warn("Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output))
 
@@ -700,6 +702,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             try:
                 local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
+                local = local.strip('\n')
             except subprocess.CalledProcessError as e:
                 self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
 
