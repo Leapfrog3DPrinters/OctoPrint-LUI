@@ -316,6 +316,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.exception("Could not disable SSH")
 
     def _check_branches(self):
+
         if self._settings.get_boolean(['skip_branch_check']):
             return
 
