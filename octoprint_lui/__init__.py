@@ -688,8 +688,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return update_info
 
     def _is_update_needed(self, path):
+        branch_name = None
         try:
-            branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'])
+            branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
         except subprocess.CalledProcessError as e:
             self._logger.warn("Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output))
 
@@ -871,7 +872,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint UI Plugin
     def will_handle_ui(self, request):
-        return True
+        return False
 
     def on_ui_render(self, now, request, render_kwargs):
         remote_address = get_remote_address(request)
