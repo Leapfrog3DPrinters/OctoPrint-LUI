@@ -19,6 +19,8 @@ $(function ()  {
         self.isLoading = ko.observable(undefined);
         self.isSdReady = ko.observable(undefined);
 
+        self.waitingForPause = ko.observable(false);
+
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
         self.showChangelog = ko.observable(undefined);
@@ -75,7 +77,7 @@ $(function ()  {
             return self.isOperational() && self.isReady() && !self.isPrinting() && self.loginState.isUser() && self.filename() != undefined;
         });
         self.enablePause = ko.computed(function ()  {
-            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && !self.waitingForPause() && self.loginState.isUser();
         });
         self.enableCancel = ko.computed(function ()  {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
@@ -280,6 +282,18 @@ $(function ()  {
             }
         };
 
+        self.onEventPrintPaused = function (payload)
+        {
+            // Enable resume button
+            self.waitingForPause(false);
+        }
+
+        self.onEventPrintResumed = function (payload)
+        {
+            // Enable pause button
+            self.waitingForPause(false);
+        }
+
         self._processJobData = function (data) {
             if (data.file) {
                 // Remove any possible hidden folder name
@@ -377,12 +391,16 @@ $(function ()  {
                 else if (needsRight && materialRight == "None")
                     message = gettext("Please load filament in the right extruder before you resume your print.")
                 
-                if(message)
+                if (message) {
                     $.notify({ title: gettext('Cannot resume print'), text: message }, "error");
-                else
+                }
+                else {
+                    self.waitingForPause(true);
                     OctoPrint.job.togglePause();
+                }
             }
             else {
+                self.waitingForPause(true);
                 OctoPrint.job.togglePause();
             }
         };

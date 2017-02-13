@@ -9,6 +9,6 @@ G28 X0 Y0; Home x,y
 G1 X1 F10000
 G1 Y-33 F15000
 M605 S0; Restore movement mode
-{% if filamentChangeTool  %}
+{% if filamentChangeTool != None  %}
 T{{ filamentChangeTool }}
 {% endif %}
