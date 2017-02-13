@@ -551,7 +551,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Return out of the worker, we can't update - not online
             return
         try:
-            self._fetch_all_repos(update_info)
+            # We're no longer fetching updates beforehand. Just checking the local and remote hashes
+            #self._fetch_all_repos(update_info)
             update_info_updated = self._update_needed_version_all(update_info)
             self.update_info = update_info_updated
         except Exception as e:
@@ -2410,7 +2411,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('lui').version,
                 'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'Network Manager',
@@ -2418,7 +2419,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('networkmanager').version,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'Flash Firmware Module',
@@ -2426,7 +2427,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('flasharduino').version,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'G-code Render Module',
@@ -2434,7 +2435,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('gcoderender').version,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'OctoPrint',
@@ -2442,7 +2443,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': VERSION,
                 'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             }
         ]
 
