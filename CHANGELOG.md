@@ -2,6 +2,11 @@
 
 Change log for OctoPrint-LUI. 
 
+## 1.0.8
+
+- Improved update procedure to reduce chance of corrupted installations
+- Temporarily disabled model size detection
+
 ## 1.0.7
 
 ### Bug fix release of 1.0.6
