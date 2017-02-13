@@ -370,7 +370,7 @@ $(function ()  {
                 var materialRight = self.rightFilamentMaterial();
 
                 var message = undefined;
-                if (self.printMode() != "normal")
+                if (self.printMode() != "normal" && (materialLeft == "None" || materialRight == "None"))
                     message = gettext("Please load filament in both the left and right extruder before you resume your print.")
                 else if (needsLeft && materialLeft  == "None")
                     message = gettext("Please load filament in the left extruder before you resume your print.")

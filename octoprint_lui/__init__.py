@@ -2472,7 +2472,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         context = { "currentZ": self._printer._currentZ,
                     "stepperTimeout": self.current_printer_profile["filament"]["stepper_timeout"] if "stepper_timeout" in self.current_printer_profile["filament"] else None,
-                    "filamentChangeTool": self.filament_change_tool
+                    "filamentChangeTool": self._get_tool_num(self.filament_change_tool)
                     }
 
         self.execute_printer_script("filament_load_position", context)
