@@ -551,8 +551,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Return out of the worker, we can't update - not online
             return
         try:
-            # We're no longer fetching updates beforehand. Just checking the local and remote hashes
-            #self._fetch_all_repos(update_info)
+            # We're only using this method for checking the branch of OctoPrint. This will be tidied up in 1.1.0
+            self._fetch_all_repos(update_info)
             update_info_updated = self._update_needed_version_all(update_info)
             self.update_info = update_info_updated
         except Exception as e:
@@ -595,7 +595,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                         
 
             ## Branch check is done, fetch the git repo
-            self._fetch_git_repo(update['path'])
+            # We're no longer fetching updates beforehand. Just checking the local and remote hashes
+            #self._fetch_git_repo(update['path'])
         self.last_git_fetch = time.time()
 
     def _update_needed_version_all(self, update_info):
