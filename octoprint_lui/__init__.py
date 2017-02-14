@@ -542,6 +542,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if force:
                 self.send_client_internet_offline()
             # Return out of the worker, we can't update - not online
+            self.fetching_updates = False
             return
 
         if not octoprint_lui.util.github_online():
@@ -549,6 +550,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if force:
                 self.send_client_github_offline()
             # Return out of the worker, we can't update - not online
+            self.fetching_updates = False
             return
         try:
             # We're only using this method for checking the branch of OctoPrint. This will be tidied up in 1.1.0
