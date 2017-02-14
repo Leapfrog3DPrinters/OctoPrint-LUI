@@ -646,7 +646,7 @@ $(function ()  {
             
             self.filepath.subscribe(function ()  {
                 self.activities.remove(gettext('Creating preview'));
-                self.updateAnalyzingActivity();
+                //self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
             });
 
