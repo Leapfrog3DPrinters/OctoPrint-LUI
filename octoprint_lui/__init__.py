@@ -1416,6 +1416,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             try:
                 files = octoprint.server.fileManager.list_files("usb", filter=filter, recursive = True)["usb"].values()
             except Exception as e:
+                self._logger.exception("Could not access the media folder", e.message)
                 return make_response("Could not access the media folder", 500)
 
 
