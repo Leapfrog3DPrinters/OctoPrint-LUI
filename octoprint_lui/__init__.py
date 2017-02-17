@@ -272,7 +272,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.platform = "MacDebug"
             mac_path = os.path.expanduser("~")
             self.update_basefolder = "{mac_path}/lpfrg/".format(mac_path=mac_path)
-            self.media_folder = "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path),
+            self.media_folder = "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path)
         elif sys.platform == "win32":
             self.platform = "WindowsDebug"
             self.update_basefolder = "C:\\Users\\erikh\\OneDrive\\Programmatuur\\"
