@@ -3,9 +3,14 @@
 Change log for OctoPrint-LUI. 
 
 ## 1.1.0
-
 - Startup time improved by bundling javascript and CSS files
 - Updated all javascript libraries to the most recent versions
+
+## 1.0.8
+- Improved update procedure to reduce chance of corrupted installations
+- Temporarily disabled model size detection
+
+## 1.0.7
 
 ### Bug fix release of 1.0.6
 
