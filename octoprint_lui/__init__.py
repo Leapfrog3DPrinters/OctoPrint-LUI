@@ -542,6 +542,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if force:
                 self.send_client_internet_offline()
             # Return out of the worker, we can't update - not online
+            self.fetching_updates = False
             return
 
         if not octoprint_lui.util.github_online():
@@ -549,8 +550,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if force:
                 self.send_client_github_offline()
             # Return out of the worker, we can't update - not online
+            self.fetching_updates = False
             return
         try:
+            # We're only using this method for checking the branch of OctoPrint. This will be tidied up in 1.1.0
             self._fetch_all_repos(update_info)
             update_info_updated = self._update_needed_version_all(update_info)
             self.update_info = update_info_updated
@@ -594,7 +597,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                         
 
             ## Branch check is done, fetch the git repo
-            self._fetch_git_repo(update['path'])
+            # We're no longer fetching updates beforehand. Just checking the local and remote hashes
+            #self._fetch_git_repo(update['path'])
         self.last_git_fetch = time.time()
 
     def _update_needed_version_all(self, update_info):
@@ -606,39 +610,36 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return update_info
 
     def _is_update_needed(self, path):
-        local = None
-        remote = None
-        base = None
-
+        branch_name = None
         try:
-            local = subprocess.check_output(['git', 'rev-parse', '@'], cwd=path)
+            branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
+            branch_name = branch_name.strip('\n')
         except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
+            self._logger.warn("Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output))
 
-        try:
-            remote = subprocess.check_output(['git', 'rev-parse', '@{upstream}'], cwd=path)
-        except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
+        if branch_name:
+            local = None
+            remote = None
 
-        try:
-            base = subprocess.check_output(['git', 'merge-base', '@', '@{u}'], cwd=path)
-        except subprocess.CalledProcessError as e:
-            self._logger.warn("Git check failed for base:{path}. Output: {output}".format(path=path, output = e.output))
+            try:
+                local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
+                local = local.strip('\n')
+            except subprocess.CalledProcessError as e:
+                self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
 
-        if not local or not remote or not base:
-            return True ## If anything failed, at least try to pull
+            try:
+                remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
+                remote_s = remote_r.split()
+                if len(remote_s) > 0:
+                    remote = remote_s[0]
+            except subprocess.CalledProcessError as e:
+                self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
 
-        if (local == remote):
-            ##~ Remote and local are the same, git is up-to-date
-            self._logger.debug("Git with path: {path} is up-to-date".format(path=path))
-            return False
-        elif(local == base):
-            ##~ Local is behind, we need to pull
-            self._logger.debug("Git with path: {path} needs to be pulled".format(path=path))
-            return True
-        elif(remote == base):
-            ##~ This should never happen and should actually call a fresh reset of the git TODO
-            self._logger.debug("Git with path: {path} needs to be pushed".format(path=path))
+            if not local or not remote:
+                return True ## If anything failed, at least try to pull
+            else: 
+                return local != remote
+        else:
             return True
 
 
@@ -2413,7 +2414,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('lui').version,
                 'path': '{path}OctoPrint-LUI'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'Network Manager',
@@ -2421,7 +2422,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('networkmanager').version,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'Flash Firmware Module',
@@ -2429,7 +2430,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('flasharduino').version,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'G-code Render Module',
@@ -2437,7 +2438,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('gcoderender').version,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             },
             {
                 'name': 'OctoPrint',
@@ -2445,7 +2446,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': VERSION,
                 'path': '{path}OctoPrint'.format(path=self.paths[self.model]['update']),
                 'update': False,
-                "command": "git pull && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.paths[self.model]['update'])
             }
         ]
 

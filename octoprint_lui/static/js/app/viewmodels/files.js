@@ -726,7 +726,10 @@ $(function ()  {
             self.printerState.forcePrint(true);
         };
 
-        self.evaluatePrintDimensions = function(data, mode, notify) {
+        self.evaluatePrintDimensions = function (data, mode, notify) {
+            // This functionality is temporarily disabled for 1.0.8
+            return true;
+
             if (!self.settingsViewModel.feature_modelSizeDetection()) {
                 return true;
             }
