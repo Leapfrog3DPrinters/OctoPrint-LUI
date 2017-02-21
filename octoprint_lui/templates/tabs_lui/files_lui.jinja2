@@ -13,9 +13,9 @@
         <div class="file_header">
           <div class="browse_modes">
             {%  if local_addr -%}
-            <div class="button-area">
+            <div id="step5" class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: function () { browseLocal() }, css: {'secondary-button': !isOriginLocal()}">
+                <li id="local_button" class="button load-button" data-bind="click: function () { browseLocal() }, css: {'secondary-button': !isOriginLocal()}">
                   <a href="#browse_local">
                     <span>
                       <i class="fa fa-hdd-o"></i>{{ _('Printer') }}
@@ -24,9 +24,9 @@
                 </li>
               </ul>
             </div>
-            <div class="button-area">
+            <div id="step6" class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: function () { browseUsb() }, css: {disabled: !isUsbAvailable(), 'secondary-button': isOriginLocal()}">
+                <li id="usb_button" class="button load-button" data-bind="click: function () { browseUsb() }, css: {disabled: !isUsbAvailable(), 'secondary-button': isOriginLocal()}">
                   <a href="#browse_usb">
                     <span>
                       <i class="fa fa-usb"></i>{{ _('USB') }}
@@ -37,9 +37,9 @@
             </div>
             {%- endif %}
             {% if not local_addr or debug_lui  %}
-            <div class="button-area">
+            <div id="step7" class="button-area">
               <ul>
-                <li class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
+                <li id="upload_button" class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
                   <a href="#upload_file">
                     <span>
                       <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
@@ -51,7 +51,7 @@
             </div>
             {%- endif %}
           </div>
-          <div class="file_search">
+          <div id="step8" class="file_search">
             <form class="form-search" data-bind="submit: performSearch">
               <div class="file-search-input-container">
                 <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;">
@@ -70,7 +70,7 @@
           <div id="sort" class="file_sort">
             <ul id="files_menu" class="sort_menu">
               <li>
-                <a href="#">
+                <a id="files_options" href="#">
                   <i class="fa fa-list"></i>
                 </a>
                 <ul>

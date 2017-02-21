@@ -45,8 +45,8 @@
         </div>
         <div class="Table-row">
           <div class="Table-item">
-            <ul class="button-area">
-              <li class="button" data-bind="click: function () {gotoFileSelect()}, css: {disabled: !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select">
+            <ul id="step4" class="button-area">
+              <li id="job_button" class="button" data-bind="click: function () {gotoFileSelect()}, css: {disabled: !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select">
                 <a href="#">
                   <span>
                     <i class="fa fa-file"></i>{{ _('Select print job') }}
@@ -167,7 +167,7 @@
           </div>
         </div>
         {% if local_addr %}
-        <div class="Table-row" data-bind="visible: !printerState.isPrinting() && !printerState.isPaused()">
+        <div id="swap_buttons" class="Table-row" data-bind="visible: !printerState.isPrinting() && !printerState.isPaused()">
           <div class="Table-row">
             <div class="Table-item">
               <ul class="button-area">
@@ -183,8 +183,8 @@
           </div>
           <div class="Table-row">
             <div class="Table-item">
-              <ul class="button-area">
-                <li class="button secondary-button" data-bind="click: function () {showFilamentChangeFlyout('tool0')}, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() } ">
+              <ul id="step1" class="button-area">
+                <li id="swap-right-button" class="button secondary-button" data-bind="click: function () {showFilamentChangeFlyout('tool0') }, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() } ">
                   <a href="#">
                     <span>
                       <i class="fa fa-refresh"></i>{{ _('Swap right') }}

@@ -327,8 +327,13 @@ input[type=radio] {
 .network-status {
   margin-right: 20px; }
 
+#info {
+  margin-left: auto;
+}
+
 #ethernet_connectivity {
-  margin-left: auto; }
+  margin-left: 20px;
+}
 
 .wifi-status {
   width: 1.2em;

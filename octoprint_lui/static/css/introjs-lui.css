@@ -1,0 +1,103 @@
+.introjs-tooltipbuttons {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.introjs-fixParent {
+  z-index: inherit;
+}
+
+/*
+ Buttons style
+*/
+.introjs-button {
+  box-sizing: content-box;
+  position: relative;
+  overflow: visible;
+  display: inline-block;
+  padding: 0.3em 0.8em;
+  border: 1px solid #434A54;
+  margin: 0;
+  text-decoration: none;
+  text-shadow: 1px 1px 0 #fff;
+  font: 11px/normal sans-serif;
+  color: #333;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  background-color: #ffffff;
+  -webkit-background-clip: padding;
+  -moz-background-clip: padding;
+  -o-background-clip: padding-box;
+  /*background-clip: padding-box;*/ /* commented out due to Opera 11.10 bug */
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+  /* IE hacks */
+  zoom: 1.3;
+  *display: inline;
+  margin-top: 10px;
+  width: 20%;
+}
+
+.introjs-button:hover {
+  border-color: #434A54;
+  text-decoration: none;
+  box-shadow: 0px 1px 1px #ffffff;
+}
+
+.introjs-button:focus,
+.introjs-button:active {
+  background: none #ffffff;
+}
+
+/* overrides extra padding on button elements in Firefox */
+.introjs-button::-moz-focus-inner {
+  padding: 0;
+  border: 0;
+}
+
+.introjs-skipbutton {
+  box-sizing: content-box;
+  margin-right: 5px;
+  background: none #ffffff;
+  color: #434A54;
+}
+
+.introjs-prevbutton {
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+  border: 1px solid #434A54;
+  background: none #ffffff;
+  margin-right: 5px;
+}
+
+.introjs-prevbutton.introjs-fullbutton {
+  border: 1px solid #434A54;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+
+.introjs-nextbutton {
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  background: none #ffffff;
+  border-radius: 0;
+}
+
+.introjs-nextbutton.introjs-fullbutton {
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+
+.introjs-disabled, .introjs-disabled:hover, .introjs-disabled:focus {
+  color: #8192a2;
+  border: 1px solid #8192a2;
+  box-shadow: none;
+  cursor: default;
+  background: #fdfdfd none;
+  text-decoration: none;
+}
