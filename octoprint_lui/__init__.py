@@ -61,7 +61,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.update_basefolder = None
         self.media_folder = None
         self.current_printer_profile = None
-        
+
         ##~ Server commands
         self.systemShutdownCommand ="sudo shutdown -h now"
         self.systemRestartCommand =  "sudo shutdown -r now"
@@ -174,7 +174,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.wait_for_maintenance_position = False # Wait for ok after M400 before aux powerdown
         self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
         self.connecting_after_maintenance = False #Wait for connected event and notify UI after
-        
+
         #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
@@ -280,14 +280,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self.platform = "RPi"
             self.update_basefolder = "/home/pi/"
-            self.media_folder = "/media/pi/"    
+            self.media_folder = "/media/pi/"
 
         self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
     def _first_run(self):
         """Checks if it is the first run of a new version and updates any material if necessary"""
         had_first_run_version =  self._settings.get(["had_first_run"])
-        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
+        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile")
         if self.debug or not had_first_run_version or StrictVersion(had_first_run_version) < StrictVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
             if self.debug:
                 self._logger.debug("Simulating first run for debugging.")
@@ -327,16 +327,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.exception("Could not update scripts folder")
         else:
             self._logger.warn("No scripts found for model {0}. Ensure the foldername is in lowercase.".format(self.model))
-            
-        profile_src_path = os.path.join(self._basefolder, "printerProfiles", self.model.lower() + ".profile") 
-        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
+
+        profile_src_path = os.path.join(self._basefolder, "printerProfiles", self.model.lower() + ".profile")
+        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile")
         if os.path.exists(profile_src_path):
             try:
                 shutil.copyfile(profile_src_path, profile_dst_path)
                 self._logger.debug("Printer profile updated")
             except:
                 self._logger.exception("Could not update printer profile")
-            
+
             self._printer._printerProfileManager.set_default(self.model.lower())
             self._printer._printerProfileManager.select(self.model.lower())
 
@@ -354,8 +354,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         local_password = "".join(choice(local_password_chars) for _ in range(16))
         self._user_manager.addUser(self.local_username, local_password, True, ["user", "admin"], overwrite=True)
 
-        self._settings.global_set(["accessControl", "autologinLocal"], True) 
-        self._settings.global_set(["accessControl", "autologinAs"], self.local_username) 
+        self._settings.global_set(["accessControl", "autologinLocal"], True)
+        self._settings.global_set(["accessControl", "autologinAs"], self.local_username)
         self._settings.save()
 
         self._logger.debug("Local user configured with username: {0}".format(self.local_username))
@@ -370,11 +370,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         changelog_version = self._settings.get(["changelog_version"])
 
         self.show_changelog = changelog_version != self.plugin_version
-        
+
         if self.show_changelog:
             self._logger.info("LUI version changed. Reading changelog.")
             self._read_changelog_file()
-         
+
     def _read_changelog_file(self):
         if len(self.changelog_contents) == 0:
             begin_append = False
@@ -382,7 +382,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             endsearch = "## "
             if os.path.exists(self.changelog_path):
                 with open(self.changelog_path, 'r') as f:
-                    for line in f:   
+                    for line in f:
                         if begin_append:
                             if line.startswith(endsearch):
                                 break;
@@ -390,10 +390,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                 self.changelog_contents.append(line)
                         elif line.startswith(search):
                             begin_append = True
-            
+
             else:
                 self.changelog_contents.append('Could not find changelog')
- 
+
     def _get_changelog_html(self):
         md = os.linesep.join(self.changelog_contents)
         return markdown.markdown(md)
@@ -443,16 +443,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 new_firmware = True
                 if "lui_version" in self.fw_version_info and self.fw_version_info["lui_version"]:
                     requires_lui_update = not self._check_version_requirement(self.plugin_version, self.fw_version_info["lui_version"])
-                    self._logger.debug("LUI version requirement: {0}. Update required: {1}".format(self.fw_version_info["lui_version"], requires_lui_update))   
+                    self._logger.debug("LUI version requirement: {0}. Update required: {1}".format(self.fw_version_info["lui_version"], requires_lui_update))
         else:
             # If there's no info found, indicate error
             error = True
-     
-  
+
+
         return jsonify(dict({
-                    "error": error, 
-                    "new_firmware": new_firmware, 
-                    "current_version": str(current_version) if current_version else None, 
+                    "error": error,
+                    "new_firmware": new_firmware,
+                    "current_version": str(current_version) if current_version else None,
                     "new_version": str(new_firmware_version) if new_firmware_version else None,
                     "requires_lui_update": requires_lui_update
                     }))
@@ -487,7 +487,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 return getattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file')(board, programmer, port, baudrate, firmware_path, ext_path)
             else:
-                self._logger.warning("Could not flash firmware. FlashArduino plugin not up to date.")    
+                self._logger.warning("Could not flash firmware. FlashArduino plugin not up to date.")
         else:
             self._logger.warning("Could not flash firmware. FlashArduino plugin not loaded.")
 
@@ -624,8 +624,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _fetch_all_repos(self, update_info):
         ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
-        ## We switched from devel to master branch during production. Here we check if we 
-        ## still are on 'devel', if so, switch the branch over to 'master' branch. 
+        ## We switched from devel to master branch during production. Here we check if we
+        ## still are on 'devel', if so, switch the branch over to 'master' branch.
         for update in update_info:
             if update["identifier"] == "octoprint":
                 try:
@@ -640,14 +640,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                         checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
                     except subprocess.CalledProcessError as err:
                         self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
-                    
+
                     if checkout_master_branch:
                         self._logger.info("Switched OctoPrint from devel to master!")
                         # Set update manually to true so the next time we install the master branch
                         self.update_info[4]["update"] = True
                         self._send_client_message("forced_update")
                         self._update_plugins("OctoPrint")
-                        
+
 
             ## Branch check is done, fetch the git repo
             # We're no longer fetching updates beforehand. Just checking the local and remote hashes
@@ -690,7 +690,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             if not local or not remote:
                 return True ## If anything failed, at least try to pull
-            else: 
+            else:
                 return local != remote
         else:
             return True
@@ -760,13 +760,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 result.append(path)
 
         return result
-            
-                
+
+
     def create_custom_bundles(self):
         from flask_assets import Bundle
-        
+
         jquery_js = [
-                    'plugin/lui/js/lib/jquery/jquery-2.2.4.js', 
+                    'plugin/lui/js/lib/jquery/jquery-2.2.4.js',
                     'plugin/lui/js/lib/jquery/jquery.ui.widget-1.11.4.js',
                     'plugin/lui/js/lib/jquery/jquery.iframe-transport.js',
                     'plugin/lui/js/lib/jquery/jquery.fileupload-9.14.2.js',
@@ -789,7 +789,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/notify-lui.js',
                     'plugin/lui/js/lib/nouislider-9.2.0.js',
                     'plugin/lui/js/lib/sockjs-1.1.2.js',
-                    'plugin/lui/js/lib/sprintf-1.0.3.js'
+                    'plugin/lui/js/lib/sprintf-1.0.3.js',
+					'plugin/lui/js/lib/intro.js'
                     ]
 
         vm_js = self.find_assets('js/app/viewmodels', '.js')
@@ -806,9 +807,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'plugin/lui/css/notifyjs-lui.css',
                 'plugin/lui/css/keyboard-lui.css',
                 'plugin/lui/css/nouislider-lui.css',
-                'plugin/lui/css/dropit.css'
+                'plugin/lui/css/dropit.css',
+				'plugin/lui/css/introjs.css',
+				'plugin/lui/css/introjs-lui.css'
                 ]
-                
+
 
         bundle_filter = "js_delimiter_bundler"
         bundle_min_filter = "rjsmin, js_delimiter_bundler"
@@ -825,7 +828,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             lui_jquery_bundle = Bundle(*jquery_min_js, output="webassets/packed_lui_jquery.js", filters=bundle_filter)
             lui_lib_bundle = Bundle(*lib_min_js, output="webassets/packed_lui_lib.js", filters=bundle_filter)
-            
+
 
         # Minify viewmodel and app js files
         lui_vm_bundle = Bundle(*vm_js, output="webassets/packed_lui_vm.js", filters=bundle_min_filter)
@@ -938,7 +941,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             fw_req = None
             if self.model in self.firmware_version_requirement:
                 fw_req =  self.firmware_version_requirement[self.model]
-                
+
             result = dict({
                 'machine_info': machine_info,
                 'filaments': self.filament_database.all(),
@@ -958,7 +961,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return jsonify(result)
 
     def _firmware_update_required(self):
-        
+
         if not self.model in self.firmware_version_requirement:
             self._logger.debug('No firmware version check. Model not found in version requirement.')
             return False
@@ -970,7 +973,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 # _check_version_requirement is the requirement is *met*, so invert
                 update_required = not self._check_version_requirement(current_version, version_req)
-            
+
                 self._logger.debug('Firmware version check. Current version: {0}. Requirement: {1}. Needs update: {2}'.format(current_version, version_req, update_required))
             else:
                 self._logger.warn('Could not check firmware version, machine database not up-to-date yet.')
@@ -1051,7 +1054,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.start_print()
 
     def _on_api_command_prepare_for_calibration_position(self):
-        
+
         self.set_print_mode('fullcontrol')
 
         self.set_movement_mode("absolute")
@@ -1351,7 +1354,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.execute_printer_script('head_maintenance_position', { "currentZ": self._printer._currentZ })
         self.wait_for_maintenance_position = True
         self._printer.commands(['M400']) #Wait for movements to complete
-   
+
     def execute_printer_script(self, script_name, context = None):
         full_script_name = self.model.lower() + "_" + script_name + ".jinja2"
         self._logger.debug("Executing script {0}".format(full_script_name))
@@ -1367,33 +1370,33 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
          if self.powerbutton_handler:
             self.powerdown_after_disconnect = True
             self.intended_disconnect = True
-            self._printer.disconnect() 
+            self._printer.disconnect()
 
     def do_powerdown_after_disconnect(self):
         if self.powerbutton_handler:
-            self.powerbutton_handler.disableAuxPower()      
+            self.powerbutton_handler.disableAuxPower()
             self._logger.debug("Auxiliary power down for maintenance")
             self._send_client_message("head_in_maintenance_position")
 
     def power_up_after_maintenance(self):
         if self.powerbutton_handler:
             self._send_client_message("powering_up_after_maintenance")
-            # Enable auxiliary power. This will fully reset the printer, so full homing is required after. 
-            self.powerbutton_handler.enableAuxPower() 
+            # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
+            self.powerbutton_handler.enableAuxPower()
             self._logger.debug("Auxiliary power up after maintenance")
-            time.sleep(5) # Give it 5 sec to power up 
+            time.sleep(5) # Give it 5 sec to power up
 
             #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
             #TODO: Or monitor if /dev/ttyUSB0 exists?
             self.connecting_after_maintenance = True
-            self._printer.connect()         
+            self._printer.connect()
 
     def auto_home_after_maintenance(self):
         self.is_homed = False #Reset is_homed, so LUI waits for a G28 complete, and then sends UI update
         self._printer.home(['x','y','z'])
-        
-        
-    def _on_api_command_after_head_maintenance(self, *args, **kwargs): 
+
+
+    def _on_api_command_after_head_maintenance(self, *args, **kwargs):
         if self.powerbutton_handler:
             self.power_up_after_maintenance()
         else:
@@ -1672,7 +1675,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if not self.is_media_mounted:
             return make_response("Could not access the media folder", 400)
 
-        # Rotated log files have also dates as extension, this check out for now. 
+        # Rotated log files have also dates as extension, this check out for now.
         # if not octoprint.util.is_allowed_file(filename, ["log"]):
         #     return make_response("Not allowed to copy this file", 400)
 
@@ -1680,7 +1683,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         src_path = os.path.join(logs_folder, filename)
 
         self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", "logs_copy_progress", "logs_copy_complete", "logs_copy_failed")
-        
+
 
     def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
         import shutil
@@ -1817,7 +1820,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 unload_change = self.current_printer_profile["filament"]["unload_change"]
 
             self.load_amount_stop = self.current_printer_profile["filament"]["unload_amount_stop"]
-            
+
 
             # Before unloading, always purge the machine 10 mm
             self._printer.commands(["G1 E10 F300"])
@@ -1928,7 +1931,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_connect_after_error(self):
         self.send_M999_on_reconnect = True
         self._printer.connect()
-        
+
 
     ##~ Helpers to send client messages
     def _send_client_message(self, message_type, data=None):
@@ -2020,7 +2023,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
 
-        # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise) 
+        # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise)
         if event == Events.PRINT_STARTED:
             self.execute_printer_script("before_print_started", context)
 
@@ -2171,7 +2174,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.wait_for_movements_command_sent = True
 
     def _on_movements_complete(self):
-        """ 
+        """
         Fired when a M400 (wait for all movements) completes. Useful for maintenance procedures
         """
         if self.wait_for_maintenance_position:
@@ -2201,7 +2204,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.wait_for_movements_command_sent and "ok" in line:
             self.wait_for_movements_command_sent = False
             self._on_movements_complete()
-            
+
         return line
 
     def hook_actiontrigger(self, comm, line, action_trigger):
@@ -2481,7 +2484,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.last_git_fetch = 0
         self.update_info = []
 
-        # NOTE: The order of this array is used for functions! Keep it the same! 
+        # NOTE: The order of this array is used for functions! Keep it the same!
         self.update_info = [
             {
                 'name': "Leapfrog UI",
@@ -2561,7 +2564,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if spec.get("action") == 'restart_service':
                 actions.pop(index)
                 actions_changed = True
-            
+
         if actions_changed:
             self._settings.global_set(["system", "actions"], actions)
             self._logger.info("Actions cleaned up")
@@ -2642,14 +2645,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_command_sent = False
         self._logger.info("M115 data received: %s" % line)
         line = line[5:].rstrip() # Strip echo and newline
-       
+
         if len(line) > 0:
             oldModelName = self.model
             self._update_from_m115_properties(line)
             self.machine_info = self._get_machine_info()
 
             if not oldModelName.lower() == self.machine_info["machine_type"].lower():
-                
+
                 self.model = self.machine_info["machine_type"]
                 self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
 
@@ -2735,7 +2738,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.warn('Error or disconnect. Reason: {0}. Statestring: {1}'.format(self.printer_error_reason, statestring))
         self._logger.debug('Current temperature data: {0}'.format(self.current_temperature_data))
 
-    def _handle_mintemp(self): 
+    def _handle_mintemp(self):
         tool = "tool" + self.printer_error_extruder
         self.requesting_temperature_after_mintemp = True
         self._printer._comm.sendCommand('M105', force=True)
@@ -2788,7 +2791,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.info("Print done, no timelapse configured and auto shutdown on. Starting shutdown timer.")
                 # Start auto shutdown timer
                 self._auto_shutdown_start()
-            else: 
+            else:
                 # Timelapse is configured, let's not do anything and shutdown after render complete or failed
                 self._send_client_message("auto_shutdown_wait_on_render")
                 self.auto_shutdown_after_movie_done = True
@@ -2813,8 +2816,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if(event == Events.CONNECTING):
             self.intended_disconnect = False
             self._reset_printer_error()
-        
-        if(event == Events.CONNECTED):            
+
+        if(event == Events.CONNECTED):
             if self.send_M999_on_reconnect:
                 self._printer.commands(['M999'])
                 self.send_M999_on_reconnect = False

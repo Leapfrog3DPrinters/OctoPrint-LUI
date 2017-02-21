@@ -41,19 +41,6 @@ $(function () {
                     {
                         element: document.querySelector('#swap_buttons'),
                         intro: "<div class='step-header'>Guided Tour</div>" +
-                        "<div class='step-text'>Click <i class='fa fa-gear'></i> <b> Info </b> for info about the printer, " +
-                        "like temperatures and an console to the printer ",
-                        position: 'bottom'
-                    },
-                    {
-                        element: document.querySelector('#swap_buttons'),
-                        intro: "<div class='step-header'>Guided Tour</div>" +
-                        "<div class='step-text'>Click the <i class='fa fa-refresh'></i> <b> Swap </b> buttons to swap the filament ",
-                        position: 'bottom'
-                    },
-                    {
-                        element: document.querySelector('#swap_buttons'),
-                        intro: "<div class='step-header'>Guided Tour</div>" +
                         "<div class='step-text'>Click the <i class='fa fa-refresh'></i> <b> Swap </b> buttons to swap the filament ",
                         position: 'bottom'
                     },
@@ -130,6 +117,7 @@ $(function () {
 
             intro.onbeforechange(function(targetElement) {
                 if (targetElement.id === 'load_filament') {
+                    self.flyout.showFlyout('filament');
                     $('#swap-info,#fd-swap-info').removeClass('active');
                     $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
                     $('.swap_process_step,.fd_swap_process_step').removeClass('active');
@@ -141,6 +129,10 @@ $(function () {
                     $('#unload_filament,#fd_unload_filament').addClass('active');
                     $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
                     console.log("Unload active");
+                }
+                if (targetElement.id === 'step4') {
+                    self.flyout.closeFlyout('filament');
+                    console.log("Unload & Load deactive");
                 }
                 if (targetElement.id === 'step5') {
                     $("#job_button").click();
