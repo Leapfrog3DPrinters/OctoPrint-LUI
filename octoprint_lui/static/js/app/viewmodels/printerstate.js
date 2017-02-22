@@ -20,6 +20,7 @@ $(function ()  {
         self.isSdReady = ko.observable(undefined);
 
         self.waitingForPause = ko.observable(false);
+        self.waitingForCancel = ko.observable(false);
 
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
@@ -80,7 +81,7 @@ $(function ()  {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && !self.waitingForPause() && self.loginState.isUser();
         });
         self.enableCancel = ko.computed(function ()  {
-            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser() && !self.waitingForCancel();
         });
 
         self.filament = ko.observableArray([]);
@@ -288,6 +289,11 @@ $(function ()  {
             self.waitingForPause(false);
         }
 
+        self.onEventPrintCancelled = function (payload) {
+            // Enable start button
+            self.waitingForCancel(false);
+        }
+
         self.onEventPrintResumed = function (payload)
         {
             // Enable pause button
@@ -413,8 +419,10 @@ $(function ()  {
             var cancel_text = gettext("No");
             var dialog = {title: title, text: message, question: question, ok_text: ok_text, cancel_text: cancel_text};
             self.flyout.showConfirmationFlyout(dialog)
-                .done(function(){ 
-                    OctoPrint.job.cancel()
+                .done(function () {
+                    self.waitingForCancel(true);
+                    self._sendApi({ command: 'immediate_cancel'});
+                    //OctoPrint.job.cancel()
                 });
         };
 

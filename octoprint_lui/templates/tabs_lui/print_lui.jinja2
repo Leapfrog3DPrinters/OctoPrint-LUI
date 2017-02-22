@@ -77,7 +77,7 @@
           </div>
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button ok-button" data-bind="click: function () { print() }, css: { disabled: !isOperational() || !fileSelected() || !loginState.loggedIn()}">
+              <li class="button ok-button" data-bind="click: function () { print() }, css: { disabled: !isOperational() || waitingForCancel() || !fileSelected() || !loginState.loggedIn()}">
                 <a href="#">
                   <span>
                     <i class="fa fa-play"></i>{{ _('Start print') }}
