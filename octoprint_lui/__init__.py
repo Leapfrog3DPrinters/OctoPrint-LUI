@@ -296,16 +296,44 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
 
+            # Check OctoPrint Branch, it will reboot and first run will run again after wards. 
+            # This is at the top of the first run so most things won't run twice etc.
+            self._check_octoprint_branch()
+
             ##~ Fix stuff
             self._add_server_commands()
             self._disable_ssh()
-            #TODO: Maybe move branch switch for OctoPrint here?
+            # TODO: We need to make sure that if something fails in the 
+            # the _first_run, it has a dirty flag and is not saved and ran again
 
             self._update_printer_scripts_profiles()
             self._configure_local_user()
 
             self._settings.set(["had_first_run"], self.plugin_version)
             self._settings.save()
+
+
+    def _check_octoprint_branch(self):
+        """ Check if OctoPrint branch is still on development and change it to master
+            if debug mode is not on. This will install and restart service. 
+            It will run _first_run again because it won't get to the saving part.
+        """
+        self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
+        if not self.debug and "devel" in octoprint.__branch__:
+            self._logger.info("Install is still on devel branch, going to switch")
+            # So we are really still on devel, let's switch to master
+            checkout_master_branch = None
+            try:
+                checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
+            except subprocess.CalledProcessError as err:
+                self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+            
+            if checkout_master_branch:
+                self._logger.info("Switched OctoPrint from devel to master")
+                self.update_info[4]["update"] = True
+                self._send_client_message("forced_update")
+                self._update_plugins("OctoPrint")
+
 
     def _disable_ssh(self):
         if self.platform == "RPi" and not self.debug and os.path.exists("/etc/init/ssh.conf"):
@@ -606,8 +634,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.fetching_updates = False
             return
         try:
-            # We're only using this method for checking the branch of OctoPrint. This will be tidied up in 1.1.0
-            self._fetch_all_repos(update_info)
             update_info_updated = self._update_needed_version_all(update_info)
             self.update_info = update_info_updated
         except Exception as e:
@@ -615,44 +641,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return self._send_client_message("update_fetch_error")
         finally:
             self.fetching_updates = False
+            self.last_git_fetch = time.time()
 
         self._get_firmware_info()
         data = dict(update=self._create_update_frontend(self.update_info), machine_info=  self.machine_info)
         return self._send_client_message("update_fetch_success", data)
 
-
-
-    def _fetch_all_repos(self, update_info):
-        ##~ Make sure we only fetch if we haven't for half an hour or if we are forced
-        ## We switched from devel to master branch during production. Here we check if we 
-        ## still are on 'devel', if so, switch the branch over to 'master' branch. 
-        for update in update_info:
-            if update["identifier"] == "octoprint":
-                try:
-                    branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=update["path"])
-                except subprocess.CalledProcessError as err:
-                     self._logger.warn("Can't get branch name: {path}. {err}".format(path=update['path'], err=err))
-                if not self.debug and "devel" in branch_name:
-                    self._logger.info("Install is still on devel branch, going to switch")
-                    # So we are really still on devel, let's switch to master
-                    checkout_master_branch = None
-                    try:
-                        checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
-                    except subprocess.CalledProcessError as err:
-                        self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
-                    
-                    if checkout_master_branch:
-                        self._logger.info("Switched OctoPrint from devel to master!")
-                        # Set update manually to true so the next time we install the master branch
-                        self.update_info[4]["update"] = True
-                        self._send_client_message("forced_update")
-                        self._update_plugins("OctoPrint")
-                        
-
-            ## Branch check is done, fetch the git repo
-            # We're no longer fetching updates beforehand. Just checking the local and remote hashes
-            #self._fetch_git_repo(update['path'])
-        self.last_git_fetch = time.time()
 
     def _update_needed_version_all(self, update_info):
         for update in update_info:
@@ -697,20 +691,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
     def _fetch_git_repo(self, path):
-        # Set octoprint git remote to Leapfrog:
-        # Out for now, feels  way too hacky.
-        # if path is self.update_info[4]['path']:
-        #     try:
-        #         remote_git = subprocess.check_output(['git', 'remote', '-v'],cwd=path)
-        #     except subprocess.CalledProcessError as err:
-        #         self._logger.warn("Can't get remote gits with path: {path}. {err}".format(path=path, err=err))
-        #     if 'foosel' in remote_git:
-        #         try:
-        #             update_remote_git = subprocess.check_output(['git', 'remote', 'set-url', 'origin', 'https://github.com/Leapfrog3DPrinters/OctoPrint.git'],cwd=path)
-        #         except subprocess.CalledProcessError as err:
-        #             self._logger.warn("Can't set remote url with path: {path}. {err}".format(path=path, err=err))
-        #     self._logger.info("Changed git remote repo!")
-
         try:
             output = subprocess.check_output(['git', 'fetch'],cwd=path)
         except subprocess.CalledProcessError as err:
