@@ -117,7 +117,6 @@ $(function () {
 
             intro.onbeforechange(function(targetElement) {
                 if (targetElement.id === 'load_filament') {
-                    self.flyout.showFlyout('filament');
                     $('#swap-info,#fd-swap-info').removeClass('active');
                     $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
                     $('.swap_process_step,.fd_swap_process_step').removeClass('active');
@@ -130,21 +129,26 @@ $(function () {
                     $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
                     console.log("Unload active");
                 }
-                if (targetElement.id === 'step4') {
-                    self.flyout.closeFlyout('filament');
-                    console.log("Unload & Load deactive");
+                if (targetElement.id === 'swap_buttons') {
                 }
                 if (targetElement.id === 'step5') {
                     $("#job_button").click();
                     console.log("Job Button clicked");
                 }
                 if (targetElement.id === 'step4') {
+                    self.flyout.closeFlyout('filament');
+                    console.log("Unload & Load deactived");
                     $("#print_icon").click();
                     console.log("Print Icon clicked");
                 }
                 if (targetElement.id === 'files_menu') {
                     $("#files_options").click();
                     console.log("File Menu clicked");
+                }
+            });
+
+            intro.onafterchange(function(targetElement) {
+                if (targetElement.id === 'swap_buttons') {
                 }
             });
 

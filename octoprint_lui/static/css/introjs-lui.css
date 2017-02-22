@@ -4,7 +4,11 @@
 }
 
 .introjs-fixParent {
-  z-index: inherit;
+  z-index: 1 !important;
+}
+
+.step-header {
+  border-bottom: 1px solid #ff9734;
 }
 
 /*
