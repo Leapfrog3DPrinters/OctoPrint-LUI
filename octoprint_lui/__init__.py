@@ -296,21 +296,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
 
+            first_run_results = []
+
             # Check OctoPrint Branch, it will reboot and first run will run again after wards. 
             # This is at the top of the first run so most things won't run twice etc.
-            self._check_octoprint_branch()
+            first_run_results.append(self._check_octoprint_branch())
 
-            ##~ Fix stuff
-            self._add_server_commands()
-            self._disable_ssh()
-            # TODO: We need to make sure that if something fails in the 
-            # the _first_run, it has a dirty flag and is not saved and ran again
+            # Fix stuff on the image
+            first_run_results.append(self._add_server_commands())
+            first_run_results.append(self._disable_ssh())
 
-            self._update_printer_scripts_profiles()
-            self._configure_local_user()
+            # Load printer specific data
+            first_run_results.append(self._update_printer_scripts_profiles())
+            first_run_results.append(self._configure_local_user())
 
-            self._settings.set(["had_first_run"], self.plugin_version)
-            self._settings.save()
+            if not False in first_run_results:
+                self._settings.set(["had_first_run"], self.plugin_version)
+                self._settings.save()
+                self._logger.info("First run completed")
+            else:
+                self._logger.error("First run failed")
 
 
     def _check_octoprint_branch(self):
@@ -326,13 +331,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             try:
                 checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
             except subprocess.CalledProcessError as err:
-                self._logger.warn("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+                self._logger.error("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+                return False
             
             if checkout_master_branch:
                 self._logger.info("Switched OctoPrint from devel to master")
                 self.update_info[4]["update"] = True
                 self._send_client_message("forced_update")
                 self._update_plugins("OctoPrint")
+        
+        # Return success by default
+        return True
 
 
     def _disable_ssh(self):
@@ -341,6 +350,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint_lui.util.execute("sudo mv /etc/init/ssh.conf /etc/init/ssh.conf.disabled")
             except:
                 self._logger.exception("Could not disable SSH")
+                return False
+        
+        return True
 
     def _update_printer_scripts_profiles(self):
         """ Copies machine specific files to printerprofiles and scripts folders based on current model """
@@ -353,8 +365,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.debug("Scripts folder updated")
             except:
                 self._logger.exception("Could not update scripts folder")
+                return False
         else:
-            self._logger.warn("No scripts found for model {0}. Ensure the foldername is in lowercase.".format(self.model))
+            self._logger.error("No scripts found for model {0}. Ensure the foldername is in lowercase.".format(self.model))
+            return False
             
         profile_src_path = os.path.join(self._basefolder, "printerProfiles", self.model.lower() + ".profile") 
         profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
@@ -364,12 +378,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.debug("Printer profile updated")
             except:
                 self._logger.exception("Could not update printer profile")
+                return False
             
             self._printer._printerProfileManager.set_default(self.model.lower())
             self._printer._printerProfileManager.select(self.model.lower())
-
+            
         else:
-            self._logger.warn("No printer profile found for model {0}. Ensure the filename is in lowercase.".format(self.model))
+            self._logger.error("No printer profile found for model {0}. Ensure the filename is in lowercase.".format(self.model))
+            return False
+        
+        # By default return success
+        return True
 
     def _configure_local_user(self):
         """ Configures the local user which is used for autologin on the machine """
@@ -378,15 +397,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._settings.global_set_boolean(["accessControl", "enabled"], True)
         self._user_manager.enable()
 
-        local_password_chars = string.ascii_lowercase + string.ascii_uppercase + string.digits
-        local_password = "".join(choice(local_password_chars) for _ in range(16))
-        self._user_manager.addUser(self.local_username, local_password, True, ["user", "admin"], overwrite=True)
+        if not self._user_manager.findUser(self.local_username):
+            local_password_chars = string.ascii_lowercase + string.ascii_uppercase + string.digits
+            local_password = "".join(choice(local_password_chars) for _ in range(16))
+        
+            self._user_manager.addUser(self.local_username, local_password, True, ["user", "admin"], overwrite=True)
 
-        self._settings.global_set(["accessControl", "autologinLocal"], True) 
-        self._settings.global_set(["accessControl", "autologinAs"], self.local_username) 
-        self._settings.save()
+            self._settings.global_set(["accessControl", "autologinLocal"], True) 
+            self._settings.global_set(["accessControl", "autologinAs"], self.local_username) 
+            self._settings.save()
 
-        self._logger.debug("Local user configured with username: {0}".format(self.local_username))
+            self._logger.info("Local user configured with username: {0}".format(self.local_username))
+        
+        return True
 
     def _init_model(self):
         """ Reads the printer profile and any machine specific configurations """
