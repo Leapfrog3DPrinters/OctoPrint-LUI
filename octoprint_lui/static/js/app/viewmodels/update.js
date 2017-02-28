@@ -16,6 +16,7 @@ $(function ()  {
         self.updateCounter = 0;
         self.updateTarget = 0;
         self.update_warning = undefined;
+        self.firmware_update_warning = undefined;
         self.lpfrg_software_version = ko.observable(undefined);
 
         self.fileNameToFlash = ko.observable(undefined); // Can either be a local (USB) file name or a filename to be uploaded
@@ -169,6 +170,21 @@ $(function ()  {
                 }).always(function () {
                     self.firmwareUpdating(false);
                 });
+        }
+
+        self.showFirmwareUpdateWarning = function () {
+            self.firmware_update_warning = self.flyout.showWarning(
+                gettext("Updating firmware"),
+                gettext("The firmware is updating, please wait until the update is completed..."),
+                true);
+        }
+
+        self.hideFirmwareUpdateWarning = function (success) {
+            if (self.firmware_update_warning)
+                self.flyout.closeWarning(self.firmware_update_warning);
+
+            if (success)
+                self.flyout.closeFlyoutAccept("firmware_update_required");
         }
 
         self.showUpdateFlyout = function()
@@ -373,6 +389,15 @@ $(function ()  {
                     break;
                 case "forced_update":
                     self.showUpdateWarning();
+                    break;
+                case "auto_firmware_update_started":
+                    self.showFirmwareUpdateWarning();
+                    break;
+                case "auto_firmware_update_failed":
+                    self.hideFirmwareUpdateWarning(false);
+                    break;
+                case "auto_firmware_update_finished":
+                    self.hideFirmwareUpdateWarning(true);
                     break;
                 case "firmware_update_found":
                     if(DEBUG_LUI) {
