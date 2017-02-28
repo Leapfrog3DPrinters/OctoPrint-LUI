@@ -8,6 +8,7 @@ $(function ()  {
         self.temperatureState = parameters[2];
         self.settings = parameters[3];
         self.system = parameters[4];
+        self.introView = parameters[5];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -366,13 +367,16 @@ $(function ()  {
             var cancel_text = gettext("No");
             var dialog = {title: title, text: message, question: question, ok_text: ok_text, cancel_text: cancel_text};
             self.flyout.showConfirmationFlyout(dialog)
-                .done(function(){ 
+                .done(function(){
                     OctoPrint.job.cancel()
                 });
         };
 
         self.gotoFileSelect = function ()  {
             changeTabTo("files");
+            if (self.introView.introInstance.firstRun != false) {
+                self.introView.introInstance.goToStep(6);
+            }
         };
 
         self.showInfoFlyout = function ()  {
@@ -671,7 +675,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel", "introViewModel"],
         ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout", "#printer_error_flyout"]
     ]);
 });

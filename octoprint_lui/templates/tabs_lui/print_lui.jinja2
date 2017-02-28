@@ -26,7 +26,7 @@
               <div class="Table-item Table-item-grow-3">{{ _('Print time') }}</div>
               <div class="Table-item Table-item-grow-4" data-bind="text: printTimeString"></div>
             </div>
-            
+
           </div>
           <div class="Table-item Table-item-grow-2" style="align-items: flex-start">
             <img data-bind="attr: { src: printPreviewUrl }, visible: printPreviewUrl()" style="width: 100%; max-width: 175px;" />
@@ -45,7 +45,7 @@
         </div>
         <div class="Table-row">
           <div class="Table-item">
-            <ul id="step4" class="button-area">
+            <ul class="button-area">
               <li id="job_button" class="button" data-bind="click: function () {gotoFileSelect()}, css: {disabled: !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select">
                 <a href="#">
                   <span>
@@ -167,7 +167,7 @@
           </div>
         </div>
         {% if local_addr %}
-        <div id="swap_buttons" class="Table-row" data-bind="visible: !printerState.isPrinting() && !printerState.isPaused()">
+        <div class="Table-row" data-bind="visible: !printerState.isPrinting() && !printerState.isPaused()">
           <div class="Table-row">
             <div class="Table-item">
               <ul class="button-area">
@@ -183,8 +183,8 @@
           </div>
           <div class="Table-row">
             <div class="Table-item">
-              <ul id="step1" class="button-area">
-                <li id="swap-right-button" class="button secondary-button" data-bind="click: function () {showFilamentChangeFlyout('tool0') }, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() } ">
+              <ul class="button-area">
+                <li id="swap_button" class="button secondary-button" data-bind="click: function () { showFilamentChange('tool0') }, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() } ">
                   <a href="#">
                     <span>
                       <i class="fa fa-refresh"></i>{{ _('Swap right') }}

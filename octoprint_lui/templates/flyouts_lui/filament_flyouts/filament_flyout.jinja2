@@ -30,6 +30,7 @@
                     </ul>
                 </div>
                 <div class="swap_process_step" id="load_filament">
+                <div id="set_filament">
                   {{ _('Please select the new filament material') }}
                   <select class="select-material" data-bind="options: materialProfiles,
                                    optionsText: 'name',
@@ -40,24 +41,26 @@
                     <div id="slider_wrapper">
                         <div id="slider" class="noUi-extended"></div>
                     </div>
+                </div>
                     <div class="Table">
                         <div class="Table-row">
                             <div class="Table-item">
                                 <div>
                                     {{ _('The new spool is around <span id="new_filament_percent"></span> full, and therefor has <span id="new_filament_amount"></span> m on it.') }}
-                                    
+
                                 </div>
                             </div>
                         </div>
                         <div class="Table-row">
                             <div class="Table-item">
-                                <input id="input-format"></input>
+                                <input id="input-format">
                             </div>
                             <div class="Table-item">
-                                <span id="filament_percent"></span>   
+                                <span id="filament_percent"></span>
                             </div>
                         </div>
                     </div>
+                    <div id="load">
                     {% if printer_profile["filamentQuickLoad"] %}
                     <div class="explain">{{ _('Insert the filament in the filament drawer past both wheels of the extruder feeder in the drawer.') }}</div>
                     {% else %}
@@ -65,10 +68,11 @@
                     {% endif %}
 
                     <ul class="button-area">
-                        <li class="button ok-button" id="load_cmd" data-bind="click: function () { loadFilament(false); }, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
+                        <li class="button ok-button" id="load_cmd" data-bind="click: function () { showLoading() }, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
                             <a href="#"><span>{{ _('Load') }}</span></a>
                         </li>
                     </ul>
+                    </div>
                 </div>
             </div>
         </div>

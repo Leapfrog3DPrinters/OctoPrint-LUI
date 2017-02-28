@@ -4,11 +4,29 @@
 }
 
 .introjs-fixParent {
-  z-index: 1 !important;
+  position: absolute;
 }
 
 .step-header {
   border-bottom: 1px solid #ff9734;
+}
+
+.introjs-bullets {
+  pointer-events: none;
+  cursor: default;
+}
+
+.introjs-overlay {
+  pointer-events: none;
+  cursor: default;
+}
+
+.introjs-tooltip {
+  max-width: none !important;
+}
+
+.tooltip_hidden {
+  visibility: hidden;
 }
 
 /*
@@ -62,6 +80,7 @@
 }
 
 .introjs-skipbutton {
+  display: none;
   box-sizing: content-box;
   margin-right: 5px;
   background: none #ffffff;

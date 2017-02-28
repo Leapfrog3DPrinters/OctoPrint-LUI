@@ -9,6 +9,7 @@ $(function ()  {
         self.flyout = parameters[3];
         self.printerProfiles=parameters[4];
         self.filament = parameters[5];
+        self.introView = parameters[6];
 
         //self.slicing = parameters[3];
 
@@ -137,6 +138,9 @@ $(function ()  {
         })
 
         self.browseLocal = function (filenameToFocus) {
+
+            self.deferredWaitBrowseLocal = $.Deferred();
+
             if (self.isLoadingFileList())
                 return;
 
@@ -153,8 +157,18 @@ $(function ()  {
             self.loadFiles("local").done(preProcessList).done(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
                 self.currentOrigin("local");
-            }).always(function ()  { 
+            }).always(function ()  {
                 self.isLoadingFileList(false);
+            });
+
+            return self.deferredWaitBrowseLocal.resolve();
+        }
+
+        self.showLocalStep = function () {
+            self.browseLocal().done(function(){
+                if (self.introView.introInstance.firstRun != false) {
+                    self.introView.introInstance.exit();
+                }
             });
         }
 
@@ -541,7 +555,8 @@ $(function ()  {
 
         self.printAndChangeTab = function () {
             changeTabTo("print");
-            self.printerState.print();
+            self.printerState.print()
+            setTimeout(function(){self.introView.introInstance.goToStep(7)}, 300);
         }
 
         self.copyToUsb = function(file)
@@ -639,19 +654,18 @@ $(function ()  {
                     mode: mode
                 })
                 self.flyout.closeFlyoutAccept();
+                self.introView.introInstance.exit();
             }
-
-
             // do print stuff
-            // close flyout. 
+            // close flyout.
         };
 
         self.isDualPrint = ko.computed(function(){
             // Checks if selected file uses both tools for printing.
-            // At the moment tools is hardcoded, should be taken from 
-            // printer profile. 
-            // There is a length check in there, because the analyser 
-            // sometimes falsely puts some extrusion on one of the tools 
+            // At the moment tools is hardcoded, should be taken from
+            // printer profile.
+            // There is a length check in there, because the analyser
+            // sometimes falsely puts some extrusion on one of the tools
             // at start up script (or something)
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 var analysis = self.selectedFile()["gcodeAnalysis"];
@@ -1359,11 +1373,16 @@ $(function ()  {
                 }
             }
         }
+
+        self.backToFiles = function () {
+            self.gotoFileSelect();
+            self.introView.introInstance.goToStep(6);
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "introViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });

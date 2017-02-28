@@ -283,8 +283,8 @@
         {% include "flyouts_lui/filament_flyouts/filament_flyout.jinja2" %}
       </div>
       <ul class="button-area">
-        <li class="button failed-button">
-          <a href="#abort" data-bind="click: function () { flyout.closeFlyout() }">
+        <li id='abort_filament' class="button failed-button">
+          <a href="#abort" data-bind="click: function () { flyout.closeFlyout(); introView.introInstance.goToStep(1)}">
             <span data-bind="">{{ _('Abort') }}</span>
           </a>
         </li>
@@ -646,7 +646,7 @@
     </div>
   </div>
 </aside>
-<div id="warnings_container" style="z-index: 99">
+<div id="warnings_container" style="z-index: 101">
   <div data-bind="template: { name: 'warning-template', foreach: warnings }">
   </div>
   <script type="text/html" id="warning-template">
@@ -688,7 +688,7 @@
     </aside>
   </script>
 </div>
-<div id="infos_container" style="z-index: 98">
+<div id="infos_container" style="z-index: 101">
   <div data-bind="template: { name: 'info-template', foreach: infos }">
   </div>
   <script type="text/html" id="info-template">

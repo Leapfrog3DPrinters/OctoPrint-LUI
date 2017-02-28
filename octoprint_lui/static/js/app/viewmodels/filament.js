@@ -9,6 +9,7 @@ $(function ()  {
         self.flyout = parameters[2];
         self.printerState = parameters[3];
         self.temperatureState = parameters[4];
+        self.introView = parameters[5];
 
         self.loadedFilamentAmount = ko.observable(0);
         self.tool = ko.observable(undefined);
@@ -130,6 +131,8 @@ $(function ()  {
 
             self.changeFilament(tool);
 
+            self.deferredWaitLoad = $.Deferred();
+
             if (!forPurge) {
                 self.filamentActionText(gettext("Swap"));
                 self.showUnload();
@@ -158,6 +161,8 @@ $(function ()  {
             .fail(function ()  {
                 self.changeFilamentCancel();
             });
+
+            return self.deferredWaitLoad.promise();
         };
 
         // Below functions swap views for both filament swap and filament detection swap
@@ -173,6 +178,7 @@ $(function ()  {
             $('.swap_process_step,.fd_swap_process_step').removeClass('active');
             $('#load_filament,#fd_load_filament').addClass('active');
             self.filamentLoading(false);
+            self.deferredWaitLoad.resolve();
         };
 
         self.showFinished = function ()  {
@@ -193,6 +199,9 @@ $(function ()  {
 
         self.finishedLoading = function ()  {
             // We are finished close the flyout
+            if(self.introView.introInstance.firstRun != false) {
+                self.introView.introInstance.goToStep(5);
+            }
             self.flyout.closeFlyoutAccept();
         };
 
@@ -370,6 +379,9 @@ $(function ()  {
                     self.filamentLoading(false);
                     self.showFinished();
                     self.hideToolLoading();
+                    if (self.introView.introInstance.firstRun != false) {
+                    self.introView.introInstance.goToStep(4);
+                    }
                     self.filamentLoadProgress(0);
                     if (!messageData.profile) {
                         self.flyout.closeFlyoutAccept();
@@ -460,12 +472,31 @@ $(function ()  {
             });
         };
 
+        self.showFilamentChange = function (tool) {
+            self.showFilamentChangeFlyout(tool).done(function() {
+                if (self.introView.introInstance.firstRun != false) {
+                    setTimeout(function () {
+                        self.introView.introInstance.refresh()
+                    }, 300);
+                    self.introView.introInstance.goToStep(2);
+                }
+            });
+        }
 
+        self.showLoading = function () {
+            if (self.introView.introInstance.firstRun != false) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh()
+                }, 300);
+                self.introView.introInstance.goToStep(3);
+            }
+            self.loadFilament(false);
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
       FilamentViewModel,
-      ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel"],
+      ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel", "introViewModel"],
       ["#filament_status", "#filament_flyout", "#filament_override_flyout", "#materials_settings_flyout_content"]
     ]);
 

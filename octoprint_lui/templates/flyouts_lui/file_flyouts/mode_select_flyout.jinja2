@@ -2,7 +2,7 @@
     <div class="Table">
         <div class="Table-row Table-header">
             <div class="Table-item">
-                {{ _('Start print.') }}
+                {{ _('Start print') }}
             </div>
         </div>
         <div class="Table-row">
@@ -109,17 +109,17 @@
         </div>
     </div>
     {% endif %}
-    <div class="Table">
+    <div id="start_print" class="Table">
         <div class="Table-row">
             <div class="Table-item">
                 {{ _('Are you sure you want to start this print?') }}
             </div>
-        </div>    
+        </div>
         <div class="Table-row">
             <div class="Table-item">
                 <ul class="button-area">
                     <li class="button failed-button">
-                        <a href="#save" data-bind="click: function () { flyout.closeFlyout() } ">
+                        <a href="#save" data-bind="click: function () { flyout.closeFlyout(); backToFiles() } ">
                             <span>{{ _('Cancel') }}</span>
                         </a>
                     </li>

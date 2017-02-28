@@ -116,7 +116,7 @@ $(function () {
 
       // Show the confirmation flyout
       $('#confirmation_flyout').addClass('active');
-      $('#confirmation_flyout').css("z-index", self.flyouts().length + 1);
+      $('#confirmation_flyout').css("z-index", self.flyouts().length + 100);
       self.setOverlay();
 
       self.confirmationDeferred = $.Deferred()
@@ -211,7 +211,7 @@ $(function () {
 
     self.activateFlyout = function(template_flyout) {
         $(template_flyout).addClass('active');
-        $(template_flyout).css("z-index", self.flyouts().length);
+        $(template_flyout).css("z-index", self.flyouts().length + 100);
         self.setOverlay();
     }
 

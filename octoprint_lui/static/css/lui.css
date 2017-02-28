@@ -327,7 +327,7 @@ input[type=radio] {
 .network-status {
   margin-right: 20px; }
 
-#info {
+#intro_button {
   margin-left: auto;
 }
 
@@ -397,20 +397,19 @@ input[type=radio] {
   max-width: 500px;
   overflow-y: auto;
   position: fixed;
-  right: 0;
+  right: -100%;
   top: 0;
-  transform: translate3d(100%, 0, 0);
   width: 80%;
-  -webkit-transition: transform 0.2s ease-in-out;
-  -moz-transition: transform 0.2s ease-in-out;
-  -ms-transition: transform 0.2s ease-in-out;
-  -o-transition: transform 0.2s ease-in-out;
-  transition: transform 0.2s ease-in-out;
+  -webkit-transition: right 0.2s ease-in-out;
+  -moz-transition: right 0.2s ease-in-out;
+  -ms-transition: right 0.2s ease-in-out;
+  -o-transition: right 0.2s ease-in-out;
+  transition: right 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
   z-index: 1; }
   .flyout.active {
-    transform: translate3d(0, 0, 0); }
+    right: 0px; }
   .flyout a {
     color: #434A54; }
 
@@ -458,18 +457,18 @@ input[type=radio] {
   display: none !important; }
 
 #offline_flyout {
-  z-index: 100; }
+  z-index: 154; }
 
 #confirmation_flyout {
-  z-index: 99; }
+  z-index: 153; }
 
 .warning_flyout {
-  z-index: 97; }
+  z-index: 152; }
 
 .info_flyout {
-  z-index: 96; }
+  z-index: 151; }
 
-/* 
+/*
   Circles
 */
 .circle {

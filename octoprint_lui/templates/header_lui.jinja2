@@ -29,9 +29,11 @@
             <circle class="light-green" fill="#35801C" cx="83" cy="15" r="9"/>
         </svg>
     </div>-->
-<div id="info" >
+<!-- ko allowBindings: false -->
+<div id="intro_button" >
     <a href="#" data-bind="click: function () { startIntro() } "><i class="fa fa-question-circle-o"></i></a>
 </div>
+<!-- /ko -->
   {% if local_addr %}
   <!-- ko allowBindings: false -->
   <div id="ethernet_connectivity" class="network-status">
