@@ -167,7 +167,7 @@ $(function ()  {
         self.showLocalStep = function () {
             self.browseLocal().done(function(){
                 if (self.introView.introInstance.firstRun != false) {
-                    self.introView.introInstance.exit();
+                    setTimeout(function(){self.introView.introInstance.goToStep(7)}, 500);
                 }
             });
         }
@@ -190,7 +190,7 @@ $(function ()  {
         }
 
         self.notifyUsbFail = function ()  {
-            $.notify({ title: gettex('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
+            $.notify({ title: gettext('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
         };
 
         self.browseUsbForFirmware = function ()  {
@@ -555,8 +555,11 @@ $(function ()  {
 
         self.printAndChangeTab = function () {
             changeTabTo("print");
-            self.printerState.print()
-            setTimeout(function(){self.introView.introInstance.goToStep(7)}, 300);
+            self.printerState.print();
+            if (self.introView.introInstance.firstRun != false){
+                self.introView.introInstance.refresh();
+                self.introView.introInstance.goToStep(8);
+            }
         }
 
         self.copyToUsb = function(file)
@@ -1376,7 +1379,9 @@ $(function ()  {
 
         self.backToFiles = function () {
             self.gotoFileSelect();
-            self.introView.introInstance.goToStep(6);
+            if (self.introView.introInstance.firstRun != false){
+                self.introView.introInstance.goToStep(6);
+            }
         }
     }
 

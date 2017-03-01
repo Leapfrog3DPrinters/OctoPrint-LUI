@@ -449,6 +449,17 @@ input[type=radio] {
   font-weight: 700;
   padding-left: 30px; }
 
+.ok-button.disabled {
+  pointer-events: none;
+  background-color: #ddebb1;
+  border: 1px solid #ddebb1;
+  opacity: 1; }
+
+a.disabled {
+  pointer-events: none;
+  color: #8e9298 !important;
+  opacity: 1; }
+
 .disabled {
   pointer-events: none;
   opacity: 0.4; }
@@ -617,7 +628,7 @@ input[type=radio] {
   flex-grow: 10; }
 
 .fa {
-  position: relative; }
+  position: inherit; }
 
 .badge {
   font-size: .25em;

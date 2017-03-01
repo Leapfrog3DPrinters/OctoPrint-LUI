@@ -50,8 +50,13 @@ $(function ()  {
                     element: document.querySelector('#local_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Here we can select a GCODE file that's saved on the printer. " +
-                    "There is a sample print you can try out. When you have selected the file, press the " +
-                    "<i class='fa fa-play'></i> button next to it.</div>"
+                    "There is a sample print you can try out.</div>"
+                },
+                {
+                    element: document.querySelector("lol"),
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>When you have selected the file, press the <i class='fa fa-play'>" +
+                    "</i> button next to it.</div>"
                 },
                 {
                     element: document.querySelector('#start_print'),
@@ -73,7 +78,7 @@ $(function ()  {
 
         self.introInstance.onbeforechange(function(targetElement) {
             switch(targetElement.id) {
-                case 'swap_buttons':
+                case 'swap_button':
                     $('#print_icon').click();
                     console.log('beforeswap');
                     break;
@@ -101,7 +106,7 @@ $(function ()  {
 
         self.introInstance.onafterchange(function(targetElement) {
             switch (targetElement.id){
-                case 'swap_buttons':
+                case 'swap_button':
                     console.log('afterswap');
                     break;
                 case 'load_filament':
@@ -127,7 +132,7 @@ $(function ()  {
 
         self.introInstance.onchange(function(targetElement){
             switch (targetElement.id){
-                case 'swap_buttons':
+                case 'swap_button':
                     console.log('onswap');
                     break;
                 case 'load_filament':
