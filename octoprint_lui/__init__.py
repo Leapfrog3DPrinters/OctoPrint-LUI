@@ -472,11 +472,29 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             return StrictVersion(current_version) == StrictVersion(requirement)
 
-    @octoprint.plugin.BlueprintPlugin.route("/firmwareupdate", methods=["GET"])
-    def get_firmware_updates(self):
-        return jsonify(self.get_firmware_update_info(True))
+    @octoprint.plugin.BlueprintPlugin.route("/firmware", methods=["GET"])
+    def get_firmware_version_info(self):
+        current_version = None
+        version_requirement = None
+
+        if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
+            current_version = StrictVersion(self.machine_info["firmware_version"])
+
+        if self.model in self.firmware_version_requirement:
+            version_requirement =  self.firmware_version_requirement[self.model]
+                
+        return jsonify({
+            "current_version": str(current_version) if current_version else None,
+            "version_requirement": version_requirement,
+            "update_required" : self._firmware_update_required(),
+            "auto_update_started": self.auto_firmware_update_started 
+        })
+        
+    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["GET"])
+    def get_firmware_update_info(self):
+        return jsonify(self.get_firmware_update(True))
     
-    def get_firmware_update_info(self, forced = False):
+    def get_firmware_update(self, forced = False):
         self._logger.debug("Checking for new firmware version")
 
         if not self.fw_version_info or forced:
@@ -514,8 +532,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "new_firmware": new_firmware, 
                     "current_version": str(current_version) if current_version else None, 
                     "new_version": str(new_firmware_version) if new_firmware_version else None,
-                    "requires_lui_update": requires_lui_update,
-                    "auto_firmware_update_started": self.auto_firmware_update_started,
+                    "requires_lui_update": requires_lui_update
                     })
 
 
@@ -528,7 +545,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.firmware_info_received_hooks.remove(self._auto_firmware_update)
 
         if self._firmware_update_required():
-            fw_update_info = self.get_firmware_update_info()
+            fw_update_info = self.get_firmware_update()
         
             if fw_update_info["new_firmware"]:
                 self._logger.info("New firmware required and found. Going to auto update and flash firmware.")
@@ -580,7 +597,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return True
         
 
-    @octoprint.plugin.BlueprintPlugin.route("/firmwareupdate", methods=["POST"])
+    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["POST"])
     def do_firmware_update(self):
         if self.fw_version_info:
             fw_path = self.firmware_update_info.download_firmware(self.fw_version_info["url"])
@@ -1009,10 +1026,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             machine_info = self._get_machine_info()
 
-            fw_req = None
-            if self.model in self.firmware_version_requirement:
-                fw_req =  self.firmware_version_requirement[self.model]
-                
             result = dict({
                 'machine_info': machine_info,
                 'filaments': self.filament_database.all(),
@@ -1024,8 +1037,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'show_changelog': self.show_changelog,
                 'changelog_contents': self._get_changelog_html(),
                 'lui_version': self.plugin_version,
-                'firmware_update_required' : self._firmware_update_required(),
-                'firmware_version_requirement': fw_req,
                 'printer_error_reason': self.printer_error_reason,
                 'printer_error_extruder': self.printer_error_extruder
                 })

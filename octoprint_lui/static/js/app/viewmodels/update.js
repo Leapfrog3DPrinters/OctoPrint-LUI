@@ -24,9 +24,10 @@ $(function ()  {
         self.modelName = ko.observable(undefined);
         self.firmwareVersion = ko.observable(undefined);
         self.firmwareUpdateAvailable = ko.observable(false);
+        self.firmwareUpdateRequired = ko.observable(false);
+        self.firmwareVersionRequirement = ko.observable(undefined);
         self.firmwareRefreshing = ko.observable(false);
         self.firmwareUpdating = ko.observable(false);
-
 
         self.flashingAllowed = ko.computed(function ()  {
             return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
@@ -158,7 +159,7 @@ $(function ()  {
         self.firmwareUpdate = function()
         {
             self.firmwareUpdating(true);
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
             OctoPrint.postJson(url)
                 .done(function () {
                     self.firmwareUpdateAvailable(false);
@@ -173,18 +174,32 @@ $(function ()  {
         }
 
         self.showFirmwareUpdateWarning = function () {
-            self.firmware_update_warning = self.flyout.showWarning(
-                gettext("Updating firmware"),
-                gettext("The firmware is updating, please wait until the update is completed..."),
-                true);
+            if (self.firmware_update_warning === undefined) {
+                self.firmware_update_warning = self.flyout.showWarning(
+                    gettext("Updating firmware"),
+                    gettext("The firmware is updating, please wait until the update is completed..."),
+                    true);
+            }
         }
 
         self.hideFirmwareUpdateWarning = function (success) {
-            if (self.firmware_update_warning)
+            if (self.firmware_update_warning !== undefined) {
                 self.flyout.closeWarning(self.firmware_update_warning);
+                self.firmware_update_warning = undefined;
+            }
 
+            // We're actively clcosing the update_required flyout here for improved user experience.
+            // If the auto-update for whatever reason flashed the wrong version, the flyout will automatically pop-up again
             if (success)
-                self.flyout.closeFlyoutAccept("firmware_update_required");
+                self.hideFirmwareUpdateRequiredFlyout();
+        }
+
+        self.showFirmwareUpdateRequiredFlyout = function () {
+            self.flyout.showFlyout('firmware_update_required', true);
+        }
+
+        self.hideFirmwareUpdateRequiredFlyout = function () {
+            self.flyout.closeFlyoutAccept("firmware_update_required");
         }
 
         self.showUpdateFlyout = function()
@@ -224,15 +239,31 @@ $(function ()  {
             self.modelName(data.machine_info.machine_type);
         };
 
-        self.fromFirmwareResponse = function (data, silent)
+        self.fromFirmwareResponse = function (data)
         {
+            self.firmwareUpdateRequired(data.update_required);
+            self.firmwareVersionRequirement(data.version_requirement);
             self.firmwareVersion(data.current_version);
 
+            if (data.update_required)
+                self.showFirmwareUpdateRequiredFlyout();
+            else
+                self.hideFirmwareUpdateRequiredFlyout();
+
+            if (data.auto_update_started)
+                self.showFirmwareUpdateWarning();
+            else
+                self.hideFirmwareUpdateWarning();
+        }
+
+        self.fromFirmwareUpdateResponse = function (data, silent)
+        {
             if(data.new_firmware)
             {
                 // New firmware found
                 if (data.requires_lui_update) {
                     self.firmwareUpdateAvailable(false);
+
                     if(!silent && self.update_needed() > 0)
                     {
                         var title = gettext("Firmware update found");
@@ -277,11 +308,20 @@ $(function ()  {
                 });
         };
 
-        self.requestFirmwareData = function (silent) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+        self.requestFirmwareData = function ()
+        {
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware";
             OctoPrint.get(url)
                 .done(function (response) {
-                    self.fromFirmwareResponse(response, silent);
+                    self.fromFirmwareResponse(response);
+                });
+        }
+
+        self.requestFirmwareUpdateData = function (silent) {
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
+            OctoPrint.get(url)
+                .done(function (response) {
+                    self.fromFirmwareUpdateResponse(response, silent);
                 }).always(function () { self.firmwareUpdateDoneOrError(); })
         };
 
@@ -314,7 +354,7 @@ $(function ()  {
             if (!self.firmwareRefreshing()) {
                 self.firmwareRefreshing(true);
                 $('#firmware_update_spinner').addClass('fa-spin');
-                self.requestFirmwareData();
+                self.requestFirmwareUpdateData();
             }
         }
 
@@ -325,7 +365,6 @@ $(function ()  {
 
         self.onUpdateSettingsShown = function ()  {
             self.requestData();
-            self.requestFirmwareData(true); // Request firmware info silently (no notification on failure)
         };
 
         self.onSettingsHidden = function ()  {
@@ -334,7 +373,9 @@ $(function ()  {
 
         self.onStartup = function ()  {
             self.requestData();
-            self.requestFirmwareData(true);  // Request firmware info silently (no notification on failure)
+
+            self.requestFirmwareData();
+            self.requestFirmwareUpdateData(true);  // Request firmware info silently (no notification on failure)
         };
 
         self.onAfterBinding = function () 
@@ -406,10 +447,7 @@ $(function ()  {
                     break;
                 case "machine_info_updated":
                     //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
-                    if (self.flyout.currentFlyoutTemplate == "#update_settings_flyout") {
-                        self.printerState.requestData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)
-                        self.requestFirmwareData(true); // Silent check
-                    }
+                    self.requestFirmwareData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)
                     break;
                 case "internet_offline":
                     $.notify({

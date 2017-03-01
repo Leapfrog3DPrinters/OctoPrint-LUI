@@ -25,8 +25,6 @@ $(function ()  {
         self.changelogContents = ko.observable(undefined);
         self.currentLuiVersion = ko.observable(undefined);
 
-        self.firmwareUpdateRequired = ko.observable(false);
-        self.firmwareVersionRequirement = ko.observable(undefined);
 
         self.filename = ko.observable(undefined);
         self.filepath = ko.observable(undefined);
@@ -414,14 +412,6 @@ $(function ()  {
                 });
         }
 
-        self.showFirmwareUpdateRequiredFlyout = function()
-        {
-            self.flyout.showFlyout('firmware_update_required', true);
-        }
-
-        self.closeFirmwareUpdateRequiredFlyout = function () {
-            self.flyout.closeFlyoutAccept("firmware_update_required");
-        }
 
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept('startup');
@@ -505,9 +495,6 @@ $(function ()  {
             self.changelogContents(data.changelog_contents);
             self.currentLuiVersion(data.lui_version);
 
-            self.firmwareUpdateRequired(data.firmware_update_required);
-            self.firmwareVersionRequirement(data.firmware_version_requirement);
-
             self.settings.autoShutdown(data.auto_shutdown);
 
 
@@ -519,18 +506,14 @@ $(function ()  {
             
             // This fromResponse method is also called after a firmware update and printer error/disconnect
 
-            if (data.firmware_update_required)
-                self.showFirmwareUpdateRequiredFlyout();
-            else {
-                self.closeFirmwareUpdateRequiredFlyout();
 
-                if (!self.isHomed()) {
-                    self.showStartupFlyout();
-                }
+
+            if (!self.isHomed()) {
+                self.showStartupFlyout();
+            }
               
-                if (self.showChangelog()) {
-                    self.showChangelogFlyout();
-                }
+            if (self.showChangelog()) {
+                self.showChangelogFlyout();
             }
 
             if (data.printer_error_reason) {
