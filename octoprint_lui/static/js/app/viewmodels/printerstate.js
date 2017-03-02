@@ -609,7 +609,7 @@ $(function ()  {
                         self.settings.autoShutdown(messageData.toggle);
                         break;
                     case "auto_shutdown_start":
-                        self.flyout.showFlyout("auto_shutdown", true)
+                        self.flyout.showFlyout("auto_shutdown", true);
                         self.autoShutdownTimer(180);
                         break;
                     case "auto_shutdown_wait_on_render":

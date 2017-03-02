@@ -49,14 +49,14 @@ $(function ()  {
                 {
                     element: document.querySelector('#local_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
-                    "<div class='step-text'>Here we can select a GCODE file that's saved on the printer. " +
+                    "<div class='step-text'>Now we can select a GCODE file that's saved on the printer. " +
                     "There is a sample print you can try out.</div>"
                 },
                 {
-                    element: document.querySelector("lol"),
+                    element: document.querySelector("#print_files .file_entry:nth-of-type(2)"),
                     intro: "<div class='step-header'>Getting Started</div>" +
-                    "<div class='step-text'>When you have selected the file, press the <i class='fa fa-play'>" +
-                    "</i> button next to it.</div>"
+                    "<div class='step-text'>Select the file and press on the <i class='fa fa-play'>" +
+                    "</i> button next to it</div>"
                 },
                 {
                     element: document.querySelector('#start_print'),
@@ -159,7 +159,6 @@ $(function ()  {
         self.introInstance.oncomplete(function(){
             $('overlay').removeClass('active');
             $('introjs-overlay').remove();
-            self.introInstance.exit();
             self.firstRun = false;
         });
 

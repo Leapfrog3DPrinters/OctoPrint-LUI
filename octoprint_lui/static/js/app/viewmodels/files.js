@@ -167,7 +167,10 @@ $(function ()  {
         self.showLocalStep = function () {
             self.browseLocal().done(function(){
                 if (self.introView.introInstance.firstRun != false) {
-                    setTimeout(function(){self.introView.introInstance.goToStep(7)}, 500);
+                    setTimeout(function () {
+                        self.introView.introInstance.refresh();
+                    }, 500);
+                    self.introView.introInstance.goToStep(7);
                 }
             });
         }
@@ -557,7 +560,9 @@ $(function ()  {
             changeTabTo("print");
             self.printerState.print();
             if (self.introView.introInstance.firstRun != false){
-                self.introView.introInstance.refresh();
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
                 self.introView.introInstance.goToStep(8);
             }
         }
@@ -1377,11 +1382,9 @@ $(function ()  {
             }
         }
 
-        self.backToFiles = function () {
-            self.gotoFileSelect();
-            if (self.introView.introInstance.firstRun != false){
-                self.introView.introInstance.goToStep(6);
-            }
+        self.checkIntroCancel = function () {
+            self.introView.introInstance.exit();
+            self.flyout.closeFlyout();
         }
     }
 

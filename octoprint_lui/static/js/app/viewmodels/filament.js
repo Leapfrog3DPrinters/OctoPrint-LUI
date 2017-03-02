@@ -380,7 +380,9 @@ $(function ()  {
                     self.showFinished();
                     self.hideToolLoading();
                     if (self.introView.introInstance.firstRun != false) {
-                    self.introView.introInstance.goToStep(4);
+                        if (self.selectedTemperatureProfile != "None") {
+                            self.introView.introInstance.goToStep(4);
+                        }
                     }
                     self.filamentLoadProgress(0);
                     if (!messageData.profile) {
@@ -485,12 +487,16 @@ $(function ()  {
 
         self.showLoading = function () {
             if (self.introView.introInstance.firstRun != false) {
-                setTimeout(function () {
-                    self.introView.introInstance.refresh()
-                }, 300);
-                self.introView.introInstance.goToStep(3);
+                if(self.selectedTemperatureProfileName != "None") {
+                    setTimeout(function () {
+                        self.introView.introInstance.refresh()
+                    }, 300);
+                    self.introView.introInstance.goToStep(3);
+                    self.loadFilament(false);
+                }
+            }else{
+                self.loadFilament(false);
             }
-            self.loadFilament(false);
         }
     }
 
