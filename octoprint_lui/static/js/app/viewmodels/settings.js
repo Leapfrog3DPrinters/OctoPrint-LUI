@@ -3,9 +3,8 @@ $(function () {
         var self = this;
 
         self.loginState = parameters[0];
-        self.users = parameters[1];
-        self.printerProfiles = parameters[2];
-        self.flyout = parameters[3];
+        self.printerProfiles = parameters[1];
+        self.flyout = parameters[2];
         
         self.isErrorOrClosed = ko.observable(undefined);
         self.isOperational = ko.observable(undefined);
@@ -786,7 +785,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
-        ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "printerProfilesViewModel", "flyoutViewModel"],
         ["#settings", "#settings_flyouts"]
     ]);
 });
