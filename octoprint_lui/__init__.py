@@ -7,7 +7,7 @@ import threading
 import re
 import subprocess
 import netaddr
-import os, sys, shutil
+import os, sys, shutil, errno
 import platform
 import flask
 import requests
@@ -306,6 +306,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             first_run_results.append(self._add_server_commands())
             first_run_results.append(self._disable_ssh())
 
+            # Clean up caches
+            first_run_results.append(self._clean_webassets())
+
             # Load printer specific data
             first_run_results.append(self._update_printer_scripts_profiles())
             first_run_results.append(self._configure_local_user())
@@ -325,7 +328,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
         if not self.debug and "devel" in octoprint.__branch__:
-            self._logger.info("Install is still on devel branch, going to switch")
+            self._logger.warning("Install is still on devel branch, going to switch")
             # So we are really still on devel, let's switch to master
             checkout_master_branch = None
             try:
@@ -353,6 +356,78 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 return False
         
         return True
+
+    def _clean_webassets(self):
+        """ 
+        Cleans the webassets folders on first_run. Used to be a function of OctoPrint,
+        but we only need it on every update. Not every startup.
+        """ 
+
+        # Ensure octoprint is not cleaning the directory every time on startup
+        if self._settings.global_get_boolean(["devel", "webassets", "clean_on_startup"]):
+            self._settings.global_set(["devel", "webassets", "clean_on_startup"], False)
+            self._settings.save()
+
+        # Copied from octoprint.server._setup_assets()
+        has_error = False
+        base_folder = self._settings.global_get_basefolder("generated")
+
+        for entry in ("webassets", ".webassets-cache"):
+            path = os.path.join(base_folder, entry)
+            
+            # delete path if it exists
+            if os.path.isdir(path):
+                try:
+                    self._logger.debug("Deleting {path}...".format(path=path))
+                    shutil.rmtree(path)
+                except:
+                    self._logger.exception("Error while trying to delete {path}, leaving it alone".format(path=path))
+                    has_error = True
+                    continue
+
+            # re-create path
+            self._logger.debug("Creating {path}...".format(**locals()))
+            error_text = "Error while trying to re-create {path}, that might cause errors with the webassets cache".format(path=path)
+            try:
+                os.makedirs(path)
+            except OSError as e:
+                if e.errno == errno.EACCES:
+                    # that might be caused by the user still having the folder open somewhere, let's try again after
+                    # waiting a bit
+                    import time
+                    for n in range(3):
+                        time.sleep(0.5)
+                        self._logger.debug("Creating {path}: Retry #{retry} after {time}s".format(path=path, retry=n+1, time=(n + 1)*0.5))
+                        try:
+                            os.makedirs(path)
+                            break
+                        except:
+                            if self._logger.isEnabledFor(logging.DEBUG):
+                                self._logger.exception("Ignored error while creating directory {path}".format(path=path))
+                            has_error = True
+                            pass
+                    else:
+                        # this will only get executed if we never did
+                        # successfully execute makedirs above
+                        self._logger.exception(error_text)
+                        has_error = True
+                        continue
+                else:
+                    # not an access error, so something we don't understand
+                    # went wrong -> log an error and stop
+                    self._logger.exception(error_text)
+                    has_error = True
+                    continue
+            except:
+                # not an OSError, so something we don't understand
+                # went wrong -> log an error and stop
+                self._logger.exception(error_text)
+                has_error = True
+                continue
+
+            self._logger.info("Reset webasset folder {path}...".format(path=path))
+
+        return not has_error
 
     def _update_printer_scripts_profiles(self):
         """ Copies machine specific files to printerprofiles and scripts folders based on current model """
@@ -730,7 +805,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "action_filament": True,
             "debug_lui": False,
             "changelog_version": "",
-            "had_first_run": ""
+            "had_first_run": "",
+            "debug_bundling" : False
         }
 
     def find_assets(self, rel_path, file_ext):
@@ -768,6 +844,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def create_custom_bundles(self):
         from flask_assets import Bundle
         
+        debug_bundling = self._settings.get_boolean(['debug_bundling'])
+
         jquery_js = [
                     'plugin/lui/js/lib/jquery/jquery-2.2.4.js', 
                     'plugin/lui/js/lib/jquery/jquery.ui.widget-1.11.4.js',
@@ -816,7 +894,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         bundle_filter = "js_delimiter_bundler"
         bundle_min_filter = "rjsmin, js_delimiter_bundler"
 
-        if self.debug:
+        if self.debug and not debug_bundling:
             # Include full (debug) libraries
             lui_jquery_bundle = Bundle(*jquery_js, output="webassets/packed_lui_jquery.js", filters=bundle_filter)
             lui_lib_bundle = Bundle(*lib_js, output="webassets/packed_lui_lib.js", filters=bundle_filter)
@@ -843,7 +921,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         octoprint.server.assets.register('lui_css_bundle', lui_css_bundle)
 
         # In debug mode, libraries are not minified nor bundled
-        octoprint.server.assets.debug = self.debug
+        # If we are debugging the bundling, we *do* want to have the libs bundled
+        octoprint.server.assets.debug = self.debug and not debug_bundling
 
     def http_routes_hook(self, routes):
         self.create_custom_bundles()
@@ -873,9 +952,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         response = make_response(render_template("index_lui.jinja2", **args))
 
-        if from_localhost:
-            from octoprint.server.util.flask import add_non_caching_response_headers
-            add_non_caching_response_headers(response)
+        # We're breaking the pre-emptive caching system with this. Let's rely on Chromiums incognito setting
+        #if from_localhost:
+        #    from octoprint.server.util.flask import add_non_caching_response_headers
+        #    add_non_caching_response_headers(response)
 
         return response
 
@@ -2822,7 +2902,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._printer.commands(['M999'])
                 self.send_M999_on_reconnect = False
 
-            self._get_firmware_info()
+            # We don't need to get the firmware info here, it's done by OctoPrint already
+            # Glboal Settings -> "feature", "firmwareDetection"
+            #self._get_firmware_info()
             self.set_print_mode('normal')
 
             if self.connecting_after_maintenance:
