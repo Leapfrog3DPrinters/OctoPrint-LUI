@@ -297,7 +297,7 @@ $(function ()  {
         });
 
         self.isLoadActionPossible = ko.computed(function ()  {
-            return self.loginState.isUser() && !self.isPrinting() && !self.isPaused() && !self.isLoading();
+            return self.loginState.isUser() && !self.isPrinting() && !self.isPaused() && !self.isLoading() && !self.printerState.waitingForCancel();
         });
 
         self.isLoadAndPrintActionPossible = ko.computed(function ()  {
@@ -1004,7 +1004,7 @@ $(function ()  {
         };
 
         self.enableSelect = function (data, printAfterSelect) {
-            var isLoadActionPossible = self.loginState.isUser() && self.isOperational() && !(self.isPrinting() || self.isPaused() || self.isLoading());
+            var isLoadActionPossible = self.loginState.isUser() && self.isOperational() && !(self.printerState.waitingForCancel() || self.isPrinting() || self.isPaused() || self.isLoading());
             return isLoadActionPossible && !self.listHelper.isSelected(data);
         };
 

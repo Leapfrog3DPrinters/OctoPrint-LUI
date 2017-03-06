@@ -988,7 +988,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_api_commands(self):
             return dict(
-                    immediate_cancel = [],
                     change_filament = ["tool"],
                     change_filament_cancel = [],
                     change_filament_done = [],
@@ -1030,16 +1029,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def on_api_command(self, command, data):
         # Data already has command in, so only data is needed
         return self._call_api_method(**data)
-
-    def _on_api_command_immediate_cancel(self, *args, **kwargs):
-        if self._printer._comm and self._printer._comm._serial and hasattr(self._printer._comm._serial, "setDTR"):
-            #Reset the controller
-            self._printer._comm._serial.setDTR(1)
-            time.sleep(0.1)
-            self._printer._comm._serial.setDTR(0)
-            time.sleep(0.2)
-
-        self._printer.cancel_print()
 
     def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
         """

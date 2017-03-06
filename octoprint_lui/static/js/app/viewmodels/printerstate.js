@@ -402,11 +402,19 @@ $(function ()  {
                 }
                 else {
                     self.waitingForPause(true);
+
                     OctoPrint.job.togglePause();
                 }
             }
             else {
                 self.waitingForPause(true);
+                $.notify({
+                    title: gettext("Print pausing"),
+                    text: gettext('Please wait while the print is being paused.')
+                }, {
+                    className: "warning",
+                    autoHide: true
+                });
                 OctoPrint.job.togglePause();
             }
         };
@@ -421,8 +429,16 @@ $(function ()  {
             self.flyout.showConfirmationFlyout(dialog)
                 .done(function () {
                     self.waitingForCancel(true);
-                    self._sendApi({ command: 'immediate_cancel'});
-                    //OctoPrint.job.cancel()
+
+                    $.notify({
+                        title: gettext("Print cancelling"),
+                        text: gettext('Please wait while the print is being cancelled.')
+                    }, {
+                        className: "warning",
+                        autoHide: true
+                    });
+
+                    OctoPrint.job.cancel()
                 });
         };
 
