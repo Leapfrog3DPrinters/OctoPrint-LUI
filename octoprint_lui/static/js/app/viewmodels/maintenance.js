@@ -147,6 +147,11 @@ $(function () {
             self.flyout.showFlyout('filament_override')
         };
 
+        self.logFiles = function ()
+        {
+            self.settings.showSettingsTopic('logs');
+        }
+
         self.onSettingsShown = function () { 
             $('#maintenance_control').addClass('active');
             $('#maintenance_filament').removeClass('active');

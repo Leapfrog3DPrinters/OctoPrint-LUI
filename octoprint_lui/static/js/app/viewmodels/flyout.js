@@ -82,22 +82,30 @@ $(function () {
 
     self.showFlyout = function (flyout, blocking, high_priority) {
 
-//TODO: Check if flyout open. If so, push to front and return its deferred
+        var template_flyout = '#' + flyout + '_flyout';
+        var blocking = blocking || false;
 
-      var deferred = $.Deferred();
-      var template_flyout = '#'+flyout+'_flyout';
-      var blocking = blocking || false;
-      self.blocking = blocking;
-      self.flyouts.push({deferred: deferred, template: template_flyout, blocking: blocking});
-      self.currentFlyoutTemplate = template_flyout;
+        var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
 
-      self.activateFlyout(template_flyout, high_priority);
+        // If we can't find a reference to the flyout, create a new one
+        if (!flyout_ref)
+        {
+            var deferred = $.Deferred();
 
-      // Call viewmodels with the flyout method on{FlyoutTopic}Shown
-      var method = "on" + capitalize(flyout) + "FlyoutShown";
-      callViewModels(self.allViewModels, method);
+            self.blocking = blocking;
+            flyout_ref = { deferred: deferred, template: template_flyout, blocking: blocking }
+            self.flyouts.push(flyout_ref);
+        }
 
-      return self.flyouts()[self.flyouts().length - 1].deferred
+        // Set the flyout to be the current one and push it to the front
+        self.currentFlyoutTemplate = template_flyout;
+        self.activateFlyout(template_flyout, high_priority);
+
+        // Call viewmodels with the flyout method on{FlyoutTopic}Shown
+        var method = "on" + capitalize(flyout) + "FlyoutShown";
+        callViewModels(self.allViewModels, method);
+
+        return flyout_ref.deferred
     };
     
     self.showConfirmationFlyout = function(data, leaveFlyout) {
@@ -116,7 +124,7 @@ $(function () {
 
       // Show the confirmation flyout
       $('#confirmation_flyout').addClass('active');
-      $('#confirmation_flyout').css("z-index", self.flyouts().length + 1);
+      $('#confirmation_flyout').css("z-index", self.flyouts().length + 75); // Put them above high priority flyouts
       self.setOverlay();
 
       self.confirmationDeferred = $.Deferred()

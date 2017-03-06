@@ -419,13 +419,17 @@
     </div>
     <div class="flyout-body">
       <div id="printer_error_flyout_content">
-        {% include "flyouts_lui/info_flyouts/printer_error_flyout.jinja2" %}
+        {% if local_addr %}
+        {% include "flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2" %}
+        {% else %}
+        {% include "flyouts_lui/info_flyouts/printer_error_remote_flyout.jinja2" %}
+        {% endif %}
       </div>
       <div class="printer_error_flyout_footer">
         <div style="margin-bottom: 15px;" data-bind="style: {visibility: isConnecting() ? 'visible' : 'hidden' }">
           <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i> Connecting...
         </div>
-      
+        {% if local_addr %}
         <ul class="button-area">
           <li class="button ok-button">
             <a href="#" data-bind="click: restorePrinterConnection">
@@ -442,6 +446,7 @@
             </a>
           </li>
         </ul>
+        {% endif %}
       </div>
     </div>
   </aside>
