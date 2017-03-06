@@ -15,7 +15,26 @@ $(function ()  {
         self.filamentLoadProgress = ko.observable(0);
         self.forPurge = ko.observable(false);
 
-        self.selectedTemperatureProfile = ko.observable(undefined);
+        self.isProfileLocked = ko.observable(false);
+
+        self.preselectedTemperatureProfile = ko.observable(undefined); // Used for locked profile selection (paused filament swap)
+        self.preselectedTemperatureProfileName = ko.pureComputed(function () {
+            var profile = self.preselectedTemperatureProfile();
+            if (profile)
+                return profile.name;
+            else
+                return gettext("None");
+        });
+
+        self.selectedTemperatureProfile = ko.observable(undefined); // Used for free profile selection
+        self.selectedTemperatureProfileName = ko.pureComputed(function () {
+            var profile = self.selectedTemperatureProfile();
+            if (profile)
+                return profile.name;
+            else
+                return gettext("None");
+        });
+
         self.updateLeftTemperatureProfile = ko.observable(undefined);
         self.updateRightTemperatureProfile = ko.observable(undefined);
 
@@ -123,6 +142,7 @@ $(function ()  {
         // ------------------
 
         self.showFilamentChangeFlyout = function (tool, forPurge) {
+            self.isProfileLocked(false);
             self.tool(tool);
             self.loadedFilamentAmount(self.getFilamentAmount(tool));
             self.filamentInProgress(true);
@@ -136,7 +156,7 @@ $(function ()  {
                 slider.noUiSlider.set(FILAMENT_ROLL_LENGTH)
 
                 $('#swap-load-unload').addClass('active');
-                $('#swap-info').removeClass('active')
+                $('#swap-info').removeClass('active');
             }
             else {
                 $('.swap_process_step').removeClass('active');
@@ -159,6 +179,22 @@ $(function ()  {
                 self.changeFilamentCancel();
             });
         };
+
+        self.lockTemperatureProfile = function(paused_materials)
+        {
+        //    If it's a paused filament swap, lock the filament material to the one used when starting the print
+
+            var tool = self.tool();
+
+            if (paused_materials.hasOwnProperty(tool)) {
+                var profile = paused_materials[tool];
+
+                if (profile.hasOwnProperty("name") && profile["name"] != "None") {
+                    self.preselectedTemperatureProfile(profile);
+                    self.isProfileLocked(true);
+                }
+            }
+        }
 
         // Below functions swap views for both filament swap and filament detection swap
         self.showUnload = function ()  {
@@ -251,7 +287,13 @@ $(function ()  {
                 profileName = loadFor;
             }
             else {
-                profile = self.selectedTemperatureProfile();
+                var profile = undefined;
+
+                if (self.isProfileLocked())
+                    profile = self.preselectedTemperatureProfile();
+                else
+                    profile = self.selectedTemperatureProfile()
+
                 profileName = profile.name;
             }
 
@@ -336,6 +378,9 @@ $(function ()  {
                 case "filament_in_progress":
                     self.filamentInProgress(true);
 
+                    if (messageData !== null && messageData.hasOwnProperty('paused_materials'))
+                        self.lockTemperatureProfile(messageData['paused_materials'])
+                    
                     break;
                 case "skip_unload":
                     self.showLoad();
@@ -423,6 +468,12 @@ $(function ()  {
             self.requestData();
             self.tool("tool0");
             self.copyMaterialProfiles();
+
+            // Notify printerstate of filament
+            self.printerState.leftFilamentMaterial(self.leftFilament());
+            self.printerState.rightFilamentMaterial(self.leftFilament());
+            self.leftFilament.subscribe(function (newValue) { self.printerState.leftFilamentMaterial(newValue); });
+            self.rightFilament.subscribe(function (newValue) { self.printerState.rightFilamentMaterial(newValue); });
         };
 
         self.onEventSettingsUpdated = function ()  {

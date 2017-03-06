@@ -1,2 +1,19 @@
+{% if paused_position %}
+M605 S{{ paused_print_mode }};											Restore print mode
+{% if paused_print_mode < 2 %}
+T{{ paused_position['t'] }};											Set tool (only for normal and full control modes)
+{% endif %}						
 G28 X0 Y0
-G1 F6000
+{% snippet 'bolt_wipe.jinja2' %};										Wiping
+{% if paused_position['e'] %}
+G92 E{{ paused_position['e'] }};										Reset E coordinate
+{% endif %}		
+G1 Z{{ paused_position['z'] }} F1000;									Return to last known position (z)	
+G1 X{{ paused_position['x'] }} Y{{ paused_position['y'] }} F10000;		Return to last known position (x,y)
+{% if paused_position['f'] %}
+G1 F{{ paused_position['f'] }};											Reset to last known speed
+{% endif %}
+{% else %}
+G28 X0 Y0
+G1 F10000
+{% endif %}
