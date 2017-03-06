@@ -7,15 +7,18 @@ $(function ()  {
         self.flyout = parameters[2];
         self.files = parameters[3];
         self.settings = parameters[4];
-        self.flashArduino = parameters[5];
-        self.printerState = parameters[6];
+        self.printerState = parameters[5];
+        self.flashArduino = parameters[6];
+        self.networkManager = parameters[7];
 
+        self.initialCheck = false;
         self.updateinfo = ko.observableArray([]);
         self.refreshing = ko.observable(false);
         self.update_needed = ko.observable(false);
         self.updateCounter = 0;
         self.updateTarget = 0;
         self.update_warning = undefined;
+        self.firmware_update_warning = undefined;
         self.lpfrg_software_version = ko.observable(undefined);
 
         self.fileNameToFlash = ko.observable(undefined); // Can either be a local (USB) file name or a filename to be uploaded
@@ -23,9 +26,10 @@ $(function ()  {
         self.modelName = ko.observable(undefined);
         self.firmwareVersion = ko.observable(undefined);
         self.firmwareUpdateAvailable = ko.observable(false);
+        self.firmwareUpdateRequired = ko.observable(false);
+        self.firmwareVersionRequirement = ko.observable(undefined);
         self.firmwareRefreshing = ko.observable(false);
         self.firmwareUpdating = ko.observable(false);
-
 
         self.flashingAllowed = ko.computed(function ()  {
             return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
@@ -107,7 +111,8 @@ $(function ()  {
 
             self.files.browseUsbForFirmware();
 
-            self.flyout.showFlyout('firmware_file')
+            // Show this flyout with high priority, as it may be opened through firmware_update_required_flyout
+            self.flyout.showFlyout('firmware_file', false, true)
                 .done(function ()  {
                     file = self.files.selectedFirmwareFile();
                     self.flashArduino.onLocalFileSelected(file);
@@ -157,7 +162,7 @@ $(function ()  {
         self.firmwareUpdate = function()
         {
             self.firmwareUpdating(true);
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
             OctoPrint.postJson(url)
                 .done(function () {
                     self.firmwareUpdateAvailable(false);
@@ -171,9 +176,40 @@ $(function ()  {
                 });
         }
 
+        self.showFirmwareUpdateWarning = function () {
+            if (self.firmware_update_warning === undefined) {
+                self.firmware_update_warning = self.flyout.showWarning(
+                    gettext("Updating firmware"),
+                    gettext("The firmware is updating, please wait until the update is completed..."),
+                    true);
+            }
+        }
+
+        self.hideFirmwareUpdateWarning = function (success) {
+            if (self.firmware_update_warning !== undefined) {
+                self.flyout.closeWarning(self.firmware_update_warning);
+                self.firmware_update_warning = undefined;
+            }
+
+            // We're actively clcosing the update_required flyout here for improved user experience.
+            // If the auto-update for whatever reason flashed the wrong version, the flyout will automatically pop-up again
+            if (success)
+                self.hideFirmwareUpdateRequiredFlyout();
+        }
+
+        self.showFirmwareUpdateRequiredFlyout = function () {
+            // High priority flyout (must be shown on top of 'homing' flyout)
+            self.flyout.showFlyout('firmware_update_required', true, true); 
+        }
+
+        self.hideFirmwareUpdateRequiredFlyout = function () {
+            self.flyout.closeFlyoutAccept("firmware_update_required");
+        }
+
         self.showUpdateFlyout = function()
         {
-            self.settings.showSettingsTopic('update');
+            // Show the update flyout blocking and with high priority
+            self.settings.showSettingsTopic('update', true, true); 
         }
 
         self.showUpdateWarning = function () 
@@ -208,15 +244,31 @@ $(function ()  {
             self.modelName(data.machine_info.machine_type);
         };
 
-        self.fromFirmwareResponse = function (data, silent)
+        self.fromFirmwareResponse = function (data)
         {
+            self.firmwareUpdateRequired(data.update_required);
+            self.firmwareVersionRequirement(data.version_requirement);
             self.firmwareVersion(data.current_version);
 
+            if (data.update_required)
+                self.showFirmwareUpdateRequiredFlyout();
+            else
+                self.hideFirmwareUpdateRequiredFlyout();
+
+            if (data.auto_update_started)
+                self.showFirmwareUpdateWarning();
+            else
+                self.hideFirmwareUpdateWarning();
+        }
+
+        self.fromFirmwareUpdateResponse = function (data, silent)
+        {
             if(data.new_firmware)
             {
                 // New firmware found
                 if (data.requires_lui_update) {
                     self.firmwareUpdateAvailable(false);
+
                     if(!silent && self.update_needed() > 0)
                     {
                         var title = gettext("Firmware update found");
@@ -261,11 +313,20 @@ $(function ()  {
                 });
         };
 
-        self.requestFirmwareData = function (silent) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmwareupdate";
+        self.requestFirmwareData = function ()
+        {
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware";
             OctoPrint.get(url)
                 .done(function (response) {
-                    self.fromFirmwareResponse(response, silent);
+                    self.fromFirmwareResponse(response);
+                });
+        }
+
+        self.requestFirmwareUpdateData = function (silent) {
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
+            OctoPrint.get(url)
+                .done(function (response) {
+                    self.fromFirmwareUpdateResponse(response, silent);
                 }).always(function () { self.firmwareUpdateDoneOrError(); })
         };
 
@@ -298,7 +359,7 @@ $(function ()  {
             if (!self.firmwareRefreshing()) {
                 self.firmwareRefreshing(true);
                 $('#firmware_update_spinner').addClass('fa-spin');
-                self.requestFirmwareData();
+                self.requestFirmwareUpdateData();
             }
         }
 
@@ -309,7 +370,6 @@ $(function ()  {
 
         self.onUpdateSettingsShown = function ()  {
             self.requestData();
-            self.requestFirmwareData(true); // Request firmware info silently (no notification on failure)
         };
 
         self.onSettingsHidden = function ()  {
@@ -317,9 +377,18 @@ $(function ()  {
         }
 
         self.onStartup = function ()  {
-            self.requestData();
-            self.requestFirmwareData(true);  // Request firmware info silently (no notification on failure)
+            self.requestFirmwareData();
         };
+
+        self.onOnline = function(online)
+        {
+            // Check for software and firmware update as soon as we're online for the first time
+            if (!self.initialCheck && online) {
+                self.initialCheck = true; // Only do this automatic check once
+                self.requestData();
+                self.requestFirmwareUpdateData(true);  // Request firmware info silently (no notification on failure)
+            }
+        }
 
         self.onAfterBinding = function () 
         {
@@ -329,6 +398,10 @@ $(function ()  {
 
             // Communicate to the plugin wheter he's allowed to flash
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
+
+            // Wait for connection to be up so we can perform an initial software and firmware check
+            self.networkManager.status.connection.wifi.subscribe(self.onOnline);
+            self.networkManager.status.connection.ethernet.subscribe(self.onOnline);
         }
 
         self.onFlashingBegin = function()
@@ -374,6 +447,16 @@ $(function ()  {
                 case "forced_update":
                     self.showUpdateWarning();
                     break;
+                case "auto_firmware_update_started":
+                    self.showFirmwareUpdateWarning();
+                    break;
+                case "auto_firmware_update_failed":
+                    self.hideFirmwareUpdateWarning(false);
+                    break;
+                case "auto_firmware_update_finished":
+                    self.hideFirmwareUpdateWarning(true);
+                    self.firmwareUpdateAvailable(false); // The update succeeded so there shouldn't be any updates available
+                    break;
                 case "firmware_update_found":
                     if(DEBUG_LUI) {
                         self.onFirmwareUpdateFound(messageData.file);
@@ -381,10 +464,7 @@ $(function ()  {
                     break;
                 case "machine_info_updated":
                     //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
-                    if (self.flyout.currentFlyoutTemplate == "#update_settings_flyout") {
-                        self.printerState.requestData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)
-                        self.requestFirmwareData(true); // Silent check
-                    }
+                    self.requestFirmwareData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)
                     break;
                 case "internet_offline":
                     $.notify({
@@ -461,7 +541,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
-      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "flashArduinoViewModel", "printerStateViewModel"],
+      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel"],
       ['#update', '#update_icon', '#firmware_update_required']
     ]);
 
