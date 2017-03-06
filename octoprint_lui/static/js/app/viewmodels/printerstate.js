@@ -257,7 +257,7 @@ $(function ()  {
                 }
             }
 
-            
+
         };
 
         self.onEventError = function (payload) {
@@ -271,7 +271,7 @@ $(function ()  {
                 });
 
                 self.isConnecting(false); // Restore connecting state
-            } else 
+            } else
             {
                 self.requestData();
             }
@@ -343,7 +343,7 @@ $(function ()  {
             var question = gettext("Do you want to by-pass the print analysis and start the print?");
             var dialog = {title: title, text: message, question: question};
             self.flyout.showConfirmationFlyout(dialog, true)
-                .done(function(){ 
+                .done(function(){
                     self.forcePrint(true);
                 });
         };
@@ -374,7 +374,7 @@ $(function ()  {
 
         self.gotoFileSelect = function ()  {
             changeTabTo("files");
-            if (self.introView.introInstance.firstRun != false) {
+            if (self.introView.firstRun) {
                 self.introView.introInstance.goToStep(6);
             }
         };
@@ -388,7 +388,7 @@ $(function ()  {
         self.showStartupFlyout = function () {
             if(!self.flyout.isFlyoutOpen('startup'))
                 self.flyout.showFlyout('startup', true);
-        }
+        };
 
         self.updateChangelogContents = function()
         {
@@ -401,10 +401,10 @@ $(function ()  {
                     self.currentLuiVersion(data.lui_version);
                 }
             });
-        }
+        };
 
         self.showChangelogFlyout = function (updateContents) {
-            
+
             if (updateContents)
             {
                 self.updateChangelogContents();
@@ -416,64 +416,64 @@ $(function ()  {
                         self._sendApi({command: "changelog_seen"});
                     }
                 });
-        }
+        };
 
         self.showFirmwareUpdateRequiredFlyout = function()
         {
             self.flyout.showFlyout('firmware_update_required', true);
-        }
+        };
 
         self.closeFirmwareUpdateRequiredFlyout = function () {
             self.flyout.closeFlyoutAccept("firmware_update_required");
-        }
+        };
 
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept('startup');
-        }
+        };
 
         self.beginHoming = function ()  {
             self._sendApi({ command: "begin_homing" });
-        }
+        };
 
-        self.beginMaintenance = function () 
+        self.beginMaintenance = function ()
         {
 
             self.settings.showSettingsTopic('maintenance', true)
-        }
+        };
 
         self.cancelAutoShutdown = function () {
             self._sendApi({command: 'auto_shutdown_timer_cancel'});
-        }
+        };
 
         self.onDoorOpen = function ()  {
             if (self.warningVm === undefined) {
                 self.warningVm = self.flyout.showWarning(gettext('Door open'),
                     gettext('Please close the door before you continue printing.'));
             }
-        }
+        };
         self.onDoorClose = function ()  {
             if (self.warningVm !== undefined) {
                 self.flyout.closeWarning(self.warningVm);
                 self.warningVm = undefined;
             }
-        }
+        };
 
         self.showPrinterErrorFlyout = function () {
             if (!self.flyout.isFlyoutOpen('printer_error'))
                 self.flyout.showFlyout('printer_error', true);
-        }
+        };
 
         self.closePrinterErrorFlyout = function () {
             self.flyout.closeFlyout('printer_error');
             self.isConnecting(false);
-        }
+        };
 
         self.restorePrinterConnection = function()
         {
             self.isConnecting(true);
             self._sendApi({ command: 'connect_after_error' }); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
 
-        }
+        };
 
         self.refreshPrintPreview = function(url)
         {
@@ -496,10 +496,10 @@ $(function ()  {
                     {
                         self.printPreviewUrl(undefined)
                     })
-            } 
+            }
             else
                 self.printPreviewUrl(undefined);
-        }
+        };
 
         self.fromResponse = function (data) {
             self.isHomed(data.is_homed);
@@ -520,7 +520,7 @@ $(function ()  {
             // 2. Firmware update required
             // 3. Changelog
             // 4. Startup flyout (homing/maintenance)
-            
+
             // This fromResponse method is also called after a firmware update and printer error/disconnect
 
             if (data.firmware_update_required)
@@ -531,7 +531,7 @@ $(function ()  {
                 if (!self.isHomed()) {
                     self.showStartupFlyout();
                 }
-              
+
                 if (self.showChangelog()) {
                     self.showChangelogFlyout();
                 }
@@ -547,10 +547,10 @@ $(function ()  {
                 self.erroredExtruder(undefined);
                 self.errorReason(undefined);
             }
-        }
+        };
 
         // Api send functions
-        
+
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
             OctoPrint.postJson(url, data);
@@ -562,7 +562,7 @@ $(function ()  {
             OctoPrint.simpleApiGet('lui', {
                 success: self.fromResponse
             });
-        }
+        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             var messageType = data['type'];
@@ -631,7 +631,7 @@ $(function ()  {
                         break;
                 }
             }
-        }
+        };
 
         self.updateAnalyzingActivity = function()
         {
@@ -639,31 +639,31 @@ $(function ()  {
                 self.activities.push('Analyzing');
             else
                 self.activities.remove('Analyzing');
-        }
+        };
 
         self.onBeforeBinding = function()
         {
             self.requestData();
-        }
+        };
 
         self.onStartupComplete = function ()  {
-            
+
             self.filepath.subscribe(function ()  {
                 self.activities.remove(gettext('Creating preview'));
                 //self.updateAnalyzingActivity();
-                self.refreshPrintPreview(); // Important to pass no parameters 
+                self.refreshPrintPreview(); // Important to pass no parameters
             });
 
             // As of 1.0.8, model analysis is no longer shown to the user
            // self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
             // self.filament.subscribe(self.updateAnalyzingActivity);
-        }
+        };
 
         //TODO: Remove!
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
             OctoPrint.postJson(url, data);
-        }
+        };
 
         //TODO: Remove!
         self.doDebuggingAction = function () {

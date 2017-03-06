@@ -1208,7 +1208,7 @@
     targetElm.appendChild(overlayLayer);
 
     overlayLayer.onclick = function() {
-      if (self._options.exitOnOverlayClick == true) {
+      if (self._options.exitOnOverlayClick != true) {
 
         //check if any callback is defined
         if (self._introExitCallback != undefined) {

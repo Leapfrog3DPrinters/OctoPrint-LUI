@@ -1014,6 +1014,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     prepare_for_calibration_position = [],
                     move_to_calibration_position = ["corner_num"],
                     restore_from_calibration_position = [],
+					select_demo = [],
                     start_print = ["mode"],
                     unselect_file = [],
                     auto_shutdown = ["toggle"],
@@ -1091,8 +1092,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.current_printer_profile["default_stepper_timeout"]:
             self._printer.commands(["M84 S{0}".format(self.current_printer_profile["default_stepper_timeout"])]) # Reset stepper disable timeout
             self._printer.commands(["M84"]) # And disable them right away for now
-
         self.restore_movement_mode()
+
+    def _on_api_command_select_demo(self):
+		abs_path = self._copy_demo_file("FirstPrint.gcode")
+		if abs_path:
+			self._printer.select_file(abs_path, False, False)
+		self._send_client_message("demo_selected")
 
     def _on_api_command_start_calibration(self, calibration_type):
         self.calibration_type = calibration_type
@@ -1141,6 +1147,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_path, upload, allow_overwrite=True)
         except octoprint.filemanager.storage.StorageError:
             self._send_client_message("calibration_failed", { "calibration_type": self.calibration_type})
+            return None
+
+        return octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file)
+
+    def _copy_demo_file(self, demo_src_filename):
+        demo_src_path = None
+        demo_dst_filename = "FirstPrint.gcode"
+        demo_dst_path = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, demo_dst_filename)
+        demo_src_path = os.path.join(self._basefolder, "gcodes", demo_src_filename)
+
+        upload = octoprint.filemanager.util.DiskFileWrapper(demo_src_filename, demo_src_path, move = False)
+
+        try:
+            # This will do the actual copy
+            added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, demo_dst_path, upload, allow_overwrite=True)
+        except octoprint.filemanager.storage.StorageError:
+            self._send_client_message("demo_failed")
             return None
 
         return octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file)

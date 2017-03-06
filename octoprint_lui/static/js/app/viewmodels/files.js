@@ -21,6 +21,7 @@ $(function ()  {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
         self.isSdReady = ko.observable(undefined);
+        self.isIntroFile = ko.observable(false);
 
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
@@ -73,18 +74,18 @@ $(function ()  {
                     title: gettext("Disk space critically low!"),
                     text: _.sprintf(gettext('Free some space by deleting jobs or timelapses to continue usage.'), {})
                 },
-                { 
+                {
                     className: "error",
                     autoHide: false
                 }
-                )
+                );
                 return
             } else if (self.diskusageWarning()) {
                 $.notify({
                     title: gettext("Disk space very low!"),
                     text: _.sprintf(gettext('Please free some space by deleting jobs or timelapses.'), {})
                 },
-                { 
+                {
                     className: "warning",
                     autoHide: false
                 }
@@ -135,18 +136,16 @@ $(function ()  {
 
         self.isOriginLocal = ko.pureComputed(function () {
             return self.currentOrigin() == "local";
-        })
+        });
 
         self.browseLocal = function (filenameToFocus) {
-
-            self.deferredWaitBrowseLocal = $.Deferred();
 
             if (self.isLoadingFileList())
                 return;
 
             self.isLoadingFileList(true);
             if (filenameToFocus == undefined) {
-                filenameToFocus = ''
+                filenameToFocus = '';
                 selectedFile = self.selectedFile();
                 if (selectedFile){
                     filenameToFocus = selectedFile.name;
@@ -161,19 +160,19 @@ $(function ()  {
                 self.isLoadingFileList(false);
             });
 
-            return self.deferredWaitBrowseLocal.resolve();
-        }
+        };
 
         self.showLocalStep = function () {
-            self.browseLocal().done(function(){
-                if (self.introView.introInstance.firstRun != false) {
-                    setTimeout(function () {
-                        self.introView.introInstance.refresh();
-                    }, 500);
-                    self.introView.introInstance.goToStep(7);
-                }
-            });
-        }
+            if (self.introView.firstRun) {
+                self.isIntroFile(true);
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 500);
+                self.introView.introInstance.goToStep(7);
+            }else{
+                self.browseLocal();
+            }
+        };
 
         self.browseUsb = function ()  {
             if (self.isLoadingFileList())
@@ -189,8 +188,8 @@ $(function ()  {
                 .then(function (response) {
                     self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
                     self.currentOrigin("usb");
-                }).always(function ()  { self.isLoadingFileList(false); });
-        }
+                }).always(function () { self.isLoadingFileList(false); });
+        };
 
         self.notifyUsbFail = function ()  {
             $.notify({ title: gettext('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
@@ -399,14 +398,14 @@ $(function ()  {
                 .always(function ()  {
                     self._otherRequestInProgress = false;
                 });
-        }
+        };
 
         self.fromResponse = function (response, filenameToFocus, locationToFocus, switchToPath) {
             var files = response.files;
 
             self.allItems(files);
             self.currentPath("");
-            
+
 
             if (!switchToPath) {
                 self.listHelper.updateItems(files);
@@ -551,21 +550,15 @@ $(function ()  {
                             if (self.flyout.flyouts().length > 0)
                                 self.flyout.closeFlyoutAccept();
                             // changeTabTo("print");
-                        }).always(function ()  { self.isLoadingFile = false; });;
+                        }).always(function ()  { self.isLoadingFile = false; });
             }
 
         };
 
-        self.printAndChangeTab = function () {
+        self.printAndChangeTab = function (datafile) {
             changeTabTo("print");
             self.printerState.print();
-            if (self.introView.introInstance.firstRun != false){
-                setTimeout(function () {
-                    self.introView.introInstance.refresh();
-                }, 300);
-                self.introView.introInstance.goToStep(8);
-            }
-        }
+        };
 
         self.copyToUsb = function(file)
         {
@@ -574,24 +567,24 @@ $(function ()  {
             }
 
             self._sendApi({ command: "copy_gcode_to_usb", filename: file.name });
-        }
+        };
 
         self.removeAllFiles = function()
         {
-            
+
             var text = gettext("You have opted to delete all print jobs.");
             if (self.selectedFile())
                 text += gettext(" This will not delete the currently selected file.");
 
             var question = gettext("Do you want to continue?");
-            var title = gettext("Delete all jobs"); 
+            var title = gettext("Delete all jobs");
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
             .done(function ()  {
                 return self._sendApi({ command: 'delete_all_uploads' })
                     .done(function ()  {
-                        
+
                         $.notify({
                             title: gettext("Jobs deleted"),
                             text: gettext("All print jobs were deleted.")
@@ -610,7 +603,7 @@ $(function ()  {
                 })
                 .always(function ()  { self.requestData(undefined, undefined, undefined); })
             });
-        }
+        };
 
         self.removeFile = function (file) {
             if (!file) {
@@ -637,7 +630,7 @@ $(function ()  {
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
-            .done(function () {        
+            .done(function () {
                 OctoPrint.files.delete(file.origin, file.path)
                     .done(function () {
                         self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
@@ -651,6 +644,7 @@ $(function ()  {
         };
 
         self.startPrint = function () {
+            self.introView.introInstance.exit();
             var mode = self.printerState.printMode();
             var file = self.selectedFile();
 
@@ -660,9 +654,8 @@ $(function ()  {
                 self._sendApi({
                     command: "start_print",
                     mode: mode
-                })
+                });
                 self.flyout.closeFlyoutAccept();
-                self.introView.introInstance.exit();
             }
             // do print stuff
             // close flyout.
@@ -737,7 +730,7 @@ $(function ()  {
                 } else if (mode == "sync" || mode == "mirror") {
                     var maxLength = 0.0;
                     _.each(printFilament, function(x){ maxLength < x.length ? maxLength = x.length : maxLength = maxLength});
-                    var mirrorsyncmode = _.every(loadedFilament, function(filament) { 
+                    var mirrorsyncmode = _.every(loadedFilament, function(filament) {
                         return filament.amount() >= maxLength});
                     return mirrorsyncmode;
                 }
@@ -809,7 +802,7 @@ $(function ()  {
             // model not within bounds, we need to prepare a warning
             var warning = "";
             var info = "";
-            var title = _.sprintf(gettext("Size check %(mode)s mode failed"), {mode: mode});  
+            var title = _.sprintf(gettext("Size check %(mode)s mode failed"), {mode: mode});
 
             var formatData = {
                 profile: boundaries,
@@ -817,7 +810,7 @@ $(function ()  {
                 dimensions: dimensions
             };
 
-            // Create grid 
+            // Create grid
             var grid = "<div class='Table-row'><div class='Table-item'>";
             var gridsize_y = 300;
             var gridsize_x = 330;
@@ -848,7 +841,7 @@ $(function ()  {
             if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
                 info += gettext("Object exceeds print area in width. ");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object width') + "</div></div>";
-                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);  
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);
             }
             if (dimensions["depth"] > (boundaries["maxY"] + Math.abs(boundaries["minY"]))) {
                 info += gettext("Object exceeds print area in depth.");
@@ -870,19 +863,19 @@ $(function ()  {
                 if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
                     info += gettext("Object positioned outside print area in width.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object position') + "</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);
                 }
                 if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
                     info += gettext("Object positioned outside print area in depth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area depth') + "</div><div class='Table-item'>" + gettext('Object position') + "</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);
                 }
                 if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
                     info += gettext("Object positioned outside print area in heigth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area height') + "</div><div class='Table-item'>" + gettext('Object position') +"</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);
                 }
-                
+
             }
 
             //warn user
@@ -1084,7 +1077,7 @@ $(function ()  {
 
         self.refreshPrintPreview = function (filename, url) {
             var file = self.getFileByFilename(filename);
-         
+
             if(file)
                 file.previewUrl(url);
         }
@@ -1186,7 +1179,7 @@ $(function ()  {
         }
 
         self.onStartup = function ()  {
-           
+
 
             //~~ Gcode upload
             self.uploadButton = $("#gcode_upload");
@@ -1213,7 +1206,7 @@ $(function ()  {
                         text: _.sprintf(gettext('Uploaded file: "%(filename)s"'), { filename: filename })
                     },
                         "success"
-                    )
+                    );
                     self.loadFile(data.result.files.local, false);
                 }
             }
@@ -1224,7 +1217,7 @@ $(function ()  {
                     text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\"'))
                 },
                     "error"
-                )
+                );
                 self.setProgressBar(0, "", false);
             }
 
@@ -1233,14 +1226,14 @@ $(function ()  {
                 self.setProgressBar(progress);
             }
 
-            
+
             var url = API_BASEURL + "files/local";
 
             if (self.uploadButton === undefined)
                 return;
 
             self.uploadButton.fileupload({
-                
+
                 add: function (e, data) {
                     var acceptFileTypes = /(\.)(gcode|gco|g)$/i;
                     var dfd = $.Deferred(),
@@ -1267,7 +1260,7 @@ $(function ()  {
                 if (self.currentPath() != "")
                     data.formData = { path: self.currentPath() };
             });
-            
+
             self.requestData();
             self.checkUsbMounted();
         };
@@ -1277,7 +1270,7 @@ $(function ()  {
                 self.isUsbAvailable(data.is_media_mounted);
                 // Don't call onChanged, as it is the initialization
             });
-        }
+        };
 
         self.onEventUpdatedFiles = function (payload) {
             //TODO: Fix for USB
@@ -1378,14 +1371,28 @@ $(function ()  {
                         self.printerState.activities.remove(copying);
                         break;
 
+                    case "demo_selected":
+                        self.printAndChangeTab();
+                        if (self.introView.firstRun){
+                            self.isIntroFile(false);
+                            setTimeout(function () {
+                                self.introView.introInstance.refresh();
+                            }, 300);
+                            self.introView.introInstance.goToStep(8);
+                        }
+                        break;
                 }
             }
-        }
+        };
 
         self.checkIntroCancel = function () {
             self.introView.introInstance.exit();
             self.flyout.closeFlyout();
-        }
+        };
+
+        self.selectDemoFile = function () {
+            self._sendApi({command: "select_demo"});
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([

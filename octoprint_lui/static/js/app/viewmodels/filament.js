@@ -136,7 +136,7 @@ $(function ()  {
             if (!forPurge) {
                 self.filamentActionText(gettext("Swap"));
                 self.showUnload();
-                slider.noUiSlider.set(FILAMENT_ROLL_LENGTH)
+                slider.noUiSlider.set(FILAMENT_ROLL_LENGTH);
 
                 $('#swap-load-unload').addClass('active');
                 $('#swap-info').removeClass('active')
@@ -191,15 +191,15 @@ $(function ()  {
         self.onToolHeating = function ()  {
             $('#swap-info,#fd-swap-info').addClass('active')
             $('#swap-load-unload,#fd-swap-load-unload').removeClass('active');
-        }
+        };
 
         self.hideToolLoading = function ()  {
             $('#tool_loading,#fd_tool_loading').removeClass('active');
-        }
+        };
 
         self.finishedLoading = function ()  {
             // We are finished close the flyout
-            if(self.introView.introInstance.firstRun != false) {
+            if(self.introView.firstRun) {
                 self.introView.introInstance.goToStep(5);
             }
             self.flyout.closeFlyoutAccept();
@@ -216,7 +216,7 @@ $(function ()  {
                 command: "change_filament",
                 tool: tool
             });
-        }
+        };
 
         self.changeFilamentCancel = function ()  {
             self._sendApi({
@@ -225,19 +225,19 @@ $(function ()  {
                 self.requestData();
             });
 
-        }
+        };
 
         self.changeFilamentDone = function ()  {
             self._sendApi({
                 command: "change_filament_done"
             });
-        }
+        };
 
         self.unloadFilament = function ()  {
             self._sendApi({
                 command: "unload_filament"
             });
-        }
+        };
 
         self.loadFilament = function (loadFor) {
 
@@ -379,7 +379,7 @@ $(function ()  {
                     self.filamentLoading(false);
                     self.showFinished();
                     self.hideToolLoading();
-                    if (self.introView.introInstance.firstRun != false) {
+                    if (self.introView.firstRun) {
                         if (self.selectedTemperatureProfile != "None") {
                             self.introView.introInstance.goToStep(4);
                         }
@@ -431,7 +431,7 @@ $(function ()  {
                 extruder: 0,
                 name: "None"
             });
-        }
+        };
 
         self.onBeforeBinding = function ()  {
             self.requestData();
@@ -452,7 +452,7 @@ $(function ()  {
             self.rightAmount(self.filaments().find(function (x) { return x.tool() === "tool0" }).amount());
             self.updateLeftAmount(Math.round(self.leftAmount() / 1000));
             self.updateRightAmount(Math.round(self.rightAmount() / 1000));
-        }
+        };
 
         self.requestData = function ()  {
             return OctoPrint.simpleApiGet('lui', {
@@ -476,17 +476,17 @@ $(function ()  {
 
         self.showFilamentChange = function (tool) {
             self.showFilamentChangeFlyout(tool).done(function() {
-                if (self.introView.introInstance.firstRun != false) {
+                if (self.introView.firstRun) {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
                     self.introView.introInstance.goToStep(2);
                 }
             });
-        }
+        };
 
         self.showLoading = function () {
-            if (self.introView.introInstance.firstRun != false) {
+            if (self.introView.firstRun) {
                 if(self.selectedTemperatureProfileName != "None") {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()

@@ -2,7 +2,7 @@ $(function ()  {
     function IntroViewModel(parameters) {
         var self = this;
 
-        self.firstRun = true;
+        self.firstRun = false;
 
         self.viewmodel = undefined;
         self.flyout = parameters[0];
@@ -53,7 +53,7 @@ $(function ()  {
                     "There is a sample print you can try out.</div>"
                 },
                 {
-                    element: document.querySelector("#print_files .file_entry:nth-of-type(2)"),
+                    element: document.querySelector("#print_files"),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Select the file and press on the <i class='fa fa-play'>" +
                     "</i> button next to it</div>"
@@ -157,18 +157,17 @@ $(function ()  {
         });
 
         self.introInstance.oncomplete(function(){
-            $('overlay').removeClass('active');
-            $('introjs-overlay').remove();
             self.firstRun = false;
+            console.log('oncomplete');
         });
 
         self.introInstance.onexit(function () {
-            $('overlay').removeClass('active');
-            $('introjs-overlay').remove();
             self.firstRun = false;
+            console.log('onexit');
         });
 
         self.startIntro = function () {
+            self.firstRun = true;
             self.introInstance.start();
         }
 

@@ -153,6 +153,30 @@
               </li>
             </ul>
           </div>
+          <div id="print_files" class="file_entry" data-bind="visible: isIntroFile(), css: {'file_selected': isIntroFile()}, click: function () {}">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#file_name">
+                  <span>FirstPrint.gcode</span>
+                </a>
+              </li>
+              <li class="file_print" data-bind="visible: isIntroFile()">
+                <a href="#" data-bind="click: function () { selectDemoFile() }" title="{{ _('Print') }}">
+                  <i class="fa fa-play"></i>
+                </a>
+              </li>
+              <li class="file_status">
+                <a>
+                  <i class="fa fa-circle-thin"></i>
+                </a>
+              </li>
+              <li class="file_info">
+                <a href="#file_info" title="{{ _('Additional data') }}">
+                  <i class="fa fa-2x fa-angle-down"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
 
           <!-- ko foreach: filesAndFolders -->
           <div class="file_entry" data-bind="attr: { id: $root.getEntryId($data) }, template: { name: $root.templateFor($data), data: $data }"></div>

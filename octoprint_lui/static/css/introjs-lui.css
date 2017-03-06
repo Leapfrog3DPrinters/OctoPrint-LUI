@@ -16,11 +16,6 @@
   cursor: default;
 }
 
-.introjs-overlay {
-  pointer-events: none;
-  cursor: default;
-}
-
 .introjs-tooltip {
   max-width: none !important;
 }
