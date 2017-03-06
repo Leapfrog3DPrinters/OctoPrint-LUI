@@ -2609,10 +2609,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             }
         ]
 
-        ## Commenting the auto update during start up atm to see if we can fix corrupt .git/objects
-        ##self.update_info_list()
-        #self._logger.debug(self.update_info)
-
 
     def _add_server_commands(self):
         """

@@ -7,9 +7,11 @@ $(function ()  {
         self.flyout = parameters[2];
         self.files = parameters[3];
         self.settings = parameters[4];
-        self.flashArduino = parameters[5];
-        self.printerState = parameters[6];
+        self.printerState = parameters[5];
+        self.flashArduino = parameters[6];
+        self.networkManager = parameters[7];
 
+        self.initialCheck = false;
         self.updateinfo = ko.observableArray([]);
         self.refreshing = ko.observable(false);
         self.update_needed = ko.observable(false);
@@ -372,11 +374,18 @@ $(function ()  {
         }
 
         self.onStartup = function ()  {
-            self.requestData();
-
             self.requestFirmwareData();
-            self.requestFirmwareUpdateData(true);  // Request firmware info silently (no notification on failure)
         };
+
+        self.onOnline = function(online)
+        {
+            // Check for software and firmware update as soon as we're online for the first time
+            if (!self.initialCheck && online) {
+                self.initialCheck = true; // Only do this automatic check once
+                self.requestData();
+                self.requestFirmwareUpdateData(true);  // Request firmware info silently (no notification on failure)
+            }
+        }
 
         self.onAfterBinding = function () 
         {
@@ -386,6 +395,10 @@ $(function ()  {
 
             // Communicate to the plugin wheter he's allowed to flash
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
+
+            // Wait for connection to be up so we can perform an initial software and firmware check
+            self.networkManager.status.connection.wifi.subscribe(self.onOnline);
+            self.networkManager.status.connection.ethernet.subscribe(self.onOnline);
         }
 
         self.onFlashingBegin = function()
@@ -524,7 +537,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
-      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "flashArduinoViewModel", "printerStateViewModel"],
+      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel"],
       ['#update', '#update_icon', '#firmware_update_required']
     ]);
 
