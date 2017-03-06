@@ -50,20 +50,20 @@ dualX: true
 materialMinTemp: 150
 materialMaxTemp: 275
 filament:
-  load_initial:
+  loadInitial:
     amount: 18
     speed: 2000
-  load_change:
+  loadChange:
     start: 1900
     amount: 2.5
     speed: 300
-  load_amount_stop: 2100
-  cont_load_amount_stop: 100
-  unload_initial:
+  loadAmountStop: 2100
+  contLoadAmountStop: 100
+  unloadInitial:
     amount: -2.5
     speed: 300
-  unload_change:
+  unloadChange:
     start: 30
     amount: -18
     speed: 2000
-  unload_amount_stop: 2100
+  unloadAmountStop: 2100

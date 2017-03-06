@@ -1022,14 +1022,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def will_handle_ui(self, request):
         return True
 
-    def on_ui_render(self, now, request, render_kwargs):
+    def _is_request_from_localhost(self, request = None):
         remote_address = get_remote_address(request)
         localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
+        
         if remote_address is None:
-            from_localhost = True
+            return True
         else:
-            from_localhost = netaddr.IPAddress(remote_address) in localhost
+            return netaddr.IPAddress(remote_address) in localhost
 
+    def on_ui_render(self, now, request, render_kwargs):
+        
+        from_localhost = self._is_request_from_localhost(request)
 
         args = {
             "local_addr": from_localhost,
@@ -1042,11 +1046,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         response = make_response(render_template("index_lui.jinja2", **args))
 
-        # We're breaking the pre-emptive caching system with this. Let's rely on Chromiums incognito setting
-        #if from_localhost:
-        #    from octoprint.server.util.flask import add_non_caching_response_headers
-        #    add_non_caching_response_headers(response)
-
         return response
 
     def is_blueprint_protected(self):
@@ -1055,27 +1054,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
     def webcamstream(self):
-        # self._check_localhost() out for now I think Erik wants to refactor the localhost check,
-        # which we indeed should do, code copy sucks
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
     def get_ui_additional_key_data_for_cache(self):
-        remote_address = get_remote_address(request)
-        if remote_address is None:
-            from_localhost = True
-        else:
-            localhost = netaddr.IPSet([netaddr.IPNetwork("127.0.0.0/8")])
-            from_localhost = netaddr.IPAddress(remote_address) in localhost
+        from_localhost = self._is_request_from_localhost(request)
 
         return "local" if from_localhost else "remote"
 
     def get_ui_additional_request_data_for_preemptive_caching(self):
         return dict(environ_overrides=dict(REMOTE_ADDR=get_remote_address(request)))
 
-    def get_ui_additional_unless(self):
-        remote_address = get_remote_address(request)
-        return remote_address is None
+    def get_ui_preemptive_caching_additional_unless(self):
+        from_localhost = self._is_request_from_localhost(request)
+
+        # Only do preemptive caching for localhost, to keep startup time to a minimum (inverse logic here because of 'unless')
+        return not from_localhost
 
     def get_ui_preemptive_caching_enabled(self):
         return True
@@ -1252,8 +1246,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_print_mode('normal')
         self._printer.home(['y', 'x'])
 
-        if self.current_printer_profile["default_stepper_timeout"]:
-            self._printer.commands(["M84 S{0}".format(self.current_printer_profile["default_stepper_timeout"])]) # Reset stepper disable timeout
+        if self.current_printer_profile["defaultStepperTimeout"]:
+            self._printer.commands(["M84 S{0}".format(self.current_printer_profile["defaultStepperTimeout"])]) # Reset stepper disable timeout
             self._printer.commands(["M84"]) # And disable them right away for now
 
         self.restore_movement_mode()
@@ -1460,7 +1454,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Loading has already started, so just cancel the loading
         # which will stop heating already.
         context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["default_stepper_timeout"] if "default_stepper_timeout" in self.current_printer_profile else None }
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None }
 
         self.execute_printer_script("change_filament_done", context)
 
@@ -1481,7 +1475,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_filament_timer.cancel()
 
         context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["default_stepper_timeout"] if "default_stepper_timeout" in self.current_printer_profile else None }
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None }
 
         self.execute_printer_script("change_filament_done", context)
 
@@ -1952,12 +1946,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.loading_for_purging = False
             else:
                 self._logger.debug("load_filament")
-                load_initial = self.current_printer_profile["filament"]["load_initial"]
+                load_initial = self.current_printer_profile["filament"]["loadInitial"]
 
                 if "load_change" in self.current_printer_profile["filament"]:
-                    load_change = self.current_printer_profile["filament"]["load_change"]
+                    load_change = self.current_printer_profile["filament"]["loadChange"]
 
-                self.load_amount_stop = self.current_printer_profile["filament"]["load_amount_stop"]
+                self.load_amount_stop = self.current_printer_profile["filament"]["loadAmountStop"]
 
             load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5,
@@ -1978,12 +1972,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.set_extrusion_mode("relative")
             self.unload_change = None
 
-            unload_initial = self.current_printer_profile["filament"]["unload_initial"]
+            unload_initial = self.current_printer_profile["filament"]["unloadInitial"]
             unload_change = None
             if "unload_change" in self.current_printer_profile["filament"]:
-                unload_change = self.current_printer_profile["filament"]["unload_change"]
+                unload_change = self.current_printer_profile["filament"]["unloadChange"]
 
-            self.load_amount_stop = self.current_printer_profile["filament"]["unload_amount_stop"]
+            self.load_amount_stop = self.current_printer_profile["filament"]["unloadAmountStop"]
             
 
             # Before unloading, always purge the machine 10 mm
@@ -2008,7 +2002,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             #This method can also be used for the Bolt!
             self.load_amount = 0
-            self.load_amount_stop = self.current_printer_profile["filament"]["cont_load_amount_stop"]
+            self.load_amount_stop = self.current_printer_profile["filament"]["contLoadAmountStop"]
             load_cont_initial = dict(amount=2.5 * direction, speed=240)
             self.set_extrusion_mode("relative")
             load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
@@ -2597,7 +2591,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.z_before_filament_load = self._printer._currentZ
 
         context = { "currentZ": self._printer._currentZ,
-                    "stepperTimeout": self.current_printer_profile["filament"]["stepper_timeout"] if "stepper_timeout" in self.current_printer_profile["filament"] else None,
+                    "stepperTimeout": self.current_printer_profile["filament"]["stepperTimeout"] if "stepperTimeout" in self.current_printer_profile["filament"] else None,
                     "filamentChangeTool": self.filament_change_tool
                     }
 
