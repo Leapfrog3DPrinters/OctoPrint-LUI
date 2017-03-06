@@ -111,7 +111,8 @@ $(function ()  {
 
             self.files.browseUsbForFirmware();
 
-            self.flyout.showFlyout('firmware_file')
+            // Show this flyout with high priority, as it may be opened through firmware_update_required_flyout
+            self.flyout.showFlyout('firmware_file', false, true)
                 .done(function ()  {
                     file = self.files.selectedFirmwareFile();
                     self.flashArduino.onLocalFileSelected(file);
