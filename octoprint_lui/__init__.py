@@ -586,6 +586,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     self._send_client_message("auto_firmware_update_failed")
                     return False
                 
+                self._logger.info("Auto firmware update finished.")
                 self.auto_firmware_update_started = False
                 self._send_client_message("auto_firmware_update_finished")
 

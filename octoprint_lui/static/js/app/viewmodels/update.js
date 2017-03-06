@@ -197,7 +197,8 @@ $(function ()  {
         }
 
         self.showFirmwareUpdateRequiredFlyout = function () {
-            self.flyout.showFlyout('firmware_update_required', true);
+            // High priority flyout (must be shown on top of 'homing' flyout)
+            self.flyout.showFlyout('firmware_update_required', true, true); 
         }
 
         self.hideFirmwareUpdateRequiredFlyout = function () {
@@ -206,7 +207,8 @@ $(function ()  {
 
         self.showUpdateFlyout = function()
         {
-            self.settings.showSettingsTopic('update');
+            // Show the update flyout blocking and with high priority
+            self.settings.showSettingsTopic('update', true, true); 
         }
 
         self.showUpdateWarning = function () 
@@ -452,6 +454,7 @@ $(function ()  {
                     break;
                 case "auto_firmware_update_finished":
                     self.hideFirmwareUpdateWarning(true);
+                    self.firmwareUpdateAvailable(false); // The update succeeded so there shouldn't be any updates available
                     break;
                 case "firmware_update_found":
                     if(DEBUG_LUI) {

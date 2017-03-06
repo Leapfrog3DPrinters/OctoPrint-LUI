@@ -80,7 +80,7 @@ $(function () {
         self.setOverlay();
     }
 
-    self.showFlyout = function (flyout, blocking) {
+    self.showFlyout = function (flyout, blocking, high_priority) {
 
 //TODO: Check if flyout open. If so, push to front and return its deferred
 
@@ -91,7 +91,7 @@ $(function () {
       self.flyouts.push({deferred: deferred, template: template_flyout, blocking: blocking});
       self.currentFlyoutTemplate = template_flyout;
 
-      self.activateFlyout(template_flyout);
+      self.activateFlyout(template_flyout, high_priority);
 
       // Call viewmodels with the flyout method on{FlyoutTopic}Shown
       var method = "on" + capitalize(flyout) + "FlyoutShown";
@@ -209,15 +209,19 @@ $(function () {
         self.deactivateFlyout(template_flyout);
     };
 
-    self.activateFlyout = function(template_flyout) {
+    self.activateFlyout = function (template_flyout, high_priority) {
         $(template_flyout).addClass('active');
-        $(template_flyout).css("z-index", self.flyouts().length);
+
+        if (high_priority) // Z-index them on top of other flyouts, but below warnings and confirmations
+            $(template_flyout).css("z-index", 50 + self.flyouts().length);
+        else
+            $(template_flyout).css("z-index", self.flyouts().length);
+
         self.setOverlay();
     }
 
     self.deactivateFlyout = function (template_flyout) {
         $(template_flyout).removeClass('active');
-        // $(template_flyout).css("z-index", 1);
         self.setOverlay();
     }
 

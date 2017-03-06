@@ -651,12 +651,12 @@ $(function () {
             // }
         };
 
-        self.showSettingsTopic = function (topic, blocking) {
+        self.showSettingsTopic = function (topic, blocking, high_priority) {
             self.settingsTopic(capitalize(topic));
             callViewModels(self.allViewModels, "onSettingsShown");
             callViewModels(self.allViewModels, "on" + self.settingsTopic()+ "SettingsShown");
 
-            return self.flyout.showFlyout(topic + '_settings', blocking)
+            return self.flyout.showFlyout(topic + '_settings', blocking, high_priority)
                 .done(function ()  {
                     self.saveData();
                 })
