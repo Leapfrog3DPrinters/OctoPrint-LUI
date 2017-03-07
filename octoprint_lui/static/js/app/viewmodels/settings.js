@@ -6,7 +6,8 @@ $(function () {
         self.users = parameters[1];
         self.printerProfiles = parameters[2];
         self.flyout = parameters[3];
-        
+        self.introView = parameters[4];
+
         self.isErrorOrClosed = ko.observable(undefined);
         self.isOperational = ko.observable(undefined);
         self.isPrinting = ko.observable(undefined);
@@ -655,14 +656,21 @@ $(function () {
             self.settingsTopic(capitalize(topic));
             callViewModels(self.allViewModels, "onSettingsShown");
             callViewModels(self.allViewModels, "on" + self.settingsTopic()+ "SettingsShown");
-
-            return self.flyout.showFlyout(topic + '_settings', blocking)
+            self.flyout.showFlyout(topic + '_settings', blocking)
                 .done(function ()  {
                     self.saveData();
                 })
                 .always(function ()  {
                     callViewModels(self.allViewModels, "onSettingsHidden");
                 });
+            if(self.introView.firstRun){
+                if(topic === 'maintenance'){
+                    setTimeout(function(){
+                        self.introView.introInstance.refresh();
+                    }, 300);
+                    self.introView.introInstance.goToStep(4);
+                }
+            }
         };
 
         // Sending custom commands to the printer, needed for level bed for example.
@@ -786,7 +794,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
-        ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel", "flyoutViewModel", "introViewModel"],
         ["#settings", "#settings_flyouts"]
     ]);
 });

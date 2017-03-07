@@ -7,6 +7,7 @@ $(function () {
         self.settings = parameters[2];
         self.filament = parameters[4];
         self.temperatures = parameters[3];
+        self.introView = parameters[5];
 
         self.poweringUpInfo = null;
         self.movingToMaintenancePositionInfo = null;
@@ -69,6 +70,12 @@ $(function () {
         self.calibrateBed = function()
         {
             self.flyout.showFlyout('bedcalibration', true);
+            if(self.introView.firstRun){
+                setTimeout(function(){
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(5);
+            }
         }
 
         self.sendHomeCommand = function (axis) {
@@ -188,7 +195,8 @@ $(function () {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "temperatureViewModel", "filamentViewModel"],
+        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "temperatureViewModel", "filamentViewModel",
+            "introViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#maintenance_settings_flyout_content"]

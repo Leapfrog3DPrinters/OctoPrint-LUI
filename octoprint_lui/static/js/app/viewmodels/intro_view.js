@@ -11,14 +11,61 @@ $(function ()  {
         self.introInstance.setOptions({
             steps: [
                 {
+                    //1
+                    element: 'none',
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>Welcome to your new Bolt.<br>This tutorial will guide you through the steps" +
+                    " you have to take to start printing your creations.<br>" +
+                    "<div class='introjs-tooltipbuttons'><a id='nextButton' role='button' " +
+                    "class='introjs-button' onclick='introview.nextButton(2)'>Begin</a></div></div>"
+                },
+                {
+                    //2
+                    element: 'none',
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>Before we start printing, we have to be sure that the bed is level and" +
+                    " that the extruder is aligned</div><div class='introjs-tooltipbuttons'><a role='button' " +
+                    "class='introjs-button' onclick='introview.nextButton(3)'>Next</a></div></div>"
+                },
+                {
+                    //3
+                    element: document.querySelector('#maintenance'),
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>To get to the maintenance menu, click here</div>",
+                    position: 'bottom'
+                },
+                {
+                    //4
+                    element: document.querySelector('#bed_calibrate'),
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>To calibrate the bed, click here</div>",
+                    position: 'top'
+                },
+                {
+                    //5
+                    element: document.querySelector('#continue_calibration'),
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>To calibrate the bed, click here</div>",
+                    position: 'top'
+                },
+                {
+                    //5
+                    element: document.querySelector('#manual-bed-calibration'),
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>To calibrate the bed, click here</div>",
+                    position: 'bottom'
+                },
+                {
+                    //5
                     element: document.querySelector('#swap_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
-                    "<div class='step-text'>Welcome to your new printer. In order to print stuff, we first have to " +
+                    "<div class='step-text'>In order to print stuff, we first have to " +
                     "load some filament in the printer. Click <i class='fa fa-refresh'></i> <b> Swap Right</b> " +
                     "to load the filament in the right and main extruder.</div>",
                     position: 'top'
                 },
                 {
+                    //6
                     element: document.querySelector('#load_filament'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Choose what kind of material you are loading and give the amount " +
@@ -27,6 +74,7 @@ $(function ()  {
                     tooltipClass: "tooltip_hidden"
                 },
                 {
+                    //7
                     element: document.querySelector('#abort_filament'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>The filament is being loaded. When something goes wrong you can press " +
@@ -34,6 +82,7 @@ $(function ()  {
                     position: 'top'
                 },
                 {
+                    //8
                     element: document.querySelector('#finished_filament'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>We are now done loading the filament. If your not satisfied with the " +
@@ -41,30 +90,43 @@ $(function ()  {
                     "the next step press <b>Done</b>.</div>"
                 },
                 {
+                    //9
                     element: document.querySelector('#job_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Now we can select our print job for the printer. To" +
                     " select a print job, click on <i class='fa fa-file'></i> <b>Select print job</b>.</div>"
                 },
                 {
+                    //10
                     element: document.querySelector('#local_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Now we can select a GCODE file that's saved on the printer. " +
                     "There is a sample print you can try out.</div>"
                 },
                 {
+                    //11
                     element: document.querySelector("#print_files"),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Select the file and press on the <i class='fa fa-play'>" +
                     "</i> button next to it</div>"
                 },
                 {
+                    //12
                     element: document.querySelector('#start_print'),
                     intro: "<div class='step-header'>Getting Started</div>" +
-                    "<b class='step-text'>For the first print we will keep it simple and print in normal" +
+                    "<div class='step-text'>For the first print we will keep it simple and print in normal" +
                     " mode. So when you're ready, press <b>Start Print</b> or if you don't want to print" +
                     " anything press <b>Cancel</b>.</div>",
                     position: 'top'
+                },
+                {
+                    //13
+                    element: 'none',
+                    intro: "<div class='step-header'>Getting Started</div>" +
+                    "<div class='step-text'>Good Job!<br>The printer is now printing the first print. " +
+                    "Watch how the object magically appears before you.<br>" +
+                    "<div class='introjs-tooltipbuttons'><a id='doneButton' role='button'" +
+                    "class='introjs-button' onclick='introview.nextButton(2)'>Done</a></div></div>"
                 }
             ],
             showStepNumbers: false,
@@ -72,7 +134,7 @@ $(function ()  {
             exitOnOverLayClick: false,
             showBullets: true,
             showButtons: false,
-            keyboardNavigation: false
+            keyboardNavigation: true
 
         });
 
@@ -82,77 +144,12 @@ $(function ()  {
                     $('#print_icon').click();
                     console.log('beforeswap');
                     break;
-                case 'load_filament':
-                    console.log('beforeload');
-                    break;
-                case 'finished_filament':
-                    console.log('beforefinished');
-                    break;
                 case 'job_button':
                     $('#print_icon').click();
                     console.log('beforejob');
                     break;
-                case 'local_button':
-                    console.log('beforelocal');
-                    break;
-                case 'usb_button':
-                    console.log('beforeusb');
-                    break;
-                case 'upload_button':
-                    console.log('beforeupload');
-                    break;
-            }
-        });
-
-        self.introInstance.onafterchange(function(targetElement) {
-            switch (targetElement.id){
-                case 'swap_button':
-                    console.log('afterswap');
-                    break;
-                case 'load_filament':
-                    console.log('afterload');
-                    break;
-                case 'finished_filament':
-                    console.log('afterfinished');
-                    break;
-                case 'job_button':
-                    console.log('afterjob');
-                    break;
-                case 'local_button':
-                    console.log('afterlocal');
-                    break;
-                case 'usb_button':
-                    console.log('afterusb');
-                    break;
-                case 'upload_button':
-                    console.log('afterupload');
-                    break;
-            }
-        });
-
-        self.introInstance.onchange(function(targetElement){
-            switch (targetElement.id){
-                case 'swap_button':
-                    console.log('onswap');
-                    break;
-                case 'load_filament':
-                    console.log('onload');
-                    break;
-                case 'finished_filament':
-                    console.log('onfinished');
-                    break;
-                case 'job_button':
-                    console.log('onjob');
-                    break;
-                case 'local_button':
-                    console.log('onlocal');
-                    break;
-                case 'usb_button':
-                    console.log('onusb');
-                    break;
-                case 'upload_button':
-                    console.log('onupload');
-                    break;
+                case 'maintenance':
+                    $('#settings_icon').click();
             }
         });
 
@@ -169,6 +166,14 @@ $(function ()  {
         self.startIntro = function () {
             self.firstRun = true;
             self.introInstance.start();
+        }
+
+        self.nextButton = function (step) {
+            self.introInstance.goToStep(step);
+        }
+
+        self.doneButton = function () {
+            self.introInstance.exit();
         }
 
     }

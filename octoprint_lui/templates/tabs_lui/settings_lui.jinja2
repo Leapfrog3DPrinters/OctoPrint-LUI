@@ -23,7 +23,7 @@
       </div><!-- Printer -->
       {% if local_addr %}
       <!-- Maintenance -->
-      <div class="settings_topic">
+      <div id='maintenance' class="settings_topic">
         <ul class="topic_main" data-bind="click: function () {showSettingsTopic('maintenance')}, css: { disabled: !isOperational() || isPaused() || isPrinting() } ">
           <li class="topic_dash">
             <a href="">

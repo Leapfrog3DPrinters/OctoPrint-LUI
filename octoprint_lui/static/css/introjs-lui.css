@@ -1,6 +1,7 @@
 .introjs-tooltipbuttons {
   text-align: center;
   white-space: nowrap;
+  margin-top: 5px;
 }
 
 .introjs-fixParent {
@@ -34,10 +35,10 @@
   display: inline-block;
   padding: 0.3em 0.8em;
   border: 1px solid #434A54;
-  margin: 0;
+  margin: 1px;
   text-decoration: none;
   text-shadow: 1px 1px 0 #fff;
-  font: 11px/normal sans-serif;
+  font: 18px/normal sans-serif;
   color: #333;
   white-space: nowrap;
   cursor: pointer;
@@ -51,10 +52,8 @@
   -moz-border-radius: 0;
   border-radius: 0;
   /* IE hacks */
-  zoom: 1.3;
-  *display: inline;
-  margin-top: 10px;
-  width: 20%;
+  margin-top: 5px;
+  width: 75% !important;
 }
 
 .introjs-button:hover {
@@ -75,7 +74,6 @@
 }
 
 .introjs-skipbutton {
-  display: none;
   box-sizing: content-box;
   margin-right: 5px;
   background: none #ffffff;

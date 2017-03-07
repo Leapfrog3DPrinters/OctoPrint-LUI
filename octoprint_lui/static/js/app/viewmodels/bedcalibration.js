@@ -6,6 +6,7 @@ $(function ()  {
         self.loginState = parameters[1];
         self.flyout = parameters[2];
         self.printerState = parameters[3];
+        self.introView = parameters[4];
 
         self.mayAbort = ko.observable(true);
         self.mayAccept = ko.observable(false);
@@ -18,7 +19,7 @@ $(function ()  {
         self.showAutoBedCalibration = ko.observable(false);
         self.autoBedCalibrationProgress = ko.observable(0);
         self.autoBedCalibrationProgressString = ko.observable(" ");
-        self.autoBedCalibrationProgressColor = ko.observable("rgb(" + self.gaugeColorStart[0] + "," + self.gaugeColorStart[2] + "," + self.gaugeColorStart[1] + ")");        
+        self.autoBedCalibrationProgressColor = ko.observable("rgb(" + self.gaugeColorStart[0] + "," + self.gaugeColorStart[2] + "," + self.gaugeColorStart[1] + ")");
         self.autoBedCalibrationComplete = ko.observable(false);
 
         self.resetState = function()
@@ -63,6 +64,12 @@ $(function ()  {
             self.showManualBedCalibration(true);
             self.mayAbort(false);
             self.mayAccept(true);
+            if(self.introView.firstRun){
+                setTimeout(function(){
+                    self.introView.introInstance.refresh();
+                });
+                self.introView.introInstance.goToStep(6);
+            }
         }
 
         self.startZoffset = function ()  {
@@ -93,11 +100,11 @@ $(function ()  {
         });
 
         self.requestData = function ()  {
-           
+
         }
 
         self.fromResponse = function (response) {
-            
+
         }
 
         self._sendApi = function (data) {
@@ -111,7 +118,7 @@ $(function ()  {
         };
 
         self.onAfterBinding = function ()  {
-            
+
         }
 
         self.updateAutoBedCalibrationProgress = function(max_correction_value)
@@ -126,7 +133,7 @@ $(function ()  {
                     gaugeColor[i] = self.gaugeColorStart[i] + 2 * progress * (self.gaugeColorCenter[i] - self.gaugeColorStart[i]);
                 else //Interpolate centercolor to endcolor
                     gaugeColor[i] = self.gaugeColorCenter[i] + 2 * (progress - 0.5) * (self.gaugeColorTarget[i] - self.gaugeColorCenter[i]);
-                    
+
             }
 
             var progressColorStr = "rgb(" + Math.round(gaugeColor[0]) + "," + Math.round(gaugeColor[1]) + "," + Math.round(gaugeColor[2]) + ")";
@@ -167,7 +174,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "introViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#bedcalibration_flyout"]

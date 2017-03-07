@@ -13,7 +13,7 @@
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <ul class="button-area">
+        <ul id="continue_calibration" class="button-area">
           <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startManualBedCalibration()}">
             <a href="">
               <span>{{ _('Continue calibration') }}</span>
