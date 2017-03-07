@@ -97,7 +97,7 @@ $(function ()  {
             },
             {
             },
-            "name",
+            "creation",
             [],
             [],
             5 // Timelapse files per page
@@ -128,7 +128,7 @@ $(function ()  {
             },
             {
             },
-            "name",
+            "creation",
             [],
             [],
             5 // Timelapse files per page

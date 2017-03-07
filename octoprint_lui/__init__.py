@@ -12,6 +12,7 @@ import platform
 import flask
 import requests
 import markdown
+import json
 
 from random import choice
 from collections import OrderedDict
@@ -58,6 +59,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.default_model = 'bolt'
         self.model = None
         self.platform = None
+        self.platform_info = None
+        self.platform_info_file = None
         self.update_basefolder = None
         self.media_folder = None
         self.current_printer_profile = None
@@ -283,14 +286,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             mac_path = os.path.expanduser("~")
             self.update_basefolder = "{mac_path}/lpfrg/".format(mac_path=mac_path)
             self.media_folder = "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path)
+            self.platform_info_file = "{mac_path}/lpfrg/lpfrgplatform.json".format(mac_path=mac_path)
         elif sys.platform == "win32":
             self.platform = "WindowsDebug"
             self.update_basefolder = "C:\\Users\\erikh\\OneDrive\\Programmatuur\\"
             self.media_folder = "C:\\Tijdelijk\\usb\\"
+            self.platform_info_file = "C:\\Tijdelijk\\lpfrgplatform.json"
         else:
             self.platform = "RPi"
             self.update_basefolder = "/home/pi/"
             self.media_folder = "/media/pi/"    
+            self.platform_info_file = "/boot/lpfrgpi.json"
 
         self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
@@ -307,6 +313,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
 
             first_run_results = []
+
+            # Read and output information about the platform, such as the image version.
+            first_run_results.append(self._output_platform_info())
 
             # Check OctoPrint Branch, it will reboot and first run will run again after wards. 
             # This is at the top of the first run so most things won't run twice etc.
@@ -330,7 +339,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self._logger.error("First run failed")
 
+    def _output_platform_info(self):
+        self._read_platform_info()
+        self._logger.info("Platform info: {0}".format(self.platform_info))
+        return True
 
+    def _read_platform_info(self):
+        """ Reads the image version from /boot/lpfrgpi.json if it exists """
+        if os.path.isfile(self.platform_info_file):
+            try:
+                with open(self.platform_info_file) as fh:    
+                    data = json.load(fh)
+                self.platform_info = data
+            except OSError:
+                self._logger.exception("Could not read platform info file")
+            
     def _check_octoprint_branch(self):
         """ Check if OctoPrint branch is still on development and change it to master
             if debug mode is not on. This will install and restart service. 
@@ -552,6 +575,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return StrictVersion(current_version) == StrictVersion(requirement[1:])
         else:
             return StrictVersion(current_version) == StrictVersion(requirement)
+
+    @octoprint.plugin.BlueprintPlugin.route("/software/changelog", methods=["GET"])
+    def get_changelog(self):
+        return jsonify({
+            'contents': self._get_changelog_html(),
+            'show_on_startup': self.show_changelog,
+            'lui_version': self.plugin_version
+            })
+
+    @octoprint.plugin.BlueprintPlugin.route("/software/changelog/refresh", methods=["GET"])
+    def refresh_changelog(self):
+        self._read_changelog_file()
+        return self.get_changelog()
 
     @octoprint.plugin.BlueprintPlugin.route("/firmware", methods=["GET"])
     def get_firmware_version_info(self):
@@ -1098,13 +1134,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             import psutil
             usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
             return jsonify(free=usage.free, total=usage.total)
-        elif(command == "changelog_contents"):
-            # Force to read changelog file
-            self._read_changelog_file()
-            return jsonify({
-                'changelog_contents': self._get_changelog_html(),
-                'lui_version': self.plugin_version
-                })
         else:
             machine_info = self._get_machine_info()
 
@@ -1116,8 +1145,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'reserved_usernames': self.reserved_usernames,
                 'tool_status': self.tool_status,
                 'auto_shutdown': self.auto_shutdown,
-                'show_changelog': self.show_changelog,
-                'changelog_contents': self._get_changelog_html(),
                 'lui_version': self.plugin_version,
                 'printer_error_reason': self.printer_error_reason,
                 'printer_error_extruder': self.printer_error_extruder

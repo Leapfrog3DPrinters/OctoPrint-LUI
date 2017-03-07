@@ -19,7 +19,9 @@ $(function ()  {
         self.updateTarget = 0;
         self.update_warning = undefined;
         self.firmware_update_warning = undefined;
-        self.lpfrg_software_version = ko.observable(undefined);
+        self.currentLuiVersion = ko.observable(undefined);
+
+        self.changelogContents = ko.observable(undefined);
 
         self.fileNameToFlash = ko.observable(undefined); // Can either be a local (USB) file name or a filename to be uploaded
 
@@ -239,10 +241,19 @@ $(function ()  {
             var lui_update = info().find(function (x) { return x.name() === "Leapfrog UI" })
 
             if (lui_update !== undefined)
-                self.lpfrg_software_version(lui_update.version());
+                self.currentLuiVersion(lui_update.version());
 
             self.modelName(data.machine_info.machine_type);
         };
+
+        self.fromChangelogResponse = function (data, from_startup)
+        {
+            self.changelogContents(data.contents);
+            self.currentLuiVersion(data.lui_version);
+            
+            if (from_startup && data.show_on_startup)
+                self.showChangelogFlyout(false);
+        }
 
         self.fromFirmwareResponse = function (data)
         {
@@ -313,6 +324,19 @@ $(function ()  {
                 });
         };
 
+        self.requestChangelogData = function (from_startup, refesh)
+        {
+            if (refesh)
+                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog/refresh";
+            else
+                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog";
+
+            OctoPrint.get(url)
+                .done(function (response) {
+                    self.fromChangelogResponse(response, from_startup);
+                });
+        }
+
         self.requestFirmwareData = function ()
         {
             var url = OctoPrint.getBlueprintUrl("lui") + "firmware";
@@ -376,7 +400,8 @@ $(function ()  {
             self.flashArduino.resetFile();
         }
 
-        self.onStartup = function ()  {
+        self.onStartup = function () {
+            self.requestChangelogData(true);
             self.requestFirmwareData();
         };
 
@@ -394,7 +419,6 @@ $(function ()  {
         {
             self.flashArduino.hex_path.subscribe(self.onHexPathChanged);
             self.flashArduino.flashing_begin_callback = self.onFlashingBegin;
-            self.flashArduino.flashing_complete_callback = self.onFlashingComplete;
 
             // Communicate to the plugin wheter he's allowed to flash
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
@@ -409,13 +433,17 @@ $(function ()  {
             self._sendApi({ command: 'notify_intended_disconnect' });
         }
 
-        self.onFlashingComplete = function(success)
-        {
-            // Check if a firmware update is still required
-            // Can't check new firmware version yet. Requires OctoPrint to reconnect and send a M115 first
-            //if (success) {
-            //    self.requestFirmwareData(true); // Silent check
-            //}
+        self.showChangelogFlyout = function (updateContents) {
+
+            if (updateContents) {
+                self.requestChangelogData(false, true);
+            }
+
+            // Show it on top of other flyouts (high priority)
+            self.flyout.showFlyout('changelog', true, true)
+                .always(function () {
+                        self._sendApi({ command: "changelog_seen" });
+                });
         }
 
         self.updateDoneOrError = function() {
@@ -542,7 +570,7 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
       ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel"],
-      ['#update', '#update_icon', '#firmware_update_required']
+      ['#update', '#update_icon', '#firmware_update_required', '#changelog_flyout']
     ]);
 
 });

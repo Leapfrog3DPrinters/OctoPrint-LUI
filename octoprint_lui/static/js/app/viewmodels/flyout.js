@@ -87,14 +87,26 @@ $(function () {
 
         var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
 
-        // If we can't find a reference to the flyout, create a new one
+        
         if (!flyout_ref)
         {
+            // If we can't find a reference to the flyout, create a new one
             var deferred = $.Deferred();
 
             self.blocking = blocking;
-            flyout_ref = { deferred: deferred, template: template_flyout, blocking: blocking }
+            flyout_ref = {
+                deferred: deferred,
+                template: template_flyout,
+                blocking: blocking,
+                high_priority: high_priority
+            }
             self.flyouts.push(flyout_ref);
+        }
+        else
+        {
+            //The flyout is open already, move the current flyout backwards to ensure it will become visible
+            var current_z = $(self.currentFlyoutTemplate).css("z-index");
+            $(self.currentFlyoutTemplate).css("z-index", current_z - 1);
         }
 
         // Set the flyout to be the current one and push it to the front
@@ -168,20 +180,31 @@ $(function () {
         }
         else
         {
-            var flyout_ref = self.flyouts.pop();
+            // If we have any high priority flyouts open, we want to close them first
+            var flyout_ref = _.findLast(self.flyouts(), "high_priority" );
+
+            if (!flyout_ref)
+                flyout_ref = _.last(self.flyouts());
+
             var template_flyout = flyout_ref.template;
+            self.flyouts.remove(flyout_ref);
         }
 
         var deferred = flyout_ref.deferred;
         
-        if (deferred != undefined) {
+        if (deferred != undefined)
+        {
             deferred.reject();
-            if (self.flyouts().length > 0){
-                self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template;
-                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking;
-              } else {
+            if (self.flyouts().length > 0)
+            {
+                var last_flyout = _.last(self.flyouts());
+                self.currentFlyoutTemplate = last_flyout.template;
+                self.blocking = last_flyout.blocking;
+            }
+            else
+            {
                 self.blocking = false;
-              }
+            }
         }
         self.deactivateFlyout(template_flyout);
     };
@@ -199,18 +222,30 @@ $(function () {
         }
         else
         {
-            var flyout_ref = self.flyouts.pop();
+            // If we have any high priority flyouts open, we want to close them first
+            var flyout_ref = _.findLast(self.flyouts(), "high_priority");
+
+            if (!flyout_ref)
+                flyout_ref = _.last(self.flyouts());
+
             var template_flyout = flyout_ref.template;
+            self.flyouts.remove(flyout_ref);
         }
 
         var deferred = flyout_ref.deferred;
         
-        if (deferred != undefined) {
+        if (deferred != undefined)
+        {
             deferred.resolve();
-            if (self.flyouts().length > 0){
-                self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template;
-                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking;
-            } else {
+
+            if (self.flyouts().length > 0)
+            {
+                var last_flyout = _.last(self.flyouts());
+                self.currentFlyoutTemplate = last_flyout.template;
+                self.blocking = last_flyout.blocking;
+            }
+            else
+            {
               self.blocking = false;
             }
         }

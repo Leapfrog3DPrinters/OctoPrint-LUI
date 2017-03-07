@@ -24,8 +24,6 @@ $(function ()  {
 
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
-        self.showChangelog = ko.observable(undefined);
-        self.changelogContents = ko.observable(undefined);
         self.currentLuiVersion = ko.observable(undefined);
 
 
@@ -455,35 +453,6 @@ $(function ()  {
                 self.flyout.showFlyout('startup', true);
         }
 
-        self.updateChangelogContents = function()
-        {
-            OctoPrint.simpleApiGet('lui', {
-                data: {
-                    command: 'changelog_contents'
-                },
-                success: function (data) {
-                    self.changelogContents(data.changelog_contents);
-                    self.currentLuiVersion(data.lui_version);
-                }
-            });
-        }
-
-        self.showChangelogFlyout = function (updateContents) {
-            
-            if (updateContents)
-            {
-                self.updateChangelogContents();
-            }
-
-            self.flyout.showFlyout('changelog', true)
-                .always(function() {
-                    if (self.showChangelog()) {
-                        self._sendApi({command: "changelog_seen"});
-                    }
-                });
-        }
-
-
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept('startup');
         }
@@ -517,7 +486,7 @@ $(function ()  {
 
         self.showPrinterErrorFlyout = function () {
             if (!self.flyout.isFlyoutOpen('printer_error'))
-                self.flyout.showFlyout('printer_error', true);
+                self.flyout.showFlyout('printer_error', true, true); // High priority flyout
         }
 
         self.closePrinterErrorFlyout = function () {
@@ -560,19 +529,15 @@ $(function ()  {
 
         self.fromResponse = function (data) {
             self.isHomed(data.is_homed);
-            self.isHoming(data.is_homing)
-            self.showChangelog(data.show_changelog);
-
-            self.changelogContents(data.changelog_contents);
-            self.currentLuiVersion(data.lui_version);
+            self.isHoming(data.is_homing);
 
             self.settings.autoShutdown(data.auto_shutdown);
 
 
             // Startup flyout priority:
             // 1. Printer error
-            // 2. Firmware update required
-            // 3. Changelog
+            // 2. Firmware update required (update.js)
+            // 3. Changelog (update.js)
             // 4. Startup flyout (homing/maintenance)
             
             // This fromResponse method is also called after a firmware update and printer error/disconnect
@@ -581,10 +546,6 @@ $(function ()  {
 
             if (!self.isHomed()) {
                 self.showStartupFlyout();
-            }
-              
-            if (self.showChangelog()) {
-                self.showChangelogFlyout();
             }
 
             if (data.printer_error_reason) {
@@ -726,6 +687,6 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
         ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout", "#printer_error_flyout"]
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#printer_error_flyout"]
     ]);
 });
