@@ -2,11 +2,11 @@
   <div class="Table" data-bind="css: {disabled: refreshing()}">
     {% if debug_lui %}
     <div class="Table-row Table-header">
-      <div class="Table-item Table-item-grow-4">
+      <div class="Table-item Table-item-grow-5">
         {{ _('Version information') }}
       </div>
       <div class="Table-item Table-item-grow-3 text_wrap">
-          <span data-bind="text: modelName"></span>
+          <span data-bind="text: modelName"  style="margin-left: auto;"></span>
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
@@ -14,7 +14,9 @@
         </span>      
       </div>
       <div class="Table-item">
+        <span style="margin-left: auto;">
           <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
+        </span>
       </div>
     </div>
     <!-- ko foreach: updateinfo -->
@@ -36,8 +38,11 @@
     <!-- /ko -->
     {% else %}
     <div class="Table-row Table-header">
-      <div class="Table-item">
+      <div class="Table-item Table-item-grow-5">
         {{ _('Software') }}
+      </div>
+        <div class="Table-item Table-item-grow-3 text_wrap">
+          <span data-bind="text: modelName"  style="margin-left: auto;"></span>
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
@@ -45,15 +50,16 @@
         </span>      
       </div>
       <div class="Table-item">
+        <span style="margin-left: auto;">
           <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
-          <span data-bind="text: modelName"></span>
+        </span>
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item Table-item-grow-4" style="text-overflow: ellipsis">
         {{ _('Leapfrog software') }}
       </div>
-      <div class="Table-item text_wrap" data-bind="text: lpfrg_software_version">
+      <div class="Table-item text_wrap" data-bind="text: currentLuiVersion">
       </div>
       <div class="Table-item Table-item-grow-3">
         <ul class="button-area">
@@ -127,7 +133,7 @@
       </div>
       <div class="Table-row" data-bind="visible: $parent.fileNameToFlash">
 
-        <div class="Table-item Table-item-grow-5">
+        <div class="Table-item Table-item-grow-5 Table-ellipsis">
           <span data-bind="text: $parent.fileNameToFlash"></span>
         </div>
         <div class="Table-item Table-item-grow-3">

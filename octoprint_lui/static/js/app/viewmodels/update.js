@@ -200,8 +200,10 @@ $(function ()  {
         }
 
         self.showFirmwareUpdateRequiredFlyout = function () {
+
             // High priority flyout (must be shown on top of 'homing' flyout)
-            self.flyout.showFlyout('firmware_update_required', true, true); 
+            if (!self.flyout.isFlyoutOpen('firmware_update_required'))
+                self.flyout.showFlyout('firmware_update_required', true, true); 
         }
 
         self.hideFirmwareUpdateRequiredFlyout = function () {
