@@ -1,10 +1,12 @@
-{% if paused_position %}
+﻿{% if paused_position %}
+M605 S3
+G28 X0 Y0
+{% snippet 'bolt_wipe_left.jinja2' %};									Wiping in mirror mode
 M605 S{{ paused_print_mode }};											Restore print mode
 {% if paused_print_mode < 2 %}
 T{{ paused_position['t'] }};											Set tool (only for normal and full control modes)
 {% endif %}						
-G28 X0 Y0
-{% snippet 'bolt_wipe.jinja2' %};										Wiping
+G28 X0
 {% if paused_position['e'] %}
 G92 E{{ paused_position['e'] }};										Reset E coordinate
 {% endif %}		

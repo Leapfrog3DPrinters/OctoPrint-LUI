@@ -1,4 +1,4 @@
-# coding=utf-8
+﻿# coding=utf-8
 from __future__ import absolute_import
 
 import logging
@@ -1280,7 +1280,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if self.current_printer_profile["defaultStepperTimeout"]:
             self._printer.commands(["M84 S{0}".format(self.current_printer_profile["defaultStepperTimeout"])]) # Reset stepper disable timeout
-            self._printer.commands(["M84"]) # And disable them right away for now
+            if not self.paused_filament_swap:
+                self._printer.commands(["M84"]) # And disable them right away for now
+
 
         self.restore_movement_mode()
 
