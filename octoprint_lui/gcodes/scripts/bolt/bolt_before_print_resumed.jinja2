@@ -1,5 +1,5 @@
 ﻿{% if paused_position %}
-M605 S3
+M605 S3 U0;																Put in  mirror mode, but don't alter target temperatures
 G28 X0 Y0
 {% snippet 'bolt_wipe_left.jinja2' %};									Wiping in mirror mode
 M605 S{{ paused_print_mode }};											Restore print mode

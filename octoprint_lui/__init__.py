@@ -1280,8 +1280,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if self.current_printer_profile["defaultStepperTimeout"]:
             self._printer.commands(["M84 S{0}".format(self.current_printer_profile["defaultStepperTimeout"])]) # Reset stepper disable timeout
-            if not self.paused_filament_swap:
-                self._printer.commands(["M84"]) # And disable them right away for now
+            self._printer.commands(["M84"]) # And disable them right away for now
 
 
         self.restore_movement_mode()
@@ -1496,7 +1495,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Loading has already started, so just cancel the loading
         # which will stop heating already.
         context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None }
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
+				    "pausedFilamentSwap": self.paused_filament_swap
+					}
 
         self.execute_printer_script("change_filament_done", context)
 
@@ -1518,7 +1519,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_filament_timer.cancel()
 
         context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None }
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
+				    "pausedFilamentSwap": self.paused_filament_swap 
+					}
 
         self.execute_printer_script("change_filament_done", context)
 
