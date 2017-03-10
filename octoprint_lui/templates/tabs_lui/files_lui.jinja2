@@ -35,6 +35,17 @@
                 </li>
               </ul>
             </div>
+            <div class="button-area">
+              <ul>
+                <li class="button load-button" data-bind="click: function () { browseCloud() }">
+                  <a href="#browse_cloud">
+                    <span>
+                      <i class="fa fa-cloud"></i>{{ _('Cloud') }}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
             {%- endif %}
             {% if not local_addr or debug_lui  %}
             <div class="button-area">
@@ -231,6 +242,26 @@
                   <li class="button secondary-button load-button">
                     <a href="#" data-bind="click: function () { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
                       <span><i class="fa fa-upload"></i>{{ _('Load') }}</span>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </script>
+          <script type="text/html" id="files_template_cloud_machinecode">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#">
+                  <span data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }, text: name"></span>
+                </a>
+              </li>
+              <li class="file_load">
+                <ul class="button-area">
+                  <li class="button secondary-button load-button">
+                    <a href="#" data-bind="click: function () { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
+                      <span>
+                        <i class="fa fa-upload"></i>{{ _('Load') }}
+                      </span>
                     </a>
                   </li>
                 </ul>

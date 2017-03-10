@@ -1,4 +1,4 @@
-﻿# coding=utf-8
+# coding=utf-8
 from __future__ import absolute_import
 
 import logging
@@ -19,7 +19,8 @@ from collections import OrderedDict
 from pipes import quote
 from functools import partial
 from copy import deepcopy
-from flask import jsonify, make_response, render_template, request
+from flask import jsonify, make_response, render_template, request, redirect
+
 from distutils.version import StrictVersion
 from distutils.dir_util import copy_tree
 
@@ -27,8 +28,9 @@ from tinydb import TinyDB, Query
 
 import octoprint_lui.util
 
-from octoprint_lui.util import exceptions
+from octoprint_lui.util import exceptions, cloud
 from octoprint_lui.util.firmware import FirmwareUpdateUtility
+from octoprint_lui.util.cloud import CloudStorage, CloudConnect
 
 import octoprint.plugin
 from octoprint.settings import settings
@@ -37,6 +39,7 @@ from octoprint.settings import valid_boolean_trues
 from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
 from octoprint.events import Events
+from octoprint.filemanager.destinations import FileDestinations
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
@@ -215,6 +218,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.requesting_temperature_after_mintemp = False # Force another temperature poll to check if extruder is disconnected or it's just very cold
         self.send_M999_on_reconnect = False
 
+        ##~ Cloud
+        self.cloud_connect = None
+        self.cloud_storage = None
+
     def initialize(self):
 
         #~~ get debug from yaml
@@ -272,6 +279,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.changelog_path = None
         self.changelog_path = os.path.join(self.update_basefolder, 'OctoPrint-LUI', self.changelog_filename)
         self._update_changelog()
+
+        ##~ Cloud init
+        self._init_cloud()
+
+    def _init_cloud(self):
+        self.cloud_connect = CloudConnect(self._settings, self.get_plugin_data_folder())
+        self.cloud_storage = CloudStorage(self.cloud_connect)
+        self._file_manager.add_storage("cloud", self.cloud_storage)
 
     def _set_model(self):
         """Sets the model and platform variables"""
@@ -557,7 +572,40 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         md = os.linesep.join(self.changelog_contents)
         return markdown.markdown(md)
 
-    ##~ Update
+	##~ Cloud
+    @octoprint.plugin.BlueprintPlugin.route("/cloud", methods=["GET"], strict_slashes=False)
+    def get_cloud_info(self):
+        info_obj = []
+        for service in cloud.AVAILABLE_SERVICES:
+            info_obj.append({ 
+                "name": service,
+                "friendlyName": service, #TODO: Use babel to get friendlyname
+                "loggedIn": self.cloud_connect.is_logged_in(service)
+                });
+        return make_response(jsonify(services=info_obj))
+
+    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/login", methods=["GET"])
+    def connect_to_cloud_service(self, service):
+        auth_url = self.cloud_connect.get_auth_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/login/finished'.format(service))
+        return make_response(jsonify({'auth_url' : auth_url }))
+            
+    
+    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/login/finished", methods=["GET"])
+    def connect_to_cloud_service_finished(self, service):
+        self.cloud_connect.handle_auth_response(service, request)
+        return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
+
+    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["GET"])
+    def logout_cloud_service(self, service):
+        logout_url = self.cloud_connect.get_logout_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/logout/finished'.format(service))
+        return make_response(jsonify({'logout_url' : logout_url }))
+
+    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/logout/finished", methods=["GET"])
+    def logout_cloud_service_finished(self, service):
+        self.cloud_connect.handle_logout_response(service, request)
+        return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
+
+	##~ Update
 
     def _check_version_requirement(self, current_version, requirement):
         """Helper function that checks if a given version matches a version requirement"""
@@ -1126,9 +1174,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if("command" in request.values):
             command = request.values["command"]
 
-        if(command == "get_files"):
-            return self._on_api_command_get_files(request.values["origin"])
-        elif(command == "is_media_mounted"):
+        if(command == "is_media_mounted"):
             return jsonify({ "is_media_mounted" : self.is_media_mounted })
         elif(command == "storage_info"):
             import psutil
@@ -1192,7 +1238,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     move_to_bed_maintenance_position = [],
                     temperature_safety_timer_cancel = [],
                     begin_homing = [],
-                    get_files = ["origin"],
                     select_usb_file = ["filename"],
                     copy_gcode_to_usb = ["filename"],
                     delete_all_uploads = [],
@@ -1617,9 +1662,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
         self.move_to_bed_maintenance_position()
 
-    def _on_api_command_get_files(self, origin, *args, **kwargs):
-
-        if(origin == "usb"):
+    @octoprint.plugin.BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)
+    @octoprint.plugin.BlueprintPlugin.route("/files/<string:origin>", methods=["GET"], strict_slashes=False)
+    def get_files(self, origin, path = None):
+        if origin == "cloud":
+            files = self.cloud_storage.list_files(path, filter=self.browser_filter, recursive=False)
+            return jsonify(files=files)
+        elif(origin == "usb"):
             # Read USB files pretty much like an SD card
             # Alternative:
             # files = self.usb_storage.list_files(recursive = True).values()
@@ -1659,6 +1708,70 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Return original OctoPrint API response
             return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
+    @octoprint.plugin.BlueprintPlugin.route("/files/cloud/<path:path>", methods=["POST"])
+    def select_cloud_file(self, path):
+        if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
+            return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
+
+        _, filename = self._file_manager.split_path("cloud", path)
+        selectAfterUpload = True
+
+        # determine current job
+        currentPath = None
+        currentFilename = None
+        currentOrigin = None
+        currentJob = self._printer.get_current_job()
+        if currentJob is not None and "file" in currentJob.keys():
+            currentJobFile = currentJob["file"]
+            if currentJobFile is not None and "name" in currentJobFile.keys() and "origin" in currentJobFile.keys() and currentJobFile["name"] is not None and currentJobFile["origin"] is not None:
+                currentPath, currentFilename = self._file_manager.sanitize(FileDestinations.LOCAL, currentJobFile["name"])
+                currentOrigin = currentJobFile["origin"]
+
+        # determine future filename of file to be uploaded, abort if it can't be uploaded
+        try:
+            futurePath, futureFilename = self._file_manager.sanitize(FileDestinations.LOCAL, filename)
+        except:
+            futurePath = None
+            futureFilename = None
+
+        if futureFilename is None:
+            return make_response("Can not select file %s, wrong format?" % filename, 415)
+
+        if futurePath == currentPath and futureFilename == currentFilename and (self._printer.is_printing() or self._printer.is_paused()):
+            return make_response("Trying to overwrite file that is currently being printed: %s" % currentFilename, 409)
+        
+        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
+
+        def download_progress(progress):
+            self._send_client_message("media_file_copy_progress", { "percentage" : progress*100 })
+
+        self.cloud_storage.download_file(path, futureFullPath, download_progress)
+        self._send_client_message("media_file_copy_complete")
+        self._event_bus.fire(Events.UPLOAD, {"file": filename, "target": "cloud"})
+
+        files = {}
+
+        location = "/files/" + FileDestinations.LOCAL + "/" + str(filename)
+
+        files.update({
+            FileDestinations.LOCAL: {
+                "name": filename,
+                "origin": FileDestinations.LOCAL,
+                "refs": {
+                    "resource": location,
+                    "download": "downloads/files/" + FileDestinations.LOCAL + "/" + str(filename)
+                }
+            }
+        })
+
+
+        self._printer.select_file(futureFullPath, False, False)
+        r = make_response(jsonify(files=files, done=True), 201)
+        r.headers["Location"] = location
+
+        return r
+
+
     def _on_api_command_select_usb_file(self, filename, *args, **kwargs):
 
         target = "usb"
@@ -1673,10 +1786,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
 
         printAfterLoading = False
-        #if "print" in data.keys() and data["print"] in valid_boolean_trues:
-        #    if not printer.is_operational():
-        #        return make_response("Printer is not operational, cannot directly start printing", 409)
-        #    printAfterLoading = True
 
         # Now the full path is known, remove any folder names from file name
         _, filename = octoprint.server.fileManager.split_path("usb", filename)
@@ -1718,7 +1827,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futureFilename is None:
             return make_response("Can not select file %s, wrong format?" % upload.filename, 415)
 
-        if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (printer.is_printing() or printer.is_paused()):
+        if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response("Trying to overwrite file that is currently being printed: %s" % currentFilename, 409)
 
         def selectAndOrPrint(filename, absFilename, destination):

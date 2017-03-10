@@ -1,0 +1,344 @@
+
+from octoprint.filemanager import get_file_type, valid_file_type
+from octoprint.filemanager.storage import StorageInterface, LocalFileStorage
+from octoprint_lui.util.onedrivestatushttpprovider import OnedriveStatusHttpProvider
+from flask.ext.login import current_user
+
+# OneDrive
+import onedrivesdk
+from octoprint_lui.util.onedrive import ExtendedHttpProvider, ExtendedAuthProvider, ExtendedSession
+
+# GoogleDrive
+from apiclient.discovery import build
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
+from oauth2client.client import OAuth2WebServerFlow
+import httplib2
+import pickle
+import os
+from googleapiclient.http import MediaIoBaseDownload
+import io
+
+ONEDRIVE = "onedrive"
+GOOGLE_DRIVE = "google_drive"
+
+AVAILABLE_SERVICES = [ ONEDRIVE, GOOGLE_DRIVE ]
+
+class CloudService():
+    def __init__(self, settings, data_folder):
+        pass
+    def get_auth_url(self, redirect_uri):
+        pass
+    def handle_auth_response(self, request):
+        pass
+    def list_files(self, path=None, filter=None):
+        pass
+    def download_file(self, path, target_path, progress_callback = None):
+        pass
+    def get_logout_url(self, redirect_uri):
+        pass
+    def handle_logout_response(self, request):
+        pass
+
+class GoogleDriveCloudService(CloudService):
+    def __init__(self, settings, data_folder):
+        self._settings = settings
+        self._client = None
+        self._client_secret = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_secret']);
+        self._client_id = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_id']);
+        self._redirect_uri = None
+        self._credentials = None
+        self._id_tracker = {}
+        self._credential_path = os.path.join(data_folder, GOOGLE_DRIVE + "_credentials.pickle")
+        self._load_credentials()
+        
+    ## Private methods
+
+    def _get_client(self):
+        if not self._client:
+            http = self._credentials.authorize(httplib2.Http())
+            self._client = build('drive', 'v3', http=http)
+
+        return self._client
+
+    def _load_credentials(self):
+        if os.path.isfile(self._credential_path):
+            with open(self._credential_path, "rb") as session_file:
+                import pickle
+                self._credentials = pickle.load(session_file)
+
+        return self._credentials
+
+    def _delete_credentials(self):
+        if os.path.isfile(self._credential_path):
+            os.unlink(self._credential_path)
+        
+        self._credentials = None
+
+    def _save_credentials(self):
+        with open(self._credential_path, "wb") as session_file:
+            import pickle
+            pickle.dump(self._credentials, session_file, pickle.HIGHEST_PROTOCOL)
+
+    def _flow_factory(self):
+        return OAuth2WebServerFlow(client_id=self._client_id,
+                            client_secret=self._client_secret,
+                            scope='https://www.googleapis.com/auth/drive.readonly',
+                            redirect_uri=self._redirect_uri)
+
+    def _get_file_type(self, item):
+        if "mimeType" in item and item["mimeType"] == "application/vnd.google-apps.folder":
+            return "folder"
+        else:
+            type_path = get_file_type(item["name"])
+            return type_path[0] if type_path else None
+
+    ## Public methods
+
+    def is_logged_in(self):
+        return not self._credentials is None
+
+    def get_auth_url(self, redirect_uri):
+        self._redirect_uri = redirect_uri
+        self._flow = self._flow_factory()
+
+        return self._flow.step1_get_authorize_url()
+
+    def handle_auth_response(self, request):
+        access_token = request.values.get("code")
+        self._credentials = self._flow.step2_exchange(access_token)
+        self._save_credentials()
+
+    def list_files(self, path = None, filter = None):
+
+        if path == None:
+            path = GOOGLE_DRIVE
+        else:
+            path = path.rstrip('/')
+
+        if path == GOOGLE_DRIVE:
+            path_id = 'root'
+        else:
+            path_id = self._id_tracker[path]
+
+        q = "(mimeType='application/vnd.google-apps.folder' or fileExtension='g' or fileExtension='gco' or fileExtension='gcode') and '{0}' in parents".format(path_id)
+        
+        request = self._get_client().files().list(q=q, spaces='drive', fields="files(id, name, mimeType)").execute()
+           
+        folder = request.get('files', [])
+        items = []
+        
+        for f in folder:
+            file_path = path + "/" + f["name"]
+            self._id_tracker[file_path] = f["id"]
+
+            file_type = self._get_file_type(f)
+            
+            entry_data = {
+                            "name": f["name"],
+		                    "path": file_path,
+		                    "type": file_type,
+                            "origin": "cloud"
+                            }
+
+            if file_type and (not filter or filter(f["name"], entry_data)):
+                items.append(entry_data)
+
+        return items
+
+    def download_file(self, path, target_path, progress_callback = None):
+        file_id = self._id_tracker[path]
+        request = self._get_client().files().get_media(fileId=file_id)
+        with open(target_path, 'wb') as fh:
+            downloader = MediaIoBaseDownload(fh, request)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+                if progress_callback and callable(progress_callback):
+                    progress_callback(status.progress())
+
+    def get_logout_url(self, redirect_uri):
+        return super(GoogleDriveCloudService, self).get_logout_url(redirect_uri)
+
+    def handle_logout_response(self, request):
+        self._delete_credentials()
+
+
+class OnedriveCloudService(CloudService):
+    def __init__(self, settings, data_folder):
+        self._settings = settings
+        self._client = None
+        self._redirect_uri = None
+
+        self._client_secret = self._settings.get(['cloud', ONEDRIVE, 'client_secret']);
+        self._client_id = self._settings.get(['cloud', ONEDRIVE, 'client_id']);
+
+        self._api_base_url = 'https://api.onedrive.com/v1.0/'
+        self._scopes = ['wl.signin', 'wl.offline_access', 'onedrive.readonly']
+        self._access_token = None
+
+        self._credential_path = os.path.join(data_folder, ONEDRIVE + "_credentials.pickle")
+
+        self._http_provider = ExtendedHttpProvider()
+        self._auth_provider = ExtendedAuthProvider(
+                    http_provider=self._http_provider,
+                    client_id=self._client_id,
+                    scopes=self._scopes,
+                    session_type=ExtendedSession
+                    )
+
+        try:
+            self._auth_provider.load_session(path=self._credential_path)
+            self._auth_provider.refresh_token()
+        except:
+            pass
+
+    ## Private methods
+
+    def _get_client(self):
+        if not self._client:
+            self._client = onedrivesdk.OneDriveClient(self._api_base_url, self._auth_provider, self._http_provider)
+            
+        return self._client
+
+    def _get_file_type(self, item):
+        if item.folder:
+            return "folder"
+        else:
+            type_path = get_file_type(item.name)
+            return type_path[0] if type_path else None
+
+    ## Public methods
+
+    def is_logged_in(self):
+        return self._auth_provider.is_logged_in()
+
+    def get_auth_url(self, redirect_uri):
+        self._redirect_uri = redirect_uri;
+        auth_url = self._get_client().auth_provider.get_auth_url(self._redirect_uri)
+
+        return auth_url
+
+    def handle_auth_response(self, request):
+        access_token = request.values.get("code")
+        auth_provider = self._get_client().auth_provider
+        
+        auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
+            
+        self._access_token = access_token
+
+        auth_provider.save_session(path=self._credential_path)
+
+    def get_logout_url(self, redirect_uri):
+        return self._get_client().auth_provider.get_logout_url(redirect_uri)
+
+    def handle_logout_response(self, request):
+        self._auth_provider.delete_session()
+
+    def list_files(self, path=None, filter=None):
+        
+        if path == None:
+            path = ONEDRIVE
+
+        folder = self._get_client().drive.item_by_path(path[len(ONEDRIVE):] + "/").children.get()
+        items = []
+        
+        for f in folder:
+            file_path = path + "/" + f.name
+            file_type = self._get_file_type(f)
+            
+            entry_data = {
+                            "name": f.name,
+		                    "path": file_path,
+		                    "type": file_type,
+                            "origin": "cloud"
+                         }
+
+            if file_type and (not filter or filter(f.name, entry_data)):
+                items.append(entry_data)
+
+        return items
+
+    def download_file(self, path, target_path, progress_callback = None):
+
+        file=self._get_client().drive.item_by_path(path[len(ONEDRIVE):]).request()
+        self._get_client().auth_provider.authenticate_request(file)
+        response = self._get_client().http_provider.download(file._headers, file.request_url, target_path, progress_callback)
+        return response
+
+class CloudConnect():
+    def __init__(self, settings, data_folder):
+        self._settings = settings
+        self._data_folder = data_folder
+        self.services = {}
+    
+    ## Private methods
+
+    def _service_factory(self, service):
+        if service == ONEDRIVE:
+            return OnedriveCloudService(self._settings, self._data_folder)
+        elif service == GOOGLE_DRIVE:
+            return GoogleDriveCloudService(self._settings, self._data_folder)
+    ## Public methods
+
+    def get_service(self, service):
+        if not service in self.services:
+            self.services[service] = self._service_factory(service)
+
+        return self.services[service]
+
+    def is_logged_in(self, service):
+        return self.get_service(service).is_logged_in()
+
+    def get_auth_url(self, service, redirect_uri):
+        return self.get_service(service).get_auth_url(redirect_uri)
+
+    def handle_auth_response(self, service, request):
+        return self.get_service(service).handle_auth_response(request)
+
+    def get_logout_url(self, service, redirect_uri):
+        return self.get_service(service).get_logout_url(redirect_uri)
+
+    def handle_logout_response(self, service, request):
+        return self.get_service(service).handle_logout_response(request)
+
+
+class CloudStorage(LocalFileStorage):
+    def __init__(self, cloud_connect):
+        self._cloud_connect = cloud_connect
+
+    ## Public methods
+
+    def list_files(self, path=None, filter=None, recursive=False):
+        if not path:
+            return [ {
+                        "name": service,
+		                "path": service,
+		                "type": "folder",
+                        "origin": "cloud"
+                    } for service in AVAILABLE_SERVICES]
+        else:
+            service = self._get_service_from_path(path)
+            return self._cloud_connect.get_service(service).list_files(path, filter)
+
+
+    def download_file(self, path, target_path, progress_callback = None):
+        service = self._get_service_from_path(path)
+        self._cloud_connect.get_service(service).download_file(path, target_path, progress_callback)
+
+    @property
+    def analysis_backlog(self):
+        return []
+
+    def last_modified(self, path = None, recursive = False):
+        return None
+
+    ## Private methods
+    
+    def _get_service_from_path(self, path):
+        path_paths = path.split('/')
+        return path_paths[0]
+
+    def _sanitize_entry(self, entry, path, entry_path):
+        return entry, entry_path

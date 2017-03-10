@@ -158,6 +158,19 @@ $(function ()  {
             });
         }
 
+        self.browseCloud = function()
+        {
+            if (self.isLoadingFileList())
+                return;
+            var filenameToFocus = '';
+            var locationToFocus = '';
+            var switchToPath = '';
+            self.loadFiles("cloud").done(preProcessList).then(function (response) {
+                self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+                self.currentOrigin("cloud");
+            }).always(function () { self.isLoadingFileList(false); });
+        }
+
         self.browseUsb = function ()  {
             if (self.isLoadingFileList())
                 return;
@@ -195,25 +208,36 @@ $(function ()  {
                 }).always(function ()  { self.isLoadingFileList(false); });
         }
 
-        self.loadFiles = function (origin, filter) {
+        self.loadFiles = function (origin, filter, path) {
             filter = filter || "";
-            return self._getApi({
-                command: "get_files",
-                origin: origin,
-                filter: filter,
-                recursive: true
-            });
+            path = path || "";
+            
+            if (origin == "local")
+                return OctoPrint.getWithQuery("api/files", { recursive: true });
+            else
+                return self._getBlueprintApi("files/" + origin + "/" + path);
         }
 
         self._getApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.get(url, { data: data });
-        };
+        }
+
+        self._getBlueprintApi = function (url_suffix) {
+            url = OctoPrint.getBlueprintUrl("lui") + url_suffix;
+            return OctoPrint.get(url);
+        }
 
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.postJson(url, data);
-        };
+        }
+
+        self._sendBlueprintApi = function (url_suffix, data)
+        {
+            url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
+            return OctoPrint.postJson(url, data);
+        }
 
         // initialize list helper
         self.listHelper = new ItemListHelper(
@@ -261,7 +285,7 @@ $(function ()  {
                     } else {
                         children_check = false;
                     }
-                    return data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check);
+                    return data["origin"] == "cloud" || (data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check));
                 }
             },
             "name",
@@ -429,10 +453,26 @@ $(function ()  {
         };
 
         self.changeFolder = function (data) {
-            self.currentPath(data.path);
-            self.listHelper.updateItems(data.children);
-            self.highlightCurrentFilename();
+            
+            if (!data.children) {
+                self.loadChildrenAndBrowse(data);
+            }
+            else {
+                self.currentPath(data.path);
+                self.listHelper.updateItems(data.children);
+                self.highlightCurrentFilename();
+            }
         };
+
+        self.loadChildrenAndBrowse = function (folder)
+        {
+            self.loadFiles(folder.origin, "", folder.path).done(preProcessList).then(function (children) {
+                folder.children = children.files;
+                self.currentPath(folder.path);
+                self.listHelper.updateItems(folder.children);
+                self.highlightCurrentFilename();
+            });
+        }
 
         self.navigateUp = function ()  {
             var path = self.currentPath().split("/");
@@ -508,6 +548,22 @@ $(function ()  {
                 }
 
                 self.isLoadingFile = false;
+            }
+            else if (file.origin == "cloud") {
+                self._sendBlueprintApi("files/cloud/" + file.path)
+                .done(function () {
+                    self.setProgressBar(0);
+
+                    if (printAfterLoad) {
+                        self.printerState.print();
+                    }
+
+                    if (self.flyout.flyouts().length > 0)
+                        self.flyout.closeFlyoutAccept();
+
+                    self.browseLocal(file.name);
+                })
+                .always(function () { self.isLoadingFile = false; })
             }
             else if (file.origin == "usb") {
                 self._sendApi({ command: "select_usb_file", filename: file.path })
@@ -974,6 +1030,8 @@ $(function ()  {
         };
 
         self.templateFor = function (data) {
+            if (data.origin == "cloud" && data.type == "machinecode")
+                return "files_template_cloud_" + data.type
             if (data.origin == "usb" && data.type == "machinecode")
                 return "files_template_usb_" + data.type;
             else
