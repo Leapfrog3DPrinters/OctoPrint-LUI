@@ -3009,6 +3009,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
+        was_calibration = self.calibration_type
         if self.calibration_type:
             self._on_calibration_event(event)
 
@@ -3020,7 +3021,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.jog({'z': 20})
             self._printer.home(['x', 'y'])
 
-        if (event == Events.PRINT_DONE and self.auto_shutdown):
+        if (event == Events.PRINT_DONE and self.auto_shutdown and not was_calibration):
             config = self._settings.global_get(["webcam", "timelapse"], merged=True)
             type = config["type"]
             self._send_client_message("auto_shutdown_start")

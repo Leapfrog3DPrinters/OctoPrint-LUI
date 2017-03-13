@@ -197,7 +197,10 @@ $(function () {
             deferred.reject();
             if (self.flyouts().length > 0)
             {
-                var last_flyout = _.last(self.flyouts());
+                var last_flyout = _.findLast(self.flyouts(), "high_priority");
+                if (!last_flyout)
+                    last_flyout = _.last(self.flyouts());
+
                 self.currentFlyoutTemplate = last_flyout.template;
                 self.blocking = last_flyout.blocking;
             }
@@ -240,7 +243,10 @@ $(function () {
 
             if (self.flyouts().length > 0)
             {
-                var last_flyout = _.last(self.flyouts());
+                var last_flyout = _.findLast(self.flyouts(), "high_priority");
+                if (!last_flyout)
+                    last_flyout = _.last(self.flyouts());
+
                 self.currentFlyoutTemplate = last_flyout.template;
                 self.blocking = last_flyout.blocking;
             }
