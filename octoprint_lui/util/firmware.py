@@ -6,8 +6,8 @@ class FirmwareUpdateUtility(object):
     """Checks the web for a firmware update"""
     
         
-    def __init__(self, data_folder):
-        self.firmware_version_url = 'http://cloud.lpfrg.com/lui/firmwareversions.json'
+    def __init__(self, data_folder, firmware_version_url):
+        self.firmware_version_url = firmware_version_url
         self.firmware_storage_folder = data_folder
         self._logger = logging.getLogger("octoprint.plugins.lui.util.firmwareupdateutility")
 

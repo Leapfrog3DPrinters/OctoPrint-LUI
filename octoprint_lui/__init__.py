@@ -1,4 +1,4 @@
-﻿# coding=utf-8
+# coding=utf-8
 from __future__ import absolute_import
 
 import logging
@@ -261,7 +261,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._init_update()
 
         ##~ Init firmware update
-        self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder())
+        self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions.json'
+        self.firmware_update_url_setting = self._settings.get(['firmware_update_url'])
+        if self.debug and self.firmware_update_url_setting:
+            self.firmware_update_url = self.firmware_update_url_setting
+            self._logger.debug('Firmware update url overwritten with {0}'.format(self.firmware_update_url))
+
+        self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder(), self.firmware_update_url)
+
         # We're delaying the auto firmware update until we have up-to-date information on the current version
         self.firmware_info_received_hooks.append(self._auto_firmware_update)
 
@@ -612,9 +619,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return jsonify(self.get_firmware_update(True))
     
     def get_firmware_update(self, forced = False):
-        self._logger.debug("Checking for new firmware version")
-
+        
         if not self.fw_version_info or forced:
+            self._logger.debug("Checking online for new firmware version")
             self.fw_version_info = self.firmware_update_info.get_latest_version(self.model)
 
         new_firmware = False
