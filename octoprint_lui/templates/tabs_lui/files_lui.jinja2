@@ -287,6 +287,39 @@
               </li>
             </ul>
           </script>
+          <script type="text/html" id="files_template_cloud_folder">
+            <div data-bind="click: $root.changeFolder">
+              <ul class="file_main">
+                <li class="file_status file_neutral">
+                  <a href="#file_status">
+                    <!-- Distinguish between root folders and others -->
+                    <!-- ko: if name != path -->
+                    <i class="fa fa-folder-open"></i>
+                    <!-- /ko -->
+                    <!-- ko: if name == path -->
+                    <img data-bind="src: getCloudServiceIcon(name())" />
+                    <!-- /ko -->
+                  </a>
+                </li>
+                <li class="file_name" data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }">
+                  <a href="#file_name">
+                    <!-- Distinguish between root folders and others -->
+                    <!-- ko: if name != path -->
+                    <span data-bind="text: name"></span>
+                    <!-- /ko -->
+                    <!-- ko: if name == path -->
+                    <span data-bind="text: getCloudServiceName(name())"></span>
+                    <!-- /ko -->
+                  </a>
+                </li>
+                <li class="file_print" style="flex-basis: 150px">
+                  <a href="#print_file">
+                    <span data-bind="text: formatSize(size)"></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </script>
           <script type="text/html" id="files_template_folder">
             <div data-bind="click: $root.changeFolder">
               <ul class="file_main">

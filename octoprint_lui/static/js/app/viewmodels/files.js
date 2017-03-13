@@ -136,6 +136,15 @@ $(function ()  {
             return self.currentOrigin() == "local";
         })
 
+        self.getCloudServiceIcon = function(service)
+        {
+            return "/plugin/lui/static/img/" + name + ".svg";
+        }
+
+        self.getCloudServiceName = function (service) {
+            return gettext(name);
+        }
+
         self.browseLocal = function (filenameToFocus) {
             if (self.isLoadingFileList())
                 return;
@@ -1030,9 +1039,9 @@ $(function ()  {
         };
 
         self.templateFor = function (data) {
-            if (data.origin == "cloud" && data.type == "machinecode")
+            if (data.origin == "cloud")
                 return "files_template_cloud_" + data.type
-            if (data.origin == "usb" && data.type == "machinecode")
+            else if (data.origin == "usb" && data.type == "machinecode")
                 return "files_template_usb_" + data.type;
             else
                 return "files_template_" + data.type;
