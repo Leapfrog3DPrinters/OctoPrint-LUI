@@ -194,12 +194,14 @@ for to_print in ['1mm', '100um']:
                     # Move to position   
                     gCodeLines.append('G1 X{0:0.3f} Y{1:0.3f} F{2:0.3f}'.format(x1, y1, f_m))
                 
-                    # Prime or hop
-                    if j > 0:
-                        e += e_p    
-                        gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r))
-                    else:
+                    # Hop
+                    if j == 0:
                         gCodeLines.append('G1 Z{0:0.3f} F{1:0.3f}'.format(lz, f_z))
+                    
+                    # Prime
+                    e += e_p    
+                    gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r))
+                   
                 
                     # Print line
                     e += e_yp
@@ -241,12 +243,13 @@ for to_print in ['1mm', '100um']:
                 # Move to position
                 gCodeLines.append('G1 X{0:0.3f} Y{1:0.3f} F{2:0.3f}'.format(x1, y1, f_m))
 
-                # Prime or hop back
-                if j > 0:
-                    e += e_p
-                    gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r))
-                else:
+                # Hop
+                if j == 0:
                     gCodeLines.append('G1 Z{0:0.3f} F{1:0.3f}'.format(lz, f_z))
+
+                # Prime
+                e += e_p
+                gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r))
 
                 # Draw line
                 e += e_xp

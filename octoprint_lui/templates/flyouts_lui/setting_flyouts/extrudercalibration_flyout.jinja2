@@ -38,8 +38,8 @@
     </div>
   </div>
 </div>
-
-<div class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && !largeCalibrationCompleted()">
+<!--data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && !largeCalibrationCompleted()"-->
+<div class="bolt-bed-width-calibration-step" >
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -60,7 +60,9 @@
           <li data-val="-7"></li>
           <li data-val="-6"></li>
           <li data-val="-5"></li>
-          <li data-val="-4"></li>
+          <li data-val="-4">
+            <i>-4</i>
+          </li>
           <li data-val="-3"></li>
           <li data-val="-2"></li>
           <li data-val="-1"></li>
@@ -70,7 +72,9 @@
           <li data-val="1"></li>
           <li data-val="2"></li>
           <li data-val="3"></li>
-          <li data-val="4"></li>
+          <li data-val="4">
+            <i>+4</i>
+          </li>
           <li data-val="5"></li>
           <li data-val="6"></li>
           <li data-val="7"></li>
@@ -79,20 +83,20 @@
       </div>
     </div>
     <div class="Table-row">
-      <div class="Table-item" style="align-self: flex-start; flex-basis: content; flex-grow: 0">
+      <div class="Table-item" style="align-self: flex-start; flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
           <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeLargeBedWidthCalibration(-1) }">
-            <a href="">
+            <a href="#">
               <i class="fa fa-chevron-left" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
           </li>
         </ul>
       </div>
       <div class="Table-item"><!-- spacer --></div>
-      <div class="Table-item" style="align-self: flex-end;  flex-basis: content; flex-grow: 0">
+      <div class="Table-item" style="align-self: flex-end;  flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
           <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeLargeBedWidthCalibration(+1)}">
-            <a href="">
+            <a href="#">
               <i class="fa fa-chevron-right" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
           </li> 
@@ -174,20 +178,20 @@
       </div>
     </div>
     <div class="Table-row">
-      <div class="Table-item" style="align-self: flex-start; flex-basis: content; flex-grow: 0">
+      <div class="Table-item" style="align-self: flex-start; flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
           <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeSmallBedWidthCalibration(-1) }">
-            <a href="">
+            <a href="#">
               <i class="fa fa-chevron-left" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
           </li>
         </ul>
       </div>
       <div class="Table-item"><!-- spacer --></div>
-      <div class="Table-item" style="align-self: flex-end;  flex-basis: content; flex-grow: 0">
+      <div class="Table-item" style="align-self: flex-end;  flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
           <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeSmallBedWidthCalibration(+1)}">
-            <a href="">
+            <a href="#">
               <i class="fa fa-chevron-right" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
           </li> 
@@ -198,7 +202,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button" data-bind="click: function () {showSmallYCalibration()}">
-            <a href="">
+            <a href="#">
               <span>{{ _('Next') }}</span>
             </a>
           </li>
@@ -248,7 +252,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button ok-button" data-bind="click: function () {saveCalibration()}">
-            <a href="">
+            <a href="#">
               <span>{{ _('Save') }}</span>
             </a>
           </li>
