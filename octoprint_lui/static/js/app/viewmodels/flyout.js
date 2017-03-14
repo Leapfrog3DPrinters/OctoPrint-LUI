@@ -84,6 +84,7 @@ $(function () {
 
         var template_flyout = '#' + flyout + '_flyout';
         var blocking = blocking || false;
+        var high_priority = high_priority || false;
 
         var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
 
@@ -262,9 +263,9 @@ $(function () {
         $(template_flyout).addClass('active');
 
         if (high_priority) // Z-index them on top of other flyouts, but below warnings and confirmations
-            $(template_flyout).css("z-index", 50 + self.flyouts().length);
+            $(template_flyout).css("z-index", 50 + _.sumBy(self.flyouts(),  function (v) { return v.high_priority ? 1 : 0 }));
         else
-            $(template_flyout).css("z-index", self.flyouts().length);
+            $(template_flyout).css("z-index", _.sumBy(self.flyouts(), function (v) { return v.high_priority ? 0 : 1; }));
 
         self.setOverlay();
     }

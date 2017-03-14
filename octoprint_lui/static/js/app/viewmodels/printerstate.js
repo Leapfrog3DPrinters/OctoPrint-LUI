@@ -461,10 +461,14 @@ $(function ()  {
             self._sendApi({ command: "begin_homing" });
         }
 
-        self.beginMaintenance = function () 
+        self.showMaintenanceFlyout = function () 
         {
-
             self.settings.showSettingsTopic('maintenance', true)
+        }
+
+        self.showLogsFlyout = function ()
+        {
+            self.settings.showSettingsTopic('logs', true)
         }
 
         self.cancelAutoShutdown = function () {

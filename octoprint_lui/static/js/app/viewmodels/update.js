@@ -10,6 +10,7 @@ $(function ()  {
         self.printerState = parameters[5];
         self.flashArduino = parameters[6];
         self.networkManager = parameters[7];
+        self.userSettings = parameters[8];
 
         self.initialCheck = false;
         self.updateinfo = ko.observableArray([]);
@@ -34,7 +35,7 @@ $(function ()  {
         self.firmwareUpdating = ko.observable(false);
 
         self.flashingAllowed = ko.computed(function ()  {
-            return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
+            return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.loggedIn();
         });
 
         self.getUpdateText = function (data) {
@@ -214,6 +215,18 @@ $(function ()  {
         {
             // Show the update flyout blocking and with high priority
             self.settings.showSettingsTopic('update', true, true); 
+        }
+
+        self.showWirelessFlyout = function()
+        {
+            // Show the wireless flyout blocking and with high priority
+            self.settings.showSettingsTopic('wireless', true, true);
+        }
+
+        self.showLoginFlyout = function()
+        {
+            self.userSettings.show();
+            self.flyout.showFlyout('login', true, true);
         }
 
         self.showUpdateWarning = function () 
@@ -571,7 +584,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
-      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel"],
+      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel", "userSettingsViewModel"],
       ['#update', '#update_icon', '#firmware_update_required', '#changelog_flyout']
     ]);
 
