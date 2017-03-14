@@ -992,7 +992,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         debug_bundling = self._settings.get_boolean(['debug_bundling'])
 
         jquery_js = [
-                    'plugin/lui/js/lib/jquery/jquery-2.2.4.js', 
+                    'plugin/lui/js/lib/jquery/jquery-3.1.1.js', 
                     'plugin/lui/js/lib/jquery/jquery.ui.widget-1.11.4.js',
                     'plugin/lui/js/lib/jquery/jquery.iframe-transport.js',
                     'plugin/lui/js/lib/jquery/jquery.fileupload-9.14.2.js',
@@ -1009,7 +1009,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/lodash-4.17.4.js',
                     'plugin/lui/js/lib/loglevel-1.4.1.js',
                     'plugin/lui/js/lib/md5-2.4.0.js',
-                    'plugin/lui/js/lib/modernizr-custom-3.3.1.js',
+                    #'plugin/lui/js/lib/modernizr-custom-3.3.1.js',
                     'plugin/lui/js/lib/moment-2.17.1.js',
                     'plugin/lui/js/lib/moment.locales-2.17.1.js',
                     'plugin/lui/js/lib/notify-0.4.2.js',

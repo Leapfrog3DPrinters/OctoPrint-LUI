@@ -308,8 +308,21 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         }
     };
 
+    self.supportsLocalStorage = function()
+    {
+        // Thanks modernizr
+        var mod='lssupport'
+        try {
+            localStorage.setItem(mod, mod);
+            localStorage.removeItem(mod);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     self._initializeLocalStorage = function () {
-        if (!Modernizr.localstorage)
+        if (!self.supportsLocalStorage())
             return false;
 
         if (localStorage[self.listType + "." + "currentSorting"] !== undefined && localStorage[self.listType + "." + "currentFilters"] !== undefined && JSON.parse(localStorage[self.listType + "." + "currentFilters"]) instanceof Array)
