@@ -708,7 +708,7 @@ input[type=radio] {
     display: flex;
     min-width: 0;
   }
-  // .Table-row-item
+  // .Table-item
   &-item {
     display: flex;
     flex-direction: row;
@@ -1641,7 +1641,7 @@ ul.width-calibrator
   {
     text-align: center;
     float: left;
-    width: 20px;
+    width: 19px;
     height: 100px;
     list-style-type: none;
     background: linear-gradient(to right, rgba(255,255,255,0) 40%, $main-color 40%, $main-color 60%, rgba(255,255,255,0) 60%);
