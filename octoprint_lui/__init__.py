@@ -1298,9 +1298,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._disable_timelapse()
 
         if calibration_type == "bed_width_small":
-            calibration_src_filename = "BoltBedWidthCalibration_100um.gcode"
+            calibration_src_filename = "bolt_bedwidthcalibration_100um.gcode"
         elif calibration_type == "bed_width_large":
-            calibration_src_filename = "BoltBedWidthCalibration_1mm.gcode"
+            calibration_src_filename = "bolt_bedwidthcalibration_1mm.gcode"
 
         abs_path = self._copy_calibration_file(calibration_src_filename)
 

@@ -427,7 +427,7 @@ $(function () {
 
             switch (messageType) {
                 case "tool_status":
-                    ko.mapping.fromJS(messageData.tool_status, self.toolStatus); 
+                    ko.mapping.fromJS(messageData.tool_status, {}, self.toolStatus); 
                     self._processHeatingStatus(messageData.tool_status);
                     break;
             }
@@ -440,7 +440,7 @@ $(function () {
         };
 
         self.fromResponse = function(data) {
-            ko.mapping.fromJS(data.tool_status, self.toolStatus);
+            ko.mapping.fromJS(data.tool_status, {}, self.toolStatus);
             self._processHeatingStatus(data.tool_status);
 
         };

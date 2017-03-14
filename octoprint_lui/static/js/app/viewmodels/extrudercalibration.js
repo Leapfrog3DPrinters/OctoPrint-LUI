@@ -14,29 +14,20 @@ $(function ()  {
 
         self.smallYAxisCorrection = ko.observable(0);
 
-        self.smallBedWidthCorrection = ko.pureComputed({
-            read: function ()  {
-                var v = self.bedWidthCorrection();
-                return Math.round((v - Math.round(v)) * 10);
+        self.smallBedWidthCorrection = ko.observable(0);
+        self.largeBedWidthCorrection = ko.observable(0);
+
+        self.bedWidthCorrection = ko.pureComputed(
+        {
+            read: function () {
+                return self.largeBedWidthCorrection() + self.smallBedWidthCorrection() / 10
             },
-            write: function (value) {
-                var newVal = value / 10 + self.largeBedWidthCorrection();
-                self.bedWidthCorrection(newVal);
+            write: function(v)
+            {
+                self.smallBedWidthCorrection(Math.round((v - Math.round(v)) * 10));
+                self.largeBedWidthCorrection(Math.round(v));
             }
         });
-
-        self.largeBedWidthCorrection = ko.pureComputed({
-            read: function ()  {
-                var v = self.bedWidthCorrection();
-                return Math.round(v);
-            },
-            write: function (value) {
-                var newVal = value + self.smallBedWidthCorrection() / 10;
-                self.bedWidthCorrection(newVal);
-            }
-        });
-
-        self.bedWidthCorrection = ko.observable(0);
 
         self.calibrationProcessStarted = ko.observable(false);
         self.isPrintingCalibration = ko.observable(false);
@@ -111,6 +102,15 @@ $(function ()  {
             });
         }
 
+        self.changeLargeBedWidthCalibration = function(value)
+        {
+            self.largeBedWidthCorrection(self.largeBedWidthCorrection() + value)
+        }
+
+        self.changeSmallBedWidthCalibration = function (value) {
+            self.smallBedWidthCorrection(self.smallBedWidthCorrection() + value)
+        }
+
         self.setCalibration = function(width_correction, extruder_offset_y, persist)
         {
             return self._sendApi({
@@ -180,10 +180,10 @@ $(function ()  {
 
         self.fromResponse = function (response) {
             if (response.machine_info.bed_width_correction)
-                self.bedWidthCorrection(response.machine_info.bed_width_correction);
+                self.bedWidthCorrection(parseFloat(response.machine_info.bed_width_correction));
 
             if (response.machine_info.extruder_offset_y)
-                self.smallYAxisCorrection(response.machine_info.extruder_offset_y);
+                self.smallYAxisCorrection(parseFloat(response.machine_info.extruder_offset_y));
         }
 
         self._sendApi = function (data) {
@@ -197,15 +197,14 @@ $(function ()  {
         };
 
         self.onAfterBinding = function ()  {
-            self.bedWidthCorrection.subscribe(function (val) {
-
-                var sm = self.smallBedWidthCorrection();
-                var lg = self.largeBedWidthCorrection();
-
+            self.smallBedWidthCorrection.subscribe(function (val) {
                 $("#small-bed-width-correction > li").removeClass('active');
-                $("#small-bed-width-correction > li[data-val=" + sm + "]").addClass('active');
+                $("#small-bed-width-correction > li[data-val=" + val + "]").addClass('active');
+            });
+
+            self.largeBedWidthCorrection.subscribe(function (val) {
                 $("#large-bed-width-correction > li").removeClass('active');
-                $("#large-bed-width-correction > li[data-val=" + lg + "]").addClass('active');
+                $("#large-bed-width-correction > li[data-val=" + val + "]").addClass('active');
             });
 
             self.smallYAxisCorrection.subscribe(function (val)

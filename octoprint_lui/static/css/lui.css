@@ -1272,7 +1272,7 @@ ul.width-calibrator {
   ul.width-calibrator li {
     text-align: center;
     float: left;
-    width: 29px;
+    width: 24px;
     height: 100px;
     list-style-type: none;
     background: linear-gradient(to right, rgba(255, 255, 255, 0) 40%, #434A54 40%, #434A54 60%, rgba(255, 255, 255, 0) 60%); }

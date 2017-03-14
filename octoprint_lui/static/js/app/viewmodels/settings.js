@@ -509,7 +509,7 @@ $(function () {
             if (self.settings === undefined) {
                 self.settings = ko.mapping.fromJS(serverChangedData);
             } else {
-                ko.mapping.fromJS(serverChangedData, self.settings);
+                ko.mapping.fromJS(serverChangedData, {}, self.settings);
             }
 
             // some special apply functions for various observables
