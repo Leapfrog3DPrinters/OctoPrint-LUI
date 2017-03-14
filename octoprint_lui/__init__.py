@@ -37,6 +37,7 @@ from octoprint.settings import valid_boolean_trues
 from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
 from octoprint.events import Events
+from octoprint_lui.util.exceptions import UpdateError
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
@@ -898,7 +899,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
             branch_name = branch_name.strip('\n')
         except subprocess.CalledProcessError as e:
-            self._logger.warn("Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output))
+            msg = "Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output)
+            self._logger.warn(msg)
+            raise UpdateError(msg, e)
 
         if branch_name:
             local = None
@@ -908,7 +911,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
                 local = local.strip('\n')
             except subprocess.CalledProcessError as e:
-                self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
+                msg = "Git check failed for local:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                self._logger.warn(msg)
+                raise UpdateError(msg, e)
 
             try:
                 remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
@@ -916,14 +921,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 if len(remote_s) > 0:
                     remote = remote_s[0]
             except subprocess.CalledProcessError as e:
-                self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
+                msg = "Git check failed for remote:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                self._logger.warn(msg)
+                raise UpdateError(msg, e)
 
             if not local or not remote:
-                return True ## If anything failed, at least try to pull
+                return False ## If anything failed, at least try to pull
             else: 
                 return local != remote
         else:
-            return True
+            return False
 
 
     def _fetch_git_repo(self, path):
