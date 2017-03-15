@@ -1198,8 +1198,16 @@ pre code {
   color: #EDDB53; }
 
 /* Startup */
+#startup_flyout .flyout-body {
+  align-items: stretch; }
+
+#startup_flyout_content {
+  display: flex;
+  flex-direction: column; }
+
 .startup_step {
   display: none;
+  flex: 1 1 auto;
   width: 100%; }
   .startup_step.active {
     display: inline-block; }
