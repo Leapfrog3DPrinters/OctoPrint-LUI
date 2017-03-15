@@ -246,6 +246,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_info = self._get_machine_info()
         self._set_model()
 
+        ##~ Init Update
+        self._init_update()
+
         ##~ With model data in place, update scripts, printer profiles, users etc. if it's the first run of a new version
         self._first_run()
 
@@ -258,8 +261,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ USB init
         self._init_usb()
 
-        ##~ Init Update
-        self._init_update()
 
         ##~ Init firmware update
         self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions.json'
