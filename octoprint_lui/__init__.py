@@ -2693,7 +2693,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
             octoprint.server.fileManager.add_storage("usb", self.usb_storage)
         except:
-            self._logger.warning("Could not add USB storage")
+            self._logger.exception("Could not add USB storage")
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
 
