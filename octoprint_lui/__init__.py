@@ -368,14 +368,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             It will run _first_run again because it won't get to the saving part.
         """
         self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
-        if not self.debug and "devel" in octoprint.__branch__:
-            self._logger.warning("Install is still on devel branch, going to switch")
+        if not self.debug and not "master" in octoprint.__branch__:
+            self._logger.warning("Install is not on master branch, going to switch")
             # So we are really still on devel, let's switch to master
             checkout_master_branch = None
             try:
-                checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
+                checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=self.update_info[4]["path"])
             except subprocess.CalledProcessError as err:
-                self._logger.error("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+                self._logger.error("Can't switch branch to master: {path}. {err}".format(path=self.update_info[4]['path'], err=err))
                 return False
             
             if checkout_master_branch:
