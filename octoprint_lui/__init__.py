@@ -1786,7 +1786,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # upload included userdata, add this now to the metadata
             octoprint.server.fileManager.set_additional_metadata(octoprint.filemanager.FileDestinations.LOCAL, added_file, "userdata", userdata)
 
-        octoprint.server.eventManager.fire(octoprint.events.Events.UPLOAD, {"file": filename, "target": target})
+        octoprint.server.eventManager.fire(octoprint.events.Events.UPLOAD, {"file": filename, "path": filename, "target": target})
 
         files = {}
 
@@ -1796,6 +1796,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         files.update({
             octoprint.filemanager.FileDestinations.LOCAL: {
                 "name": filename,
+                "path": filename,
                 "origin": octoprint.filemanager.FileDestinations.LOCAL,
                 "refs": {
                     "resource": location,

@@ -201,7 +201,8 @@ $(function ()  {
                 command: "get_files",
                 origin: origin,
                 filter: filter,
-                recursive: true
+                recursive: true,
+                force: true
             });
         }
 
