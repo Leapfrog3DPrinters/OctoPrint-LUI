@@ -1671,6 +1671,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             return jsonify(files=files)
         else:
+            # Force clearing of the cache (not properly done by octoprint at the moment)
+            if request.values.get("force", False):
+                octoprint.server.api.files._clear_file_cache()
+            
             # Return original OctoPrint API response
             return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
