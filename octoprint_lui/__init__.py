@@ -1130,6 +1130,37 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_preemptive_caching_enabled(self):
         return True
 
+    @octoprint.plugin.BlueprintPlugin.route("/settings", methods=["GET"])
+    def get_settings(self):
+        s = self._settings
+
+        data = {
+            "appearance": {
+                "name": s.global_get(["appearance", "name"]),
+                "defaultLanguage": s.global_get(["appearance", "defaultLanguage"])
+            },
+            "feature": {
+                "modelSizeDetection": s.global_get_boolean(["feature", "modelSizeDetection"]),
+            },
+            "serial": {
+                "autoconnect": s.global_get_boolean(["serial", "autoconnect"]),
+                "log": s.global_get_boolean(["serial", "log"]),
+            },
+            "temperature": {
+                "profiles": s.global_get(["temperature", "profiles"]),
+                "cutoff": s.global_get_int(["temperature", "cutoff"])
+            },
+            "terminalFilters": s.global_get(["terminalFilters"]),
+            "server": {
+                "diskspace": {
+                    "warning": s.global_get_int(["server", "diskspace", "warning"]),
+                    "critical": s.global_get_int(["server", "diskspace", "critical"])
+                }
+            }
+        }
+
+        return make_response(jsonify(data), 200)
+
     ##~ OctoPrint SimpleAPI Plugin
     def on_api_get(self, request = None):
         # Because blueprint is not protected, manually check for API key
@@ -2843,17 +2874,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.is_media_mounted = number_of_dirs > 0
 
+        # Skip for now. This feature isn't used in the front-end anyway
         # Check if what's mounted contains a firmware (*.hex) file
-        if not self.debug and not was_media_mounted and self.is_media_mounted:
-            firmware = self._check_for_firmware(self.media_folder)
-            if(firmware):
-                firmware_file, firmware_path = firmware
-                self._logger.info("Firmware file detected: %s" % firmware_file)
-                file = dict()
-                file["name"] = firmware_file
-                file["refs"] = dict()
-                file["refs"]["local_path"] = firmware_path
-                self._send_client_message("firmware_update_found", { "file": file });
+        #if not self.debug and not was_media_mounted and self.is_media_mounted:
+        #    firmware = self._check_for_firmware(self.media_folder)
+        #    if(firmware):
+        #        firmware_file, firmware_path = firmware
+        #        self._logger.info("Firmware file detected: %s" % firmware_file)
+        #        file = dict()
+        #        file["name"] = firmware_file
+        #        file["refs"] = dict()
+        #        file["refs"]["local_path"] = firmware_path
+        #        self._send_client_message("firmware_update_found", { "file": file });
 
     def _check_for_firmware(self, path):
         result = None
