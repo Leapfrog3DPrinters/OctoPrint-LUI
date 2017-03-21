@@ -2269,6 +2269,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return None
 
         # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise) 
+        if script_name == "afterPrintCancelled":
+            self.execute_printer_script("after_print_cancelled", context)
+
         if script_name == "beforePrintStarted":
             context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
             self.execute_printer_script("before_print_started", context)
@@ -2291,11 +2294,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Removes X0, Y0 and Z0 from G92 commands
         These commands are problamatic with different print modes.
+        Also sends M108 directly when they are queued
         """
-        if gcode and gcode == "G92":
+        if gcode == "G92":
             new_cmd = re.sub(' [XYZ]0', '', cmd)
             return new_cmd,
-
+        elif gcode == "M108": 
+            # Send M108 immediately
+            command_to_send = cmd.encode("ascii", errors="replace")
+            if comm_instance.isPrinting() or comm_instance._alwaysSendChecksum:
+                comm_instance._do_increment_and_send_with_checksum(command_to_send)
+            else:
+                comm_instance._do_send_without_checksum(command_to_send)
+            # Remove command from queue
+            return None,
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -3030,6 +3042,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = [0.0, 0.0]
             self.save_filament_amount()
+            # TODO: Move commands below to gcode script
             self.set_print_mode('normal')
             self._printer.jog({'z': 20})
             self._printer.home(['x', 'y'])

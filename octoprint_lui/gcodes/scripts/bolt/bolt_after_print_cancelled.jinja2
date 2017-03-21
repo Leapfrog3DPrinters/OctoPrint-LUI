@@ -1,0 +1,6 @@
+M108 ;interrupt heating
+M84 ;disable motors
+;disable all heaters
+{% snippet 'disable_hotends' %}
+{% snippet 'disable_bed' %}
+M106 S0 ;disable fan
