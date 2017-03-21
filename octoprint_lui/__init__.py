@@ -2270,7 +2270,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise) 
         if script_name == "afterPrintCancelled":
-            self.execute_printer_script("after_print_cancelled", context)
+            self.execute_printer_script("after_print_cancelled")
 
         if script_name == "beforePrintStarted":
             context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
