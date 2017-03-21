@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.1.0\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-03-20 15:21+0100\n"
+"POT-Creation-Date: 2017-03-21 11:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,7 +51,7 @@ msgid "Sending file to SD"
 msgstr ""
 
 #: octoprint_lui/static/js/app/main.js:94
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:285
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:290
 msgid "Printing"
 msgstr ""
 
@@ -267,19 +267,19 @@ msgstr ""
 msgid "Disconnect"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:138
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:141
 msgid "Calibration stored"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:138
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:141
 msgid "The printer has been calibrated successfully."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:142
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:145
 msgid "Calibration failed"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:142
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:145
 msgid ""
 "An error has occured while storing the calibration settings. Please try "
 "again."
@@ -291,14 +291,14 @@ msgid "None"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:84
-#: octoprint_lui/static/js/app/viewmodels/files.js:1035
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:180
+#: octoprint_lui/static/js/app/viewmodels/files.js:1074
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:185
 msgid "Right"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:86
-#: octoprint_lui/static/js/app/viewmodels/files.js:1035
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:178
+#: octoprint_lui/static/js/app/viewmodels/files.js:1074
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:183
 msgid "Left"
 msgstr ""
 
@@ -370,51 +370,51 @@ msgstr ""
 msgid "Are you sure you want to cancel your print?"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:43
+#: octoprint_lui/static/js/app/viewmodels/files.js:45
 msgid " free"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:61
+#: octoprint_lui/static/js/app/viewmodels/files.js:63
 msgid "Your available free disk space is critically low."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:63
+#: octoprint_lui/static/js/app/viewmodels/files.js:65
 msgid "Your available free disk space is starting to run low."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:65
+#: octoprint_lui/static/js/app/viewmodels/files.js:67
 msgid "Your current disk usage."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:72
+#: octoprint_lui/static/js/app/viewmodels/files.js:74
 msgid "Disk space critically low!"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:73
+#: octoprint_lui/static/js/app/viewmodels/files.js:75
 msgid "Free some space by deleting jobs or timelapses to continue usage."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:83
+#: octoprint_lui/static/js/app/viewmodels/files.js:85
 msgid "Disk space very low!"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:84
+#: octoprint_lui/static/js/app/viewmodels/files.js:86
 msgid "Please free some space by deleting jobs or timelapses."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:179
+#: octoprint_lui/static/js/app/viewmodels/files.js:181
 msgid "The USB drive could not be accessed. Please try again."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:548
+#: octoprint_lui/static/js/app/viewmodels/files.js:560
 msgid "You have opted to delete all print jobs."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:550
+#: octoprint_lui/static/js/app/viewmodels/files.js:562
 msgid " This will not delete the currently selected file."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:552
+#: octoprint_lui/static/js/app/viewmodels/files.js:564
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:29
 #: octoprint_lui/static/js/app/viewmodels/system.js:106
 #: octoprint_lui/static/js/app/viewmodels/system.js:130
@@ -424,221 +424,221 @@ msgstr ""
 msgid "Do you want to continue?"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:553
+#: octoprint_lui/static/js/app/viewmodels/files.js:565
 msgid "Delete all jobs"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:562
+#: octoprint_lui/static/js/app/viewmodels/files.js:574
 msgid "Jobs deleted"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:563
+#: octoprint_lui/static/js/app/viewmodels/files.js:575
 msgid "All print jobs were deleted."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:571
+#: octoprint_lui/static/js/app/viewmodels/files.js:583
 msgid "Not all jobs were deleted"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:572
+#: octoprint_lui/static/js/app/viewmodels/files.js:584
 msgid "Some files could not be removed. Please try again."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:600
+#: octoprint_lui/static/js/app/viewmodels/files.js:612
 msgid "You have opted to delete job: "
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:601
+#: octoprint_lui/static/js/app/viewmodels/files.js:613
 msgid "Do you want to delete this job?"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:602
+#: octoprint_lui/static/js/app/viewmodels/files.js:614
 msgid "Delete job"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:611
+#: octoprint_lui/static/js/app/viewmodels/files.js:623
 msgid "File removed succesfully"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:612
+#: octoprint_lui/static/js/app/viewmodels/files.js:624
 #, python-format
 msgid "Removed file: \"%(filename)s\""
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:779
+#: octoprint_lui/static/js/app/viewmodels/files.js:805
 #, python-format
 msgid "Size check %(mode)s mode failed"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:816
+#: octoprint_lui/static/js/app/viewmodels/files.js:850
 msgid "Object exceeds print area in width. "
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:817
-#: octoprint_lui/static/js/app/viewmodels/files.js:839
+#: octoprint_lui/static/js/app/viewmodels/files.js:851
+#: octoprint_lui/static/js/app/viewmodels/files.js:875
 msgid "Print area width"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:817
+#: octoprint_lui/static/js/app/viewmodels/files.js:851
 msgid "Object width"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:821
+#: octoprint_lui/static/js/app/viewmodels/files.js:855
 msgid "Object exceeds print area in depth."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:822
-#: octoprint_lui/static/js/app/viewmodels/files.js:844
+#: octoprint_lui/static/js/app/viewmodels/files.js:856
+#: octoprint_lui/static/js/app/viewmodels/files.js:880
 msgid "Print area depth"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:822
+#: octoprint_lui/static/js/app/viewmodels/files.js:856
 msgid "Object depth"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:826
+#: octoprint_lui/static/js/app/viewmodels/files.js:860
 msgid "Object exceeds print area in height."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:827
-#: octoprint_lui/static/js/app/viewmodels/files.js:849
+#: octoprint_lui/static/js/app/viewmodels/files.js:861
+#: octoprint_lui/static/js/app/viewmodels/files.js:885
 msgid "Print area height"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:827
+#: octoprint_lui/static/js/app/viewmodels/files.js:861
 msgid "Object height"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:838
+#: octoprint_lui/static/js/app/viewmodels/files.js:874
 msgid "Object positioned outside print area in width."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:839
-#: octoprint_lui/static/js/app/viewmodels/files.js:844
-#: octoprint_lui/static/js/app/viewmodels/files.js:849
+#: octoprint_lui/static/js/app/viewmodels/files.js:875
+#: octoprint_lui/static/js/app/viewmodels/files.js:880
+#: octoprint_lui/static/js/app/viewmodels/files.js:885
 msgid "Object position"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:843
+#: octoprint_lui/static/js/app/viewmodels/files.js:879
 msgid "Object positioned outside print area in depth."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:848
+#: octoprint_lui/static/js/app/viewmodels/files.js:884
 msgid "Object positioned outside print area in heigth."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:857
+#: octoprint_lui/static/js/app/viewmodels/files.js:894
 msgid "Please fix the dimension of the job or try a different print mode."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:875
+#: octoprint_lui/static/js/app/viewmodels/files.js:912
 msgid "Dual nozzle print"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:876
+#: octoprint_lui/static/js/app/viewmodels/files.js:913
 msgid ""
 "The job selected uses both nozzles to print, therefore only normal mode "
 "is available."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:891
+#: octoprint_lui/static/js/app/viewmodels/files.js:928
 msgid "Sync or Mirror print"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:908
+#: octoprint_lui/static/js/app/viewmodels/files.js:945
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:315
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:72
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:119
 msgid "Info"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:909
+#: octoprint_lui/static/js/app/viewmodels/files.js:946
 msgid ""
 "To ensure that a sync or mirror mode succeeds please make sure that the "
 "print is sliced on the left side of the build volume using one nozzle."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1025
+#: octoprint_lui/static/js/app/viewmodels/files.js:1064
 msgid "Filename"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1030
-#: octoprint_lui/static/js/app/viewmodels/files.js:1035
+#: octoprint_lui/static/js/app/viewmodels/files.js:1069
+#: octoprint_lui/static/js/app/viewmodels/files.js:1074
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:279
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:38
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:157
 msgid "Filament"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1039
+#: octoprint_lui/static/js/app/viewmodels/files.js:1078
 msgid "Est. Print Time"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1041
+#: octoprint_lui/static/js/app/viewmodels/files.js:1080
 msgid "Analysing job"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1044
+#: octoprint_lui/static/js/app/viewmodels/files.js:1083
 msgid "Last Printed"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1046
+#: octoprint_lui/static/js/app/viewmodels/files.js:1085
 msgid "Last Print Time"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1116
+#: octoprint_lui/static/js/app/viewmodels/files.js:1155
 msgid "USB drive removed"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1117
+#: octoprint_lui/static/js/app/viewmodels/files.js:1156
 msgid "A USB drive was disconnected from the printer."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1127
+#: octoprint_lui/static/js/app/viewmodels/files.js:1166
 msgid "You have inserted a USB drive."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1128
+#: octoprint_lui/static/js/app/viewmodels/files.js:1167
 msgid "Would you like to browse through the files?"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1129
-#: octoprint_lui/static/js/app/viewmodels/files.js:1141
+#: octoprint_lui/static/js/app/viewmodels/files.js:1168
+#: octoprint_lui/static/js/app/viewmodels/files.js:1180
 msgid "USB drive inserted"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1142
+#: octoprint_lui/static/js/app/viewmodels/files.js:1181
 msgid "A USB drive was found. Go to the files tab to load your files."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1179
+#: octoprint_lui/static/js/app/viewmodels/files.js:1219
 msgid "File upload succesfull"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1180
+#: octoprint_lui/static/js/app/viewmodels/files.js:1220
 #, python-format
 msgid "Uploaded file: \"%(filename)s\""
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1190
+#: octoprint_lui/static/js/app/viewmodels/files.js:1230
 msgid "Failed to upload file"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1191
+#: octoprint_lui/static/js/app/viewmodels/files.js:1231
 msgid ""
 "Could not upload the file. Make sure that it is a GCODE file and has the "
 "extension \".gcode\", \".gco.\" or \".g\""
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1219
+#: octoprint_lui/static/js/app/viewmodels/files.js:1259
 msgid "Invalid filetype"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1220
+#: octoprint_lui/static/js/app/viewmodels/files.js:1260
 msgid "Please select a file with extension \".gcode\", \".gco.\" or \".g\"."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1300
+#: octoprint_lui/static/js/app/viewmodels/files.js:1342
 msgid "Copying"
 msgstr ""
 
@@ -963,101 +963,101 @@ msgstr ""
 msgid "Creating preview"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:139
+#: octoprint_lui/static/js/app/viewmodels/settings.js:141
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:36
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:56
 msgid "Materials"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:140
+#: octoprint_lui/static/js/app/viewmodels/settings.js:142
 msgid "Profile \""
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:149
+#: octoprint_lui/static/js/app/viewmodels/settings.js:152
 msgid "\" already exists. Please ensure each profile has a unique name."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:160
+#: octoprint_lui/static/js/app/viewmodels/settings.js:163
 #, python-format
 msgid ""
 "\" must have an extruder temperature between %(mintemp)s &deg;C and "
 "%(maxtemp)s &deg;C."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:166
+#: octoprint_lui/static/js/app/viewmodels/settings.js:169
 msgid "\" must have a bed temperature of at least 0 &deg;C."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:200
+#: octoprint_lui/static/js/app/viewmodels/settings.js:203
 msgid "Turn on auto shutdown"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:201
+#: octoprint_lui/static/js/app/viewmodels/settings.js:204
 msgid ""
 "You are about to turn on auto shutdown. This will turn off the printer "
 "when the current job or next job that is started is finished. This "
 "setting resets after a shutdown of the machine."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:223
+#: octoprint_lui/static/js/app/viewmodels/settings.js:226
 msgid "Disable print analysis"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:224
+#: octoprint_lui/static/js/app/viewmodels/settings.js:227
 msgid ""
 "You are about to disable the print analysis feature. Doing so will allow "
 "you to print without the print check. This could result in bad prints "
 "and/or potential damages to the printer."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:240
+#: octoprint_lui/static/js/app/viewmodels/settings.js:243
 msgid "If you see your webcam stream below, the entered stream URL is ok."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:246
+#: octoprint_lui/static/js/app/viewmodels/settings.js:249
 msgid "Stream test"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:259
+#: octoprint_lui/static/js/app/viewmodels/settings.js:262
 msgid "Could not retrieve snapshot URL, please double check the URL"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:260
+#: octoprint_lui/static/js/app/viewmodels/settings.js:263
 msgid "Snapshot test failed"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:282
+#: octoprint_lui/static/js/app/viewmodels/settings.js:285
 msgid ""
 "If you see your webcam snapshot picture below, the entered snapshot URL "
 "is ok."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:284
+#: octoprint_lui/static/js/app/viewmodels/settings.js:287
 msgid "Snapshot test"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:306
+#: octoprint_lui/static/js/app/viewmodels/settings.js:309
 msgid "The path doesn't exist"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:308
+#: octoprint_lui/static/js/app/viewmodels/settings.js:311
 msgid "The path is not a file"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:310
+#: octoprint_lui/static/js/app/viewmodels/settings.js:313
 msgid "The path is not an executable"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:313
+#: octoprint_lui/static/js/app/viewmodels/settings.js:316
 msgid "The path is valid"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:695
+#: octoprint_lui/static/js/app/viewmodels/settings.js:755
 #, python-format
 msgid "Command \"%(name)s\" sent"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/settings.js:765
+#: octoprint_lui/static/js/app/viewmodels/settings.js:828
 msgid "Autodetect from browser"
 msgstr ""
 
@@ -1101,8 +1101,8 @@ msgid "You are about to restart the background printer services."
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/temperature.js:31
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:105
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:182
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:109
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:187
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/materials_flyout.jinja2:10
 msgid "Bed"
 msgstr ""
@@ -1111,28 +1111,28 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:83
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:85
 msgid "Tool"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:98
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:101
 msgid "Hotend"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:193
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:285
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:198
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:290
 msgid "Heating"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:195
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:200
 msgid "Cooling"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:197
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:202
 msgid "Idle"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/temperature.js:199
+#: octoprint_lui/static/js/app/viewmodels/temperature.js:204
 msgid "Ready"
 msgstr ""
 
@@ -1498,6 +1498,7 @@ msgid "Advanced"
 msgstr ""
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:147
+#: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:206
 msgid "Logs"
 msgstr ""
 
