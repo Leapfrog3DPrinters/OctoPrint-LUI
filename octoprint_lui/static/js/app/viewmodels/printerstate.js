@@ -434,7 +434,8 @@ $(function ()  {
                         autoHide: true
                     });
 
-                    OctoPrint.job.cancel()
+                    //OctoPrint.job.cancel()
+                    self._sendApi({ command: "immediate_cancel" });
                 });
         };
 

@@ -163,11 +163,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
-        self.firmware_info_properties["firmware_version"] = "Leapfrog Firmware"
-        self.firmware_info_properties["machine_type"] = "Model"
-        self.firmware_info_properties["extruder_offset_x"] = "X"
-        self.firmware_info_properties["extruder_offset_y"] = "Y"
-        self.firmware_info_properties["bed_width_correction"] = "bed_width_correction"
+        self.firmware_info_properties["firmware_version"] = "LEAPFROG_FIRMWARE"
+        self.firmware_info_properties["machine_type"] = "MACHINE_TYPE"
+        self.firmware_info_properties["extruder_offset_x"] = "EXTRUDER_OFFSET_X"
+        self.firmware_info_properties["extruder_offset_y"] = "EXTRUDER_OFFSET_Y"
+        self.firmware_info_properties["bed_width_correction"] = "BED_WIDTH_CORRECTION"
 
         ##~ Usernames that cannot be removed
         self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel', 'lpfrg']
@@ -1227,12 +1227,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     changelog_seen = [],
                     notify_intended_disconnect = [],
                     connect_after_error = [],
+                    immediate_cancel = [],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
     def on_api_command(self, command, data):
         # Data already has command in, so only data is needed
         return self._call_api_method(**data)
+
+    def _on_api_command_immediate_cancel(self, *args, **kwargs):
+        self._logger.debug("Immediate cancel")
+        self._printer._comm._sendCommand('M108')
+        self._printer.cancel_print()
 
     def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
         """
@@ -2269,9 +2275,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return None
 
         # In OctoPrint itself, these scripts are also executed after the event (even though the name suggests otherwise) 
-        if script_name == "afterPrintCancelled":
-            self.execute_printer_script("after_print_cancelled")
-
         if script_name == "beforePrintStarted":
             context = { "zOffset" : "%.2f" % -self._settings.get_float(["zoffset"]) }
             self.execute_printer_script("before_print_started", context)
@@ -2301,6 +2304,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return new_cmd,
         elif gcode == "M108": 
             # Send M108 immediately
+            self._logger.debug("M108")
             command_to_send = cmd.encode("ascii", errors="replace")
             if comm_instance.isPrinting() or comm_instance._alwaysSendChecksum:
                 comm_instance._do_increment_and_send_with_checksum(command_to_send)
