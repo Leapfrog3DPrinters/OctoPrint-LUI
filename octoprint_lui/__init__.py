@@ -3048,7 +3048,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.save_filament_amount()
             # TODO: Move commands below to gcode script
             self.set_print_mode('normal')
-            self._printer.jog({'z': 20})
+            if self._printer._currentZ < 20:
+                self._printer.commands(['G1 Z20 F600'])
+
             self._printer.home(['x', 'y'])
 
         if (event == Events.PRINT_DONE and self.auto_shutdown and not was_calibration):
