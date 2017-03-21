@@ -293,22 +293,22 @@
                 <li class="file_status file_neutral">
                   <a href="#file_status">
                     <!-- Distinguish between root folders and others -->
-                    <!-- ko: if name != path -->
+                    <!-- ko if: name != path -->
                     <i class="fa fa-folder-open"></i>
                     <!-- /ko -->
-                    <!-- ko: if name == path -->
-                    <img data-bind="src: getCloudServiceIcon(name())" />
+                    <!-- ko if: name == path -->
+                    <img data-bind="attr: { src: $root.getCloudServiceIcon(name) }" style="width: 23px;" />
                     <!-- /ko -->
                   </a>
                 </li>
                 <li class="file_name" data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }">
                   <a href="#file_name">
                     <!-- Distinguish between root folders and others -->
-                    <!-- ko: if name != path -->
+                    <!-- ko if: name != path -->
                     <span data-bind="text: name"></span>
                     <!-- /ko -->
-                    <!-- ko: if name == path -->
-                    <span data-bind="text: getCloudServiceName(name())"></span>
+                    <!-- ko if: name == path -->
+                    <span data-bind="text: $root.getCloudServiceName(name)"></span>
                     <!-- /ko -->
                   </a>
                 </li>

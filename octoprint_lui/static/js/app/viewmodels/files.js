@@ -138,11 +138,11 @@ $(function ()  {
 
         self.getCloudServiceIcon = function(service)
         {
-            return "/plugin/lui/static/img/" + name + ".svg";
+            return "/plugin/lui/static/img/" + service + ".svg";
         }
 
         self.getCloudServiceName = function (service) {
-            return gettext(name);
+            return gettext(service);
         }
 
         self.browseLocal = function (filenameToFocus) {
