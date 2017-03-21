@@ -64,8 +64,6 @@ $(function () {
     }
     babel.Translations.load(catalog).install();
 
-    moment.locale(LOCALE);
-
     // Dummy translation requests for dynamic strings supplied by the backend
     var dummyTranslations = [
         // printer states

@@ -306,18 +306,15 @@ $(function ()  {
 
             var text;
             if (!payload.postroll_duration) {
-                text = _.sprintf(gettext("Now capturing timelapse post roll, this will take only a moment..."), format);
+                text = gettext("Now capturing timelapse post roll, this will take only a moment...");
             } else {
-                var format = {
-                    time: moment().add(payload.postroll_duration, "s").format("LT")
-                };
 
                 if (payload.postroll_duration > 60) {
-                    format.duration = _.sprintf(gettext("%(minutes)d min"), { minutes: payload.postroll_duration / 60 });
-                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s (so until %(time)s)..."), format);
+                    duration = _.sprintf(gettext("%(minutes)d min"), { minutes: payload.postroll_duration / 60 });
+                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s"), duration);
                 } else {
-                    format.duration = _.sprintf(gettext("%(seconds)d sec"), { seconds: payload.postroll_duration });
-                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s..."), format);
+                    duration = _.sprintf(gettext("%(seconds)d sec"), { seconds: payload.postroll_duration });
+                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s..."), duration);
                 }
             }
 

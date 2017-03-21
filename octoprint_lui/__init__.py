@@ -1009,9 +1009,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/lodash-4.17.4.js',
                     'plugin/lui/js/lib/loglevel-1.4.1.js',
                     'plugin/lui/js/lib/md5-2.4.0.js',
-                    #'plugin/lui/js/lib/modernizr-custom-3.3.1.js',
-                    'plugin/lui/js/lib/moment-2.17.1.js',
-                    'plugin/lui/js/lib/moment.locales-2.17.1.js',
                     'plugin/lui/js/lib/notify-0.4.2.js',
                     'plugin/lui/js/lib/notify-lui.js',
                     'plugin/lui/js/lib/nouislider-9.2.0.js',
@@ -1155,6 +1152,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 "diskspace": {
                     "warning": s.global_get_int(["server", "diskspace", "warning"]),
                     "critical": s.global_get_int(["server", "diskspace", "critical"])
+                }
+            },
+            "plugins": {
+                "lui": {
+                    "action_door": s.getBoolean(["action_door"]),
+                    "action_door": s.getFloat(["zoffset"])
                 }
             }
         }
