@@ -155,7 +155,7 @@ $(function ()  {
         }
 
         self.requestData = function ()  {
-            OctoPrint.timelapse.get(true)
+            OctoPrint.timelapse.get(true, { force: true })
                 .done(self.fromResponse);
         };
 
