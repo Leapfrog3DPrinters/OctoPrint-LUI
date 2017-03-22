@@ -1197,8 +1197,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif "firmware_version" in self.machine_info:
             version_req = '>=' + str(self.firmware_version_requirement[self.model])
 
-            if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
-                current_version = str(self.machine_info["firmware_version"])
+            if "firmware_version" in self.machine_info:
+                if not self.machine_info["firmware_version"]:
+                    self._logger.warn('Could not determine current firmware version. Defaulting to 0.0.')
+                    current_version = "0.0"
+                else:
+                    current_version = str(self.machine_info["firmware_version"])
 
                 # _check_version_requirement is the requirement is *met*, so invert
                 update_required = not self._check_version_requirement(current_version, version_req)
@@ -2935,11 +2939,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             oldModelName = self.model.lower() if self.model else None
             self._update_from_m115_properties(line)
             self.machine_info = self._get_machine_info()
-            newModelName = self.machine_info["machine_type"].lower() if "machine_type" in self.machine_info and self.machine_info["machine_type"] else "unknown"
 
-            if oldModelName != newModelName:
+            self.model = self.machine_info["machine_type"].lower() if "machine_type" in self.machine_info and self.machine_info["machine_type"] else "unknown"
+
+            if not self.model in self.supported_models:
+                self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
+                self.model = self.default_model
+
+            if oldModelName != self.model:
                 self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, newModelName))
-                self._set_model()
                 self._init_model()
                 self._update_printer_scripts_profiles()
 

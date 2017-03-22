@@ -55,7 +55,7 @@ class FirmwareUpdateUtility(object):
             try:
                 return response.json()
             except ValueError:
-                self._logger.warning("Could not get decode firmware version info.")
+                self._logger.warning("Could not decode firmware version info.")
                 return None
         else:
             self._logger.warning("Could not get firmware version info. HTTP code: {0}".format(response.status_code))
