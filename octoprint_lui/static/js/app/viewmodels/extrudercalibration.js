@@ -149,7 +149,7 @@ $(function ()  {
             OctoPrint.printer.setBedTargetTemperature(0);
 
             if (self.isPrintingCalibration()) {
-                OctoPrint.job.cancel();    
+                self._sendApi({ command: "immediate_cancel" });
             }
             
             if (self.calibrationProcessStarted()) {

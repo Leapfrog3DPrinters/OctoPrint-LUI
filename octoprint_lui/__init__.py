@@ -1264,7 +1264,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_immediate_cancel(self, *args, **kwargs):
         self._logger.debug("Immediate cancel")
-        self._printer._comm._sendCommand('M108')
+
+        if self._printer._comm:
+            self._printer._comm._sendCommand('M108')
+
         self._printer.cancel_print()
 
     def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
@@ -1304,7 +1307,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_move_to_calibration_position(self, corner_num):
         # TODO HERE
         corner = self.manual_bed_calibration_positions[corner_num]
-        self._printer.commands(['G1 Z5 F1200'])
+        self._printer.commands(['G1 Z5 F600'])
 
         if corner["mode"] == 'fullcontrol' and not self.print_mode == "fullcontrol":
             self.set_print_mode('fullcontrol')
@@ -1319,10 +1322,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.manual_bed_calibration_tool = corner["tool"]
 
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])])
-        self._printer.commands(['G1 Z0 F1200'])
+        self._printer.commands(['G1 Z0 F600'])
 
     def _on_api_command_restore_from_calibration_position(self):
-        self._printer.commands(['G1 Z5 F1200'])
+        self._printer.commands(['G1 Z5 F600'])
         self.set_print_mode('normal')
         self._printer.home(['y', 'x'])
 
@@ -1419,15 +1422,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands("M50 Y%f" % extruder_offset_y)
 
         if persist:
-            self._printer.commands("M500")
-
-        # Read back from machine (which may constrain the correction value) and store
-        self._get_firmware_info()
+            # Store settings and read back from machine
+            self._printer._comm.sendCommand("M500", on_sent = self._get_firmware_info)
+        else:
+            # Read the settings back from the machine
+            self._get_firmware_info()
 
     def _on_api_command_restore_calibration_values(self):
-        self._printer.commands("M501")
-        # Read back from machine (which may constrain the correction value) and store
-        self._get_firmware_info()
+        # Read back from machine (which may constrain the correction value)
+        # We don't want the M501 response to interferere with the M115, which is why on_sent is used (which requires an acknowledge)
+        self._printer._comm.sendCommand("M501", on_sent = self._get_firmware_info)
 
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -1546,6 +1550,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
 				    "pausedFilamentSwap": self.paused_filament_swap
 					}
+
+        if self._printer._comm:
+            self._printer._comm._sendCommand('M108')
 
         self.execute_printer_script("change_filament_done", context)
 
@@ -3078,8 +3085,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.save_filament_amount()
             # TODO: Move commands below to gcode script
             self.set_print_mode('normal')
-            if self._printer._currentZ < 20:
-                self._printer.commands(['G1 Z20 F600'])
+            
+            if "boundaries" in self.current_printer_profile and "maxZ" in self.current_printer_profile["boundaries"]:
+               maxZ = self.current_printer_profile["boundaries"]["maxZ"] 
+            else:               
+               maxZ = 20
+
+            if self._printer._currentZ < maxZ:
+                self._printer.jog({ 'z': 20 })
 
             self._printer.home(['x', 'y'])
 
