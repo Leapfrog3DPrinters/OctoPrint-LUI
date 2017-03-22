@@ -159,6 +159,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_received_hooks = []
         self.fw_version_info = None
         self.auto_firmware_update_started = False
+        self.fetching_firmware_update = False
 
         self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
@@ -622,11 +623,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Starts a thread that fetches firmware updates. A socket message is sent whenever the process completes
         """
-        firmware_fetch_thread = threading.Thread(target=self._notify_firmware_update, args=(bool(silent),))
-        firmware_fetch_thread.daemon = False
-        firmware_fetch_thread.start()
-        self.fetching_firmware_update = True
-        return make_response(jsonify(), 200)
+        if self.fetching_firmware_update:
+            self._logger.debug("Firmware fetch thread already started. Not spawning another one.")
+            return make_response(jsonify(), 400)
+        else:
+            self.fetching_firmware_update = True
+            self._logger.debug("Starting firmware fetch thread")
+            firmware_fetch_thread = threading.Thread(target=self._notify_firmware_update, args=(bool(silent),))
+            firmware_fetch_thread.daemon = False
+            firmware_fetch_thread.start()
+        
+            return make_response(jsonify(), 200)
 
     def _notify_firmware_update(self, silent = False):
         
@@ -2925,15 +2932,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         line = line[5:].rstrip() # Strip echo and newline
        
         if len(line) > 0:
-            oldModelName = self.model
+            oldModelName = self.model.lower() if self.model else None
             self._update_from_m115_properties(line)
             self.machine_info = self._get_machine_info()
+            newModelName = self.machine_info["machine_type"].lower() if "machine_type" in self.machine_info and self.machine_info["machine_type"] else "unknown"
 
-            if not oldModelName.lower() == self.machine_info["machine_type"].lower():
-                
-                self.model = self.machine_info["machine_type"]
-                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
-
+            if oldModelName != newModelName:
+                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, newModelName))
+                self._set_model()
                 self._init_model()
                 self._update_printer_scripts_profiles()
 
