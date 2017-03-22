@@ -19,7 +19,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button ok-button">
-            <a href="#" data-bind="click: function () { beginHoming() }">
+            <a href="#" data-bind="click: function () { beginHoming() }, css: { disabled: isHomingRequested }">
               <span>
                 <i class="fa fa-home"></i>{{ _('Begin homing') }}
               </span>

@@ -284,7 +284,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _set_model(self):
         """Sets the model and platform variables"""
-        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info else 'Unknown'
+        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
 
         if not self.model in self.supported_models:
             self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
@@ -616,9 +616,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "auto_update_started": self.auto_firmware_update_started 
         })
         
-    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["GET"])
-    def get_firmware_update_info(self):
-        return jsonify(self.get_firmware_update(True))
+    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["GET"], strict_slashes=False)
+    @octoprint.plugin.BlueprintPlugin.route("/firmware/update/<string:silent>", methods=["GET"], strict_slashes=False)
+    def get_firmware_update_info(self, silent = ''):
+        """
+        Starts a thread that fetches firmware updates. A socket message is sent whenever the process completes
+        """
+        firmware_fetch_thread = threading.Thread(target=self._notify_firmware_update, args=(bool(silent),))
+        firmware_fetch_thread.daemon = False
+        firmware_fetch_thread.start()
+        self.fetching_firmware_update = True
+        return make_response(jsonify(), 200)
+
+    def _notify_firmware_update(self, silent = False):
+        
+        firmware_info = self.get_firmware_update(True)
+        firmware_info.update({ 'silent': silent })
+        self._send_client_message("firmware_update_notification", firmware_info)
+        self.fetching_firmware_update = False
     
     def get_firmware_update(self, forced = False):
         
@@ -744,10 +759,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if flash_plugin:
             if hasattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file'):
                 self.intended_disconnect = True
-
+                _, port, _, _ = self._printer.get_current_connection()
+                if not port:
+                    port = '/dev/ttyUSB0'
                 board = "m2560"
                 programmer = "wiring"
-                port = "/dev/ttyUSB0"
                 baudrate = "115200"
                 ext_path = os.path.basename(firmware_path)
 
@@ -2959,7 +2975,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 self.machine_database.update({'value': value }, self._machine_query.property == key)
             else:
-                self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)
+                self.machine_database.update({'value': None }, self._machine_query.property == key)
 
 
         return properties
