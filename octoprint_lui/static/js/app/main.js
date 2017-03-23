@@ -296,14 +296,18 @@ $(function () {
 
     ko.bindingHandlers.touchClick = {
         init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var self = this;
             if (isTouchDevice()) {
                 var newValueAccessor = function () {
                     var result = {};
                     result['mousedown'] = valueAccessor();
                     return result;
                 }
-                ko.bindingHandlers.event.init.call(this, element, newValueAccessor, allBindings, viewModel, bindingContext)
-            } else { 
+                ko.bindingHandlers.event.init.call(self, element, newValueAccessor, allBindings, viewModel, bindingContext)
+                $(element).on('click', function(event){
+                    event.preventDefault();
+                })            
+            } else {
                 ko.bindingHandlers.click.init(element, valueAccessor, allBindings, viewModel, bindingContext);
             }
         }

@@ -6,7 +6,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button" data-bind="touchClick: function () { headMaintenancePosition() }">
-          <a href="">
+          <a href="#">
             <span>{{ _('Head maintenance position') }}</span>
           </a>
         </li>
@@ -17,7 +17,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button" data-bind="touchClick: function () { cleanBedPosition() }">
-          <a href="">
+          <a href="#">
             <span>{{ _('Clean bed position') }}</span>
           </a>
         </li>
@@ -39,8 +39,8 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="touchClick: function () { calibrateExtruders() }">
-          <a href="#">
+        <li class="button" data-bind="event: { mousedown: function () { calibrateExtruders(); return false }}">
+          <a href="">
             <span>{{ _('Calibrate extruders') }}</span>
           </a>
         </li>
@@ -52,7 +52,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button" data-bind="touchClick: function () { calibrateBed() }">
-          <a href="#">
+          <a href="">
             <span>{{ _('Calibrate bed') }}</span>
           </a>
         </li>
@@ -85,7 +85,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button" data-bind="touchClick: function () { logFiles() }">
-          <a href="">
+          <a href="#">
             <span>{{ _('Log files') }}</span>
           </a>
         </li>
