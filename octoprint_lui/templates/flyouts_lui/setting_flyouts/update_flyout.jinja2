@@ -10,12 +10,12 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="change_log_info" class="fa fa-info-circle" style="padding: 0.4em;" data-bind="click: function () { showChangelogFlyout(true) }"></i>
+          <i id="change_log_info" class="fa fa-info-circle" style="padding: 0.4em;" data-bind="touchClick: function () { showChangelogFlyout(true) }"></i>
         </span>      
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
+          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="touchClick: function () { refreshUpdateInfo() }"></i>
         </span>
       </div>
     </div>
@@ -27,7 +27,7 @@
       </div>
       <div class="Table-item Table-item-grow-3">
         <ul class="button-area">
-          <li class="button" data-bind="css: $root.getUpdateButtonClass($data), click: function () {$root.update($data)}">
+          <li class="button" data-bind="css: $root.getUpdateButtonClass($data), touchClick: function () {$root.update($data)}">
             <a href="">
               <span data-bind="text: $root.getUpdateText($data)"></span>
             </a>
@@ -46,12 +46,12 @@
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="change_log_info" class="fa fa-info-circle" style="padding: 0.4em;" data-bind="click: function () { showChangelogFlyout(true) }"></i>
+          <i id="change_log_info" class="fa fa-info-circle" style="padding: 0.4em;" data-bind="touchClick: function () { showChangelogFlyout(true) }"></i>
         </span>      
       </div>
       <div class="Table-item">
         <span style="margin-left: auto;">
-          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { refreshUpdateInfo() }"></i>
+          <i id="update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="touchClick: function () { refreshUpdateInfo() }"></i>
         </span>
       </div>
     </div>
@@ -63,7 +63,7 @@
       </div>
       <div class="Table-item Table-item-grow-3">
         <ul class="button-area">
-          <li class="button" data-bind="css: getUpdateAllButtonClass, click: function () { update('all'); }">
+          <li class="button" data-bind="css: getUpdateAllButtonClass, touchClick: function () { update('all'); }">
             <a href="">
               <span data-bind="text: getUpdateAllText"></span>
             </a>
@@ -81,7 +81,7 @@
         </div>
         <div class="Table-item">
           <span style="margin-left: auto;">
-            <i id="firmware_update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="click: function () { $parent.refreshFirmwareUpdateInfo() }"></i>
+            <i id="firmware_update_spinner" class="fa fa-refresh" style="padding: 0.4em;" data-bind="touchClick: function () { $parent.refreshFirmwareUpdateInfo() }"></i>
           </span>
         </div>
       </div>
@@ -93,7 +93,7 @@
         </div>
         <div class="Table-item Table-item-grow-3">
           <ul class="button-area">
-            <li class="button" data-bind="css: $parent.getFirmwareUpdateButtonClass(), click: function () {$parent.firmwareUpdate()}">
+            <li class="button" data-bind="css: $parent.getFirmwareUpdateButtonClass(), touchClick: function () {$parent.firmwareUpdate()}">
               <a href="">
                 <span data-bind="text: $parent.getFirmwareUpdateText()"></span>
               </a>
@@ -112,7 +112,7 @@
         <div class="Table-item">
           {%  if local_addr -%}
           <ul class="button-area">
-            <li class="button secondary-button fileinput-button" data-bind="click: function () { $parent.browseForFirmware() }, css: { disabled: !$parent.files.isUsbAvailable() }">
+            <li class="button secondary-button fileinput-button" data-bind="touchClick: function () { $parent.browseForFirmware() }, css: { disabled: !$parent.files.isUsbAvailable() }">
               <a href="#">
                 <span>{{ _('Browse USB drive for firmware') }}</span>
             </a>

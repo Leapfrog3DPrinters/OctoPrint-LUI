@@ -14,7 +14,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startManualBedCalibration()}">
+          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startManualBedCalibration()}">
             <a href="">
               <span>{{ _('Continue calibration') }}</span>
             </a>
@@ -65,7 +65,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () { startAutoBedCalibration() }">
+          <li class="button" data-bind="touchClick: function () { startAutoBedCalibration() }">
             <a href="">
               <span>{{ _('Level bed') }}</span>
             </a>
@@ -74,7 +74,7 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () { startZoffset() } ">
+          <li class="button" data-bind="touchClick: function () { startZoffset() } ">
             <a href="">
               <span>{{ _('Z-offset wizard') }}</span>
             </a>

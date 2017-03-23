@@ -18,7 +18,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button">
-            <a href="#" data-bind="click: function () {showUpdateFlyout()}, css: { disabled: !loginState.loggedIn() }">
+            <a href="#" data-bind="touchClick: function () {showUpdateFlyout()}, css: { disabled: !loginState.loggedIn() }">
               <span>
                 {{ _('Update') }}
               </span>
@@ -59,7 +59,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button failed-button">
-            <a href="#" data-bind="click: function () {system.systemShutdown()}">
+            <a href="#" data-bind="touchClick: function () {system.systemShutdown()}">
               <span>
                 <i class="fa fa-power-off" style="padding-left: 0.5em;"></i>{{ _('Shutdown') }}
               </span>

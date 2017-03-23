@@ -3,7 +3,7 @@
     <div class="settings_topics">
       <!-- Printer -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('printer')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()} ">
+        <ul class="topic_main" data-bind="event: { mousedown: function () {showSettingsTopic('printer')}}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()} ">
           <li class="topic_dash">
             <a href="">
               <i class="fa fa-print"></i>
@@ -24,7 +24,7 @@
       {% if local_addr %}
       <!-- Maintenance -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('maintenance')}, css: { disabled: !isOperational() || isPaused() || isPrinting() } ">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('maintenance')}, css: { disabled: !isOperational() || isPaused() || isPrinting() } ">
           <li class="topic_dash">
             <a href="">
               <i class="fa fa-wrench"></i>
@@ -45,7 +45,7 @@
       {% endif %}
       <!-- Materials -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('materials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('materials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
           <li class="topic_dash">
             <a href="">
               <i class="fa fa-sun-o"></i>
@@ -65,7 +65,7 @@
       </div><!-- Materials -->
       <!-- Webcam -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('webcam')}, css: {disabled: !loginState.loggedIn()}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('webcam')}, css: {disabled: !loginState.loggedIn()}">
           <li class="topic_dash">
             <a href="">
               <i class="fa fa-video-camera"></i>
@@ -86,7 +86,7 @@
 
       <!-- Users -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('users')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('users')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
           <li class="topic_dash">
             <a href="">
               <i class="fa fa-user"></i>
@@ -107,7 +107,7 @@
       {% if local_addr %}
       <!-- Wireless -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('wireless')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('wireless')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
           <li class="topic_dash">
             <a href="">
               <i class="fa fa-wifi"></i>
@@ -129,7 +129,7 @@
       {% if debug_lui %}
       <!-- Advanced -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('advanced')}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('advanced')}">
           <li class="topic_dash">
             <a href="">
               <i class="fa fa-plus"></i>
@@ -150,7 +150,7 @@
       {% endif %}
       <!-- Update -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('update')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('update')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
           <li class="topic_dash">
             <a href="">
               <!-- ko allowBindings: false -->
@@ -174,7 +174,7 @@
       </div><!-- /Update -->
       <!-- Languanges -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('languages')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('languages')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
           <li class="topic_dash">
             <a href="">
               <i id="language_icon" class="fa fa-globe"></i>
@@ -194,7 +194,7 @@
       </div><!-- /Languanges -->
       {% if not local_addr %}
       <!-- Logs -->
-      <div class="settings_topic" data-bind="click: function () {showSettingsTopic('logs')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
+      <div class="settings_topic" data-bind="touchClick: function () {showSettingsTopic('logs')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="">

@@ -19,12 +19,12 @@
 			<div class="Table-item">
 				<ul class="button-area">
 				  <li class="button secondary-button">
-				    <a href="#cancel" data-bind="click: function () { cancelAutoShutdown() }">
+				    <a href="#cancel" data-bind="touchClick: function () { cancelAutoShutdown() }">
 				      <span>{{ _('Cancel') }}</span>
 				    </a>
 				  </li>
 				  <li class="button" data-bind="disabled: autoShutdownWaitOnRender() ">
-				    <a href="#save" data-bind="click: function () { system.systemShutdown() }">
+				    <a href="#save" data-bind="touchClick: function () { system.systemShutdown() }">
 				      <span>{{ _('Shutdown now') }}</span>
 				    </a>
 				  </li>
