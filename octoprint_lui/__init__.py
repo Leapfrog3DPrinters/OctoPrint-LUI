@@ -1263,12 +1263,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return self._call_api_method(**data)
 
     def _on_api_command_immediate_cancel(self, *args, **kwargs):
+        self._immediate_cancel()
+
+    def _immediate_cancel(self, cancel_print = True):
         self._logger.debug("Immediate cancel")
 
         if self._printer._comm:
+            q = self._printer._comm._send_queue
+            with q.mutex:
+                q.queue.clear()
+
             self._printer._comm._sendCommand('M108')
 
-        self._printer.cancel_print()
+        if cancel_print:
+            self._printer.cancel_print()
 
     def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
         """
@@ -1551,8 +1559,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 				    "pausedFilamentSwap": self.paused_filament_swap
 					}
 
-        if self._printer._comm:
-            self._printer._comm._sendCommand('M108')
+        self._immediate_cancel(False)
 
         self.execute_printer_script("change_filament_done", context)
 
