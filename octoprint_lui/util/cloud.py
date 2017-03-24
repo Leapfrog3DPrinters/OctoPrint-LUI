@@ -1,4 +1,4 @@
-
+from __future__ import division
 from octoprint.filemanager import get_file_type, valid_file_type
 from octoprint.filemanager.storage import StorageInterface, LocalFileStorage
 from octoprint_lui.util.onedrivestatushttpprovider import OnedriveStatusHttpProvider
@@ -20,10 +20,14 @@ import os
 from googleapiclient.http import MediaIoBaseDownload
 import io
 
+# Dropbox
+import dropbox
+
 ONEDRIVE = "onedrive"
 GOOGLE_DRIVE = "google_drive"
+DROPBOX = "dropbox"
 
-AVAILABLE_SERVICES = [ ONEDRIVE, GOOGLE_DRIVE ]
+AVAILABLE_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
 
 class CloudService():
     def __init__(self, settings, data_folder):
@@ -41,9 +45,127 @@ class CloudService():
     def handle_logout_response(self, request):
         pass
 
+class DropboxCloudService(CloudService):
+    def __init__(self, settings, data_folder):
+        self._settings = settings
+        self._csrf = {}
+        self._client = None
+        self._client_secret = self._settings.get(['cloud', DROPBOX, 'client_secret']);
+        self._client_id = self._settings.get(['cloud', DROPBOX, 'client_id']);
+        self._redirect_uri = None
+        self._id_tracker = {}
+        self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
+        self._load_credentials()
+        
+    ## Private methods
+    def _get_client(self):
+        if not self._client:
+            self._client = dropbox.Dropbox(self._access_token)
+
+        return self._client
+
+    def _load_credentials(self):
+        if os.path.isfile(self._credential_path):
+            with open(self._credential_path, "rb") as session_file:
+                import pickle
+                self._access_token = pickle.load(session_file)
+
+        return self._access_token
+
+    def _delete_credentials(self):
+        if os.path.isfile(self._credential_path):
+            os.unlink(self._credential_path)
+        
+        self._access_token = None
+
+    def _save_credentials(self):
+        with open(self._credential_path, "wb") as session_file:
+            import pickle
+            pickle.dump(self._access_token, session_file, pickle.HIGHEST_PROTOCOL)
+
+    def _get_file_type(self, item):
+        if type(item) is dropbox.files.FolderMetadata:
+            return 'folder'
+        else:
+            type_path = get_file_type(item.name)
+            return type_path[0] if type_path else None
+
+    ## Public methods
+
+    def is_logged_in(self):
+        return not self._access_token is None
+
+    def get_auth_url(self, redirect_uri):
+        self._redirect_uri = redirect_uri
+        self._flow = dropbox.client.DropboxOAuth2Flow(self._client_id, self._client_secret, redirect_uri, self._csrf, "dropbox-auth-csrf-token")
+
+        return self._flow.start()
+
+    def handle_auth_response(self, request):
+        self._access_token, _, _ = self._flow.finish(request.values)
+        self._save_credentials()
+
+    def list_files(self, path = None, filter = None):
+
+        if path == None:
+            path = DROPBOX
+        else:
+            path = path.rstrip('/')
+
+        if path == DROPBOX:
+            path_id = ''
+        else:
+            path_id = self._id_tracker[path]
+
+        folder = self._get_client().files_list_folder(path_id).entries
+        items = []
+        for f in folder:
+            file_path = path + "/" + f.name
+            self._id_tracker[file_path] = f.path_lower
+
+            file_type = self._get_file_type(f)
+            
+            entry_data = {
+                            "name": f.name,
+		                    "path": file_path,
+		                    "type": file_type,
+                            "origin": "cloud"
+                            }
+
+            if file_type and (not filter or filter(f.name, entry_data)):
+                items.append(entry_data)
+
+        return items
+
+    def download_file(self, path, target_path, progress_callback = None):
+        file_id = self._id_tracker[path]
+        entry, response = self._get_client().files_download(file_id)
+        total_length = entry.size
+        
+        if total_length:
+            total_length = int(total_length)
+            dl = 0
+        
+        with open(target_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=2**16):
+                if callable(progress_callback):
+                    dl += len(chunk)
+                    progress_callback(dl / total_length)
+                if chunk:
+                    f.write(chunk)
+                    f.flush()
+
+    def get_logout_url(self, redirect_uri):
+        return redirect_uri
+
+    def handle_logout_response(self, request):
+        pass
+
+
 class GoogleDriveCloudService(CloudService):
     def __init__(self, settings, data_folder):
         self._settings = settings
+        self._http = None
         self._client = None
         self._client_secret = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_secret']);
         self._client_id = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_id']);
@@ -54,10 +176,20 @@ class GoogleDriveCloudService(CloudService):
         self._load_credentials()
         
     ## Private methods
+    def _get_http(self):
+        if not self._http:
+            self._http = httplib2.Http()
+        
+        return self._http
 
     def _get_client(self):
         if not self._client:
-            http = self._credentials.authorize(httplib2.Http())
+            http = self._get_http()
+
+             # Authorize immediately if we have credentials
+            #if self._credentials and not self._credentials.access_token_expired:
+                #self._credentials.authorize(http)
+
             self._client = build('drive', 'v3', http=http)
 
         return self._client
@@ -67,6 +199,9 @@ class GoogleDriveCloudService(CloudService):
             with open(self._credential_path, "rb") as session_file:
                 import pickle
                 self._credentials = pickle.load(session_file)
+            
+            if self._credentials.access_token_expired:
+                self._credentials = None
 
         return self._credentials
 
@@ -159,9 +294,12 @@ class GoogleDriveCloudService(CloudService):
                     progress_callback(status.progress())
 
     def get_logout_url(self, redirect_uri):
-        return super(GoogleDriveCloudService, self).get_logout_url(redirect_uri)
+        return redirect_uri
 
     def handle_logout_response(self, request):
+        if self._credentials and not self._credentials.access_token_expired:
+            self._credentials.revoke(self._get_http())
+
         self._delete_credentials()
 
 
@@ -231,7 +369,8 @@ class OnedriveCloudService(CloudService):
         auth_provider.save_session(path=self._credential_path)
 
     def get_logout_url(self, redirect_uri):
-        return self._get_client().auth_provider.get_logout_url(redirect_uri)
+        return redirect_uri
+        #return self._get_client().auth_provider.get_logout_url(redirect_uri)
 
     def handle_logout_response(self, request):
         self._auth_provider.delete_session()
@@ -280,6 +419,8 @@ class CloudConnect():
             return OnedriveCloudService(self._settings, self._data_folder)
         elif service == GOOGLE_DRIVE:
             return GoogleDriveCloudService(self._settings, self._data_folder)
+        elif service == DROPBOX:
+            return DropboxCloudService(self._settings, self._data_folder)
     ## Public methods
 
     def get_service(self, service):
