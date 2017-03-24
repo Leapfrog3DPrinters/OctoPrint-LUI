@@ -279,6 +279,7 @@
       <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
+        <div id="filament_loading">
       <div id="filament_flyout_content">
         {% include "flyouts_lui/filament_flyouts/filament_flyout.jinja2" %}
       </div>
@@ -289,6 +290,7 @@
           </a>
         </li>
       </ul>
+    </div>
     </div>
   </aside>
   <aside id="firmware_file_flyout" class="flyout">
@@ -367,6 +369,7 @@
       <h4>{{ _('Bed calibration') }}</h4>
     </div>
     <div class="flyout-body">
+        <div id="bed_calibration">
       <div id="bedcalibration_flyout_content">
         {% include "flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2" %}
       </div>
@@ -382,6 +385,7 @@
           </a>
         </li>
       </ul>
+    </div>
     </div>
   </aside>
   <aside id="mode_select_flyout" class="flyout">
@@ -425,7 +429,7 @@
         <div style="margin-bottom: 15px;" data-bind="style: {visibility: isConnecting() ? 'visible' : 'hidden' }">
           <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i> Connecting...
         </div>
-      
+
         <ul class="button-area">
           <li class="button ok-button">
             <a href="#" data-bind="click: restorePrinterConnection">
@@ -456,7 +460,7 @@
       </div>
       <div class="Table-row">
         <div class="Table-item">
-          <select class="select-material" data-bind="options: 
+          <select class="select-material" data-bind="options:
                       materialProfiles,
                       optionsText: 'name',
                       value: updateLeftTemperatureProfile,
@@ -464,7 +468,7 @@
           </select>
         </div>
         <div class="Table-item">
-          <select class="select-material" data-bind="options: 
+          <select class="select-material" data-bind="options:
                       materialProfiles,
                       optionsText: 'name',
                       value: updateRightTemperatureProfile,
@@ -630,7 +634,7 @@
             <div id="offline_text"></div>
           </div>
         </div>
-{#      Out for now   
+{#      Out for now
         <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">

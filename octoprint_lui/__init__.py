@@ -790,7 +790,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/nouislider-9.2.0.js',
                     'plugin/lui/js/lib/sockjs-1.1.2.js',
                     'plugin/lui/js/lib/sprintf-1.0.3.js',
-					'plugin/lui/js/lib/intro.js'
+					'plugin/lui/js/lib/intro-lui.js'
                     ]
 
         vm_js = self.find_assets('js/app/viewmodels', '.js')

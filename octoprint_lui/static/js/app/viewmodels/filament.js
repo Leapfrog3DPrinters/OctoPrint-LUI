@@ -200,7 +200,7 @@ $(function ()  {
         self.finishedLoading = function ()  {
             // We are finished close the flyout
             if(self.introView.firstRun) {
-                self.introView.introInstance.goToStep(6);
+                self.introView.introInstance.goToStep(11);
             }
             self.flyout.closeFlyoutAccept();
         };
@@ -371,7 +371,7 @@ $(function ()  {
                     self.filamentLoadCont(false);
                     break;
                 case "filament_unloading":
-                    // Show unloading 
+                    // Show unloading
                     self.filamentLoadingText(gettext("Unloading filament..."));
                     break;
                 case "filament_finished":
@@ -381,7 +381,7 @@ $(function ()  {
                     self.hideToolLoading();
                     if (self.introView.firstRun) {
                         if (self.selectedTemperatureProfile != "None") {
-                            self.introView.introInstance.goToStep(5);
+                            self.introView.introInstance.goToStep(10);
                         }
                     }
                     self.filamentLoadProgress(0);
@@ -480,7 +480,7 @@ $(function ()  {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
-                    self.introView.introInstance.goToStep(3);
+                    self.introView.introInstance.goToStep(8);
                 }
             });
         };
@@ -491,7 +491,7 @@ $(function ()  {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
-                    self.introView.introInstance.goToStep(4);
+                    self.introView.introInstance.goToStep(9);
                     self.loadFilament(false);
                 }
             }else{

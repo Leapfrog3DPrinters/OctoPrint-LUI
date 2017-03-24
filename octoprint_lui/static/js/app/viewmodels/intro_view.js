@@ -14,18 +14,20 @@ $(function ()  {
                     //1
                     element: 'none',
                     intro: "<div class='step-header'>Getting Started</div>" +
-                    "<div class='step-text'>Welcome to your new Bolt.<br>This tutorial will guide you through the steps" +
-                    " you have to take to start printing your creations.<br>" +
+                    "<div class='step-text'><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
+                    " steps you have to take to start printing your creations.<br>" +
                     "<div class='introjs-tooltipbuttons'><a id='nextButton' role='button' " +
-                    "class='introjs-button' onclick='introview.nextButton(2)'>Begin</a></div></div>"
+                    "class='introjs-button' data-bind='click: function (){nextButton(2)}''>Begin</a>" +
+                    "<a id='cancelButton' role='button' class='introjs-button' " +
+                    "data-bind='click: function (){doneButton()}'>Cancel</a></div></div>"
                 },
                 {
                     //2
                     element: 'none',
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Before we start printing, we have to be sure that the bed is level and" +
-                    " that the extruder is aligned</div><div class='introjs-tooltipbuttons'><a role='button' " +
-                    "class='introjs-button' onclick='introview.nextButton(3)'>Next</a></div></div>"
+                    " that the extruder is aligned</div><div class='introjs-tooltipbuttons'><a id='nextButton' role='button' " +
+                    "class='introjs-button' data-bind='click: function (){nextButton(3)}'>Next</a></div></div>"
                 },
                 {
                     //3
@@ -49,14 +51,16 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //5
-                    element: document.querySelector('#manual-bed-calibration'),
+                    //6
+                    element: document.querySelector('#bed_calibration'),
                     intro: "<div class='step-header'>Getting Started</div>" +
-                    "<div class='step-text'>To calibrate the bed, click here</div>",
+                    "<div class='step-text'>To calibrate the bed, click here" +
+                    "<a id='nextButton' role='button' class='introjs-button' " +
+                    "data-bind='click: function (){nextButton(7)}'>Done</a></div>",
                     position: 'bottom'
                 },
                 {
-                    //5
+                    //7
                     element: document.querySelector('#swap_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>In order to print stuff, we first have to " +
@@ -65,7 +69,7 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //6
+                    //8
                     element: document.querySelector('#load_filament'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Choose what kind of material you are loading and give the amount " +
@@ -74,15 +78,15 @@ $(function ()  {
                     tooltipClass: "tooltip_hidden"
                 },
                 {
-                    //7
-                    element: document.querySelector('#abort_filament'),
+                    //9
+                    element: document.querySelector('#filament_loading'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>The filament is being loaded. When something goes wrong you can press " +
                     "Abort to cancel the action.</div>",
-                    position: 'top'
+                    position: 'bottom'
                 },
                 {
-                    //8
+                    //10
                     element: document.querySelector('#finished_filament'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>We are now done loading the filament. If your not satisfied with the " +
@@ -90,28 +94,28 @@ $(function ()  {
                     "the next step press <b>Done</b>.</div>"
                 },
                 {
-                    //9
+                    //11
                     element: document.querySelector('#job_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Now we can select our print job for the printer. To" +
                     " select a print job, click on <i class='fa fa-file'></i> <b>Select print job</b>.</div>"
                 },
                 {
-                    //10
+                    //12
                     element: document.querySelector('#local_button'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Now we can select a GCODE file that's saved on the printer. " +
                     "There is a sample print you can try out.</div>"
                 },
                 {
-                    //11
+                    //13
                     element: document.querySelector("#print_files"),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Select the file and press on the <i class='fa fa-play'>" +
                     "</i> button next to it</div>"
                 },
                 {
-                    //12
+                    //14
                     element: document.querySelector('#start_print'),
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>For the first print we will keep it simple and print in normal" +
@@ -120,13 +124,13 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //13
+                    //15
                     element: 'none',
                     intro: "<div class='step-header'>Getting Started</div>" +
                     "<div class='step-text'>Good Job!<br>The printer is now printing the first print. " +
                     "Watch how the object magically appears before you.<br>" +
-                    "<div class='introjs-tooltipbuttons'><a id='doneButton' role='button'" +
-                    "class='introjs-button' onclick='introview.nextButton(2)'>Done</a></div></div>"
+                    "<div class='introjs-tooltipbuttons'><a id='doneButton' role='button' class='introjs-button'" +
+                    "data-bind='click: function(){doneButton()}'>Done</a></div></div>"
                 }
             ],
             showStepNumbers: false,
@@ -189,6 +193,6 @@ $(function ()  {
         [ "flyoutViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
-        ["#intro_button"]
+        ["#intro_button", "#introjs-container"]
     ]);
 });

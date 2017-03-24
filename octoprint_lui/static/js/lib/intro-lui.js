@@ -113,7 +113,7 @@
             floatingElementQuery = document.createElement('div');
             floatingElementQuery.className = 'introjsFloatingElement';
 
-            document.body.appendChild(floatingElementQuery);
+            document.getElementById("introjs-container").appendChild(floatingElementQuery);
           }
 
           currentItem.element  = floatingElementQuery;
@@ -1468,7 +1468,7 @@
     }
 
     // adding the hints wrapper
-    document.body.appendChild(hintsWrapper);
+    document.getElementById("introjs-container").appendChild(hintsWrapper);
 
     // call the callback function (if any)
     if (typeof (this._hintsAddedCallback) !== 'undefined') {
@@ -1587,7 +1587,7 @@
     _setHelperLayerPosition.call(this, referenceLayer);
 
     referenceLayer.appendChild(tooltipLayer);
-    document.body.appendChild(referenceLayer);
+    document.getElementById("introjs-container").appendChild(referenceLayer);
 
     //set proper position
     _placeTooltip.call(this, hintElement, tooltipLayer, arrowLayer, null, true);
@@ -1670,7 +1670,7 @@
         throw new Error('There is no element with given selector.');
       }
     } else {
-      return new IntroJs(document.body);
+      return new IntroJs(document.getElementById("introjs-container"));
     }
   };
 
