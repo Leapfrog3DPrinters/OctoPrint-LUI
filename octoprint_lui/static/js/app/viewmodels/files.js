@@ -9,8 +9,7 @@ $(function ()  {
         self.flyout = parameters[3];
         self.printerProfiles=parameters[4];
         self.filament = parameters[5];
-
-        //self.slicing = parameters[3];
+        self.network = parameters[6];
 
         self.isErrorOrClosed = ko.observable(undefined);
         self.isOperational = ko.observable(undefined);
@@ -109,11 +108,16 @@ $(function ()  {
 
         self.gcodePreviews = [];
 
+        self.isOnline = ko.pureComputed(function () {
+            return self.network.status.connection.ethernet() || self.network.status.connection.wifi();
+        })
+
         var preProcessList = function (response) {
             var recursiveCheck = function (element, index, list) {
                 if (!element.hasOwnProperty("parent")) element.parent = { children: list, parent: undefined };
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
+                if (!element.hasOwnProperty("is_loading")) element.is_loading = ko.observable(false);
                 if (element.origin == "local" && !element.hasOwnProperty("previewUrl")) {
                     previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == element["name"].toLowerCase(); });
                     if (previewItem)
@@ -128,6 +132,7 @@ $(function ()  {
                         recursiveCheck(e, i, l);
                     });
                 }
+
             };
             _.each(response.files, recursiveCheck);
         };
@@ -142,7 +147,17 @@ $(function ()  {
         }
 
         self.getCloudServiceName = function (service) {
-            return gettext(service);
+            switch (service)
+            {
+                case "onedrive":
+                    return gettext("OneDrive");
+                case "google_drive":
+                    return gettext("Google Drive");
+                case "dropbox":
+                    return gettext("Dropbox");
+                default:
+                    return gettext(service);
+            }
         }
 
         self.browseLocal = function (filenameToFocus) {
@@ -171,6 +186,9 @@ $(function ()  {
         {
             if (self.isLoadingFileList())
                 return;
+
+            self.network.requestData();
+
             var filenameToFocus = '';
             var locationToFocus = '';
             var switchToPath = '';
@@ -475,11 +493,24 @@ $(function ()  {
 
         self.loadChildrenAndBrowse = function (folder)
         {
+            if (self.isLoadingFileList())
+                return;
+
+            self.isLoadingFileList(true);
+            folder.is_loading(true);
             self.loadFiles(folder.origin, "", folder.path).done(preProcessList).then(function (children) {
                 folder.children = children.files;
                 self.currentPath(folder.path);
                 self.listHelper.updateItems(folder.children);
                 self.highlightCurrentFilename();
+            }).fail(function()
+            {
+                $.notify({
+                    title: gettext("Could not open folder"),
+                    text: gettext("The folder could not be opened. Please check if your printer is connected to the internet.")
+                }, "error");
+            }).always(function () {
+                self.isLoadingFileList(false);
             });
         }
 
@@ -1039,7 +1070,9 @@ $(function ()  {
         };
 
         self.templateFor = function (data) {
-            if (data.origin == "cloud")
+            if (data.origin == "cloud" && data.path == data.name)
+                return "files_template_cloud_root_folder"
+            else if (data.origin == "cloud")
                 return "files_template_cloud_" + data.type
             else if (data.origin == "usb" && data.type == "machinecode")
                 return "files_template_usb_" + data.type;
@@ -1430,7 +1463,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });

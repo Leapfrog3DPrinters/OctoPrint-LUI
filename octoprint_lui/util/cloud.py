@@ -19,6 +19,7 @@ import pickle
 import os
 from googleapiclient.http import MediaIoBaseDownload
 import io
+import logging
 
 # Dropbox
 import dropbox
@@ -29,9 +30,10 @@ DROPBOX = "dropbox"
 
 AVAILABLE_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
 
-class CloudService():
+
+class CloudService(object):
     def __init__(self, settings, data_folder):
-        pass
+        self._logger = logging.getLogger(__name__)
     def get_auth_url(self, redirect_uri):
         pass
     def handle_auth_response(self, request):
@@ -47,6 +49,7 @@ class CloudService():
 
 class DropboxCloudService(CloudService):
     def __init__(self, settings, data_folder):
+        super(DropboxCloudService, self).__init__(settings, data_folder)
         self._settings = settings
         self._csrf = {}
         self._client = None
@@ -128,6 +131,7 @@ class DropboxCloudService(CloudService):
             entry_data = {
                             "name": f.name,
 		                    "path": file_path,
+                            "service": DROPBOX,
 		                    "type": file_type,
                             "origin": "cloud"
                             }
@@ -159,11 +163,16 @@ class DropboxCloudService(CloudService):
         return redirect_uri
 
     def handle_logout_response(self, request):
-        pass
+        if self._access_token:
+            self._get_client().auth_token_revoke()
+
+        self._delete_credentials()
+        self._client = None
 
 
 class GoogleDriveCloudService(CloudService):
     def __init__(self, settings, data_folder):
+        super(GoogleDriveCloudService, self).__init__(settings, data_folder)
         self._settings = settings
         self._http = None
         self._client = None
@@ -186,9 +195,11 @@ class GoogleDriveCloudService(CloudService):
         if not self._client:
             http = self._get_http()
 
-             # Authorize immediately if we have credentials
-            #if self._credentials and not self._credentials.access_token_expired:
-                #self._credentials.authorize(http)
+            if self._credentials and not self._credentials.access_token_expired:
+                try:
+                    self._credentials.refresh(http)
+                except:
+                    self._logger.exception("Could not refresh token for Google Drive")
 
             self._client = build('drive', 'v3', http=http)
 
@@ -201,7 +212,7 @@ class GoogleDriveCloudService(CloudService):
                 self._credentials = pickle.load(session_file)
             
             if self._credentials.access_token_expired:
-                self._credentials = None
+                self._delete_credentials()
 
         return self._credentials
 
@@ -273,6 +284,7 @@ class GoogleDriveCloudService(CloudService):
             entry_data = {
                             "name": f["name"],
 		                    "path": file_path,
+                            "service": GOOGLE_DRIVE,
 		                    "type": file_type,
                             "origin": "cloud"
                             }
@@ -301,10 +313,12 @@ class GoogleDriveCloudService(CloudService):
             self._credentials.revoke(self._get_http())
 
         self._delete_credentials()
+        self._client = None
 
 
 class OnedriveCloudService(CloudService):
     def __init__(self, settings, data_folder):
+        super(OnedriveCloudService, self).__init__(settings, data_folder)
         self._settings = settings
         self._client = None
         self._redirect_uri = None
@@ -370,10 +384,9 @@ class OnedriveCloudService(CloudService):
 
     def get_logout_url(self, redirect_uri):
         return redirect_uri
-        #return self._get_client().auth_provider.get_logout_url(redirect_uri)
 
     def handle_logout_response(self, request):
-        self._auth_provider.delete_session()
+        self._get_client().auth_provider.delete_session()
 
     def list_files(self, path=None, filter=None):
         
@@ -390,6 +403,7 @@ class OnedriveCloudService(CloudService):
             entry_data = {
                             "name": f.name,
 		                    "path": file_path,
+                            "service": ONEDRIVE,
 		                    "type": file_type,
                             "origin": "cloud"
                          }
@@ -456,6 +470,8 @@ class CloudStorage(LocalFileStorage):
             return [ {
                         "name": service,
 		                "path": service,
+                        "service": service,
+                        "is_connected": self._cloud_connect.get_service(service).is_logged_in(),
 		                "type": "folder",
                         "origin": "cloud"
                     } for service in AVAILABLE_SERVICES]

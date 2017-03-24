@@ -4,8 +4,31 @@ $(function () {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
+        self.network = parameters[2];
 
-        self.serviceInfo = ko.observableArray()
+        self.serviceInfo = ko.observableArray();
+
+        self.isOnline = ko.pureComputed(function()
+        {
+            return self.network.status.connection.ethernet() || self.network.status.connection.wifi();
+        })
+
+        self.getCloudServiceIcon = function (service) {
+            return "/plugin/lui/static/img/" + service + ".svg";
+        }
+
+        self.getCloudServiceName = function (service) {
+            switch (service) {
+                case "onedrive":
+                    return gettext("OneDrive");
+                case "google_drive":
+                    return gettext("Google Drive");
+                case "dropbox":
+                    return gettext("Dropbox");
+                default:
+                    return gettext(service);
+            }
+        }
 
         self.loginService = function (service) {
             self._getApi('cloud/' + service + '/login').success(function (data) {
@@ -44,6 +67,7 @@ $(function () {
         }
 
         self.onCloudSettingsShown = function () {
+            self.network.requestData();
             self.requestData();
         }
 
@@ -67,7 +91,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
       CloudViewModel,
-      ["loginStateViewModel", "flyoutViewModel"],
+      ["loginStateViewModel", "flyoutViewModel", "networkmanagerViewModel"],
       ['#cloud_settings_flyout_content']
     ]);
 
