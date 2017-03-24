@@ -48,7 +48,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button" data-bind="touchClick: function () {sendWifiRefresh(true)}, css: {disabled: working() || error() }">
-            <a href="">
+            <a href="#">
               <span>{{ _('Rescan') }}</span>
             </a>
           </li>
@@ -57,7 +57,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button" data-bind="touchClick: function () {sendWifiDisconnect()}, css: {disabled: working() || !status.connection.wifi()}">
-            <a href="">
+            <a href="#">
               <span>{{ _('Disconnect') }}</span>
             </a>
           </li>
@@ -107,7 +107,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button secondary-button" data-bind="touchClick: function () { cancelWifiConfiguration() }">
-            <a href="">
+            <a href="#">
               <span>{{ _('Back') }}</span>
             </a>
           </li>
@@ -116,7 +116,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button" data-bind="touchClick: function () { confirmWifiConfiguration() }, css: {disabled: working() || !editorWifiPassphrase1() || editorWifiPassphrase1() == '' }">
-            <a href="">
+            <a href="#">
               <span>{{ _('Connect') }}</span>
             </a>
           </li>
