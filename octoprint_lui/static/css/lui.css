@@ -1198,8 +1198,16 @@ pre code {
   color: #EDDB53; }
 
 /* Startup */
+#startup_flyout .flyout-body {
+  align-items: stretch; }
+
+#startup_flyout_content {
+  display: flex;
+  flex-direction: column; }
+
 .startup_step {
   display: none;
+  flex: 1 1 auto;
   width: 100%; }
   .startup_step.active {
     display: inline-block; }
@@ -1272,7 +1280,7 @@ ul.width-calibrator {
   ul.width-calibrator li {
     text-align: center;
     float: left;
-    width: 29px;
+    width: 19px;
     height: 100px;
     list-style-type: none;
     background: linear-gradient(to right, rgba(255, 255, 255, 0) 40%, #434A54 40%, #434A54 60%, rgba(255, 255, 255, 0) 60%); }
@@ -1282,6 +1290,7 @@ ul.width-calibrator {
       background: linear-gradient(to right, rgba(255, 255, 255, 0) 40%, #A9CC3C 40%, #A9CC3C 60%, rgba(255, 255, 255, 0) 60%); }
     ul.width-calibrator li i {
       top: 110px;
+      white-space: nowrap;
       position: relative;
       text-decoration: none;
       font-style: normal;

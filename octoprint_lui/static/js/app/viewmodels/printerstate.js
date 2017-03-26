@@ -24,6 +24,7 @@ $(function ()  {
 
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
+        self.isHomingRequested = ko.observable(false);
         self.currentLuiVersion = ko.observable(undefined);
 
 
@@ -434,7 +435,8 @@ $(function ()  {
                         autoHide: true
                     });
 
-                    OctoPrint.job.cancel()
+                    //OctoPrint.job.cancel()
+                    self._sendApi({ command: "immediate_cancel" });
                 });
         };
 
@@ -457,14 +459,19 @@ $(function ()  {
             self.flyout.closeFlyoutAccept('startup');
         }
 
-        self.beginHoming = function ()  {
+        self.beginHoming = function () {
+            self.isHomingRequested(true);
             self._sendApi({ command: "begin_homing" });
         }
 
-        self.beginMaintenance = function () 
+        self.showMaintenanceFlyout = function () 
         {
-
             self.settings.showSettingsTopic('maintenance', true)
+        }
+
+        self.showLogsFlyout = function ()
+        {
+            self.settings.showSettingsTopic('logs', true)
         }
 
         self.cancelAutoShutdown = function () {
@@ -530,6 +537,7 @@ $(function ()  {
         self.fromResponse = function (data) {
             self.isHomed(data.is_homed);
             self.isHoming(data.is_homing);
+            self.isHomingRequested(false);
 
             self.settings.autoShutdown(data.auto_shutdown);
 

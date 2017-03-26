@@ -39,6 +39,7 @@ from octoprint.settings import valid_boolean_trues
 from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
 from octoprint.events import Events
+from octoprint_lui.util.exceptions import UpdateError
 from octoprint.filemanager.destinations import FileDestinations
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
@@ -161,15 +162,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_received_hooks = []
         self.fw_version_info = None
         self.auto_firmware_update_started = False
+        self.fetching_firmware_update = False
 
         self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
-        self.firmware_info_properties["firmware_version"] = "Leapfrog Firmware"
-        self.firmware_info_properties["machine_type"] = "Model"
-        self.firmware_info_properties["extruder_offset_x"] = "X"
-        self.firmware_info_properties["extruder_offset_y"] = "Y"
-        self.firmware_info_properties["bed_width_correction"] = "bed_width_correction"
+        self.firmware_info_properties["firmware_version"] = "LEAPFROG_FIRMWARE"
+        self.firmware_info_properties["machine_type"] = "MACHINE_TYPE"
+        self.firmware_info_properties["extruder_offset_x"] = "EXTRUDER_OFFSET_X"
+        self.firmware_info_properties["extruder_offset_y"] = "EXTRUDER_OFFSET_Y"
+        self.firmware_info_properties["bed_width_correction"] = "BED_WIDTH_CORRECTION"
 
         ##~ Usernames that cannot be removed
         self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel', 'lpfrg']
@@ -252,6 +254,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_info = self._get_machine_info()
         self._set_model()
 
+        ##~ Init Update
+        self._init_update()
+
         ##~ With model data in place, update scripts, printer profiles, users etc. if it's the first run of a new version
         self._first_run()
 
@@ -264,11 +269,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ USB init
         self._init_usb()
 
-        ##~ Init Update
-        self._init_update()
 
         ##~ Init firmware update
-        self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder())
+        self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions.json'
+        self.firmware_update_url_setting = self._settings.get(['firmware_update_url'])
+        if self.debug and self.firmware_update_url_setting:
+            self.firmware_update_url = self.firmware_update_url_setting
+            self._logger.debug('Firmware update url overwritten with {0}'.format(self.firmware_update_url))
+
+        self.firmware_update_info = FirmwareUpdateUtility(self.get_plugin_data_folder(), self.firmware_update_url)
+
         # We're delaying the auto firmware update until we have up-to-date information on the current version
         self.firmware_info_received_hooks.append(self._auto_firmware_update)
 
@@ -290,7 +300,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _set_model(self):
         """Sets the model and platform variables"""
-        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info else 'Unknown'
+        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
 
         if not self.model in self.supported_models:
             self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
@@ -375,14 +385,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             It will run _first_run again because it won't get to the saving part.
         """
         self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
-        if not self.debug and "devel" in octoprint.__branch__:
-            self._logger.warning("Install is still on devel branch, going to switch")
+        if not self.debug and not "master" in octoprint.__branch__:
+            self._logger.warning("Install is not on master branch, going to switch")
             # So we are really still on devel, let's switch to master
             checkout_master_branch = None
             try:
-                checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=update["path"])
+                checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=self.update_info[4]["path"])
             except subprocess.CalledProcessError as err:
-                self._logger.error("Can't switch branch to master: {path}. {err}".format(path=update['path'], err=err))
+                self._logger.error("Can't switch branch to master: {path}. {err}".format(path=self.update_info[4]['path'], err=err))
                 return False
             
             if checkout_master_branch:
@@ -659,14 +669,35 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "auto_update_started": self.auto_firmware_update_started 
         })
         
-    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["GET"])
-    def get_firmware_update_info(self):
-        return jsonify(self.get_firmware_update(True))
+    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["GET"], strict_slashes=False)
+    @octoprint.plugin.BlueprintPlugin.route("/firmware/update/<string:silent>", methods=["GET"], strict_slashes=False)
+    def get_firmware_update_info(self, silent = ''):
+        """
+        Starts a thread that fetches firmware updates. A socket message is sent whenever the process completes
+        """
+        if self.fetching_firmware_update:
+            self._logger.debug("Firmware fetch thread already started. Not spawning another one.")
+            return make_response(jsonify(), 400)
+        else:
+            self.fetching_firmware_update = True
+            self._logger.debug("Starting firmware fetch thread")
+            firmware_fetch_thread = threading.Thread(target=self._notify_firmware_update, args=(bool(silent),))
+            firmware_fetch_thread.daemon = False
+            firmware_fetch_thread.start()
+        
+            return make_response(jsonify(), 200)
+
+    def _notify_firmware_update(self, silent = False):
+        
+        firmware_info = self.get_firmware_update(True)
+        firmware_info.update({ 'silent': silent })
+        self._send_client_message("firmware_update_notification", firmware_info)
+        self.fetching_firmware_update = False
     
     def get_firmware_update(self, forced = False):
-        self._logger.debug("Checking for new firmware version")
-
+        
         if not self.fw_version_info or forced:
+            self._logger.debug("Checking online for new firmware version")
             self.fw_version_info = self.firmware_update_info.get_latest_version(self.model)
 
         new_firmware = False
@@ -787,10 +818,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if flash_plugin:
             if hasattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file'):
                 self.intended_disconnect = True
-
+                _, port, _, _ = self._printer.get_current_connection()
+                if not port:
+                    port = '/dev/ttyUSB0'
                 board = "m2560"
                 programmer = "wiring"
-                port = "/dev/ttyUSB0"
                 baudrate = "115200"
                 ext_path = os.path.basename(firmware_path)
 
@@ -943,7 +975,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
             branch_name = branch_name.strip('\n')
         except subprocess.CalledProcessError as e:
-            self._logger.warn("Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output))
+            msg = "Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output)
+            self._logger.warn(msg)
+            raise UpdateError(msg, e)
 
         if branch_name:
             local = None
@@ -953,7 +987,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
                 local = local.strip('\n')
             except subprocess.CalledProcessError as e:
-                self._logger.warn("Git check failed for local:{path}. Output: {output}".format(path=path, output = e.output))
+                msg = "Git check failed for local:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                self._logger.warn(msg)
+                raise UpdateError(msg, e)
 
             try:
                 remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
@@ -961,14 +997,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 if len(remote_s) > 0:
                     remote = remote_s[0]
             except subprocess.CalledProcessError as e:
-                self._logger.warn("Git check failed for remote:{path}. Output: {output}".format(path=path, output = e.output))
+                msg = "Git check failed for remote:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                self._logger.warn(msg)
+                raise UpdateError(msg, e)
 
             if not local or not remote:
-                return True ## If anything failed, at least try to pull
+                return False ## If anything failed, at least try to pull
             else: 
                 return local != remote
         else:
-            return True
+            return False
 
 
     def _fetch_git_repo(self, path):
@@ -1209,8 +1247,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif "firmware_version" in self.machine_info:
             version_req = '>=' + str(self.firmware_version_requirement[self.model])
 
-            if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
-                current_version = str(self.machine_info["firmware_version"])
+            if "firmware_version" in self.machine_info:
+                if not self.machine_info["firmware_version"]:
+                    self._logger.warn('Could not determine current firmware version. Defaulting to 0.0.')
+                    current_version = "0.0"
+                else:
+                    current_version = str(self.machine_info["firmware_version"])
 
                 # _check_version_requirement is the requirement is *met*, so invert
                 update_required = not self._check_version_requirement(current_version, version_req)
@@ -1261,12 +1303,29 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     changelog_seen = [],
                     notify_intended_disconnect = [],
                     connect_after_error = [],
+                    immediate_cancel = [],
                     trigger_debugging_action = [] #TODO: Remove!
             )
 
     def on_api_command(self, command, data):
         # Data already has command in, so only data is needed
         return self._call_api_method(**data)
+
+    def _on_api_command_immediate_cancel(self, *args, **kwargs):
+        self._immediate_cancel()
+
+    def _immediate_cancel(self, cancel_print = True):
+        self._logger.debug("Immediate cancel")
+
+        if self._printer._comm:
+            q = self._printer._comm._send_queue
+            with q.mutex:
+                q.queue.clear()
+
+            self._printer._comm._sendCommand('M108')
+
+        if cancel_print:
+            self._printer.cancel_print()
 
     def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
         """
@@ -1305,7 +1364,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_move_to_calibration_position(self, corner_num):
         # TODO HERE
         corner = self.manual_bed_calibration_positions[corner_num]
-        self._printer.commands(['G1 Z5 F1200'])
+        self._printer.commands(['G1 Z5 F600'])
 
         if corner["mode"] == 'fullcontrol' and not self.print_mode == "fullcontrol":
             self.set_print_mode('fullcontrol')
@@ -1320,10 +1379,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.manual_bed_calibration_tool = corner["tool"]
 
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])])
-        self._printer.commands(['G1 Z0 F1200'])
+        self._printer.commands(['G1 Z0 F600'])
 
     def _on_api_command_restore_from_calibration_position(self):
-        self._printer.commands(['G1 Z5 F1200'])
+        self._printer.commands(['G1 Z5 F600'])
         self.set_print_mode('normal')
         self._printer.home(['y', 'x'])
 
@@ -1340,9 +1399,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._disable_timelapse()
 
         if calibration_type == "bed_width_small":
-            calibration_src_filename = "BoltBedWidthCalibration_100um.gcode"
+            calibration_src_filename = "bolt_bedwidthcalibration_100um.gcode"
         elif calibration_type == "bed_width_large":
-            calibration_src_filename = "BoltBedWidthCalibration_1mm.gcode"
+            calibration_src_filename = "bolt_bedwidthcalibration_1mm.gcode"
 
         abs_path = self._copy_calibration_file(calibration_src_filename)
 
@@ -1420,15 +1479,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands("M50 Y%f" % extruder_offset_y)
 
         if persist:
-            self._printer.commands("M500")
-
-        # Read back from machine (which may constrain the correction value) and store
-        self._get_firmware_info()
+            # Store settings and read back from machine
+            self._printer._comm.sendCommand("M500", on_sent = self._get_firmware_info)
+        else:
+            # Read the settings back from the machine
+            self._get_firmware_info()
 
     def _on_api_command_restore_calibration_values(self):
-        self._printer.commands("M501")
-        # Read back from machine (which may constrain the correction value) and store
-        self._get_firmware_info()
+        # Read back from machine (which may constrain the correction value)
+        # We don't want the M501 response to interferere with the M115, which is why on_sent is used (which requires an acknowledge)
+        self._printer._comm.sendCommand("M501", on_sent = self._get_firmware_info)
 
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -1547,6 +1607,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
 				    "pausedFilamentSwap": self.paused_filament_swap
 					}
+
+        self._immediate_cancel(False)
 
         self.execute_printer_script("change_filament_done", context)
 
@@ -1709,6 +1771,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             return jsonify(files=files)
         else:
+            # Force clearing of the cache (not properly done by octoprint at the moment)
+            if request.values.get("force", False):
+                octoprint.server.api.files._clear_file_cache()
+            
             # Return original OctoPrint API response
             return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
@@ -1884,7 +1950,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # upload included userdata, add this now to the metadata
             octoprint.server.fileManager.set_additional_metadata(octoprint.filemanager.FileDestinations.LOCAL, added_file, "userdata", userdata)
 
-        octoprint.server.eventManager.fire(octoprint.events.Events.UPLOAD, {"file": filename, "target": target})
+        octoprint.server.eventManager.fire(octoprint.events.Events.UPLOAD, {"file": filename, "path": filename, "target": target})
 
         files = {}
 
@@ -1894,6 +1960,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         files.update({
             octoprint.filemanager.FileDestinations.LOCAL: {
                 "name": filename,
+                "path": filename,
                 "origin": octoprint.filemanager.FileDestinations.LOCAL,
                 "refs": {
                     "resource": location,
@@ -2384,11 +2451,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Removes X0, Y0 and Z0 from G92 commands
         These commands are problamatic with different print modes.
+        Also sends M108 directly when they are queued
         """
-        if gcode and gcode == "G92":
+        if gcode == "G92":
             new_cmd = re.sub(' [XYZ]0', '', cmd)
             return new_cmd,
-
+        elif gcode == "M108": 
+            # Send M108 immediately
+            self._logger.debug("M108")
+            command_to_send = cmd.encode("ascii", errors="replace")
+            if comm_instance.isPrinting() or comm_instance._alwaysSendChecksum:
+                comm_instance._do_increment_and_send_with_checksum(command_to_send)
+            else:
+                comm_instance._do_send_without_checksum(command_to_send)
+            # Remove command from queue
+            return None,
 
     def gcode_sent_hook(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """
@@ -2792,7 +2869,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
             octoprint.server.fileManager.add_storage("usb", self.usb_storage)
         except:
-            self._logger.warning("Could not add USB storage")
+            self._logger.exception("Could not add USB storage")
             self._send_client_message("media_folder_updated", { "is_media_mounted": False, "error": True })
             return
 
@@ -2986,15 +3063,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         line = line[5:].rstrip() # Strip echo and newline
        
         if len(line) > 0:
-            oldModelName = self.model
+            oldModelName = self.model.lower() if self.model else None
             self._update_from_m115_properties(line)
             self.machine_info = self._get_machine_info()
 
-            if not oldModelName.lower() == self.machine_info["machine_type"].lower():
-                
-                self.model = self.machine_info["machine_type"]
-                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
+            self.model = self.machine_info["machine_type"].lower() if "machine_type" in self.machine_info and self.machine_info["machine_type"] else "unknown"
 
+            if not self.model in self.supported_models:
+                self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
+                self.model = self.default_model
+
+            if oldModelName != self.model:
+                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, newModelName))
                 self._init_model()
                 self._update_printer_scripts_profiles()
 
@@ -3036,7 +3116,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 self.machine_database.update({'value': value }, self._machine_query.property == key)
             else:
-                self.machine_database.update({'value': 'Unknown' }, self._machine_query.property == key)
+                self.machine_database.update({'value': None }, self._machine_query.property == key)
 
 
         return properties
@@ -3115,6 +3195,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
+        was_calibration = self.calibration_type
         if self.calibration_type:
             self._on_calibration_event(event)
 
@@ -3122,11 +3203,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.last_print_extrusion_amount = self.current_print_extrusion_amount
             self.current_print_extrusion_amount = [0.0, 0.0]
             self.save_filament_amount()
+            # TODO: Move commands below to gcode script
             self.set_print_mode('normal')
-            self._printer.jog({'z': 20})
+            
+            if "boundaries" in self.current_printer_profile and "maxZ" in self.current_printer_profile["boundaries"]:
+               maxZ = self.current_printer_profile["boundaries"]["maxZ"] 
+            else:               
+               maxZ = 20
+
+            if self._printer._currentZ < maxZ:
+                self._printer.jog({ 'z': 20 })
+
             self._printer.home(['x', 'y'])
 
-        if (event == Events.PRINT_DONE and self.auto_shutdown):
+        if (event == Events.PRINT_DONE and self.auto_shutdown and not was_calibration):
             config = self._settings.global_get(["webcam", "timelapse"], merged=True)
             type = config["type"]
             self._send_client_message("auto_shutdown_start")

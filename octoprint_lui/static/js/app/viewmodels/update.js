@@ -10,6 +10,7 @@ $(function ()  {
         self.printerState = parameters[5];
         self.flashArduino = parameters[6];
         self.networkManager = parameters[7];
+        self.userSettings = parameters[8];
 
         self.initialCheck = false;
         self.updateinfo = ko.observableArray([]);
@@ -34,7 +35,7 @@ $(function ()  {
         self.firmwareUpdating = ko.observable(false);
 
         self.flashingAllowed = ko.computed(function ()  {
-            return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.isUser();
+            return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.loggedIn();
         });
 
         self.getUpdateText = function (data) {
@@ -216,6 +217,18 @@ $(function ()  {
             self.settings.showSettingsTopic('update', true, true); 
         }
 
+        self.showWirelessFlyout = function()
+        {
+            // Show the wireless flyout blocking and with high priority
+            self.settings.showSettingsTopic('wireless', true, true);
+        }
+
+        self.showLoginFlyout = function()
+        {
+            self.userSettings.show();
+            self.flyout.showFlyout('login', true, true);
+        }
+
         self.showUpdateWarning = function () 
         {
             self.update_warning = self.flyout.showWarning(
@@ -274,7 +287,7 @@ $(function ()  {
                 self.hideFirmwareUpdateWarning();
         }
 
-        self.fromFirmwareUpdateResponse = function (data, silent)
+        self.firmwareUpdateNotification = function (data)
         {
             if(data.new_firmware)
             {
@@ -282,7 +295,7 @@ $(function ()  {
                 if (data.requires_lui_update) {
                     self.firmwareUpdateAvailable(false);
 
-                    if(!silent && self.update_needed() > 0)
+                    if(!data.silent && self.update_needed() > 0)
                     {
                         var title = gettext("Firmware update found");
                         var text = _.sprintf(gettext('A firmware update has been found, but this requires a software update first.'), {  });
@@ -300,7 +313,7 @@ $(function ()  {
                     self.firmwareUpdateAvailable(true);
                 }
             }
-            else if (data.error && !silent)
+            else if (data.error && !data.silent)
             {
                 // Could not retrieve latest version information
                 $.notify({
@@ -349,11 +362,8 @@ $(function ()  {
         }
 
         self.requestFirmwareUpdateData = function (silent) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromFirmwareUpdateResponse(response, silent);
-                }).always(function () { self.firmwareUpdateDoneOrError(); })
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update/" + (silent ? 'silent' : '');
+            OctoPrint.get(url, { silent: silent });
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -474,6 +484,10 @@ $(function ()  {
                 case "firmware_update_required":
                     self.showFirmwareUpdateRequired();
                     break;
+                case "firmware_update_notification":
+                    self.firmwareUpdateDoneOrError();
+                    self.firmwareUpdateNotification(messageData);
+                    break;
                 case "forced_update":
                     self.showUpdateWarning();
                     break;
@@ -571,7 +585,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
-      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel"],
+      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel", "userSettingsViewModel"],
       ['#update', '#update_icon', '#firmware_update_required', '#changelog_flyout']
     ]);
 

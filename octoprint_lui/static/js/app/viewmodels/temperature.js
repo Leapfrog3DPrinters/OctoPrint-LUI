@@ -17,6 +17,14 @@ $(function () {
             }
         }
 
+        self._createToolStatusEntry = function () {
+            return {
+                name: ko.observable(),
+                status: ko.observable(),
+                css_class: ko.observable()
+            }
+        }
+
         self.tools = ko.observableArray([]);
         self.hasBed = ko.observable(true);
         self.bedTemp = self._createToolEntry();
@@ -31,13 +39,9 @@ $(function () {
         self.isReady = ko.observable(undefined);
         self.isLoading = ko.observable(undefined);
 
-        self.temperature_profiles = self.settingsViewModel.temperature_profiles;
-        self.temperature_cutoff = self.settingsViewModel.temperature_cutoff;
-
         self.heaterOptions = ko.observable({});
-        self.toolStatus = ko.mapping.fromJS([]);
+        self.toolStatus = ko.observableArray([]);
         self.tempLoaded = ko.observable(false);
-
 
         self.toolProgress = ko.observableArray([ko.observable(undefined), ko.observable(undefined)]);
         self.rightProgress = ko.pureComputed(function(){
@@ -62,6 +66,7 @@ $(function () {
             var graphColors = ["red", "orange", "green", "brown", "purple"];
             var heaterOptions = {};
             var tools = self.tools();
+            var toolStatus = self.toolStatus()
 
             // tools
             var numExtruders = self.settingsViewModel.printerProfiles.currentProfileData().extruder.count();
@@ -77,6 +82,10 @@ $(function () {
                     }
                     tools[extruder]["name"](gettext("Tool") + " " + extruder);
                     tools[extruder]["key"]("tool" + extruder);
+
+                    if (toolStatus.length <= extruder || !toolStatus[extruder]) {
+                        toolStatus[extruder] = self._createToolStatusEntry()
+                    }
                 }
             } else {
                 // only one extruder, no need to add numbers
@@ -101,11 +110,12 @@ $(function () {
             // write back
             self.heaterOptions(heaterOptions);
             self.tools(tools);
+            self.toolStatus(toolStatus);
         };
         self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function () {
             self._printerProfileUpdated();
             self.settingsViewModel.printerProfiles.currentProfileData().extruder.count.subscribe(self._printerProfileUpdated);
-            self.settingsViewModel.printerProfiles.currentProfileData().heatedBed.subscribe(self._printerProfileUpdated());
+            self.settingsViewModel.printerProfiles.currentProfileData().heatedBed.subscribe(self._printerProfileUpdated);
         });
 
         self.temperatures = [];
@@ -113,13 +123,6 @@ $(function () {
         self.fromCurrentData = function(data) {
             self._processStateData(data.state);
             self._processTemperatureUpdateData(data.serverTime, data.temps);
-            self._processOffsetData(data.offsets);
-        };
-
-        self.fromHistoryData = function(data) {
-            self._processStateData(data.state);
-            self._processTemperatureHistoryData(data.serverTime, data.temps);
-            self._processOffsetData(data.offsets);
         };
 
         self._processStateData = function(data) {
@@ -166,68 +169,8 @@ $(function () {
             }
 
             self.totalProgress(self.heatingProgress(totalActual, totalTarget));
-
-            self.temperatures = self._processTemperatureData(serverTime, data, self.temperatures);
             self.tempLoaded(true);
         };
-
-        self._processTemperatureHistoryData = function(serverTime, data) {
-            self.temperatures = self._processTemperatureData(serverTime, data);
-        };
-
-        self._processOffsetData = function(data) {
-            var tools = self.tools();
-            for (var i = 0; i < tools.length; i++) {
-                if (data.hasOwnProperty("tool" + i)) {
-                    tools[i]["offset"](data["tool" + i]);
-                }
-            }
-
-            if (data.hasOwnProperty("bed")) {
-                self.bedTemp["offset"](data["bed"]);
-            }
-        };
-
-        self._processTemperatureData = function(serverTime, data, result) {
-            var types = _.keys(self.heaterOptions());
-            var clientTime = Date.now();
-
-            // make sure result is properly initialized
-            if (!result) {
-                result = {};
-            }
-
-            _.each(types, function(type) {
-                if (!result.hasOwnProperty(type)) {
-                    result[type] = {actual: [], target: []};
-                }
-                if (!result[type].hasOwnProperty("actual")) result[type]["actual"] = [];
-                if (!result[type].hasOwnProperty("target")) result[type]["target"] = [];
-            });
-
-            // convert data
-            _.each(data, function(d) {
-                var timeDiff = (serverTime - d.time) * 1000;
-                var time = clientTime - timeDiff;
-                _.each(types, function(type) {
-                    if (!d[type]) return;
-                    result[type].actual.push([time, d[type].actual]);
-                    result[type].target.push([time, d[type].target]);
-                })
-            });
-
-            var filterOld = function(item) {
-                return item[0] >= clientTime - self.temperature_cutoff() * 60 * 1000;
-            };
-
-            _.each(_.keys(self.heaterOptions()), function(d) {
-                result[d].actual = _.filter(result[d].actual, filterOld);
-                result[d].target = _.filter(result[d].target, filterOld);
-            });
-
-            return result;
-        };
-
 
         self.returnToolString = function(data) {
             switch (data.name()){
@@ -243,21 +186,21 @@ $(function () {
         }
 
         self.returnToolStatusString = function(tool_num) {
-            if (self.tools().length > 0 && self.tools() != undefined) { 
-                var status = self.toolStatus()[tool_num].status();
-                switch(status) {
-                    case "HEATING":
-                        return gettext("Heating");
-                    case "COOLING":
-                        return gettext("Cooling");
-                    case "IDLE":
-                        return gettext("Idle");
-                    case "READY":
-                        return gettext("Ready");
-                    default:
-                        return "";
-                }
+            
+            var status = self.toolStatus()[tool_num].status();
+            switch(status) {
+                case "HEATING":
+                    return gettext("Heating");
+                case "COOLING":
+                    return gettext("Cooling");
+                case "IDLE":
+                    return gettext("Idle");
+                case "READY":
+                    return gettext("Ready");
+                default:
+                    return "";
             }
+            
         }
 
         self.returnProgressString = function(data) {
@@ -274,33 +217,55 @@ $(function () {
         }
 
         self.returnActualTemp = function(data) {
-            if (self.tools().length > 0 && self.tools() != undefined) {
-                switch (data.name()){
+            var tools = self.tools();
+            var act = undefined;
+
+            if (tools && tools.length > 0)
+            {
+                switch (data.name())
+                {
                     case "tool1":
-                        return self.tools()[1]['actual']().toFixed(0);
+                        act = tools[1]['actual']();
+                        break;
                     case "tool0":
-                        return self.tools()[0]['actual']().toFixed(0);
+                        act = tools[0]['actual']();
+                        break;
                     case "bed":
-                        return self.bedTemp['actual']().toFixed(0);
-                    default:
-                        return 0;
+                        act = self.bedTemp['actual']();
+                        break;
                 }
-            };
+            }
+
+            if (act)
+                return act.toFixed(0);
+            else
+                return 0
         }
 
         self.returnTargetTemp = function(data) {
-            if (self.tools().length > 0 && self.tools() != undefined) {
-                switch (data.name()){
-                    case "tool1": 
-                        return self.tools()[1]['target']().toFixed(0);
+            var tools = self.tools();
+            var tar = undefined;
+
+            if (tools && tools.length > 0)
+            {
+                switch (data.name())
+                {
+                    case "tool1":
+                        tar = tools[1]['target']();
+                        break;
                     case "tool0":
-                        return self.tools()[0]['target']().toFixed(0);
+                        tar = tools[0]['target']();
+                        break;
                     case "bed":
-                        return self.bedTemp['target']().toFixed(0);
-                    default:
-                        return 0;
+                        tar = self.bedTemp['target']();
+                        break;
                 };
             }
+
+            if (tar)
+                return tar.toFixed(0);
+            else
+                return 0;
         }
 
         self.heatingProgress = function(actual, target) {
@@ -311,97 +276,6 @@ $(function () {
             var result = (progress <= 100) ? progress : 100;
             return result;
         }
-
-
-        self.setTarget = function(item) {
-            var value = item.newTarget();
-            if (!value) return;
-
-            var onSuccess = function () {
-                item.newTarget("");
-            };
-
-            if (item.key() == "bed") {
-                self._setBedTemperature(value)
-                    .done(onSuccess);
-            } else {
-                self._setToolTemperature(item.key(), value)
-                    .done(onSuccess);
-            }
-        };
-
-        self.setTargetFromProfile = function(item, profile) {
-            if (!profile) return;
-
-            
-            var onSuccess = function () {
-                item.newTarget("");
-            };
-
-            if (item.key() == "bed") {
-                self._setBedTemperature(profile.bed)
-                    .done(onSuccess);
-            } else {
-                // Assume set works and update target temperature right away. Essential for filament swap.
-                item.target(profile.extruder);
-
-                self._setToolTemperature(item.key(), profile.extruder)
-                    .done(onSuccess);
-            }
-        };
-
-        self.setTargetToZero = function(item) {
-            var onSuccess = function () {
-                item.newTarget("");
-            };
-
-            if (item.key() == "bed") {
-                self._setBedTemperature(0)
-                    .done(onSuccess);
-            } else {
-                self._setToolTemperature(item.key(), 0)
-                    .done(onSuccess);
-            }
-        };
-
-        self.setOffset = function(item) {
-            var value = item.newOffset();
-            if (!value) return;
-
-            var onSuccess = function () {
-                item.newOffset("");
-            };
-
-            if (item.key() == "bed") {
-                self._setBedOffset(value)
-                    .done(onSuccess);
-            } else {
-                self._setToolOffset(item.key(), value)
-                    .done(onSuccess);
-            }
-        };
-
-        self._setToolTemperature = function(tool, temperature) {
-            var data = {};
-            data[tool] = parseInt(temperature);
-
-            return OctoPrint.printer.setToolTargetTemperatures(data);
-        };
-
-        self._setToolOffset = function(tool, offset) {
-            var data = {};
-            data[tool] = parseInt(offset);
-            return OctoPrint.printer.setToolTemperatureOffsets(data);
-        };
-
-        self._setBedTemperature = function(temperature) {
-            return OctoPrint.printer.setBedTargetTemperature(parseInt(temperature));
-        };
-
-        self._setBedOffset = function(offset) {
-            return OctoPrint.printer.setBedTemperatureOffset(parseInt(offset));
-        };
-
 
         self._processHeatingStatus = function(tool_status){
             self.isHeating(_.some(tool_status, {'status': 'HEATING'}));         
@@ -427,7 +301,7 @@ $(function () {
 
             switch (messageType) {
                 case "tool_status":
-                    ko.mapping.fromJS(messageData.tool_status, self.toolStatus); 
+                    ko.mapping.fromJS(messageData.tool_status, {}, self.toolStatus);
                     self._processHeatingStatus(messageData.tool_status);
                     break;
             }
@@ -440,7 +314,8 @@ $(function () {
         };
 
         self.fromResponse = function(data) {
-            ko.mapping.fromJS(data.tool_status, self.toolStatus);
+            ko.mapping.fromJS(data.tool_status, {}, self.toolStatus);
+
             self._processHeatingStatus(data.tool_status);
 
         };
