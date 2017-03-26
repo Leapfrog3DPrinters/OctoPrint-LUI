@@ -3,13 +3,14 @@ $(function ()  {
         // TODO Fully adapt to LUI
         var self = this;
 
-        self.settingsViewModel = parameters[0];
+        self.settings = parameters[0];
         self.loginState = parameters[1];
         self.printerState = parameters[2];
         self.flyout = parameters[3];
         self.printerProfiles=parameters[4];
         self.filament = parameters[5];
         self.network = parameters[6];
+        self.cloud = parameters[7];
 
         self.isErrorOrClosed = ko.observable(undefined);
         self.isOperational = ko.observable(undefined);
@@ -49,11 +50,11 @@ $(function ()  {
 
         self.diskusageWarning = ko.computed(function ()  {
             return self.freeSpace() != undefined
-                && self.freeSpace() < self.settingsViewModel.server_diskspace_warning();
+                && self.freeSpace() < self.settings.server_diskspace_warning();
         });
         self.diskusageCritical = ko.computed(function ()  {
             return self.freeSpace() != undefined
-                && self.freeSpace() < self.settingsViewModel.server_diskspace_critical();
+                && self.freeSpace() < self.settings.server_diskspace_critical();
         });
         self.diskusageString = ko.computed(function ()  {
             if (self.diskusageCritical()) {
@@ -117,7 +118,6 @@ $(function ()  {
                 if (!element.hasOwnProperty("parent")) element.parent = { children: list, parent: undefined };
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
-                if (!element.hasOwnProperty("is_loading")) element.is_loading = ko.observable(false);
                 if (element.origin == "local" && !element.hasOwnProperty("previewUrl")) {
                     previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == element["name"].toLowerCase(); });
                     if (previewItem)
@@ -136,29 +136,6 @@ $(function ()  {
             };
             _.each(response.files, recursiveCheck);
         };
-
-        self.isOriginLocal = ko.pureComputed(function () {
-            return self.currentOrigin() == "local";
-        })
-
-        self.getCloudServiceIcon = function(service)
-        {
-            return "/plugin/lui/static/img/" + service + ".svg";
-        }
-
-        self.getCloudServiceName = function (service) {
-            switch (service)
-            {
-                case "onedrive":
-                    return gettext("OneDrive");
-                case "google_drive":
-                    return gettext("Google Drive");
-                case "dropbox":
-                    return gettext("Dropbox");
-                default:
-                    return gettext(service);
-            }
-        }
 
         self.browseLocal = function (filenameToFocus) {
             if (self.isLoadingFileList())
@@ -497,7 +474,6 @@ $(function ()  {
                 return;
 
             self.isLoadingFileList(true);
-            folder.is_loading(true);
             self.loadFiles(folder.origin, "", folder.path).done(preProcessList).then(function (children) {
                 folder.children = children.files;
                 self.currentPath(folder.path);
@@ -556,6 +532,11 @@ $(function ()  {
 
             return recursiveSearch(path.split("/"), root);
         };
+
+        self.showCloudSettings = function()
+        {
+            self.settings.showSettingsTopic('cloud');
+        }
 
         self.showAddFolderDialog = function ()  {
             if (self.addFolderDialog) {
@@ -826,7 +807,7 @@ $(function ()  {
             // This functionality is temporarily disabled for 1.0.8
             return true;
 
-            if (!self.settingsViewModel.feature_modelSizeDetection()) {
+            if (!self.settings.feature_modelSizeDetection()) {
                 return true;
             }
 
@@ -1263,8 +1244,28 @@ $(function ()  {
                 .css("width", percentage + "%")
         }
 
-        self.onStartup = function ()  {
-           
+        self.onStartup = function () {
+
+            self.cloud.onServiceInfoUpdated(function () {
+                if(self.currentOrigin() == "cloud")
+                {
+                    var current_path = self.currentPath();
+                    if(!current_path || current_path == "/")
+                    {
+                        // If we're on the 'select cloud' page, refresh everything
+                        self.browseCloud();
+                    }
+                    else
+                    {
+                        // Check if we' re currently browsing in a disconnect service
+                        // If so, reload the cloud page
+                        _.forEach(self.cloud.serviceInfo(), function (service) {
+                            if (!service.loggedIn() && current_path.startsWith(service.name()))
+                                self.browseCloud();
+                        });
+                    }
+                }
+            });
 
             //~~ Gcode upload
             self.uploadButton = $("#gcode_upload");
@@ -1463,7 +1464,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         GcodeFilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel", "cloudViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });

@@ -56,6 +56,7 @@ class DropboxCloudService(CloudService):
         self._client_secret = self._settings.get(['cloud', DROPBOX, 'client_secret']);
         self._client_id = self._settings.get(['cloud', DROPBOX, 'client_id']);
         self._redirect_uri = None
+        self._access_token = None
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
         self._load_credentials()
@@ -64,6 +65,7 @@ class DropboxCloudService(CloudService):
     def _get_client(self):
         if not self._client:
             self._client = dropbox.Dropbox(self._access_token)
+            self._logger.debug("Dropbox client created")
 
         return self._client
 
@@ -72,12 +74,15 @@ class DropboxCloudService(CloudService):
             with open(self._credential_path, "rb") as session_file:
                 import pickle
                 self._access_token = pickle.load(session_file)
+            
+            self._logger.debug("Dropbox credentials loaded")
 
         return self._access_token
 
     def _delete_credentials(self):
         if os.path.isfile(self._credential_path):
             os.unlink(self._credential_path)
+            self._logger.debug("Dropbox credentials deleted")
         
         self._access_token = None
 
@@ -85,6 +90,7 @@ class DropboxCloudService(CloudService):
         with open(self._credential_path, "wb") as session_file:
             import pickle
             pickle.dump(self._access_token, session_file, pickle.HIGHEST_PROTOCOL)
+            self._logger.debug("Dropbox credentials saved")
 
     def _get_file_type(self, item):
         if type(item) is dropbox.files.FolderMetadata:
@@ -105,8 +111,14 @@ class DropboxCloudService(CloudService):
         return self._flow.start()
 
     def handle_auth_response(self, request):
-        self._access_token, _, _ = self._flow.finish(request.values)
-        self._save_credentials()
+        try:
+            self._access_token, _, _ = self._flow.finish(request.values)
+            self._save_credentials()
+            self._logger.info("Dropbox authenticated")
+            return True
+        except Exception as e:
+            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
+            return False
 
     def list_files(self, path = None, filter = None):
 
@@ -165,16 +177,18 @@ class DropboxCloudService(CloudService):
     def handle_logout_response(self, request):
         if self._access_token:
             self._get_client().auth_token_revoke()
+            self._logger.debug("Dropbox auth token revoked")
 
         self._delete_credentials()
         self._client = None
+        self._logger.info("Dropbox disconnected")
 
 
 class GoogleDriveCloudService(CloudService):
     def __init__(self, settings, data_folder):
         super(GoogleDriveCloudService, self).__init__(settings, data_folder)
         self._settings = settings
-        self._http = None
+        self._http = httplib2.Http()
         self._client = None
         self._client_secret = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_secret']);
         self._client_id = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_id']);
@@ -183,27 +197,22 @@ class GoogleDriveCloudService(CloudService):
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, GOOGLE_DRIVE + "_credentials.pickle")
         self._load_credentials()
+        self._refresh_credentials()
         
     ## Private methods
-    def _get_http(self):
-        if not self._http:
-            self._http = httplib2.Http()
-        
-        return self._http
-
     def _get_client(self):
         if not self._client:
-            http = self._get_http()
-
-            if self._credentials and not self._credentials.access_token_expired:
-                try:
-                    self._credentials.refresh(http)
-                except:
-                    self._logger.exception("Could not refresh token for Google Drive")
-
-            self._client = build('drive', 'v3', http=http)
+            self._client = build('drive', 'v3', http=self._http)
+            self._logger.debug("Google Drive client created")
 
         return self._client
+
+    def _refresh_credentials(self):
+        if self._credentials:
+            try:
+                self._credentials.refresh(self._http)
+            except:
+                self._logger.exception("Could not refresh token for Google Drive")
 
     def _load_credentials(self):
         if os.path.isfile(self._credential_path):
@@ -212,6 +221,7 @@ class GoogleDriveCloudService(CloudService):
                 self._credentials = pickle.load(session_file)
             
             if self._credentials.access_token_expired:
+                self._logger.warn("Google Drive credentials expired")
                 self._delete_credentials()
 
         return self._credentials
@@ -219,6 +229,7 @@ class GoogleDriveCloudService(CloudService):
     def _delete_credentials(self):
         if os.path.isfile(self._credential_path):
             os.unlink(self._credential_path)
+            self._logger.debug("Google Drive credentials deleted")
         
         self._credentials = None
 
@@ -226,6 +237,7 @@ class GoogleDriveCloudService(CloudService):
         with open(self._credential_path, "wb") as session_file:
             import pickle
             pickle.dump(self._credentials, session_file, pickle.HIGHEST_PROTOCOL)
+            self._logger.debug("Google Drive credentials saved")
 
     def _flow_factory(self):
         return OAuth2WebServerFlow(client_id=self._client_id,
@@ -253,8 +265,14 @@ class GoogleDriveCloudService(CloudService):
 
     def handle_auth_response(self, request):
         access_token = request.values.get("code")
-        self._credentials = self._flow.step2_exchange(access_token)
-        self._save_credentials()
+        try:
+            self._credentials = self._flow.step2_exchange(access_token)
+            self._save_credentials()
+            self._logger.info("Google Drive authenticated")
+            return True
+        except Exception as e:
+            self._logger.exception("Google Drive authentication failed: {0}".format(e.message))
+            return False
 
     def list_files(self, path = None, filter = None):
 
@@ -310,7 +328,11 @@ class GoogleDriveCloudService(CloudService):
 
     def handle_logout_response(self, request):
         if self._credentials and not self._credentials.access_token_expired:
-            self._credentials.revoke(self._get_http())
+            try:
+                self._credentials.revoke(self._http)
+                self._logger.debug("Google Drive credentials revoked")
+            except:
+                pass            
 
         self._delete_credentials()
         self._client = None
@@ -343,14 +365,16 @@ class OnedriveCloudService(CloudService):
         try:
             self._auth_provider.load_session(path=self._credential_path)
             self._auth_provider.refresh_token()
+            self._logger.debug("OneDrive token refreshed")
         except:
-            pass
+            self._logger.exception("OneDrive: Could not refresh token")
 
     ## Private methods
 
     def _get_client(self):
         if not self._client:
             self._client = onedrivesdk.OneDriveClient(self._api_base_url, self._auth_provider, self._http_provider)
+            self._logger.debug("OneDrive client created")
             
         return self._client
 
@@ -375,18 +399,23 @@ class OnedriveCloudService(CloudService):
     def handle_auth_response(self, request):
         access_token = request.values.get("code")
         auth_provider = self._get_client().auth_provider
-        
-        auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
-            
-        self._access_token = access_token
-
-        auth_provider.save_session(path=self._credential_path)
+        self._logger.debug("OneDrive access token received")
+        try:
+            auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
+            self._access_token = access_token
+            auth_provider.save_session(path=self._credential_path)
+            self._logger.info("OneDrive authenticated")
+            return True
+        except Exception as e:
+            self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
+            return False
 
     def get_logout_url(self, redirect_uri):
         return redirect_uri
 
     def handle_logout_response(self, request):
         self._get_client().auth_provider.delete_session()
+        self._logger.info("OneDrive disconnected")
 
     def list_files(self, path=None, filter=None):
         
@@ -414,8 +443,7 @@ class OnedriveCloudService(CloudService):
         return items
 
     def download_file(self, path, target_path, progress_callback = None):
-
-        file=self._get_client().drive.item_by_path(path[len(ONEDRIVE):]).request()
+        file = self._get_client().drive.item_by_path(path[len(ONEDRIVE):]).request()
         self._get_client().auth_provider.authenticate_request(file)
         response = self._get_client().http_provider.download(file._headers, file.request_url, target_path, progress_callback)
         return response

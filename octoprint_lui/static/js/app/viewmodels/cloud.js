@@ -8,6 +8,8 @@ $(function () {
 
         self.serviceInfo = ko.observableArray();
 
+        self._onServiceInfoUpdated = [];
+
         self.isOnline = ko.pureComputed(function()
         {
             return self.network.status.connection.ethernet() || self.network.status.connection.wifi();
@@ -63,7 +65,23 @@ $(function () {
         self.requestData = function () {
             self._getApi('cloud').success(function (response) {
                 ko.mapping.fromJS(response.services, {}, self.serviceInfo);
+
+                _.forEach(self._onServiceInfoUpdated, function (func) { func(); });
             });
+        }
+
+        self.onCloudLoginFailed = function()
+        {
+            $.notify({
+                title: gettext("Could not connect to cloud service."),
+                text: gettext("The printer could not connect to the cloud service. Please try again and ensure authorize the printer to access to your files.")
+            }, "error");
+        }
+
+        self.onServiceInfoUpdated = function(callback)
+        {
+            // Add the callback to the list of callbacks to be executed after requestData
+            self._onServiceInfoUpdated.push(callback);
         }
 
         self.onCloudSettingsShown = function () {
@@ -84,7 +102,9 @@ $(function () {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
-
+                case "cloud_login_failed":
+                    self.onCloudLoginFailed();
+                    break;
             }
         }
     }

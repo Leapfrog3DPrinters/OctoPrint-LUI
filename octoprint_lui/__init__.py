@@ -592,7 +592,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     
     @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/login/finished", methods=["GET"])
     def connect_to_cloud_service_finished(self, service):
-        self.cloud_connect.handle_auth_response(service, request)
+        auth_result = self.cloud_connect.handle_auth_response(service, request)
+
+        if not auth_result:
+            self._send_client_message("cloud_login_failed", { "service": service })
+
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
     @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["GET"])
