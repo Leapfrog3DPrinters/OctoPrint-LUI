@@ -287,7 +287,7 @@ $(function ()  {
                 self.hideFirmwareUpdateWarning();
         }
 
-        self.fromFirmwareUpdateResponse = function (data, silent)
+        self.firmwareUpdateNotification = function (data)
         {
             if(data.new_firmware)
             {
@@ -295,7 +295,7 @@ $(function ()  {
                 if (data.requires_lui_update) {
                     self.firmwareUpdateAvailable(false);
 
-                    if(!silent && self.update_needed() > 0)
+                    if(!data.silent && self.update_needed() > 0)
                     {
                         var title = gettext("Firmware update found");
                         var text = _.sprintf(gettext('A firmware update has been found, but this requires a software update first.'), {  });
@@ -313,7 +313,7 @@ $(function ()  {
                     self.firmwareUpdateAvailable(true);
                 }
             }
-            else if (data.error && !silent)
+            else if (data.error && !data.silent)
             {
                 // Could not retrieve latest version information
                 $.notify({
@@ -362,11 +362,8 @@ $(function ()  {
         }
 
         self.requestFirmwareUpdateData = function (silent) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromFirmwareUpdateResponse(response, silent);
-                }).always(function () { self.firmwareUpdateDoneOrError(); })
+            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update/" + (silent ? 'silent' : '');
+            OctoPrint.get(url, { silent: silent });
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -486,6 +483,10 @@ $(function ()  {
             switch (messageType) {
                 case "firmware_update_required":
                     self.showFirmwareUpdateRequired();
+                    break;
+                case "firmware_update_notification":
+                    self.firmwareUpdateDoneOrError();
+                    self.firmwareUpdateNotification(messageData);
                     break;
                 case "forced_update":
                     self.showUpdateWarning();

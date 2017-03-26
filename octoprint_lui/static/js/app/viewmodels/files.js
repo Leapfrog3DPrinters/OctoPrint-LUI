@@ -201,7 +201,8 @@ $(function ()  {
                 command: "get_files",
                 origin: origin,
                 filter: filter,
-                recursive: true
+                recursive: true,
+                force: true
             });
         }
 
@@ -361,28 +362,16 @@ $(function ()  {
                     .done(function (data) {
                         self.gcodePreviews = data.previews;
                     }).always(function ()  {
-                        self.requestDataBase(filenameToFocus, locationToFocus, switchToPath)
+                        self.browseLocal(filenameToFocus);
                     });
 
             }
             else
             {
-                self.requestDataBase(filenameToFocus, locationToFocus, switchToPath)
+                self.browseLocal(filenameToFocus);
             }
             
         };
-
-        self.requestDataBase = function (filenameToFocus, locationToFocus, switchToPath)
-        {
-            self._otherRequestInProgress = true;
-            OctoPrint.files.list({ data: { recursive: true } }).done(preProcessList)
-                .done(function (response) {
-                    self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-                })
-                .always(function ()  {
-                    self._otherRequestInProgress = false;
-                });
-        }
 
         self.fromResponse = function (response, filenameToFocus, locationToFocus, switchToPath) {
             var files = response.files;

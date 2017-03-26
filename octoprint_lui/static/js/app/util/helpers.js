@@ -508,11 +508,7 @@ function formatTimeAgo(unixTimestamp) {
 
 function formatFilament(filament) {
     if (!filament || !filament["length"]) return "-";
-    var result = "%(length).02fm";
-    if (filament.hasOwnProperty("volume") && filament.volume) {
-        result += " / " + "%(volume).02fcm³";
-    }
-    return _.sprintf(result, {length: filament["length"] / 1000, volume: filament["volume"]});
+    return _.sprintf("%(length).02fm", {length: filament["length"] / 1000});
 }
 
 function cleanTemperature(temp) {

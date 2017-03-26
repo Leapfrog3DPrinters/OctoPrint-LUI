@@ -104,11 +104,17 @@ $(function ()  {
 
         self.changeLargeBedWidthCalibration = function(value)
         {
-            self.largeBedWidthCorrection(self.largeBedWidthCorrection() + value)
+            var new_val = self.largeBedWidthCorrection() + value;
+
+            if (new_val >= -8 && new_val <= 8)
+                self.largeBedWidthCorrection(new_val);
         }
 
         self.changeSmallBedWidthCalibration = function (value) {
-            self.smallBedWidthCorrection(self.smallBedWidthCorrection() + value)
+            var new_val = self.smallBedWidthCorrection() + value;
+
+            if (new_val >= -5 && new_val <= 5)
+                self.smallBedWidthCorrection(new_val);
         }
 
         self.setCalibration = function(width_correction, extruder_offset_y, persist)
@@ -143,7 +149,7 @@ $(function ()  {
             OctoPrint.printer.setBedTargetTemperature(0);
 
             if (self.isPrintingCalibration()) {
-                OctoPrint.job.cancel();    
+                self._sendApi({ command: "immediate_cancel" });
             }
             
             if (self.calibrationProcessStarted()) {
