@@ -161,7 +161,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_firmware_update_started = False
         self.fetching_firmware_update = False
 
-        self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
         self.firmware_info_properties["firmware_version"] = "LEAPFROG_FIRMWARE"
@@ -202,6 +201,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update
         self.fetching_updates = False
+        self.installing_updates = False
         self.git_lock = threading.RLock()
 
         ##~ Changelog
@@ -742,20 +742,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "requires_lui_update": requires_lui_update
                     })
 
-    def _perform_forced_updates(self):
-        """ 
-        Loops the update info list checking for any update that needs to be executed on startup. When found, executed immediately.
-        """
-        any_update = False
-        for update_info in self.update_info:
-            if update_info["forced_update"]:
-                update_info["update"] = True
-                any_update = True
-        
-        if any_update:
-            self._send_client_message("forced_update")
-            self._update_plugins("all")
-
     def _auto_firmware_update(self):
         """
         Performs an auto-update of firmware if there's a firmware version requirement that doesn't match the current firmware version.
@@ -854,18 +840,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["GET"])
     def get_updates(self):
+        # Not the complete update_info array has to be send to front end
+        update_frontend = self._create_update_frontend(self.update_info)
+
         # Only update if we passed 30 min since last fetch or if we are forced
         force = request.values.get("force", "false") in valid_boolean_trues
         current_time = time.time()
         cache_time_expired = (current_time - self.last_git_fetch) > 3600
-        if not cache_time_expired and not force:
+
+        # First check if there's any forced update we need to execute
+        # If so, return the cache of updates
+        if self._perform_forced_updates():
+            self._logger.debug("Performing forced updates. Not fetching.")
+        elif not cache_time_expired and not force:
             self._logger.debug("Cache time of updates not expired, so not fetching updates yet")
-        # Not the complete update_info array has to be send to front end
-        update_frontend = self._create_update_frontend(self.update_info)
-        if (cache_time_expired or force) and not self.fetching_updates:
-            self._logger.debug("Cache time expired or forced to fetch gits. Start fetch worker.  ")
+        elif not self.fetching_updates:
+            self._logger.debug("Cache time expired or forced to fetch gits. Start fetch worker.")
             self._fetch_update_info_list(force)
             return make_response(jsonify(status="fetching", update=update_frontend, machine_info=self.machine_info), 200)
+
+        # By default return the cache
         return make_response(jsonify(status="cache", update=update_frontend, machine_info=self.machine_info), 200)
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["POST"])
@@ -898,7 +892,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.debug("No plugin given! Can't update that.")
             return make_response("No plugin given, can't update", 400)
 
+    def _perform_forced_updates(self):
+        """ 
+        Loops the update info list checking for any update that needs to be executed on startup. When found, executed immediately.
+        """
+        any_update = False
+        for update_info in self.update_info:
+            if update_info["forced_update"]:
+                update_info["update"] = True
+                any_update = True
+        
+        if any_update:
+            self._send_client_message("forced_update")
+            self._update_plugins("all")
+        
+        return any_update
+
     def _update_plugins(self, plugin):
+        if self.installing_updates:
+            self._logger.warn("Update installer thread already started. Not starting another one.")
+            self._send_client_message("update_error")
+            return
+
         plugins_to_update = []
         if plugin == "all":
             for update in self.update_info:
@@ -911,6 +926,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if not plugins_to_update:
             self._logger.debug("The updated plugin list remained empty. Can't start an empty update list.")
             return self._send_client_message("update_error")
+
+        self.installing_updates = True
 
         update_thread = threading.Thread(target=self._update_worker, args=((plugins_to_update,)))
         update_thread.daemon = False
@@ -933,6 +950,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # We made it! We have updated everything, send this great news to the front end
         self._logger.info("Update done!")
         self._send_client_message("update_success")
+
+        # We're closing the thread, so release the lock
+        self.installing_updates = False
 
         # And let's just restart the service also
         return self._perform_service_restart()
@@ -1190,9 +1210,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         args.update(render_kwargs)
 
         response = make_response(render_template("index_lui.jinja2", **args))
-
-        # Everything is set-up at this point, so we can initiate any updates
-        self._perform_forced_updates()
 
         return response
 
@@ -2557,9 +2574,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.head_in_maintenance_position()
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
-        if self.firmware_info_command_sent:
-            if "echo:" in line:
-                self._on_firmware_info_received(line)
+        if "echo:" in line and "FIRMWARE_NAME:" in line:
+            self._on_firmware_info_received(line)
 
         if self.home_command_sent:
             if "ok" in line:
@@ -3018,7 +3034,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands('M115')
 
     def _on_firmware_info_received(self, line):
-        self.firmware_info_command_sent = False
         self._logger.info("M115 data received: %s" % line)
         line = line[5:].rstrip() # Strip echo and newline
        
