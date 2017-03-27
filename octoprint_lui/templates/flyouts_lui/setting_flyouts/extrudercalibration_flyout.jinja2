@@ -28,7 +28,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button ok-button" data-bind="css: {disabled: !mayStartLargeCalibration() || !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startLargeExtruderCalibration()}">
+          <li class="button ok-button" data-bind="css: {disabled: !mayStartLargeCalibration() || !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startLargeExtruderCalibration()}">
             <a href="#">
               <span>{{ _('Start calibration') }}</span>
             </a>
@@ -84,7 +84,7 @@
     <div class="Table-row">
       <div class="Table-item" style="align-self: flex-start; flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
-          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeLargeBedWidthCalibration(-1) }">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeLargeBedWidthCalibration(-1) }">
             <a href="#">
               <i class="fa fa-chevron-left" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
@@ -94,7 +94,7 @@
       <div class="Table-item"><!-- spacer --></div>
       <div class="Table-item" style="align-self: flex-end;  flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
-          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeLargeBedWidthCalibration(+1)}">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeLargeBedWidthCalibration(+1)}">
             <a href="#">
               <i class="fa fa-chevron-right" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
@@ -105,8 +105,8 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { prepareSmallExtruderCalibration()}">
-            <a href="">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { prepareSmallExtruderCalibration()}">
+            <a href="#">
               <span>{{ _('Next') }}</span>
             </a>
           </li>
@@ -130,8 +130,8 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startSmallExtruderCalibration()}">
-            <a href="">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startSmallExtruderCalibration()}">
+            <a href="#">
               <span>{{ _('Next') }}</span>
             </a>
           </li>
@@ -179,7 +179,7 @@
     <div class="Table-row">
       <div class="Table-item" style="align-self: flex-start; flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
-          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeSmallBedWidthCalibration(-1) }">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeSmallBedWidthCalibration(-1) }">
             <a href="#">
               <i class="fa fa-chevron-left" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
@@ -189,7 +189,7 @@
       <div class="Table-item"><!-- spacer --></div>
       <div class="Table-item" style="align-self: flex-end;  flex-basis: initial; flex-grow: 0">
         <ul class="button-area">
-          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { changeSmallBedWidthCalibration(+1)}">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeSmallBedWidthCalibration(+1)}">
             <a href="#">
               <i class="fa fa-chevron-right" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
             </a>
@@ -200,7 +200,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () {showSmallYCalibration()}">
+          <li class="button" data-bind="touchClick: function () {showSmallYCalibration()}">
             <a href="#">
               <span>{{ _('Next') }}</span>
             </a>
@@ -250,7 +250,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button ok-button" data-bind="click: function () {saveCalibration()}">
+          <li class="button ok-button" data-bind="touchClick: function () {saveCalibration()}">
             <a href="#">
               <span>{{ _('Save') }}</span>
             </a>
@@ -289,7 +289,7 @@
 
       <!--<div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () { pause() }, enable: enablePause, css: {active: isPaused()}, attr: {title: titlePauseButton}">
+          <li class="button" data-bind="touchClick: function () { pause() }, enable: enablePause, css: {active: isPaused()}, attr: {title: titlePauseButton}">
             <a href="#">
               <span data-bind="visible: !isPaused()">
                 <i class="fa" data-bind="css: {'fa-pause': !isPaused(), 'fa-play': isPaused()}"></i> {{ _('Pause') }}

@@ -85,7 +85,7 @@ $(function () {
 
     //~ Initialise is touch device:
     function isTouchDevice() {
-        return 'ontouchstart' in document.documentElement;
+        return (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch);
     }
 
     //~ Set menu hover css rules for non touch devices
@@ -294,6 +294,24 @@ $(function () {
         }
     };
 
+    ko.bindingHandlers.touchClick = {
+        init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var self = this;
+            if (isTouchDevice()) {
+                var newValueAccessor = function () {
+                    var result = {};
+                    result['mousedown'] = valueAccessor();
+                    return result;
+                }
+                ko.bindingHandlers.event.init.call(self, element, newValueAccessor, allBindings, viewModel, bindingContext)
+                $(element).on('click', function(event){
+                    event.preventDefault();
+                })            
+            } else {
+                ko.bindingHandlers.click.init(element, valueAccessor, allBindings, viewModel, bindingContext);
+            }
+        }
+    }
 
     // jquery plugin to select all text in an element
     // originally from: http://stackoverflow.com/a/987376
@@ -460,7 +478,7 @@ $(function () {
         });
 
     // Icon bar selection
-    $('.icon-bar a').on('click', function () {
+    $('.icon-bar a').on('mousedown', function () {
         //Remove open from open tab
         $('.tabs > .tab.open').removeClass('open');
         var tabID = $(this).attr('href');
@@ -593,7 +611,7 @@ $(function () {
         }
     };
 
-    if (IS_LOCAL) {
+    if (1) {
         $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
 
         $("input[type='number']").keyboard(keyboardLayouts.number);
