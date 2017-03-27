@@ -976,8 +976,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.fetching_updates = False
             self.last_git_fetch = time.time()
 
-        self._get_firmware_info()
-        data = dict(update=self._create_update_frontend(self.update_info), machine_info=  self.machine_info)
+        data = dict(update=self._create_update_frontend(self.update_info), machine_info=self.machine_info)
         return self._send_client_message("update_fetch_success", data)
 
 
