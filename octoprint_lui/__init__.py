@@ -2575,7 +2575,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if "echo:" in line and "FIRMWARE_NAME:" in line:
-            self._on_firmware_info_received(line)
+            self._on_firmware_info_received(line) 
 
         if self.home_command_sent:
             if "ok" in line:
