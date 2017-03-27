@@ -202,6 +202,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update
         self.fetching_updates = False
+        self.git_lock = threading.RLock()
 
         ##~ Changelog
         self.changelog_filename = 'CHANGELOG.md'
@@ -375,17 +376,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.warning("Install is not on master branch, going to switch")
             # So we are really still on devel, let's switch to master
             checkout_master_branch = None
-            try:
-                checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=self.update_info[4]["path"])
-            except subprocess.CalledProcessError as err:
-                self._logger.error("Can't switch branch to master: {path}. {err}".format(path=self.update_info[4]['path'], err=err))
-                return False
+            with self.git_lock:
+                try:
+                    checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=self.update_info[4]["path"])
+                except subprocess.CalledProcessError as err:
+                    self._logger.error("Can't switch branch to master: {path}. {err}".format(path=self.update_info[4]['path'], err=err))
+                    return False
             
-            if checkout_master_branch:
-                self._logger.info("Switched OctoPrint from devel to master")
-                self.update_info[4]["update"] = True
-                self._send_client_message("forced_update")
-                self._update_plugins("OctoPrint")
+                if checkout_master_branch:
+                    self._logger.info("Switched OctoPrint from devel to master. Performing update later.")
+                    self.update_info[4]["forced_update"] = True
         
         # Return success by default
         return True
@@ -742,6 +742,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "requires_lui_update": requires_lui_update
                     })
 
+    def _perform_forced_updates(self):
+        """ 
+        Loops the update info list checking for any update that needs to be executed on startup. When found, executed immediately.
+        """
+        any_update = False
+        for update_info in self.update_info:
+            if update_info["forced_update"]:
+                update_info["update"] = True
+                any_update = True
+        
+        if any_update:
+            self._send_client_message("forced_update")
+            self._update_plugins("all")
 
     def _auto_firmware_update(self):
         """
@@ -978,35 +991,38 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _is_update_needed(self, path):
         branch_name = None
-        try:
-            branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
-            branch_name = branch_name.strip('\n')
-        except subprocess.CalledProcessError as e:
-            msg = "Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output)
-            self._logger.warn(msg)
-            raise UpdateError(msg, e)
+        with self.git_lock:
+            try:
+                branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
+                branch_name = branch_name.strip('\n')
+            except subprocess.CalledProcessError as e:
+                msg = "Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output)
+                self._logger.warn(msg)
+                raise UpdateError(msg, e)
 
         if branch_name:
             local = None
             remote = None
 
-            try:
-                local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
-                local = local.strip('\n')
-            except subprocess.CalledProcessError as e:
-                msg = "Git check failed for local:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
-                self._logger.warn(msg)
-                raise UpdateError(msg, e)
+            with self.git_lock:
+                try:
+                    local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
+                    local = local.strip('\n')
+                except subprocess.CalledProcessError as e:
+                    msg = "Git check failed for local:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                    self._logger.warn(msg)
+                    raise UpdateError(msg, e)
 
-            try:
-                remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
-                remote_s = remote_r.split()
-                if len(remote_s) > 0:
-                    remote = remote_s[0]
-            except subprocess.CalledProcessError as e:
-                msg = "Git check failed for remote:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
-                self._logger.warn(msg)
-                raise UpdateError(msg, e)
+            with self.git_lock:
+                try:
+                    remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
+                    remote_s = remote_r.split()
+                    if len(remote_s) > 0:
+                        remote = remote_s[0]
+                except subprocess.CalledProcessError as e:
+                    msg = "Git check failed for remote:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                    self._logger.warn(msg)
+                    raise UpdateError(msg, e)
 
             if not local or not remote:
                 return False ## If anything failed, at least try to pull
@@ -1014,15 +1030,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 return local != remote
         else:
             return False
-
-
-    def _fetch_git_repo(self, path):
-        try:
-            output = subprocess.check_output(['git', 'fetch'],cwd=path)
-        except subprocess.CalledProcessError as err:
-            self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
-        self._logger.debug("Fetched git repo: {path}".format(path=path))
-
 
     ##~ OctoPrint Settings
     def get_settings_defaults(self):
@@ -1184,6 +1191,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         args.update(render_kwargs)
 
         response = make_response(render_template("index_lui.jinja2", **args))
+
+        # Everything is set-up at this point, so we can initiate any updates
+        self._perform_forced_updates()
 
         return response
 
@@ -2858,6 +2868,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('lui').version,
                 'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2866,6 +2877,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('networkmanager').version,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2874,6 +2886,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('flasharduino').version,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2882,6 +2895,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('gcoderender').version,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2890,6 +2904,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': VERSION,
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             }
         ]
