@@ -611,7 +611,7 @@ $(function () {
         }
     };
 
-    if (1) {
+    if (IS_LOCAL) {
         $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
 
         $("input[type='number']").keyboard(keyboardLayouts.number);
