@@ -334,6 +334,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Fix stuff on the image
             first_run_results.append(self._add_server_commands())
             first_run_results.append(self._disable_ssh())
+            first_run_results.append(self._set_chromium_args())
 
             # Clean up caches
             first_run_results.append(self._clean_webassets())
@@ -398,6 +399,64 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.exception("Could not disable SSH")
                 return False
         
+        return True
+
+    def _set_chromium_args(self):
+        """
+        Checks the command line arguments of chromium and updates them if necessary.
+        Part of the first_run
+        """
+
+        required_chromium_arguments = ["--touch-events", "--disable-pinch"]
+
+        if self.platform == "RPi" and not self.platform_info:
+            # If we don't have platform_info, it means we are < image v1.1
+
+            # Read current arguments
+            chromium_startfile = "/home/pi/.config/autostart/chromium.desktop"
+            
+            if not os.path.isfile(chromium_startfile):
+                self._logger.warning("Chromium file not found. Skipping update of command line arguments.")
+                return True
+
+            try:
+                with open(chromium_startfile, "r") as fr:
+                    chromium_startfile_contents = fr.readlines()
+            except Exception as e:
+                self._logger.exception("Could not read chromium file: {0}".format(e.message))
+                return False
+
+            full_line = chromium_startfile_contents[2]
+            prefix = "Exec=chromium-browser "
+            full_line_prefix = full_line[:len(prefix)]
+            full_line_suffix = full_line[len(prefix):]
+            for arg in required_chromium_arguments:
+                if not arg in full_line_suffix:
+                    full_line_suffix = arg + " " + full_line_suffix
+
+            new_full_line = full_line_prefix + full_line_suffix
+            
+            if new_full_line != full_line:
+
+                # Take ownership of the file (as we need to write to it)
+                octoprint_lui.util.execute("sudo chown pi:pi {0}".format(chromium_startfile))
+
+                # Prepare file contents
+                chromium_startfile_contents[2] = new_full_line
+
+                # Write new command line to file
+                try:
+                    with open(chromium_startfile, "w") as fw:
+                        fw.writelines(chromium_startfile_contents)
+                except Exception as e:
+                    self._logger.exception("Could not write to chromium file: {0}".format(e.message))
+                    return False
+
+                self._logger.info("Chromium command line updated to: {0}".format(new_full_line))
+            else:
+                self._logger.info("No changes for chromium command line")
+        else:
+            self._logger.info("Not on old RPi image, so skipping chromium command line update")
         return True
 
     def _clean_webassets(self):
