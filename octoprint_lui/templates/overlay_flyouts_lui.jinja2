@@ -104,8 +104,8 @@
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
-      <div id="advanced_settings_flyout_content" class="flyout_content">
-        {% include "flyouts_lui/setting_flyouts/advanced_flyout.jinja2" %}
+      <div id="connection_settings_flyout_content" class="flyout_content">
+        {% include "flyouts_lui/setting_flyouts/connection_flyout.jinja2" %}
       </div>
       <!-- /ko -->
       <ul class="button-area">
@@ -427,20 +427,20 @@
         {% endif %}
       </div>
       <div class="printer_error_flyout_footer">
-        <div style="margin-bottom: 15px;" data-bind="style: {visibility: isConnecting() ? 'visible' : 'hidden' }">
+        <div style="margin-bottom: 15px;" data-bind="style: {visibility: printerState.isConnecting() ? 'visible' : 'hidden' }">
           <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i> Connecting...
         </div>
         {% if local_addr %}
         <ul class="button-area">
           <li class="button ok-button">
-            <a href="#" data-bind="click: restorePrinterConnection">
+            <a href="#" data-bind="click: printerState.restorePrinterConnection">
               <span>
                 <i class="fa fa-wrench"></i>{{ _('Restore') }}
               </span>
             </a>
           </li>
           <li class="button failed-button">
-            <a href="#" data-bind="click: function () { system.systemShutdown() }">
+            <a href="#" data-bind="click: function () { requestSystemShutdown() }">
               <span>
                 <i class="fa fa-power-off"></i>{{ _('Shutdown printer') }}
               </span>

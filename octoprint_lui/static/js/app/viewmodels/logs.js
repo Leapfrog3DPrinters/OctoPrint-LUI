@@ -103,7 +103,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         LogViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "gcodeFilesViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "filesViewModel"],
         "#logs"
     ]);
 });

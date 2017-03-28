@@ -5,6 +5,7 @@ $(function () {
         self.loginState = parameters[0];
         self.settings = parameters[1];
         self.printerProfiles = parameters[2];
+        self.printerState = parameters[3];
 
         self.printerProfiles.profiles.items.subscribe(function () {
             var allProfiles = self.printerProfiles.profiles.items();
@@ -29,16 +30,8 @@ $(function () {
         self.saveSettings = ko.observable(undefined);
         self.autoconnect = ko.observable(undefined);
 
-        self.isErrorOrClosed = ko.observable(undefined);
-        self.isOperational = ko.observable(undefined);
-        self.isPrinting = ko.observable(undefined);
-        self.isPaused = ko.observable(undefined);
-        self.isError = ko.observable(undefined);
-        self.isReady = ko.observable(undefined);
-        self.isLoading = ko.observable(undefined);
-
         self.buttonText = ko.computed(function () {
-            if (self.isErrorOrClosed())
+            if (self.printerState.isErrorOrClosed())
                 return gettext("Connect");
             else
                 return gettext("Disconnect");
@@ -72,30 +65,8 @@ $(function () {
             self.saveSettings(false);
         };
 
-        self.fromHistoryData = function(data) {
-            self._processStateData(data.state);
-        };
-
-        self.fromCurrentData = function(data) {
-            self._processStateData(data.state);
-        };
-
-
-        self._processStateData = function(data) {
-            self.previousIsOperational = self.isOperational();
-
-            self.isErrorOrClosed(data.flags.closedOrError);
-            self.isOperational(data.flags.operational);
-            self.isPaused(data.flags.paused);
-            self.isPrinting(data.flags.printing);
-            self.isError(data.flags.error);
-            self.isReady(data.flags.ready);
-            self.isLoading(data.flags.loading);
-
-        };
-
         self.connect = function () {
-            if (self.isErrorOrClosed()) {
+            if (self.printerState.isErrorOrClosed()) {
                 var data = {
                     "port": self.selectedPort() || "AUTO",
                     "baudrate": self.selectedBaudrate() || 0,
@@ -124,7 +95,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         ConnectionViewModel,
-        ["loginStateViewModel", "settingsViewModel", "printerProfilesViewModel"],
-        "#advanced_settings_flyout_content"
+        ["loginStateViewModel", "settingsViewModel", "printerProfilesViewModel", "printerStateViewModel"],
+        "#connection_settings_flyout_content"
     ]);
 });

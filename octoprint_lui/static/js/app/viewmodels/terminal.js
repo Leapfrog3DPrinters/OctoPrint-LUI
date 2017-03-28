@@ -246,9 +246,11 @@ $(function () {
 
     }
 
-    OCTOPRINT_VIEWMODELS.push([
-        TerminalViewModel,
-        ["loginStateViewModel", "settingsViewModel"],
-        "#term"
-    ]);
+    if (DEBUG_LUI) {
+        OCTOPRINT_VIEWMODELS.push([
+            TerminalViewModel,
+            ["loginStateViewModel", "settingsViewModel"],
+            "#term"
+        ]);
+    }
 });

@@ -217,7 +217,7 @@ function DataUpdater(allViewModels) {
                 gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
                 gcodeUploadProgressBar.css("width", "0%");
                 gcodeUploadProgressBar.text("");
-                gcodeFilesViewModel.requestData(payload.remote, "sdcard");
+                filesViewModel.requestData(payload.remote, "sdcard");
             } else if (type == "PrintStarted") {
                 $.notify({
                     title: gettext("Print job started"),
@@ -303,6 +303,8 @@ function DataUpdater(allViewModels) {
         log.debug("We are slow (" + measurement + " > " + maximum + "), reducing refresh rate");
         OctoPrint.socket.decreaseRate();
     };
+
+    OctoPrint.socket.options.timeouts = [0, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 8, 13, 20, 40, 100];
 
     OctoPrint.socket.onReconnectAttempt = self._onReconnectAttempt;
     OctoPrint.socket.onReconnectFailed = self._onReconnectFailed;

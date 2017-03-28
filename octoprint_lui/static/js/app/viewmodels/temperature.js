@@ -31,14 +31,6 @@ $(function () {
         self.bedTemp["name"](gettext("Bed"));
         self.bedTemp["key"]("bed");
 
-        self.isErrorOrClosed = ko.observable(undefined);
-        self.isOperational = ko.observable(undefined);
-        self.isPrinting = ko.observable(undefined);
-        self.isPaused = ko.observable(undefined);
-        self.isError = ko.observable(undefined);
-        self.isReady = ko.observable(undefined);
-        self.isLoading = ko.observable(undefined);
-
         self.heaterOptions = ko.observable({});
         self.toolStatus = ko.observableArray([]);
         self.tempLoaded = ko.observable(false);
@@ -121,18 +113,7 @@ $(function () {
         self.temperatures = [];
 
         self.fromCurrentData = function(data) {
-            self._processStateData(data.state);
             self._processTemperatureUpdateData(data.serverTime, data.temps);
-        };
-
-        self._processStateData = function(data) {
-            self.isErrorOrClosed(data.flags.closedOrError);
-            self.isOperational(data.flags.operational);
-            self.isPaused(data.flags.paused);
-            self.isPrinting(data.flags.printing);
-            self.isError(data.flags.error);
-            self.isReady(data.flags.ready);
-            self.isLoading(data.flags.loading);
         };
 
         self._processTemperatureUpdateData = function(serverTime, data) {

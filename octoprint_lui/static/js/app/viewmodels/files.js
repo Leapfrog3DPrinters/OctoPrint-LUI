@@ -1,6 +1,5 @@
 $(function ()  {
-    function GcodeFilesViewModel(parameters) {
-        // TODO Fully adapt to LUI
+    function FilesViewModel(parameters) {
         var self = this;
 
         self.settingsViewModel = parameters[0];
@@ -9,17 +8,6 @@ $(function ()  {
         self.flyout = parameters[3];
         self.printerProfiles=parameters[4];
         self.filament = parameters[5];
-
-        //self.slicing = parameters[3];
-
-        self.isErrorOrClosed = ko.observable(undefined);
-        self.isOperational = ko.observable(undefined);
-        self.isPrinting = ko.observable(undefined);
-        self.isPaused = ko.observable(undefined);
-        self.isError = ko.observable(undefined);
-        self.isReady = ko.observable(undefined);
-        self.isLoading = ko.observable(undefined);
-        self.isSdReady = ko.observable(undefined);
 
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
@@ -298,11 +286,11 @@ $(function ()  {
         });
 
         self.isLoadActionPossible = ko.computed(function ()  {
-            return self.loginState.isUser() && !self.isPrinting() && !self.isPaused() && !self.isLoading() && !self.printerState.waitingForCancel();
+            return self.loginState.isUser() && !self.printerState.isPrinting() && !self.printerState.isPaused() && !self.printerState.isLoading() && !self.printerState.waitingForCancel();
         });
 
         self.isLoadAndPrintActionPossible = ko.computed(function ()  {
-            return self.loginState.isUser() && self.isOperational() && self.isLoadActionPossible();
+            return self.loginState.isUser() && self.printerState.isOperational() && self.isLoadActionPossible();
         });
 
         self.printerState.filename.subscribe(function (newValue) {
@@ -330,25 +318,6 @@ $(function ()  {
                     }
                 });
             }
-        };
-
-        self.fromCurrentData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self.fromHistoryData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self._processStateData = function (data) {
-            self.isErrorOrClosed(data.flags.closedOrError);
-            self.isOperational(data.flags.operational);
-            self.isPaused(data.flags.paused);
-            self.isPrinting(data.flags.printing);
-            self.isError(data.flags.error);
-            self.isReady(data.flags.ready);
-            self.isLoading(data.flags.loading);
-            self.isSdReady(data.flags.sdReady);
         };
 
         self._otherRequestInProgress = false;
@@ -711,10 +680,6 @@ $(function ()  {
             }
         });
 
-        self.enableForcePrint = function () {
-            self.printerState.forcePrint(true);
-        };
-
         self.evaluatePrintDimensions = function (data, mode, notify) {
             // This functionality is temporarily disabled for 1.0.8
             return true;
@@ -996,7 +961,7 @@ $(function ()  {
         };
 
         self.enableSelect = function (data, printAfterSelect) {
-            var isLoadActionPossible = self.loginState.isUser() && self.isOperational() && !(self.printerState.waitingForCancel() || self.isPrinting() || self.isPaused() || self.isLoading());
+            var isLoadActionPossible = self.loginState.isUser() && self.printerState.isOperational() && !(self.printerState.waitingForCancel() || self.printerState.isPrinting() || self.printerState.isPaused() || self.printerState.isLoading());
             return isLoadActionPossible && !self.listHelper.isSelected(data);
         };
 
@@ -1351,7 +1316,7 @@ $(function ()  {
     }
 
     OCTOPRINT_VIEWMODELS.push([
-        GcodeFilesViewModel,
+        FilesViewModel,
         ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);

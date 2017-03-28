@@ -336,6 +336,7 @@ $(function () {
 
     var bindViewModels = function () {
         log.info("Going to bind " + allViewModelData.length + " view models...");
+        var t0 = performance.now(); 
         _.forEach(allViewModelData, function(viewModelData) {
             if (!Array.isArray(viewModelData) || viewModelData.length != 2) {
                 return;
@@ -409,7 +410,8 @@ $(function () {
         });
 
         callViewModels(allViewModels, "onAllBound", [allViewModels]);
-        log.info("... binding done");
+        var t1 = performance.now();
+        log.info("... binding done in " + (t1 - t0).toFixed() + " ms.");
 
         callViewModels(allViewModels, "onStartupComplete");
 

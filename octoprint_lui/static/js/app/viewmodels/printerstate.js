@@ -1,13 +1,11 @@
 $(function ()  {
     function PrinterStateViewModel(parameters) {
-        // TODO Adapt to LUI
         var self = this;
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
         self.temperatureState = parameters[2];
         self.settings = parameters[3];
-        self.system = parameters[4];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -160,19 +158,6 @@ $(function ()  {
             else
                 return "-";
         });
-
-        // self.stateStepString = ko.computed(function ()  {
-        //     if (self.temperatureState.isHeating()) return "Heating";
-        //     return self.stateString();
-        // });
-
-        // self.stateStepColor = ko.computed(function ()  {
-        //     if (self.temperatureState.isHeating()) return "bg-orange"
-        //     if (self.isPrinting()) return "bg-main"
-        //     if (self.isError()) return "bg-red"
-        //     return "bg-none"
-        // });
-
 
         self.fileSelected = ko.computed(function ()  {
             if (self.filename())
@@ -464,16 +449,6 @@ $(function ()  {
             self._sendApi({ command: "begin_homing" });
         }
 
-        self.showMaintenanceFlyout = function () 
-        {
-            self.settings.showSettingsTopic('maintenance', true)
-        }
-
-        self.showLogsFlyout = function ()
-        {
-            self.settings.showSettingsTopic('logs', true)
-        }
-
         self.cancelAutoShutdown = function () {
             self._sendApi({command: 'auto_shutdown_timer_cancel'});
         }
@@ -694,7 +669,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#printer_error_flyout"]
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
+        ["#print", "#info_flyout"]
     ]);
 });

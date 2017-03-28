@@ -5,8 +5,9 @@ $(function () {
         self.flyout = parameters[0];
         self.printerState = parameters[1];
         self.settings = parameters[2];
-        self.filament = parameters[4];
         self.temperatures = parameters[3];
+        self.filament = parameters[4];
+        self.navigation = parameters[5];
 
         self.poweringUpInfo = null;
         self.movingToMaintenancePositionInfo = null;
@@ -149,7 +150,7 @@ $(function () {
 
         self.logFiles = function ()
         {
-            self.settings.showSettingsTopic('logs');
+            self.navigation.showSettingsTopic('logs');
         }
 
         self.onSettingsShown = function () { 
@@ -184,18 +185,9 @@ $(function () {
             }
         }
     }
-    // This is how our plugin registers itself with the application, by adding some configuration
-    // information to the global variable ADDITIONAL_VIEWMODELS
     ADDITIONAL_VIEWMODELS.push([
-        // This is the constructor to call for instantiating the plugin
         MaintenanceViewModel,
-
-        // This is a list of dependencies to inject into the plugin, the order which you request
-        // here is the order in which the dependencies will be injected into your view model upon
-        // instantiation via the parameters argument
-        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "temperatureViewModel", "filamentViewModel"],
-
-        // Finally, this is the list of all elements we want this view model to be bound to.
+        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "temperatureViewModel", "filamentViewModel", "navigationViewModel"],
         ["#maintenance_settings_flyout_content"]
     ]);
 });

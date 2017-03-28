@@ -55,12 +55,12 @@
 	<div class="Table-row" data-bind="visible: loginState.loggedIn()">
 	    <div class="Table-item">        
 	        <ul class="button-area">
-	          <li class="button secondary-button"><a href="#" data-bind="click: function () {system.systemReboot()}"><span><i class = "fa fa-refresh" style="padding-left: 0.5em;"></i>{{ _('Reboot') }}</span></a></li>
+	          <li class="button secondary-button"><a href="#" data-bind="click: function () {navigation.requestSystemReboot(true)}"><span><i class = "fa fa-refresh" style="padding-left: 0.5em;"></i>{{ _('Reboot') }}</span></a></li>
 	        </ul>
 	    </div>
 	    <div class="Table-item">        
 	        <ul class="button-area">
-	          <li class="button failed-button"><a href="#" data-bind="click: function () {system.systemShutdown()}"><span><i class = "fa fa-power-off" style="padding-left: 0.5em;"></i>{{ _('Shutdown') }}</span></a></li>
+	          <li class="button failed-button"><a href="#" data-bind="click: function () {navigation.requestSystemShutdown(true)}"><span><i class = "fa fa-power-off" style="padding-left: 0.5em;"></i>{{ _('Shutdown') }}</span></a></li>
 	        </ul>
 	    </div>
   </div>
@@ -69,7 +69,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function () {system.systemServiceRestart()}">
+          <a href="#" data-bind="click: function () {navigation.requestServiceRestart()}">
             <span>
               <i class = "fa fa-refresh" style="padding-left: 0.5em;"></i>{{ _('Service restart') }}
             </span>

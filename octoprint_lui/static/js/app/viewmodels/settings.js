@@ -5,14 +5,6 @@ $(function () {
         self.loginState = parameters[0];
         self.printerProfiles = parameters[1];
         self.flyout = parameters[2];
-        
-        self.isErrorOrClosed = ko.observable(undefined);
-        self.isOperational = ko.observable(undefined);
-        self.isPrinting = ko.observable(undefined);
-        self.isPaused = ko.observable(undefined);
-        self.isError = ko.observable(undefined);
-        self.isReady = ko.observable(undefined);
-        self.isLoading = ko.observable(undefined);
 
         self.autoShutdown = ko.observable(undefined);
 
@@ -45,9 +37,6 @@ $(function () {
 
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
-
-        //Template observable 
-        self.settingsTopic = ko.observable(undefined);
 
         self.addTemperatureProfile = function () {
             self.temperature_profiles.push({name: "New", extruder:0, bed:0});
@@ -463,19 +452,7 @@ $(function () {
             // }
         };
 
-        self.showSettingsTopic = function (topic, blocking, high_priority) {
-            self.settingsTopic(capitalize(topic));
-            callViewModels(self.allViewModels, "onSettingsShown");
-            callViewModels(self.allViewModels, "on" + self.settingsTopic()+ "SettingsShown");
-
-            return self.flyout.showFlyout(topic + '_settings', blocking, high_priority)
-                .done(function ()  {
-                    self.saveData();
-                })
-                .always(function ()  {
-                    callViewModels(self.allViewModels, "onSettingsHidden");
-                });
-        };
+        
 
         // Sending custom commands to the printer, needed for level bed for example.
         // format is: sendCustomCommand({type:'command',command:'M106 S255'})
@@ -517,24 +494,6 @@ $(function () {
             self.flyout.closeFlyoutAccept();
             self.flyout.showFlyout('zoffset');
 
-        };
-
-        self.fromCurrentData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self.fromHistoryData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self._processStateData = function (data) {
-            self.isErrorOrClosed(data.flags.closedOrError);
-            self.isOperational(data.flags.operational);
-            self.isPaused(data.flags.paused);
-            self.isPrinting(data.flags.printing);
-            self.isError(data.flags.error);
-            self.isReady(data.flags.ready);
-            self.isLoading(data.flags.loading);
         };
 
         // Api send functions
@@ -604,6 +563,6 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
         ["loginStateViewModel", "printerProfilesViewModel", "flyoutViewModel"],
-        ["#settings", "#settings_flyouts"]
+        ["#settings_flyouts"]
     ]);
 });
