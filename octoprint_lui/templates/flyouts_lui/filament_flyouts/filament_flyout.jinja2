@@ -101,10 +101,10 @@
     <div class="Table-row Table-header">
         <div class="Table-item">{{ _('Status') }}</div>
     </div> 
-    <div id="tool_heating" class = "Table-row"> 
+    <div id="tool_heating" class="Table-row" data-bind="with: temperatureState.tools()[toolNum()]"> 
         <div class="Table-item Table-item-grow-3">
             <div class="progress progress-large">
-                <span style="width: 100%" data-bind="text: temperatureState.returnToolStatusString(toolNum()), css: temperatureState.toolStatus()[toolNum()].css_class, style: { width: temperatureState.toolProgress()[toolNum()]() + '%' }"></span>
+                <span style="width: 100%" data-bind="text: status, css: css_class, style: { width: progress() + '%' }"></span>
             </div>
         </div>
     </div>

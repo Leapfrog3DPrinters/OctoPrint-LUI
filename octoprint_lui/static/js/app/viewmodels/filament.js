@@ -103,9 +103,9 @@ $(function ()  {
         });
 
 
-        self.toolNum = ko.pureComputed(function ()  {
-            if (self.tool() != undefined) {
-                var tool = self.tool();
+        self.toolNum = ko.pureComputed(function () {
+            var tool = self.tool();
+            if (tool !== undefined) {
                 return parseInt(tool.slice(-1));
             }
         });
@@ -248,7 +248,7 @@ $(function ()  {
         self.changeFilamentCancel = function ()  {
             self._sendApi({
                 command: "change_filament_cancel"
-            }).success(function(){
+            }).done(function(){
                 self.requestData();
             });
 
@@ -330,7 +330,7 @@ $(function ()  {
                 tool: tool,
                 amount: amount * 1000,
                 profileName: profileName
-            }).success(function () {
+            }).done(function () {
                 $.notify({
                     title: gettext("Filament information updated"),
                     text: _.sprintf(gettext('New material: "%(material)s". New amount: "%(amount)s"'), {material: profileName, amount: amount})},
@@ -492,13 +492,11 @@ $(function ()  {
         }
 
         self.requestData = function ()  {
-            return OctoPrint.simpleApiGet('lui', {
-                success: self.fromResponse
-            });
+            return OctoPrint.simpleApiGet('lui').done(self.fromResponse);
         };
 
         self.onMaterialsSettingsShown = function () {
-            self.requestData().success(function ()  {
+            self.requestData().done(function ()  {
 
                 var leftName = self.leftFilament();
                 var left = self.materialProfiles().find(function (x) { return x.name == leftName; });

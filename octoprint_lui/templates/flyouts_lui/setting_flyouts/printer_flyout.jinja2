@@ -24,7 +24,7 @@
             </div>
         </div>
     </div>
-    {# {% if printer_profile["modelSizeDetection"] or debug_lui %}
+    {# {% if printer_profile["modelSizeDetection"] %}
     <div class="Table-row">
         <div class="Table-item">
           {{ _('Check print dimensions') }}
@@ -37,7 +37,7 @@
         </div>
     </div>
   {% endif %} #}
-  {% if printer_profile["doorSafety"] or debug_lui %}
+  {% if printer_profile["doorSafety"] %}
   <div class="Table-row">
         <div class="Table-item">
             {{ _('Door safety feature') }}
@@ -50,7 +50,7 @@
         </div>
     </div>
   {% endif %}
-  {% if printer_profile["filamentDetection"] or debug_lui %}
+  {% if printer_profile["filamentDetection"] %}
   <div class="Table-row">
         <div class="Table-item">
             {{ _('Filament detection') }}

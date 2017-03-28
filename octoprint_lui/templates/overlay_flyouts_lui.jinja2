@@ -255,6 +255,7 @@
       </div>
     </div>
   </aside>
+  {% if printer_profile["filamentDetection"] %}
   <aside id="filament_detection_flyout" class="flyout">
     <div class="flyout-header bg-yellow">
       <h4>
@@ -274,6 +275,7 @@
       </ul>
     </div>
   </aside>
+  {% endif %}
   <aside id="filament_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Filament') }}</h4>

@@ -136,10 +136,11 @@ $(function ()  {
         }
     };
 
-    OCTOPRINT_VIEWMODELS.push([
-        FilamentDetectionViewModel,
-        ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel", "filamentViewModel"],
-        ["#filament_detection_flyout"]
-    ]);
-
+    if (FILAMENT_DETECTION) {
+        OCTOPRINT_VIEWMODELS.push([
+            FilamentDetectionViewModel,
+            ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel", "filamentViewModel"],
+            ["#filament_detection_flyout"]
+        ]);
+    }
 });

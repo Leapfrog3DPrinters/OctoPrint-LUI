@@ -189,8 +189,7 @@ $(function ()  {
                 command: "get_files",
                 origin: origin,
                 filter: filter,
-                recursive: true,
-                force: true
+                recursive: true
             });
         }
 

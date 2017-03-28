@@ -501,11 +501,6 @@ $(function ()  {
                     self.hideFirmwareUpdateWarning(true);
                     self.firmwareUpdateAvailable(false); // The update succeeded so there shouldn't be any updates available
                     break;
-                case "firmware_update_found":
-                    if(DEBUG_LUI) {
-                        self.onFirmwareUpdateFound(messageData.file);
-                    }
-                    break;
                 case "machine_info_updated":
                     //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
                     self.requestFirmwareData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)

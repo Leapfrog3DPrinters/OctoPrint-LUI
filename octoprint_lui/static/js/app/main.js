@@ -618,25 +618,27 @@ $(function () {
             }
         });
 
-        $("#fd-input-format").keyboard({
-            layout: 'custom',
-            customLayout: {
-                normal: [
-                    '7 8 9 {clear}',
-                    '4 5 6 {cancel}',
-                    '1 2 3 {accept}',
-                    '. 0 {sp:3.1}',
-                ]
-            },
-            usePreview: true,
-            display: {
-                'accept': 'Accept:Accept',
-                'clear': 'Clear:Clear'
-            },
-            accepted: function (event, keyboard, el) {
-                fdSlider.noUiSlider.set(keyboard.$preview.val());
-            }
-        });
+        if (FILAMENT_DETECTION) {
+            $("#fd-input-format").keyboard({
+                layout: 'custom',
+                customLayout: {
+                    normal: [
+                        '7 8 9 {clear}',
+                        '4 5 6 {cancel}',
+                        '1 2 3 {accept}',
+                        '. 0 {sp:3.1}',
+                    ]
+                },
+                usePreview: true,
+                display: {
+                    'accept': 'Accept:Accept',
+                    'clear': 'Clear:Clear'
+                },
+                accepted: function (event, keyboard, el) {
+                    fdSlider.noUiSlider.set(keyboard.$preview.val());
+                }
+            });
+        }
 
         ko.bindingHandlers.keyboardForeach = {
             init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
@@ -655,7 +657,7 @@ $(function () {
     }
 
     var slider = document.getElementById('slider');
-    var fdSlider = document.getElementById('fd_slider');
+    
 
     noUiSlider.create(slider, {
         start: FILAMENT_ROLL_LENGTH,
@@ -676,35 +678,10 @@ $(function () {
         }
     });
 
-    noUiSlider.create(fdSlider, {
-        start: FILAMENT_ROLL_LENGTH,
-        step: 1,
-        behaviour: 'tap',
-        connect: 'lower',
-        range: {
-            'min': 0,
-            'max': FILAMENT_ROLL_LENGTH
-        },
-        format: {
-            to: function (value) {
-                return value.toFixed(0);
-            },
-            from: function (value) {
-                return value;
-            }
-        }
-    });
-
     var inputFormat = document.getElementById('input-format');
     var filament_percent = document.getElementById('filament_percent');
-    var newFilamentAmount = document.getElementById('new_filament_amount');
-    var newFilamentPercent = document.getElementById('new_filament_percent');
 
-
-    var fdInputFormat = document.getElementById('fd-input-format');
-    var fd_filament_percent = document.getElementById('fd_filament_percent');
-
-    slider.noUiSlider.on('update', function( values, handle ) {
+    slider.noUiSlider.on('update', function (values, handle) {
         inputFormat.value = values[handle];
         new_filament_amount.innerText = values[handle];
         percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
@@ -712,19 +689,42 @@ $(function () {
         new_filament_percent.innerText = percent + "%";
     });
 
-    fdSlider.noUiSlider.on('update', function (values, handle) {
-        fdInputFormat.value = values[handle];
-        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
-        fd_filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
-    });
-
-    inputFormat.addEventListener('change', function(){
+    inputFormat.addEventListener('change', function () {
         slider.noUiSlider.set(this.value);
     });
 
-    fdInputFormat.addEventListener('change', function ()  {
-        fdSlider.noUiSlider.set(this.value);
-    });
+    if (FILAMENT_DETECTION) {
+        var fdSlider = document.getElementById('fd_slider');
+        noUiSlider.create(fdSlider, {
+            start: FILAMENT_ROLL_LENGTH,
+            step: 1,
+            behaviour: 'tap',
+            connect: 'lower',
+            range: {
+                'min': 0,
+                'max': FILAMENT_ROLL_LENGTH
+            },
+            format: {
+                to: function (value) {
+                    return value.toFixed(0);
+                },
+                from: function (value) {
+                    return value;
+                }
+            }
+        });
 
+        var fdInputFormat = document.getElementById('fd-input-format');
+        var fd_filament_percent = document.getElementById('fd_filament_percent');
 
+        fdSlider.noUiSlider.on('update', function (values, handle) {
+            fdInputFormat.value = values[handle];
+            percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
+            fd_filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
+        });
+
+        fdInputFormat.addEventListener('change', function () {
+            fdSlider.noUiSlider.set(this.value);
+        });
+    }
 });

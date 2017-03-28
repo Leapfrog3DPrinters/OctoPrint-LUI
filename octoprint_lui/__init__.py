@@ -129,11 +129,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_info = None
 
         ##~ Temperature status
-        self.tool_status = [
-            {'name': 'tool0', "status": 'IDLE', 'css_class': "bg-none"},
-            {'name': 'tool1', "status": 'IDLE', 'css_class': "bg-none"},
-            {'name': 'bed', "status": 'IDLE', 'css_class': "bg-none"},
-        ]
+        self.tool_status = {
+            "tool0": {"status": 'IDLE', 'css_class': "bg-none"},
+            "tool1": {"status": 'IDLE', 'css_class': "bg-none"},
+            "bed": {"status": 'IDLE', 'css_class': "bg-none"},
+        }
 
         self.old_temperature_data = None
         self.current_temperature_data = None
@@ -312,10 +312,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _first_run(self):
         """Checks if it is the first run of a new version and updates any material if necessary"""
+        force_first_run = self._settings.get_boolean(["force_first_run"])
         had_first_run_version =  self._settings.get(["had_first_run"])
+
         profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile") 
-        if self.debug or not had_first_run_version or StrictVersion(had_first_run_version) < StrictVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
-            if self.debug:
+        
+        if force_first_run or not had_first_run_version or StrictVersion(had_first_run_version) < StrictVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
+            if force_first_run:
                 self._logger.debug("Simulating first run for debugging.")
             elif not os.path.exists(profile_dst_path):
                 self._logger.info("Printer profile not found. Simulating first run.")
@@ -975,6 +978,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "debug_lui": False,
             "changelog_version": "",
             "had_first_run": "",
+            "force_first_run": False,
             "debug_bundling" : False
         }
 
@@ -1207,21 +1211,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
             return jsonify(free=usage.free, total=usage.total)
         else:
-            machine_info = self._get_machine_info()
-
             result = dict({
-                'machine_info': machine_info,
+                'machine_info': self.machine_info,
                 'filaments': self.filament_database.all(),
                 'is_homed': self.is_homed,
                 'is_homing': self.is_homing,
                 'reserved_usernames': self.reserved_usernames,
-                'tool_status': self.tool_status,
                 'auto_shutdown': self.auto_shutdown,
                 'lui_version': self.plugin_version,
                 'printer_error_reason': self.printer_error_reason,
                 'printer_error_extruder': self.printer_error_extruder
                 })
-            return jsonify(result)
+            return make_response(jsonify(result), 200)
 
     def _firmware_update_required(self):
         
@@ -1752,10 +1753,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             return jsonify(files=files)
         else:
-            # Force clearing of the cache (not properly done by octoprint at the moment)
-            if request.values.get("force", False):
-                octoprint.server.api.files._clear_file_cache()
-            
             # Return original OctoPrint API response
             return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
@@ -2659,34 +2656,32 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             stable = False
 
             if self.ready_timer[tool]:
-                    # we are waiting for a stable target temperature, check if we are in our
-                    # window and if so decrease the counter. If we fall out of the window,
-                    # reset the counter
-                    if in_window:
-                            self.ready_timer[tool] -= 1
-                            if self.ready_timer[tool] <= 0:
-                                    stable = True
-                    else:
-                            self.ready_timer[tool] = self.ready_timer_default[tool]
+                # we are waiting for a stable target temperature, check if we are in our
+                # window and if so decrease the counter. If we fall out of the window,
+                # reset the counter
+                if in_window:
+                    self.ready_timer[tool] -= 1
+                    if self.ready_timer[tool] <= 0:
+                            stable = True
+                else:
+                    self.ready_timer[tool] = self.ready_timer_default[tool]
 
             # process the status
             if not heating and data["actual"] <= 35:
-                   status = "IDLE"
-                   css_class = "bg-main"
+                status = "IDLE"
+                css_class = "bg-main"
             elif stable:
-                   status = "READY"
-                   css_class = "bg-green"
+                status = "READY"
+                css_class = "bg-green"
             elif abs_delta > 0:
-                   status = "HEATING"
-                   css_class = "bg-orange"
+                status = "HEATING"
+                css_class = "bg-orange"
             else:
-                   status = "COOLING"
-                   css_class = "bg-yellow"
+                status = "COOLING"
+                css_class = "bg-yellow"
 
-            tool_num = self._get_tool_num(tool)
-
-            self.tool_status[tool_num]['status'] = status
-            self.tool_status[tool_num]['css_class'] = css_class
+            self.tool_status[tool]['status'] = status
+            self.tool_status[tool]['css_class'] = css_class
             self.change_status(tool, status)
         self.send_client_tool_status()
 
@@ -2713,9 +2708,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.debug("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
-        tool_num = self._get_tool_num(tool)
-
-        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool_num]['status'] == "READY"):
+        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool]['status'] == "READY"):
             if callback:
                 callback(tool)
             self.send_client_heating()
@@ -2939,19 +2932,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message("media_folder_updated", { "is_media_mounted": number_of_dirs > 0 })
 
         self.is_media_mounted = number_of_dirs > 0
-
-        # Skip for now. This feature isn't used in the front-end anyway
-        # Check if what's mounted contains a firmware (*.hex) file
-        #if not self.debug and not was_media_mounted and self.is_media_mounted:
-        #    firmware = self._check_for_firmware(self.media_folder)
-        #    if(firmware):
-        #        firmware_file, firmware_path = firmware
-        #        self._logger.info("Firmware file detected: %s" % firmware_file)
-        #        file = dict()
-        #        file["name"] = firmware_file
-        #        file["refs"] = dict()
-        #        file["refs"]["local_path"] = firmware_path
-        #        self._send_client_message("firmware_update_found", { "file": file });
 
     def _check_for_firmware(self, path):
         result = None
