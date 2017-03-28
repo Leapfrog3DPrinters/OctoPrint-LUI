@@ -1465,20 +1465,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _copy_calibration_file(self, calibration_src_filename):
         calibration_src_path = None
         calibration_dst_filename = "calibration.gcode"
-        calibration_dst_relpath = ".calibration"
+        calibration_dst_relpath = "calibration"
         calibration_dst_path = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_relpath, calibration_dst_filename)
         calibration_src_path = os.path.join(self._basefolder, "gcodes", calibration_src_filename)
-
+        self._logger.debug("Calibration destination path: {0}".format(calibration_dst_path))
         upload = octoprint.filemanager.util.DiskFileWrapper(calibration_src_filename, calibration_src_path, move = False)
 
         try:
             # This will do the actual copy
             added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_path, upload, allow_overwrite=True)
         except octoprint.filemanager.storage.StorageError:
+            self._logger.exception("Could not add calibration file: {0}".format(calibration_dst_path))
             self._send_client_message("calibration_failed", { "calibration_type": self.calibration_type})
             return None
 
-        return octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file)
+        path_on_disk = octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file)
+        self._logger.debug("Calibration path on disk: {0}".format(path_on_disk))
+        return path_on_disk
 
     def _disable_timelapse(self):
         config = self._settings.global_get(["webcam", "timelapse"], merged=True)

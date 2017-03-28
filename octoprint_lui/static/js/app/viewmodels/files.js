@@ -256,13 +256,19 @@ $(function ()  {
                     return data["type"] && (data["type"] == "model" || data["type"] == "folder");
                 },
                 "emptyFolder": function (data) {
-                    var children_check = true;
-                    if (data["children"]) {
-                        children_check = data["children"].length != 0;
-                    } else {
-                        children_check = false;
+                    // Hide the calibration folder
+                    if (data["origin"] == "local" && data["type"] == "folder" && data["name"] == "calibration") {
+                        return false;
                     }
-                    return data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check);
+                    else {
+                        var children_check = true;
+                        if (data["children"]) {
+                            children_check = data["children"].length != 0;
+                        } else {
+                            children_check = false;
+                        }
+                        return data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check);
+                    }
                 }
             },
             "name",
