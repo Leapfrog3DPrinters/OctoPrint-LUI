@@ -19,14 +19,14 @@ $(function ()  {
         self.isLoading = ko.observable(undefined);
         self.isSdReady = ko.observable(undefined);
 
+        self.waitingForPause = ko.observable(false);
+        self.waitingForCancel = ko.observable(false);
+
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
-        self.showChangelog = ko.observable(undefined);
-        self.changelogContents = ko.observable(undefined);
+        self.isHomingRequested = ko.observable(false);
         self.currentLuiVersion = ko.observable(undefined);
 
-        self.firmwareUpdateRequired = ko.observable(false);
-        self.firmwareVersionRequirement = ko.observable(undefined);
 
         self.filename = ko.observable(undefined);
         self.filepath = ko.observable(undefined);
@@ -37,6 +37,10 @@ $(function ()  {
         self.printTimeLeft = ko.observable(undefined);
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
+
+        // These are updated from the filament viewmodel
+        self.leftFilamentMaterial = ko.observable(undefined);
+        self.rightFilamentMaterial = ko.observable(undefined);
 
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
@@ -71,10 +75,10 @@ $(function ()  {
             return self.isOperational() && self.isReady() && !self.isPrinting() && self.loginState.isUser() && self.filename() != undefined;
         });
         self.enablePause = ko.computed(function ()  {
-            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && !self.waitingForPause() && self.loginState.isUser();
         });
         self.enableCancel = ko.computed(function ()  {
-            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser();
+            return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser() && !self.waitingForCancel();
         });
 
         self.filament = ko.observableArray([]);
@@ -138,23 +142,23 @@ $(function ()  {
         });
 
         self.leftFilament = ko.computed(function ()  {
-            filaments = self.filament();
-            for (var key in filaments) {
-                if (filaments[key].name() == "Tool 1") {
-                    return formatFilament(filaments[key].data());
-                }
-            }
-            return "-"
+            var filaments = self.filament();
+            var filament = _.find(filaments, function (f) { return f.name == "tool1" });
+
+            if (filament)
+                return formatFilament(filament.data());
+            else
+                return "-";
         });
 
         self.rightFilament = ko.computed(function ()  {
-            filaments = self.filament();
-            for (var key in filaments) {
-                if (filaments[key].name() == "Tool 0") {
-                    return formatFilament(filaments[key].data());
-                }
-            }
-            return "-"
+            var filaments = self.filament();
+            var filament = _.find(filaments, function (f) { return f.name == "tool0" });
+
+            if(filament)
+                return formatFilament(filament.data());
+            else
+                return "-";
         });
 
         // self.stateStepString = ko.computed(function ()  {
@@ -276,6 +280,23 @@ $(function ()  {
             }
         };
 
+        self.onEventPrintPaused = function (payload)
+        {
+            // Enable resume button
+            self.waitingForPause(false);
+        }
+
+        self.onEventPrintCancelled = function (payload) {
+            // Enable start button
+            self.waitingForCancel(false);
+        }
+
+        self.onEventPrintResumed = function (payload)
+        {
+            // Enable pause button
+            self.waitingForPause(false);
+        }
+
         self._processJobData = function (data) {
             if (data.file) {
                 // Remove any possible hidden folder name
@@ -303,7 +324,7 @@ $(function ()  {
                     if (!_.startsWith(key, "tool") || !data.filament[key] || !data.filament[key].hasOwnProperty("length") || data.filament[key].length <= 0) continue;
 
                     result.push({
-                        name: ko.observable(gettext("Tool") + " " + key.substr("tool".length)),
+                        name: key,
                         data: ko.observable(data.filament[key])
                     });
                 }
@@ -354,8 +375,45 @@ $(function ()  {
             self.flyout.showFlyout("mode_select");
         };
 
-        self.pause = function ()  {
-            OctoPrint.job.togglePause();
+        self.pause = function () {
+
+            if (self.isPaused()) {
+                var needed = self.filament();
+
+                var needsLeft = _.some(needed,  {name: 'tool1' });
+                var needsRight = _.some(needed, {name: 'tool0' });
+                
+                var materialLeft = self.leftFilamentMaterial();
+                var materialRight = self.rightFilamentMaterial();
+
+                var message = undefined;
+                if (self.printMode() != "normal" && (materialLeft == "None" || materialRight == "None"))
+                    message = gettext("Please load filament in both the left and right extruder before you resume your print.")
+                else if (needsLeft && materialLeft  == "None")
+                    message = gettext("Please load filament in the left extruder before you resume your print.")
+                else if (needsRight && materialRight == "None")
+                    message = gettext("Please load filament in the right extruder before you resume your print.")
+                
+                if (message) {
+                    $.notify({ title: gettext('Cannot resume print'), text: message }, "error");
+                }
+                else {
+                    self.waitingForPause(true);
+
+                    OctoPrint.job.togglePause();
+                }
+            }
+            else {
+                self.waitingForPause(true);
+                $.notify({
+                    title: gettext("Print pausing"),
+                    text: gettext('Please wait while the print is being paused.')
+                }, {
+                    className: "warning",
+                    autoHide: true
+                });
+                OctoPrint.job.togglePause();
+            }
         };
 
         self.cancel = function ()  {
@@ -366,8 +424,19 @@ $(function ()  {
             var cancel_text = gettext("No");
             var dialog = {title: title, text: message, question: question, ok_text: ok_text, cancel_text: cancel_text};
             self.flyout.showConfirmationFlyout(dialog)
-                .done(function(){ 
-                    OctoPrint.job.cancel()
+                .done(function () {
+                    self.waitingForCancel(true);
+
+                    $.notify({
+                        title: gettext("Print cancelling"),
+                        text: gettext('Please wait while the print is being cancelled.')
+                    }, {
+                        className: "warning",
+                        autoHide: true
+                    });
+
+                    //OctoPrint.job.cancel()
+                    self._sendApi({ command: "immediate_cancel" });
                 });
         };
 
@@ -386,55 +455,23 @@ $(function ()  {
                 self.flyout.showFlyout('startup', true);
         }
 
-        self.updateChangelogContents = function()
-        {
-            OctoPrint.simpleApiGet('lui', {
-                data: {
-                    command: 'changelog_contents'
-                },
-                success: function (data) {
-                    self.changelogContents(data.changelog_contents);
-                    self.currentLuiVersion(data.lui_version);
-                }
-            });
-        }
-
-        self.showChangelogFlyout = function (updateContents) {
-            
-            if (updateContents)
-            {
-                self.updateChangelogContents();
-            }
-
-            self.flyout.showFlyout('changelog', true)
-                .always(function() {
-                    if (self.showChangelog()) {
-                        self._sendApi({command: "changelog_seen"});
-                    }
-                });
-        }
-
-        self.showFirmwareUpdateRequiredFlyout = function()
-        {
-            self.flyout.showFlyout('firmware_update_required', true);
-        }
-
-        self.closeFirmwareUpdateRequiredFlyout = function () {
-            self.flyout.closeFlyoutAccept("firmware_update_required");
-        }
-
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept('startup');
         }
 
-        self.beginHoming = function ()  {
+        self.beginHoming = function () {
+            self.isHomingRequested(true);
             self._sendApi({ command: "begin_homing" });
         }
 
-        self.beginMaintenance = function () 
+        self.showMaintenanceFlyout = function () 
         {
-
             self.settings.showSettingsTopic('maintenance', true)
+        }
+
+        self.showLogsFlyout = function ()
+        {
+            self.settings.showSettingsTopic('logs', true)
         }
 
         self.cancelAutoShutdown = function () {
@@ -456,7 +493,7 @@ $(function ()  {
 
         self.showPrinterErrorFlyout = function () {
             if (!self.flyout.isFlyoutOpen('printer_error'))
-                self.flyout.showFlyout('printer_error', true);
+                self.flyout.showFlyout('printer_error', true, true); // High priority flyout
         }
 
         self.closePrinterErrorFlyout = function () {
@@ -499,38 +536,24 @@ $(function ()  {
 
         self.fromResponse = function (data) {
             self.isHomed(data.is_homed);
-            self.isHoming(data.is_homing)
-            self.showChangelog(data.show_changelog);
-
-            self.changelogContents(data.changelog_contents);
-            self.currentLuiVersion(data.lui_version);
-
-            self.firmwareUpdateRequired(data.firmware_update_required);
-            self.firmwareVersionRequirement(data.firmware_version_requirement);
+            self.isHoming(data.is_homing);
+            self.isHomingRequested(false);
 
             self.settings.autoShutdown(data.auto_shutdown);
 
 
             // Startup flyout priority:
             // 1. Printer error
-            // 2. Firmware update required
-            // 3. Changelog
+            // 2. Firmware update required (update.js)
+            // 3. Changelog (update.js)
             // 4. Startup flyout (homing/maintenance)
             
             // This fromResponse method is also called after a firmware update and printer error/disconnect
 
-            if (data.firmware_update_required)
-                self.showFirmwareUpdateRequiredFlyout();
-            else {
-                self.closeFirmwareUpdateRequiredFlyout();
 
-                if (!self.isHomed()) {
-                    self.showStartupFlyout();
-                }
-              
-                if (self.showChangelog()) {
-                    self.showChangelogFlyout();
-                }
+
+            if (!self.isHomed()) {
+                self.showStartupFlyout();
             }
 
             if (data.printer_error_reason) {
@@ -672,6 +695,6 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
         ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#changelog_flyout", "#printer_error_flyout"]
+        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#printer_error_flyout"]
     ]);
 });

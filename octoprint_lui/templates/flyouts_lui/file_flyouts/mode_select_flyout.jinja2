@@ -26,7 +26,7 @@
             <div class="Table-item">
                 <ul class="button-area">
                     <li class="button warning-button">
-                        <a href="#save" data-bind="click: function () { printerState.enableForcePrint() } ">
+                        <a href="#save" data-bind="touchClick: function () { printerState.enableForcePrint() } ">
                             <span><i class="fa fa-exclamation-triangle"></i>Force print</span>
                         </a>
                     </li>
@@ -34,7 +34,7 @@
             </div>
         </div>
     </div> #}
-    {% if model == "Bolt" or debug_lui %} 
+    {% if printer_profile["dualX"] %}
     <div class="Table" data-bind="visible: gcodeAnalysisFinished() || printerState.forcePrint()">
         <div class="Table-row Table-header">
             <div class="Table-item">
@@ -77,7 +77,7 @@
                 <i class="fa fa-main-color fa-cube fa-2x"></i>
             </div>
         </div>
-        <div class="Table-row"">
+        <div class="Table-row">
             <div class="Table-item" data-bind="css: {disabled: isDualPrint() || !isWithinPrintDimensionsSyncMirrorMode()}">
                 <div class="radio_box">
                     <input type="radio" id="mode_mirror" name="modeSelect" value="mirror" data-bind="checked: printerState.printMode" />
@@ -87,7 +87,7 @@
             <div class="Table-item Table-item-grow-4" data-bind="css: {disabled: isDualPrint() || !isWithinPrintDimensionsSyncMirrorMode()}">
                {{ _('Mirror mode') }}
             </div>
-            <div class="Table-item" data-bind="click: function () { showDimensionWarning() }, css: { disabled: !enoughFilament() }">
+            <div class="Table-item" data-bind="touchClick: function () { showDimensionWarning() }, css: { disabled: !enoughFilament() }">
                 <i class="fa fa-main-color fa-info-circle fa-2x" data-bind="visible:  isDualPrint() || !isWithinPrintDimensionsSyncMirrorMode()"></i>
             </div>
             <div class="Table-item Table-item-grow-2" data-bind="css: {disabled: isDualPrint() || !isWithinPrintDimensionsSyncMirrorMode()}">
@@ -119,7 +119,7 @@
             <div class="Table-item">
                 <ul class="button-area">
                     <li class="button failed-button">
-                        <a href="#save" data-bind="click: function () { flyout.closeFlyout() } ">
+                        <a href="#save" data-bind="touchClick: function () { flyout.closeFlyout() } ">
                             <span>{{ _('Cancel') }}</span>
                         </a>
                     </li>
@@ -128,7 +128,7 @@
             <div class="Table-item" data-bind="css: {disabled: (!gcodeAnalysisFinished() && !printerState.forcePrint()) || !enoughFilament()}">
                 <ul class="button-area">
                     <li class="button ok-button">
-                        <a href="#save" data-bind="click: function () { startPrint() } ">
+                        <a href="#save" data-bind="touchClick: function () { startPrint() } ">
                             <span>{{ _('Start print') }}</span>
                         </a>
                     </li>

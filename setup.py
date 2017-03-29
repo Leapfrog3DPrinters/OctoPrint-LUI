@@ -14,7 +14,7 @@ plugin_package = "octoprint_lui"
 plugin_name = "OctoPrint-LUI"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "1.0.8"
+plugin_version = "1.1.0"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
@@ -33,7 +33,7 @@ plugin_url = "https://github.com/Booli/OctoPrint-LUI"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["tinydb>=3.2.0","RPi.GPIO"]
+plugin_requires = ["tinydb>=3.2.0","RPi.GPIO","cssmin"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point
@@ -41,7 +41,7 @@ plugin_requires = ["tinydb>=3.2.0","RPi.GPIO"]
 
 # Additional package data to install for this plugin. The subfolders "templates", "static" and "translations" will
 # already be installed automatically if they exist.
-plugin_additional_data = ["gcodes"]
+plugin_additional_data = ["gcodes", "printerProfiles"]
 
 # Any additional python packages you need to install with your plugin that are not contains in <plugin_package>.*
 plugin_addtional_packages = []

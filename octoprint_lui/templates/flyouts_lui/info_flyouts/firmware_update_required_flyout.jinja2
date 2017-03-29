@@ -1,35 +1,72 @@
 <div id="firmware_update_required">
-	<div class="Table">
-		<div class="Table-row">
-			<div class="Table-item">
+  <div class="Table">
+    <div class="Table-row">
+      <div class="Table-item">
         <span>
-				  The firmware of your printer is outdated. Please update your firmware to version <span data-bind="text: printerState.firmwareVersionRequirement"></span> or higher.
+          {{ _('The firmware of your printer is outdated. Please update your firmware to version ') }}<span data-bind="text: firmwareVersionRequirement"></span>{{ _(' or higher.') }}
         </span>
-			</div>
-		</div>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <span>
+          {{ _('If you are unable to update the firmware automatically, please visit support.lpfrg.com to download and update the firmware manually.') }}
+        </span>
+      </div>
+    </div>
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
           <li class="button">
-            <a href="#" data-bind="click: function () {showUpdateFlyout()}">
+            <a href="#" data-bind="touchClick: function () {showUpdateFlyout()}, css: { disabled: !loginState.loggedIn() }">
               <span>
-                Update
-              </span>
-            </a>
-          </li>
-        </ul>
-      </div>
-      <div class="Table-item">
-        <ul class="button-area">
-          <li class="button failed-button">
-            <a href="#" data-bind="click: function () {system.systemShutdown()}">
-              <span>
-                <i class="fa fa-power-off" style="padding-left: 0.5em;"></i>Shutdown
+                {{ _('Update') }}
               </span>
             </a>
           </li>
         </ul>
       </div>
     </div>
-	</div>
+    <div class="Table-row">
+      {% if local_addr %}
+
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button secondary-button">
+            <a href="#" data-bind="click: showWirelessFlyout">
+              <span>
+                <i class="fa fa-wifi" style="padding-left: 0.5em;"></i>{{ _('Wireless') }}
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      {% else %}
+
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button secondary-button">
+            <a href="#" data-bind="click: showLoginFlyout">
+              <span>
+                <i class="fa fa-user" style="padding-left: 0.5em;"></i>{{ _('Login') }}
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button failed-button">
+            <a href="#" data-bind="touchClick: function () {system.systemShutdown()}">
+              <span>
+                <i class="fa fa-power-off" style="padding-left: 0.5em;"></i>{{ _('Shutdown') }}
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>

@@ -3,9 +3,8 @@ $(function () {
         var self = this;
 
         self.loginState = parameters[0];
-        self.users = parameters[1];
-        self.printerProfiles = parameters[2];
-        self.flyout = parameters[3];
+        self.printerProfiles = parameters[1];
+        self.flyout = parameters[2];
         
         self.isErrorOrClosed = ko.observable(undefined);
         self.isOperational = ko.observable(undefined);
@@ -147,25 +146,21 @@ $(function () {
                 profile.bed = parseInt(profile.bed);
 
                 if (names.indexOf(profile.name.toLowerCase()) > -1) {
-                    $.notify({ title: title, text: profile + profile.name + '" already exists. Please ensure each profile has a unique name.' }, 'error');
+                    $.notify({ title: title, text: "\""  + profile.name + gettext('" already exists. Please ensure each profile has a unique name.') }, 'error');
                     return;
                 }
 
                 names.push(profile.name.toLowerCase());
 
-                //TODO: 'Soft-code' these values
-                if (LPFRG_MODEL == "Bolt") {
-                    if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 360) {
-                        $.notify({ title: title, text: profile + profile.name + gettext('" must have an extruder temperature between 150 &deg;C and 360 &deg;C.') }, 'error');
-                        return;
-                    }
-                } else
-                {
-                    if (isNaN(profile.extruder) || profile.extruder < 150 || profile.extruder > 275) {
-                        $.notify({ title: title, text: profile + profile.name + gettext('" must have an extruder temperature between 150 &deg;C and 275 &deg;C.') }, 'error');
-                        return;
-                    }
+                var printerProfile = self.printerProfiles.currentProfileData();
+
+                var minTemp = printerProfile["materialMinTemp"]();
+                var maxTemp = printerProfile["materialMaxTemp"]();
+                if (isNaN(profile.extruder) || profile.extruder < minTemp || profile.extruder > maxTemp) {
+                    $.notify({ title: title, text: "\"" + profile.name + _.sprintf(gettext('" must have an extruder temperature between %(mintemp)s &deg;C and %(maxtemp)s &deg;C.'), { "mintemp": minTemp, "maxtemp": maxTemp }) }, 'error');
+                    return;
                 }
+                
 
                 if (isNaN(profile.bed) || profile.bed < 0) {
                     $.notify({ title: title, text: profile + profile.name + gettext('" must have a bed temperature of at least 0 &deg;C.') }, 'error');
@@ -514,7 +509,7 @@ $(function () {
             if (self.settings === undefined) {
                 self.settings = ko.mapping.fromJS(serverChangedData);
             } else {
-                ko.mapping.fromJS(serverChangedData, self.settings);
+                ko.mapping.fromJS(serverChangedData, {}, self.settings);
             }
 
             // some special apply functions for various observables
@@ -618,7 +613,7 @@ $(function () {
         }
 
         self.onEventSettingsUpdated = function () {
-            var preventSettingsRefresh = _.any(self.allViewModels, function(viewModel) {
+            var preventSettingsRefresh = _.some(self.allViewModels, function(viewModel) {
                 if (viewModel.hasOwnProperty("onSettingsPreventRefresh")) {
                     try {
                         return viewModel["onSettingsPreventRefresh"]();
@@ -655,12 +650,12 @@ $(function () {
             // }
         };
 
-        self.showSettingsTopic = function (topic, blocking) {
+        self.showSettingsTopic = function (topic, blocking, high_priority) {
             self.settingsTopic(capitalize(topic));
             callViewModels(self.allViewModels, "onSettingsShown");
             callViewModels(self.allViewModels, "on" + self.settingsTopic()+ "SettingsShown");
 
-            return self.flyout.showFlyout(topic + '_settings', blocking)
+            return self.flyout.showFlyout(topic + '_settings', blocking, high_priority)
                 .done(function ()  {
                     self.saveData();
                 })
@@ -790,7 +785,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
-        ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "printerProfilesViewModel", "flyoutViewModel"],
         ["#settings", "#settings_flyouts"]
     ]);
 });

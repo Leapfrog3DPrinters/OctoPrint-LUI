@@ -85,12 +85,12 @@ $(function () {
 
     //~ Initialise is touch device:
     function isTouchDevice() {
-        return 'ontouchstart' in document.documentElement;
+        return (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch);
     }
 
     //~ Set menu hover css rules for non touch devices
     if (!isTouchDevice()){
-        var style_sheet = $('link[href="/plugin/lui/static/css/lui.css"]')[0].sheet
+        var style_sheet = $('link[rel="stylesheet"]')[0].sheet
         addCSSRule(style_sheet, ".icon-bar a:hover", "color: #434A54; background-color: #FFFFFF;");
         addCSSRule(style_sheet, ".icon-bar a:hover i", "color: #434A54;");
     }
@@ -129,12 +129,12 @@ $(function () {
         var constructorParameters = _.map(viewModel.dependencies, viewModelParametersMap) || [];
 
         if (constructorParameters.indexOf(undefined) !== -1) {
-            log.debug("Postponing", viewModel.name, "due to missing parameters:", _.keys(_.pick(_.object(viewModel.dependencies, constructorParameters), _.isUndefined)));
+            log.debug("Postponing", viewModel.name, "due to missing parameters:", _.keys(_.pick(_.zipObject(viewModel.dependencies, constructorParameters), _.isUndefined)));
             return;
         }
 
         // transform array into object if a plugin wants it as an object
-        constructorParameters = (viewModel.returnObject) ? _.object(viewModel.dependencies, constructorParameters) : constructorParameters;
+        constructorParameters = (viewModel.returnObject) ? _.zipObject(viewModel.dependencies, constructorParameters) : constructorParameters;
 
         // if we came this far then we could resolve all constructor parameters, so let's construct that view model
         log.debug("Constructing", viewModel.name, "with parameters:", viewModel.dependencies);
@@ -143,7 +143,7 @@ $(function () {
     
     // map any additional view model bindings we might need to make
     var additionalBindings = {};
-    _.each(OCTOPRINT_ADDITIONAL_BINDINGS, function(bindings) {
+    _.forEach(OCTOPRINT_ADDITIONAL_BINDINGS, function(bindings) {
         var viewModelId = bindings[0];
         var viewModelBindTargets = bindings[1];
         if (!_.isArray(viewModelBindTargets)) {
@@ -245,7 +245,7 @@ $(function () {
                 optionalDependencyPass = true;
             } else {
                 log.error("Could not instantiate the following view models due to unresolvable dependencies:");
-                _.each(unprocessedViewModels, function(entry) {
+                _.forEach(unprocessedViewModels, function(entry) {
                     log.error(entry.name + " (missing: " + _.filter(entry.dependencies, function(id) { return !_.has(viewModelMap, id); }).join(", ") + " )");
                 });
                 break;
@@ -294,6 +294,24 @@ $(function () {
         }
     };
 
+    ko.bindingHandlers.touchClick = {
+        init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var self = this;
+            if (isTouchDevice()) {
+                var newValueAccessor = function () {
+                    var result = {};
+                    result['mousedown'] = valueAccessor();
+                    return result;
+                }
+                ko.bindingHandlers.event.init.call(self, element, newValueAccessor, allBindings, viewModel, bindingContext)
+                $(element).on('click', function(event){
+                    event.preventDefault();
+                })            
+            } else {
+                ko.bindingHandlers.click.init(element, valueAccessor, allBindings, viewModel, bindingContext);
+            }
+        }
+    }
 
     // jquery plugin to select all text in an element
     // originally from: http://stackoverflow.com/a/987376
@@ -338,7 +356,7 @@ $(function () {
 
     var bindViewModels = function () {
         log.info("Going to bind " + allViewModelData.length + " view models...");
-        _.each(allViewModelData, function(viewModelData) {
+        _.forEach(allViewModelData, function(viewModelData) {
             if (!Array.isArray(viewModelData) || viewModelData.length != 2) {
                 return;
             }
@@ -365,7 +383,7 @@ $(function () {
 
                 viewModel._bindings = [];
 
-                _.each(targets, function(target) {
+                _.forEach(targets, function(target) {
                     if (target === undefined) {
                         return;
                     }
@@ -460,7 +478,7 @@ $(function () {
         });
 
     // Icon bar selection
-    $('.icon-bar a').on('click', function () {
+    $('.icon-bar a').on('mousedown', function () {
         //Remove open from open tab
         $('.tabs > .tab.open').removeClass('open');
         var tabID = $(this).attr('href');
@@ -523,7 +541,7 @@ $(function () {
 
     // jQuery overscroll
 
-    if (LPFRG_MODEL == "Xeed") {    
+    if (REQUIRE_OVERSCROLL) {    
         $(".flyout-body").overscroll({
                 direction: 'vertical',
                 showThumbs: false

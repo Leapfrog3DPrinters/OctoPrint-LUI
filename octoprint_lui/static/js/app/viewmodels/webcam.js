@@ -97,7 +97,7 @@ $(function ()  {
             },
             {
             },
-            "name",
+            "creation",
             [],
             [],
             5 // Timelapse files per page
@@ -128,7 +128,7 @@ $(function ()  {
             },
             {
             },
-            "name",
+            "creation",
             [],
             [],
             5 // Timelapse files per page
@@ -155,7 +155,7 @@ $(function ()  {
         }
 
         self.requestData = function ()  {
-            OctoPrint.timelapse.get(true)
+            OctoPrint.timelapse.get(true, { force: true })
                 .done(self.fromResponse);
         };
 

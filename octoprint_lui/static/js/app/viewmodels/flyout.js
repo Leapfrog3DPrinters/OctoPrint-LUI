@@ -80,24 +80,45 @@ $(function () {
         self.setOverlay();
     }
 
-    self.showFlyout = function (flyout, blocking) {
+    self.showFlyout = function (flyout, blocking, high_priority) {
 
-//TODO: Check if flyout open. If so, push to front and return its deferred
+        var template_flyout = '#' + flyout + '_flyout';
+        var blocking = blocking || false;
+        var high_priority = high_priority || false;
 
-      var deferred = $.Deferred();
-      var template_flyout = '#'+flyout+'_flyout';
-      var blocking = blocking || false;
-      self.blocking = blocking;
-      self.flyouts.push({deferred: deferred, template: template_flyout, blocking: blocking});
-      self.currentFlyoutTemplate = template_flyout;
+        var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
 
-      self.activateFlyout(template_flyout);
+        
+        if (!flyout_ref)
+        {
+            // If we can't find a reference to the flyout, create a new one
+            var deferred = $.Deferred();
 
-      // Call viewmodels with the flyout method on{FlyoutTopic}Shown
-      var method = "on" + capitalize(flyout) + "FlyoutShown";
-      callViewModels(self.allViewModels, method);
+            self.blocking = blocking;
+            flyout_ref = {
+                deferred: deferred,
+                template: template_flyout,
+                blocking: blocking,
+                high_priority: high_priority
+            }
+            self.flyouts.push(flyout_ref);
+        }
+        else
+        {
+            //The flyout is open already, move the current flyout backwards to ensure it will become visible
+            var current_z = $(self.currentFlyoutTemplate).css("z-index");
+            $(self.currentFlyoutTemplate).css("z-index", current_z - 1);
+        }
 
-      return self.flyouts()[self.flyouts().length - 1].deferred
+        // Set the flyout to be the current one and push it to the front
+        self.currentFlyoutTemplate = template_flyout;
+        self.activateFlyout(template_flyout, high_priority);
+
+        // Call viewmodels with the flyout method on{FlyoutTopic}Shown
+        var method = "on" + capitalize(flyout) + "FlyoutShown";
+        callViewModels(self.allViewModels, method);
+
+        return flyout_ref.deferred
     };
     
     self.showConfirmationFlyout = function(data, leaveFlyout) {
@@ -116,7 +137,7 @@ $(function () {
 
       // Show the confirmation flyout
       $('#confirmation_flyout').addClass('active');
-      $('#confirmation_flyout').css("z-index", self.flyouts().length + 1);
+      $('#confirmation_flyout').css("z-index", self.flyouts().length + 75); // Put them above high priority flyouts
       self.setOverlay();
 
       self.confirmationDeferred = $.Deferred()
@@ -160,20 +181,34 @@ $(function () {
         }
         else
         {
-            var flyout_ref = self.flyouts.pop();
+            // If we have any high priority flyouts open, we want to close them first
+            var flyout_ref = _.findLast(self.flyouts(), "high_priority" );
+
+            if (!flyout_ref)
+                flyout_ref = _.last(self.flyouts());
+
             var template_flyout = flyout_ref.template;
+            self.flyouts.remove(flyout_ref);
         }
 
         var deferred = flyout_ref.deferred;
         
-        if (deferred != undefined) {
+        if (deferred != undefined)
+        {
             deferred.reject();
-            if (self.flyouts().length > 0){
-                self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template;
-                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking;
-              } else {
+            if (self.flyouts().length > 0)
+            {
+                var last_flyout = _.findLast(self.flyouts(), "high_priority");
+                if (!last_flyout)
+                    last_flyout = _.last(self.flyouts());
+
+                self.currentFlyoutTemplate = last_flyout.template;
+                self.blocking = last_flyout.blocking;
+            }
+            else
+            {
                 self.blocking = false;
-              }
+            }
         }
         self.deactivateFlyout(template_flyout);
     };
@@ -191,33 +226,52 @@ $(function () {
         }
         else
         {
-            var flyout_ref = self.flyouts.pop();
+            // If we have any high priority flyouts open, we want to close them first
+            var flyout_ref = _.findLast(self.flyouts(), "high_priority");
+
+            if (!flyout_ref)
+                flyout_ref = _.last(self.flyouts());
+
             var template_flyout = flyout_ref.template;
+            self.flyouts.remove(flyout_ref);
         }
 
         var deferred = flyout_ref.deferred;
         
-        if (deferred != undefined) {
+        if (deferred != undefined)
+        {
             deferred.resolve();
-            if (self.flyouts().length > 0){
-                self.currentFlyoutTemplate = self.flyouts()[self.flyouts().length - 1].template;
-                self.blocking = self.flyouts()[self.flyouts().length - 1].blocking;
-            } else {
+
+            if (self.flyouts().length > 0)
+            {
+                var last_flyout = _.findLast(self.flyouts(), "high_priority");
+                if (!last_flyout)
+                    last_flyout = _.last(self.flyouts());
+
+                self.currentFlyoutTemplate = last_flyout.template;
+                self.blocking = last_flyout.blocking;
+            }
+            else
+            {
               self.blocking = false;
             }
         }
         self.deactivateFlyout(template_flyout);
     };
 
-    self.activateFlyout = function(template_flyout) {
+    self.activateFlyout = function (template_flyout, high_priority) {
         $(template_flyout).addClass('active');
-        $(template_flyout).css("z-index", self.flyouts().length);
+
+        if (high_priority) // Z-index them on top of other flyouts, but below warnings and confirmations
+            $(template_flyout).css("z-index", 50 + _.sumBy(self.flyouts(),  function (v) { return v.high_priority ? 1 : 0 }));
+        else
+            $(template_flyout).css("z-index", _.sumBy(self.flyouts(), function (v) { return v.high_priority ? 0 : 1; }));
+
         self.setOverlay();
     }
 
     self.deactivateFlyout = function (template_flyout) {
         $(template_flyout).removeClass('active');
-        // $(template_flyout).css("z-index", 1);
         self.setOverlay();
     }
 

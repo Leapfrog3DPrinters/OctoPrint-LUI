@@ -201,7 +201,8 @@ $(function ()  {
                 command: "get_files",
                 origin: origin,
                 filter: filter,
-                recursive: true
+                recursive: true,
+                force: true
             });
         }
 
@@ -255,13 +256,19 @@ $(function ()  {
                     return data["type"] && (data["type"] == "model" || data["type"] == "folder");
                 },
                 "emptyFolder": function (data) {
-                    var children_check = true;
-                    if (data["children"]) {
-                        children_check = data["children"].length != 0;
-                    } else {
-                        children_check = false;
+                    // Hide the calibration folder
+                    if (data["origin"] == "local" && data["type"] == "folder" && data["name"] == "calibration") {
+                        return false;
                     }
-                    return data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check);
+                    else {
+                        var children_check = true;
+                        if (data["children"]) {
+                            children_check = data["children"].length != 0;
+                        } else {
+                            children_check = false;
+                        }
+                        return data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check);
+                    }
                 }
             },
             "name",
@@ -297,7 +304,7 @@ $(function ()  {
         });
 
         self.isLoadActionPossible = ko.computed(function ()  {
-            return self.loginState.isUser() && !self.isPrinting() && !self.isPaused() && !self.isLoading();
+            return self.loginState.isUser() && !self.isPrinting() && !self.isPaused() && !self.isLoading() && !self.printerState.waitingForCancel();
         });
 
         self.isLoadAndPrintActionPossible = ko.computed(function ()  {
@@ -361,28 +368,16 @@ $(function ()  {
                     .done(function (data) {
                         self.gcodePreviews = data.previews;
                     }).always(function ()  {
-                        self.requestDataBase(filenameToFocus, locationToFocus, switchToPath)
+                        self.browseLocal(filenameToFocus);
                     });
 
             }
             else
             {
-                self.requestDataBase(filenameToFocus, locationToFocus, switchToPath)
+                self.browseLocal(filenameToFocus);
             }
             
         };
-
-        self.requestDataBase = function (filenameToFocus, locationToFocus, switchToPath)
-        {
-            self._otherRequestInProgress = true;
-            OctoPrint.files.list({ data: { recursive: true } }).done(preProcessList)
-                .done(function (response) {
-                    self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-                })
-                .always(function ()  {
-                    self._otherRequestInProgress = false;
-                });
-        }
 
         self.fromResponse = function (response, filenameToFocus, locationToFocus, switchToPath) {
             var files = response.files;
@@ -763,20 +758,20 @@ $(function ()  {
                 return true;
             }
 
-            // set print volume boundaries
-            var boundaries = {
-                minX : 0.0,
-                maxX : volumeInfo.width(),
-                minY : 0.0,
-                maxY : volumeInfo.depth(),
-                minZ : 0.0,
-                maxZ : volumeInfo.height()
-            };
-            if (LPFRG_MODEL == "Bolt" || DEBUG_LUI) {
-                boundaries["minY"] = -35.0;
-                boundaries["minZ"] = -1.0; // This is in just for safety but needs to be checked.
-                boundaries["maxX"] = 373; // This is all to cater for the wiping. TODO FIX IT.
+            var boundaryInfo = printerProfile.boundaries;
+            if (!boundaryInfo) {
+                return true;
             }
+
+            var boundaries = {
+                minX: boundaryInfo.minX(),
+                maxX: boundaryInfo.maxX(),
+                minY: boundaryInfo.minY(),
+                maxY: boundaryInfo.maxY(),
+                minZ: boundaryInfo.minZ(),
+                maxZ: boundaryInfo.maxZ()
+            };
+
             if (volumeInfo.origin() == "center") {
                 boundaries["maxX"] = volumeInfo.width() / 2;
                 boundaries["minX"] = -1 * boundaries["maxX"];
@@ -917,7 +912,7 @@ $(function ()  {
             grid += "</div></div></div>";
 
             var info = "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Info') + "</div></div>";
-            info += "<div class='Table-row'><div class='Table-item'>" + gettexT('To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.') + "</div></div>";
+            info += "<div class='Table-row'><div class='Table-item'>" + gettext('To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle.') + "</div></div>";
             var message = "";
             message += grid;
             message += info;
@@ -1003,11 +998,11 @@ $(function ()  {
         };
 
         self.enableRemove = function (data) {
-            return self.loginState.isUser() && !_.contains(self.printerState.busyFiles(), data.origin + ":" + data.name);
+            return self.loginState.isUser() && !_.includes(self.printerState.busyFiles(), data.origin + ":" + data.name);
         };
 
         self.enableSelect = function (data, printAfterSelect) {
-            var isLoadActionPossible = self.loginState.isUser() && self.isOperational() && !(self.isPrinting() || self.isPaused() || self.isLoading());
+            var isLoadActionPossible = self.loginState.isUser() && self.isOperational() && !(self.printerState.waitingForCancel() || self.isPrinting() || self.isPaused() || self.isLoading());
             return isLoadActionPossible && !self.listHelper.isSelected(data);
         };
 
@@ -1093,7 +1088,7 @@ $(function ()  {
                     }
 
                     if (entry["type"] == "folder" && entry["children"]) {
-                        return _.any(entry["children"], recursiveSearch);
+                        return _.some(entry["children"], recursiveSearch);
                     } else {
                         return entry["name"].toLocaleLowerCase().indexOf(query) > -1;
                     }

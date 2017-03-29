@@ -1,0 +1,5 @@
+{% if stepperTimeout %}
+M84 S{{ stepperTimeout }}; Set stepper disable timeout to 5min
+{% endif %}
+G1 Z300 F1200
+G1 X225 Y100 F6000

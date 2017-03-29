@@ -14,17 +14,17 @@
 			<div class="Table-item">
 				<ul class="button-area">
           <li class="button ok-button">
-            <a href="#cancel" data-bind="click: function() { flyout.closeFlyoutAccept('shutdown_confirmation') }">
+            <a href="#cancel" data-bind="touchClick: function() { flyout.closeFlyoutAccept('shutdown_confirmation') }">
               <span>{{ _('Auto-shutdown') }}</span>
             </a>
           </li>
 				  <li class="button failed-button">
-				    <a href="#save" data-bind="click: function() { systemShutdown(false); }">
+				    <a href="#save" data-bind="touchClick: function() { systemShutdown(false); }">
 				      <span>{{ _('Shutdown now') }}</span>
 				    </a>
 				  </li>
           <li class="button secondary-button">
-            <a href="#cancel" data-bind="click: function() { flyout.closeFlyout('shutdown_confirmation') }">
+            <a href="#cancel" data-bind="touchClick: function() { flyout.closeFlyout('shutdown_confirmation') }">
               <span>{{ _('Cancel') }}</span>
             </a>
           </li>

@@ -1,0 +1,11 @@
+{% if currentZ < 30  %}
+G1 Z30 F1200
+{% endif %}
+M605 S3; That reads: more awesomeness.
+{% if stepperTimeout %}
+M84 S{{ stepperTimeout }}; Set stepper disable timeout to 5min
+{% endif %}
+G1 X190 Y20 F6000
+{% if filamentChangeTool  %}
+T{{ filamentChangeTool }}
+{% endif %}

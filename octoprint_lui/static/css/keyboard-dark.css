@@ -1,14 +1,14 @@
 /* *** keyboard dark theme ***
   for when jQuery UI themes are not being used
-  See http://jsfiddle.net/Mottie/6dmqhLvh/
+  See https://jsfiddle.net/Mottie/6dmqhLvh/
  */
 .ui-keyboard {
 	/* adjust overall keyboard size using "font-size" */
-	font-size: 16px;
+	font-size: 14px;
 	text-align: center;
-	background: #FFFFFF;
+	background: #282828;
+	border: 1px solid #484848;
 	padding: 4px;
-	border: 1px solid #434A54;
 
 	/* include the following setting to place the
 	keyboard at the bottom of the browser window */
@@ -20,18 +20,10 @@
 	position: fixed;
 	white-space: nowrap;
 	overflow-x: auto;
+	/* see issue #484 */
+	-ms-touch-action: manipulation;
+	touch-action: manipulation;
 }
-
-/* Styles the text-preview on top of the keyboard */
-.ui-keyboard input
-{
-    border: none;
-    text-align: center;
-    font-size: 2.3em;
-    color: #888;
-    line-height: 2.9em;
-}
-
 .ui-keyboard-has-focus {
 	z-index: 16001;
 }
@@ -39,45 +31,51 @@
 	border: 1px solid #404040;
 	padding: 0 0.5em;
 	margin: 1px;
-	min-width: 2.5em;
-	height: 4em;
+	min-width: 3em;
+	height: 3em;
 	line-height: 3em;
 	vertical-align: top;
 	font-family: Helvetica, Arial, sans-serif;
-	color: #434A54;
+	color: #eee;
 	text-align: center;
 	border-radius: 5px;
-	background: #FFFFFF;
+	-webkit-box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.5);
+	box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.5);
+	background: #444;
+	background-image: -webkit-linear-gradient(-90deg, #444 0%, #333 100%);
+	background-image:         linear-gradient(-90deg, #444 0%, #333 100%);
 	cursor: pointer;
 	overflow: hidden;
 	-moz-user-focus: ignore;
 }
 .ui-keyboard-button:not([disabled]):hover {
-	color: #FFFFFF;
-	background: #434A54;
+	background: #eee;
+	background-image: -webkit-linear-gradient(-90deg, #4f4f4f 0%, #444 100%);
+	background-image:         linear-gradient(-90deg, #4f4f4f 0%, #444 100%);
 }
 .ui-keyboard-button:not([disabled]):active {
-	color: #FFFFFF;	background: #434A54;
+	background: #ddd;
+	background-image: -webkit-linear-gradient(-90deg, #555 0%, #5f5f5f 100%);
+	background-image:         linear-gradient(-90deg, #555 0%, #5f5f5f 100%);
 }
 .ui-keyboard-button span {
 	display: block;
 	width: 100%;
-	font-size: 1.8em;
+	font-size: 1.2em;
 	text-align: center;
-}
-
-.ui-keyboard-text span {
-	font-size: 1.5em;
 }
 /* make action keys extra-wide */
 .ui-keyboard-actionkey:not(.ui-keyboard-dec):not(.ui-keyboard-combo) {
-	min-width: 3.3em;
+	min-width: 6em;
 }
 .ui-keyboard-space {
 	width: 15em;
 }
 .ui-keyboard-actionkey:not(.ui-keyboard-dec):not(.ui-keyboard-combo) span {
-	font-size: 1.5em;
+	font-size: 0.8em;
+	position: relative;
+	top: -1em;
+	left: -1.6em;
 }
 .ui-keyboard-placeholder {
 	color: #888;

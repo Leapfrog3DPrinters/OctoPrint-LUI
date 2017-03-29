@@ -1,9 +1,23 @@
-# Change log 
+# Changelog 
 
-Change log for OctoPrint-LUI. 
+Changelog for OctoPrint-LUI. 
+
+## 1.1.0
+
+### This update requires new slicing profiles. Go to bolt.lpfrg.com for the new Simplify3D slicing profiles or update your Creatr Software settings by pressing the Update profiles button in the Profile editor.
+
+- Added ability to swap filament when the print is paused
+- Improved user experience when pausing or cancelling print
+- When updating software, firmware is automatically updated when necessary
+- Coordinate system is updated to match actual print area better(requires new slicing profiles)
+- Improved livestream performance. Older browsers are no longer supported
+- Timelapses are now ordered by date
+- Log files may be downloaded when the printer is unresponsive
+- Startup time improved by bundling javascript and CSS files
+- Updated all javascript libraries to the most recent versions
+- Fixed: auto shutdown is no longer initiated after calibration
 
 ## 1.0.8
-
 - Improved update procedure to reduce chance of corrupted installations
 - Temporarily disabled model size detection
 

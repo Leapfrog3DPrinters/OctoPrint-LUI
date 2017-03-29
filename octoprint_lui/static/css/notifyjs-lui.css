@@ -6,6 +6,11 @@
 
 .notifyjs-corner {
     width: 100%;
+    margin: 0 !important;
+}
+
+.notifyjs-wrapper, .notifyjs-container {
+    margin: 0 !important;
 }
 
 .notifyjs-lui-base .image {
