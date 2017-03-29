@@ -461,7 +461,10 @@ $(function ()  {
             });
         }
 
-        self.onBeforeBinding = function ()  {
+        self.onBeforeBinding = function () {
+            // This is a bit hackish, but we're gonna make a link from printerstate to our current filaments
+            self.printerState.loadedFilaments = ko.pureComputed(function () { return self.filaments(); });
+
             self.requestData();
             self.tool("tool0");
             self.copyMaterialProfiles();
@@ -475,10 +478,6 @@ $(function ()  {
         self.fromResponse = function (data) {
             ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.filaments);
             ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.updateFilaments);
-
-            // Notify printerstate of filament
-            self.printerState.leftFilamentMaterial(self.getFilamentMaterial("tool1"));
-            self.printerState.rightFilamentMaterial(self.getFilamentMaterial("tool0"));
         }
         self.requestData = function ()  {
             return OctoPrint.simpleApiGet('lui').done(self.fromResponse);

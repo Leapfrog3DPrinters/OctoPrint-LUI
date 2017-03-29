@@ -37,8 +37,7 @@ $(function ()  {
         self.timelapse = ko.observable(undefined);
 
         // These are updated from the filament viewmodel
-        self.leftFilamentMaterial = ko.observable(undefined);
-        self.rightFilamentMaterial = ko.observable(undefined);
+        self.loadedFilaments = undefined;
 
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
@@ -79,7 +78,7 @@ $(function ()  {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser() && !self.waitingForCancel();
         });
 
-        self.filament = ko.observableArray([]);
+        self.requiredFilaments = ko.observableArray([]);
         self.estimatedPrintTime = ko.observable(undefined);
         self.lastPrintTime = ko.observable(undefined);
 
@@ -140,7 +139,7 @@ $(function ()  {
         });
 
         self.leftFilament = ko.computed(function ()  {
-            var filaments = self.filament();
+            var filaments = self.requiredFilaments();
             var filament = _.find(filaments, function (f) { return f.name == "tool1" });
 
             if (filament)
@@ -150,7 +149,7 @@ $(function ()  {
         });
 
         self.rightFilament = ko.computed(function ()  {
-            var filaments = self.filament();
+            var filaments = self.requiredFilaments();
             var filament = _.find(filaments, function (f) { return f.name == "tool0" });
 
             if(filament)
@@ -314,7 +313,7 @@ $(function ()  {
                     });
                 }
             }
-            self.filament(result);
+            self.requiredFilaments(result);
         };
 
         self._processProgressData = function (data) {
@@ -363,21 +362,41 @@ $(function ()  {
         self.pause = function () {
 
             if (self.isPaused()) {
-                var needed = self.filament();
-
-                var needsLeft = _.some(needed,  {name: 'tool1' });
-                var needsRight = _.some(needed, {name: 'tool0' });
+                var tools = self.temperatureState.tools();
+                var loaded = self.loadedFilaments();
+                var needed = self.requiredFilaments();
                 
-                var materialLeft = self.leftFilamentMaterial();
-                var materialRight = self.rightFilamentMaterial();
-
                 var message = undefined;
-                if (self.printMode() != "normal" && (materialLeft == "None" || materialRight == "None"))
-                    message = gettext("Please load filament in both the left and right extruder before you resume your print.")
-                else if (needsLeft && materialLeft  == "None")
-                    message = gettext("Please load filament in the left extruder before you resume your print.")
-                else if (needsRight && materialRight == "None")
-                    message = gettext("Please load filament in the right extruder before you resume your print.")
+                var anyEmpty = false;
+
+                if (self.printMode() != "normal")
+                {
+                    // Check if all extruders are loaded with filament
+                    
+                    for (var i = 0; i < tools.length; i++)
+                    {
+                        // Look in the loaded filaments for the current tool and check if it has 'None' loaded
+                        if (_.some(loaded, function(filament) { return filament.tool() == tools[i].key && filament.materialProfileName() == "None" }))
+                            anyEmpty = true;
+                    }
+
+                    if(anyEmpty)
+                        message = gettext("Please load filament in both the left and right extruder before you resume your print.")
+                }
+                else
+                {
+                    // Check if required extruders are loaded with filament
+
+                    for (var i = 0; i < needed.length; i++)
+                    {
+                        // Look in the loaded filaments for the current tool and check if it has 'None' loaded
+                        if (_.some(loaded, function(filament) { return filament.tool() == needed[i].name && filament.materialProfileName() == "None" }))
+                            anyEmpty = true;
+                    }
+
+                    if(anyEmpty)
+                        message = gettext("Please load filament in the required extruders before you resume your print.")
+                }
                 
                 if (message) {
                     $.notify({ title: gettext('Cannot resume print'), text: message }, "error");
@@ -629,7 +648,7 @@ $(function ()  {
 
         self.updateAnalyzingActivity = function()
         {
-            if (self.filename() && (!self.estimatedPrintTime() || self.filament().length == 0))
+            if (self.filename() && (!self.estimatedPrintTime() || self.requiredFilaments().length == 0))
                 self.activities.push('Analyzing');
             else
                 self.activities.remove('Analyzing');
@@ -650,7 +669,7 @@ $(function ()  {
 
             // As of 1.0.8, model analysis is no longer shown to the user
            // self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
-            // self.filament.subscribe(self.updateAnalyzingActivity);
+            // self.requiredFilaments.subscribe(self.updateAnalyzingActivity);
         }
     }
 
