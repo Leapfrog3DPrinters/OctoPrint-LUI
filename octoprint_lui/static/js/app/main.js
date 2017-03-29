@@ -292,7 +292,6 @@ $(function () {
         }
     };
 
-
     // jquery plugin to select all text in an element
     // originally from: http://stackoverflow.com/a/987376
     $.fn.selectText = function () {
@@ -642,7 +641,7 @@ $(function () {
 
         ko.bindingHandlers.keyboardForeach = {
             init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-                return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
+                return ko.bindingHandlers.foreach.init(element, valueAccessor, allBindings, viewModel, bindingContext);
             },
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                 setTimeout(function ()  {
@@ -650,10 +649,11 @@ $(function () {
                     $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
 
                 }, 10);
-                return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
+                return ko.bindingHandlers.foreach.update(element, valueAccessor, allBindings, viewModel, bindingContext);
             }
         };
         ko.virtualElements.allowedBindings.keyboardForeach = true;
+
     }
 
     var slider = document.getElementById('slider');

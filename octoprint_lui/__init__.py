@@ -1213,7 +1213,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             result = dict({
                 'machine_info': self.machine_info,
-                'filaments': self.filament_database.all(),
+                'filaments': self._get_current_filaments(),
                 'is_homed': self.is_homed,
                 'is_homing': self.is_homing,
                 'reserved_usernames': self.reserved_usernames,
@@ -1260,10 +1260,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     filament_detection_cancel = [],
                     filament_detection_complete = [],
                     unload_filament = [],
-                    load_filament = ["profileName", "amount"],
+                    load_filament = ["materialProfileName", "amount"],
                     load_filament_cont = ["tool", "direction"],
                     load_filament_cont_stop = [],
-                    update_filament = ["tool", "amount", "profileName"],
+                    update_filament = ["tool", "amount", "materialProfileName"],
                     move_to_head_maintenance_position = [],
                     after_head_maintenance = [],
                     move_to_bed_maintenance_position = [],
@@ -1543,33 +1543,33 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.info("Unload filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
 
-    def _on_api_command_load_filament(self, profileName, amount, *args, **kwargs):
+    def _on_api_command_load_filament(self, materialProfileName, amount, *args, **kwargs):
 
-        if (profileName == "None"):
+        if (materialProfileName == "None"):
             # The user wants to load a None profile. So we just finish the swap wizard
             self.send_client_finished(dict(profile=None))
             return None
 
         selectedProfile = None
 
-        if profileName == "filament-detection" or profileName == "filament-detection-purge":
+        if materialProfileName == "filament-detection" or materialProfileName == "filament-detection-purge":
             # Get stored profile when filament detection was hit
             selectedProfile = self.filament_detection_profile
             temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
-        elif profileName == "purge":
+        elif materialProfileName == "purge":
             # Select current profile
             selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
             temp = int(selectedProfile['extruder'])
         else:
             # Find profile from key
-            selectedProfile = self._get_profile_from_name(profileName)
+            selectedProfile = self._get_profile_from_name(materialProfileName)
 
             temp = int(selectedProfile['extruder'])
 
         # Heat up to new profile temperature and load filament
         self.filament_change_profile = selectedProfile
 
-        if profileName == "filament-detection-purge" or profileName == "purge":
+        if materialProfileName == "filament-detection-purge" or materialProfileName == "purge":
             self.filament_amount = self.get_filament_amount()
             tool_num = int(self.filament_change_tool[len("tool"):])
             self.filament_change_amount = self.filament_amount[tool_num]
@@ -1633,16 +1633,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "tool1": self.filament_database.get(self._filament_query.tool == "tool1")["material"]
                 });
 
-    def _on_api_command_update_filament(self, tool, amount, profileName, *args, **kwargs):
+    def _get_current_filaments(self):
+        """ 
+        Returns a list of the currently loaded filaments [{tool, material, amount}]
+        """
+        return [{ "tool": entry["tool"], "materialProfileName": entry["material"]["name"], "amount": entry["amount"] } for entry in self.filament_database.all()]
+
+    def _on_api_command_update_filament(self, tool, amount, materialProfileName, *args, **kwargs):
         self._logger.info("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
         # Update the filament amount that is logged in tha machine
-        if profileName == "None":
+        if materialProfileName == "None":
             update_profile = {
                 "amount": 0,
                 "material": self.default_material
             }
         else:
-            selectedProfile = self._get_profile_from_name(profileName)
+            selectedProfile = self._get_profile_from_name(materialProfileName)
             update_profile = {
                 "amount": amount,
                 "material": selectedProfile
@@ -2901,10 +2907,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._settings.save()
 
-    def _get_profile_from_name(self, profileName):
+    def _get_profile_from_name(self, materialProfileName):
         profiles = self._settings.global_get(["temperature", "profiles"])
         for profile in profiles:
-            if(profile['name'] == profileName):
+            if(profile['name'] == materialProfileName):
                 selectedProfile = profile
 
         return selectedProfile

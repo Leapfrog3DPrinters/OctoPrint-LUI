@@ -772,3 +772,45 @@ ko.subscribable.fn.subscribeChanged = function (callback) {
         callback(latestValue, oldValue);
     });
 };
+
+function createSlider(target, value, min, max, step, percentage_container, input_field) {
+    var slider = document.getElementById(target);
+
+    noUiSlider.create(slider, {
+        start: value,
+        step: step,
+        behaviour: 'tap',
+        connect: 'lower',
+        range: {
+            'min': min,
+            'max': max
+        },
+        format: {
+            to: function (value) {
+                return value.toFixed(0);
+            },
+            from: function (value) {
+                return value;
+            }
+        }
+    });
+
+    var input_element = document.getElementById(input_field);
+    var percentage_element = document.getElementById(percentage_container);
+
+    slider.noUiSlider.on('update', function (values, handle) {
+        if (input_element)
+            input_element.value = values[handle];
+
+        if (percentage_element) {
+            percent = ((values[handle] / max) * 100).toFixed(0);
+            percentage_element.innerText = ((values[handle] / max) * 100).toFixed(0) + "%";
+        }
+    });
+
+    if (input_element) {
+        input_element.addEventListener('change', function () {
+            slider.noUiSlider.set(this.value);
+        });
+    }
+}

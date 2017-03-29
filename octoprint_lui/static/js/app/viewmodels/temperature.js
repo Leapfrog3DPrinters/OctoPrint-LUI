@@ -65,7 +65,7 @@ $(function () {
             // write back
             self.heaterOptions(heaterOptions);
             self.tools(tools);
-        };
+        }
 
         self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function () {
             self._printerProfileUpdated();

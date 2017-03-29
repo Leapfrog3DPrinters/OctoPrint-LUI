@@ -395,7 +395,6 @@ $(function () {
                     self.receiving(true);
                     self.sending(false);
                     try {
-                        self.fromResponse(data);
                         if (options.success) options.success(data, status, xhr);
                     } finally {
                         self.receiving(false);

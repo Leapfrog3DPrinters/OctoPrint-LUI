@@ -157,14 +157,12 @@
           <div class="Table-item">{{ _('Filament') }}</div>
         </div>
         <div class="Table-row">
+          <!-- ko foreach: filaments.slice(0).reverse() -->
           <div class="Table-row">
-            <div class="Table-item" data-bind="text: leftFilament"></div>
-            <div class="Table-item" data-bind="text: leftAmountString, , css: {file_failed: checkLeftFilamentAmount()}"></div>
+            <div class="Table-item" data-bind="text: materialProfileName"></div>
+            <div class="Table-item" data-bind="text: $root.getAmountString(amount())"></div>
           </div>
-          <div class="Table-row">
-            <div class="Table-item" data-bind="text: rightFilament"></div>
-            <div class="Table-item" data-bind="text: rightAmountString, css: {file_failed: checkRightFilamentAmount()}"></div>
-          </div>
+          <!-- /ko -->
         </div>
         {% if local_addr %}
         <div class="Table-row" data-bind="visible: (!printerState.isPrinting() || printerState.isPaused()) && !printerState.waitingForCancel()">

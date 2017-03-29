@@ -12,6 +12,15 @@ $(function () {
         self.poweringUpInfo = null;
         self.movingToMaintenancePositionInfo = null;
 
+        self.getPurgeButtonContents = function (tool) {
+            switch (tool) {
+                case 'tool0':
+                    return '<i class="fa fa-arrow-down"></i>' + gettext('Purge right');
+                case 'tool1':
+                    return '<i class="fa fa-arrow-down"></i>' + gettext('Purge left');
+            }
+        }
+
         self.sendJogCommand = function (axis, multiplier, distance) {
             if (typeof distance === "undefined")
                 distance = $('#jog_distance button.active').data('distance');

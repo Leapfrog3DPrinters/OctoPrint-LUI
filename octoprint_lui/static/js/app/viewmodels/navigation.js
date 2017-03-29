@@ -100,7 +100,7 @@ $(function () {
 
             return self.flyout.showFlyout(topic + '_settings', blocking, high_priority)
                 .done(function () {
-                    self.saveData();
+                    self.settings.saveData();
                 })
                 .always(function () {
                     callViewModels(self.allViewModels, "onSettingsHidden");
