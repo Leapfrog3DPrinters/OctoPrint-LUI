@@ -138,26 +138,6 @@ $(function ()  {
                 return gettext("Pause");
         });
 
-        self.leftFilament = ko.computed(function ()  {
-            var filaments = self.requiredFilaments();
-            var filament = _.find(filaments, function (f) { return f.name == "tool1" });
-
-            if (filament)
-                return formatFilament(filament.data());
-            else
-                return "-";
-        });
-
-        self.rightFilament = ko.computed(function ()  {
-            var filaments = self.requiredFilaments();
-            var filament = _.find(filaments, function (f) { return f.name == "tool0" });
-
-            if(filament)
-                return formatFilament(filament.data());
-            else
-                return "-";
-        });
-
         self.fileSelected = ko.computed(function ()  {
             if (self.filename())
                 return true
@@ -200,6 +180,17 @@ $(function ()  {
             self._processZData(data.currentZ);
             self._processBusyFiles(data.busyFiles);
         };
+
+        self.getShortToolName = function (tool)
+        {
+            switch (tool)
+            {
+                case "tool0":
+                    return gettext("R");
+                case "tool1":
+                    return gettext("L");
+            }
+        }
 
         self._processStateData = function (data) {
             var prevPaused = self.isPaused();
@@ -663,13 +654,8 @@ $(function ()  {
             
             self.filepath.subscribe(function ()  {
                 self.activities.remove(gettext('Creating preview'));
-                //self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
             });
-
-            // As of 1.0.8, model analysis is no longer shown to the user
-           // self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
-            // self.requiredFilaments.subscribe(self.updateAnalyzingActivity);
         }
     }
 

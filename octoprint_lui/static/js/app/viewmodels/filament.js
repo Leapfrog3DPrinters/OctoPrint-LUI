@@ -82,6 +82,16 @@ $(function ()  {
             }
         }
 
+        self.getSwapFilamentButtonContents = function (tool) {
+            switch (tool) {
+                case "tool0":
+                    return '<i class="fa fa-refresh"></i>' + gettext('Swap right');
+                case "tool1":
+                    return '<i class="fa fa-refresh"></i>' + gettext('Swap left');
+            }
+
+        }
+
         self.toolText = ko.pureComputed(function () {
             if (self.tool() == "tool0")
                 return gettext("Right");
