@@ -2,8 +2,6 @@ $(function ()  {
     function FilamentViewModel(parameters) {
         var self = this;
 
-        // The tool number for which the filament is being swapped
-
         self.loginState = parameters[0];
         self.settings = parameters[1];
         self.flyout = parameters[2];
@@ -241,12 +239,6 @@ $(function ()  {
             self.flyout.closeFlyoutAccept();
             };
 
-                // Api send functions
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-            };
-
         self.changeFilament = function (tool) {
             return self._sendApi({
                 command: "change_filament",
@@ -328,9 +320,7 @@ $(function ()  {
                 amount = 0;
             }
 
-            self._sendApi({
-                command: "update_filament",
-                tool: tool,
+            self._sendBlueprintApi("filament/" + tool, {
                 amount: amount,
                 materialProfileName: materialProfileName
             }).done(function () {
@@ -355,7 +345,7 @@ $(function ()  {
             });
 
 
-            };
+        }
 
         self.loadFilamentCont = function ()  {
             tool = self.tool();
@@ -489,9 +479,27 @@ $(function ()  {
             ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.filaments);
             ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.updateFilaments);
         }
+
+        // Api functions
+        self._getApi = function (urlSuffix) {
+            var url = OctoPrint.getBlueprintUrl("lui") + urlSuffix;
+            return OctoPrint.get(url);
+        }
+
+        //TODO: Get rid of this legacy method, and refactor the blueprint out
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            return OctoPrint.postJson(url, data);
+        };
+
+        self._sendBlueprintApi = function (urlSuffix, data) {
+            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
+            return OctoPrint.postJson(url, data);
+        };
+
         self.requestData = function ()  {
-            return OctoPrint.simpleApiGet('lui').done(self.fromResponse);
-            };
+            self._getApi("filament").done(self.fromResponse);
+        };
 
         self.onMaterialsSettingsShown = function () {
             self.requestData();

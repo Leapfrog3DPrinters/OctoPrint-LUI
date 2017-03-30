@@ -38,6 +38,7 @@ from octoprint.server import VERSION
 from octoprint.server.util.flask import get_remote_address
 from octoprint.events import Events
 from octoprint_lui.util.exceptions import UpdateError
+from octoprint.plugin import BlueprintPlugin
 
 # Constants
 TOOL_STATUS_IDLE = 'IDLE'
@@ -50,7 +51,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.AssetPlugin,
                 octoprint.plugin.SimpleApiPlugin,
-                octoprint.plugin.BlueprintPlugin,
+                BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
                 octoprint.printer.PrinterCallback):
@@ -656,7 +657,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             return StrictVersion(current_version) == StrictVersion(requirement)
 
-    @octoprint.plugin.BlueprintPlugin.route("/software/changelog", methods=["GET"])
+    @BlueprintPlugin.route("/software/changelog", methods=["GET"])
     def get_changelog(self):
         return jsonify({
             'contents': self._get_changelog_html(),
@@ -664,12 +665,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             'lui_version': self.plugin_version
             })
 
-    @octoprint.plugin.BlueprintPlugin.route("/software/changelog/refresh", methods=["GET"])
+    @BlueprintPlugin.route("/software/changelog/refresh", methods=["GET"])
     def refresh_changelog(self):
         self._read_changelog_file()
         return self.get_changelog()
 
-    @octoprint.plugin.BlueprintPlugin.route("/firmware", methods=["GET"])
+    @BlueprintPlugin.route("/firmware", methods=["GET"])
     def get_firmware_version_info(self):
         current_version = None
         version_requirement = None
@@ -687,8 +688,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "auto_update_started": self.auto_firmware_update_started 
         })
         
-    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["GET"], strict_slashes=False)
-    @octoprint.plugin.BlueprintPlugin.route("/firmware/update/<string:silent>", methods=["GET"], strict_slashes=False)
+    @BlueprintPlugin.route("/firmware/update", methods=["GET"], strict_slashes=False)
+    @BlueprintPlugin.route("/firmware/update/<string:silent>", methods=["GET"], strict_slashes=False)
     def get_firmware_update_info(self, silent = ''):
         """
         Starts a thread that fetches firmware updates. A socket message is sent whenever the process completes
@@ -815,7 +816,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return True
         
 
-    @octoprint.plugin.BlueprintPlugin.route("/firmware/update", methods=["POST"])
+    @BlueprintPlugin.route("/firmware/update", methods=["POST"])
     def do_firmware_update(self):
         if self.fw_version_info:
             fw_path = self.firmware_update_info.download_firmware(self.fw_version_info["url"])
@@ -849,7 +850,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self._logger.warning("Could not flash firmware. FlashArduino plugin not loaded.")
 
-    @octoprint.plugin.BlueprintPlugin.route("/update", methods=["GET"])
+    @BlueprintPlugin.route("/update", methods=["GET"])
     def get_updates(self):
         # Not the complete update_info array has to be send to front end
         update_frontend = self._create_update_frontend(self.update_info)
@@ -873,7 +874,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # By default return the cache
         return make_response(jsonify(status="cache", update=update_frontend, machine_info=self.machine_info), 200)
 
-    @octoprint.plugin.BlueprintPlugin.route("/update", methods=["POST"])
+    @BlueprintPlugin.route("/update", methods=["POST"])
     def do_updates(self):
         plugin = request.json["plugin"]
         update_info = self.update_info
@@ -1225,7 +1226,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # By default, the routes to LUI are not protected. SimpleAPI calls are protected though.
         return False
 
-    @octoprint.plugin.BlueprintPlugin.route("/webcamstream", methods=["GET"])
+    @BlueprintPlugin.route("/webcamstream", methods=["GET"])
     def webcamstream(self):
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
@@ -1247,7 +1248,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_preemptive_caching_enabled(self):
         return True
 
-    @octoprint.plugin.BlueprintPlugin.route("/settings", methods=["GET"])
+    @BlueprintPlugin.route("/settings", methods=["GET"])
     def get_settings(self):
         s = self._settings
 
@@ -1305,7 +1306,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             result = dict({
                 'machine_info': self.machine_info,
-                'filaments': self._get_current_filaments(),
                 'is_homed': self.is_homed,
                 'is_homing': self.is_homing,
                 'reserved_usernames': self.reserved_usernames,
@@ -1355,7 +1355,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     load_filament = ["materialProfileName", "amount"],
                     load_filament_cont = ["tool", "direction"],
                     load_filament_cont_stop = [],
-                    update_filament = ["tool", "amount", "materialProfileName"],
                     move_to_head_maintenance_position = [],
                     after_head_maintenance = [],
                     move_to_bed_maintenance_position = [],
@@ -1576,11 +1575,48 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_client_is_homing()
 
     #TODO: Remove?
-    @octoprint.plugin.BlueprintPlugin.route("/remote_homing", methods=["GET"])
+    @BlueprintPlugin.route("/remote_homing", methods=["GET"])
     def remote_homing(self):
         if self.debug:
             self._printer.commands('G28')
             self.send_client_is_homing()
+
+    ## Filament
+
+    @BlueprintPlugin.route("/filament", methods=["GET"])
+    def get_filament(self):
+        """
+        Returns a JSON response with the currently loaded filaments per tool
+        """
+        return make_response(jsonify({ "filaments": self._get_current_filaments() }), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>", methods=["POST"])
+    def update_filament(self, tool):
+        """
+        Overrides the currently loaded filament materials and amounts
+        """
+        data = request.json
+        amount = data.get("amount", 0)
+        materialProfileName = data.get("materialProfileName")
+
+        # Update the filament amount that is logged in the machine
+        if not materialProfileName or materialProfileName == "None":
+            update_profile = {
+                "amount": 0,
+                "material": self.default_material
+            }
+        else:
+            selectedProfile = self._get_profile_from_name(materialProfileName)
+            update_profile = {
+                "amount": amount,
+                "material": selectedProfile
+            }
+
+        self.set_filament_profile(tool, update_profile)
+        self.update_filament_amount()
+        self.send_client_filament_amount()
+
+        return make_response(jsonify(), 200)
 
     def _on_api_command_temperature_safety_timer_cancel(self):
         if self.temperature_safety_timer:
@@ -1734,23 +1770,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         return [{ "tool": entry["tool"], "materialProfileName": entry["material"]["name"], "amount": entry["amount"] } for entry in self.filament_database.all()]
 
-    def _on_api_command_update_filament(self, tool, amount, materialProfileName, *args, **kwargs):
-        self._logger.info("Update filament amount called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
-        # Update the filament amount that is logged in tha machine
-        if materialProfileName == "None":
-            update_profile = {
-                "amount": 0,
-                "material": self.default_material
-            }
-        else:
-            selectedProfile = self._get_profile_from_name(materialProfileName)
-            update_profile = {
-                "amount": amount,
-                "material": selectedProfile
-            }
-        self.set_filament_profile(tool, update_profile)
-        self.update_filament_amount()
-        self.send_client_filament_amount()
+    
 
     def _on_api_command_load_filament_cont(self, tool, direction, *args, **kwargs):
         self.load_filament_cont(tool, direction)
