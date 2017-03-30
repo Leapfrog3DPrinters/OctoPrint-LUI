@@ -137,64 +137,37 @@ $(function ()  {
             _.each(response.files, recursiveCheck);
         };
 
-        self.browseLocal = function (filenameToFocus) {
-            if (self.isLoadingFileList())
-                return;
-
-            self.isLoadingFileList(true);
-            if (filenameToFocus == undefined) {
-                filenameToFocus = ''
-                selectedFile = self.selectedFile();
-                if (selectedFile){
-                    filenameToFocus = selectedFile.name;
-                }
-            }
-            var locationToFocus = undefined;
-            var switchToPath = '';
-            self.loadFiles("local").done(preProcessList).done(function (response) {
-                self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-                self.currentOrigin("local");
-            }).always(function ()  { 
-                self.isLoadingFileList(false);
-            });
-        }
-
-        self.browseCloud = function()
+        self.browseOrigin = function (origin, filenameToFocus)
         {
             if (self.isLoadingFileList())
                 return;
 
-            self.network.requestData();
-
-            var filenameToFocus = '';
-            var locationToFocus = '';
-            var switchToPath = '';
-            self.loadFiles("cloud").done(preProcessList).then(function (response) {
-                self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-                self.currentOrigin("cloud");
-            }).always(function () { self.isLoadingFileList(false); });
-        }
-
-        self.browseUsb = function ()  {
-            if (self.isLoadingFileList())
-                return;
-
             self.isLoadingFileList(true);
-            var filenameToFocus = '';
-            var locationToFocus = '';
-            var switchToPath = '';
-            self.loadFiles("usb")
-                .done(preProcessList)
-                .fail(self.notifyUsbFail)
-                .then(function (response) {
-                    self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-                    self.currentOrigin("usb");
-                }).always(function ()  { self.isLoadingFileList(false); });
-        }
 
-        self.notifyUsbFail = function ()  {
-            $.notify({ title: gettex('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
-        };
+            var locationToFocus = undefined;
+            var switchToPath = '';
+
+            if (origin == "local" && filenameToFocus == undefined) {
+                filenameToFocus = ''
+                selectedFile = self.selectedFile();
+                if (selectedFile) {
+                    filenameToFocus = selectedFile.name;
+                }
+            }
+
+            self.loadFiles(origin).done(preProcessList).then(function (response) {
+                self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
+                self.currentOrigin(origin);
+            })
+            .fail(function () {
+                if(origin == "usb")
+                    $.notify({ title: gettext('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
+            })
+            .always(function () {
+                self.isLoadingFileList(false);
+            });
+           
+        }
 
         self.browseUsbForFirmware = function ()  {
             if (self.isLoadingFileList())
@@ -389,13 +362,13 @@ $(function ()  {
                     .done(function (data) {
                         self.gcodePreviews = data.previews;
                     }).always(function ()  {
-                        self.browseLocal(filenameToFocus);
+                        self.browseOrigin("local",filenameToFocus);
                     });
 
             }
             else
             {
-                self.browseLocal(filenameToFocus);
+                self.browseOrigin("local",filenameToFocus);
             }
             
         };
@@ -460,7 +433,7 @@ $(function ()  {
         {
             if (self.isLoadingFileList())
                 return;
-
+            
             self.isLoadingFileList(true);
             self.loadFiles(folder.origin, "", folder.path).done(preProcessList).then(function (children) {
                 folder.children = children.files;
@@ -570,7 +543,7 @@ $(function ()  {
                     if (self.flyout.flyouts().length > 0)
                         self.flyout.closeFlyoutAccept();
 
-                    self.browseLocal(file.name);
+                    self.browseOrigin("local",file.name);
                 })
                 .always(function () { self.isLoadingFile = false; })
             }
@@ -586,7 +559,7 @@ $(function ()  {
                     if (self.flyout.flyouts().length > 0)
                         self.flyout.closeFlyoutAccept();
 
-                    self.browseLocal(file.name);
+                    self.browseOrigin("local",file.name);
                 })
                 .always(function ()  { self.isLoadingFile = false; })
             }
@@ -989,24 +962,15 @@ $(function ()  {
             self.flyout.showWarning(title, message, false);
         };
 
-        self.sliceFile = function(file) {
-            if (!file) {
-                return;
-            }
-            self.slicing.show(file.origin, file.path, true);
-        };
+        self.refreshCurrentFolder = function (data)
+        {
+            var folder = self.elementByPath(self.currentPath());
 
-        self.initSdCard = function ()  {
-            OctoPrint.printer.initSd();
-        };
-
-        self.releaseSdCard = function ()  {
-            OctoPrint.printer.releaseSd();
-        };
-
-        self.refreshSdFiles = function ()  {
-            OctoPrint.printer.refreshSd();
-        };
+            if (folder)
+                self.loadChildrenAndBrowse(folder);
+            else
+                self.browseOrigin(self.currentOrigin());
+        }
 
         self.downloadLink = function (data) {
             if (data["refs"] && data["refs"]["download"]) {
@@ -1199,9 +1163,9 @@ $(function ()  {
 
             if ($('#files').hasClass('open')) {
                 if (!available)
-                    self.browseLocal();
+                    self.browseOrigin("local");
                 else
-                    self.browseUsb();
+                    self.browseOrigin("usb");
             }
             else if (available && (!self.flyout.isOpen() || !self.flyout.blocking)) {
                 var text = gettext("You have inserted a USB drive.");
@@ -1212,7 +1176,7 @@ $(function ()  {
                 self.flyout.showConfirmationFlyout(dialog)
                .done(function ()  {
                    changeTabTo("files");
-                   self.browseUsb();
+                   self.browseOrigin("usb");
                });
             }
             else if (available)
@@ -1223,7 +1187,7 @@ $(function ()  {
                 }, "success");
             }
             else {
-                self.browseLocal();
+                self.browseOrigin("local");
             }
         }
 
@@ -1241,7 +1205,7 @@ $(function ()  {
                     if(!current_path || current_path == "/")
                     {
                         // If we're on the 'select cloud' page, refresh everything
-                        self.browseCloud();
+                        self.browseOrigin("cloud");
                     }
                     else
                     {
@@ -1249,7 +1213,7 @@ $(function ()  {
                         // If so, reload the cloud page
                         _.forEach(self.cloud.serviceInfo(), function (service) {
                             if (!service.loggedIn() && current_path.startsWith(service.name()))
-                                self.browseCloud();
+                                self.browseOrigin("cloud");
                         });
                     }
                 }

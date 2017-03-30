@@ -39,7 +39,7 @@ $(function () {
                 var timer = setInterval(checkChild, 500);
 
                 function checkChild() {
-                    if (loginWindow.closed) {
+                    if (!loginWindow || loginWindow.closed) {
                         self.requestData();
                         clearInterval(timer);
                     }
@@ -54,7 +54,7 @@ $(function () {
                 var timer = setInterval(checkChild, 500);
 
                 function checkChild() {
-                    if (logoutWindow.closed) {
+                    if (!logoutWindow || logoutWindow.closed) {
                         self.requestData();
                         clearInterval(timer);
                     }

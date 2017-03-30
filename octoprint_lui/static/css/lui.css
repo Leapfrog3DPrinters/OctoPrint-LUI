@@ -952,7 +952,7 @@ select {
     margin-right: 5px; }
 
 .file_search {
-  flex-basis: 60%;
+  flex: 1 1;
   padding-left: 0.5em; }
 
 .file-search-input-container {
@@ -966,10 +966,16 @@ select {
     padding-bottom: 7px; }
 
 .file_sort {
-  flex-basis: 5%;
-  margin-left: auto; }
+  text-align: center; }
   .file_sort a {
-    color: #434A54; }
+    color: #434A54;
+    padding: 0 8px; }
+
+.file_refresh {
+  text-align: center; }
+  .file_refresh a {
+    color: #434A54;
+    padding: 0 8px; }
 
 .sort_menu .fa {
   padding-right: 6px; }
@@ -1004,9 +1010,6 @@ select {
   min-height: 50px;
   border-bottom: 1px solid #FF9734;
   flex-direction: column;
-  flex: 0 1 auto; }
-
-.file_footer {
   flex: 0 1 auto; }
 
 .file_main {

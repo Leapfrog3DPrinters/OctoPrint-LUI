@@ -11,7 +11,8 @@
   </div>
   <!-- ko foreach: serviceInfo -->
 	<div class="Table-row" data-bind="css: { disabled: !$root.isOnline() }">
-    <div class="Table-item">
+    <!-- We can't use Table-item here due to chromium bug -->
+    <div style="flex: 1 1; margin: auto 0">
       <img data-bind="attr: { src: $root.getCloudServiceIcon(name()) }" style="width: 23px; margin-right: 10px;" />
       <span data-bind="text: $root.getCloudServiceName(name())"></span>
     </div>

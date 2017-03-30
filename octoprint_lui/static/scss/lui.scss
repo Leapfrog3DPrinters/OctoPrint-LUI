@@ -1207,7 +1207,7 @@ select {
 }
 
 .file_search {
-  flex-basis: 60%;
+  flex: 1 1;
   padding-left: 0.5em;
 }
 
@@ -1230,11 +1230,20 @@ select {
     }
 }
 
-.file_sort{
-  flex-basis: 5%;
-  margin-left:auto;
+.file_sort {
+  text-align: center;
   & a {
     color: $main-color;
+    padding: 0 8px;
+  }
+}
+
+.file_refresh {
+  text-align: center;
+  & a {
+    color: $main-color;
+    padding: 0 8px;
+    
   }
 }
 
@@ -1288,10 +1297,6 @@ select {
   min-height: 50px;
   border-bottom: 1px solid $third-color;
   flex-direction: column;
-  flex: 0 1 auto;
-}
-
-.file_footer {
   flex: 0 1 auto;
 }
 

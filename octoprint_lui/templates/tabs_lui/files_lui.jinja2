@@ -7,15 +7,12 @@
     <div class="file_area">
 
       <div class="gcode_files">
-        <div class="file_footer">
-
-        </div>
         <div class="file_header">
           <div class="browse_modes">
             {%  if local_addr -%}
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: function () { browseLocal() }, css: { 'secondary-button': currentOrigin() == 'local' }">
+                <li class="button load-button" data-bind="click: function () { browseOrigin('local') }, css: { 'secondary-button': currentOrigin() == 'local' }">
                   <a href="#browse_local">
                     <span>
                       <i class="fa fa-hdd-o"></i>{{ _('Printer') }}
@@ -26,7 +23,7 @@
             </div>
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: function () { browseUsb() }, css: {disabled: !isUsbAvailable(), 'secondary-button': currentOrigin() == 'usb' }">
+                <li class="button load-button" data-bind="click: function () { browseOrigin('usb') }, css: {disabled: !isUsbAvailable(), 'secondary-button': currentOrigin() == 'usb' }">
                   <a href="#browse_usb">
                     <span>
                       <i class="fa fa-usb"></i>{{ _('USB') }}
@@ -37,7 +34,7 @@
             </div>
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: function () { browseCloud() }, css: {  'secondary-button': currentOrigin() == 'cloud' }">
+                <li class="button load-button" data-bind="click: function () { browseOrigin('cloud') }, css: {  'secondary-button': currentOrigin() == 'cloud' }">
                   <a href="#browse_cloud">
                     <span>
                       <i class="fa fa-cloud"></i>{{ _('Cloud') }}
@@ -55,8 +52,8 @@
                     <span>
                       <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
                     </span>
-                    <input id="gcode_upload" type="file" name="file" accept=".gcode,.gco,.g" class="fileinput-button">
-                            </a>
+                    <input id="gcode_upload" type="file" name="file" accept=".gcode,.gco,.g" class="fileinput-button" />
+                  </a>
                 </li>
               </ul>
             </div>
@@ -65,7 +62,7 @@
           <div class="file_search">
             <form class="form-search" data-bind="submit: performSearch">
               <div class="file-search-input-container">
-                <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;">
+                <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;" />
                   <div class="button-area" data-bind="visible: searchQuery()">
                     <ul>
                       <li class="button">
@@ -84,7 +81,7 @@
                 <a href="#">
                   <i class="fa fa-list"></i>
                 </a>
-                <ul>
+                <ul style="text-align: left">
                   <li class="menu_label">
                     <span>
                       <i class="fa fa-sort"></i>
@@ -116,6 +113,11 @@
                 </ul>
               </li>
             </ul>
+          </div>
+          <div class="file_refresh">
+            <a href="#" data-bind="click: refreshCurrentFolder">
+              <i class="fa fa-refresh"></i>
+            </a>
           </div>
         </div>
         <div class="loading" data-bind="visible: isLoadingFileList()">

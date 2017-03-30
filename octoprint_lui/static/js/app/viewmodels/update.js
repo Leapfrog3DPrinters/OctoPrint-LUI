@@ -122,7 +122,7 @@ $(function ()  {
                 })
                 .fail(function ()  { })
                 .always(function ()  {
-                    self.files.browseLocal(); // Reset file list to local gcodes
+                    self.files.browseOrigin("local"); // Reset file list to local gcodes
                 });
         };
 
