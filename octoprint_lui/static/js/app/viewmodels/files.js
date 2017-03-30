@@ -85,12 +85,6 @@ $(function ()  {
         self.isLoadingFile = false;
         self.isLoadingFileList = ko.observable(false);
 
-        self.addFolderDialog = undefined;
-        self.addFolderName = ko.observable(undefined);
-        self.enableAddFolder = ko.computed(function ()  {
-            return self.loginState.isUser() && self.addFolderName() && self.addFolderName().trim() != "";
-        });
-
         self.allItems = ko.observable(undefined);
         self.listStyle = ko.observable("folders_files");
         self.currentPath = ko.observable("");
@@ -227,21 +221,6 @@ $(function ()  {
                 }
             },
             {
-                "printed": function (data) {
-                    return !(data["prints"] && data["prints"]["success"] && data["prints"]["success"] > 0) || (data["type"] && data["type"] == "folder");
-                },
-                "sd": function (data) {
-                    return data["origin"] && data["origin"] == "sdcard";
-                },
-                "local": function (data) {
-                    return !(data["origin"] && data["origin"] == "sdcard");
-                },
-                "machinecode": function (data) {
-                    return data["type"] && (data["type"] == "machinecode" || data["type"] == "folder");
-                },
-                "model": function (data) {
-                    return data["type"] && (data["type"] == "model" || data["type"] == "folder");
-                },
                 "emptyFolder": function (data) {
                     // Hide the calibration folder
                     if (data["origin"] == "local" && data["type"] == "folder" && data["name"] == "calibration") {
@@ -260,7 +239,7 @@ $(function ()  {
             },
             "name",
             ["emptyFolder"],
-            [["sd", "local"], ["machinecode", "model"]],
+            [],
             0
         );
 
@@ -438,23 +417,6 @@ $(function ()  {
             };
 
             return recursiveSearch(path.split("/"), root);
-        };
-
-        self.showAddFolderDialog = function ()  {
-            if (self.addFolderDialog) {
-                self.addFolderDialog.modal("show");
-            }
-        };
-
-        self.addFolder = function ()  {
-            var name = self.addFolderName();
-
-            // "local" only for now since we only support local and sdcard,
-            // and sdcard doesn't support creating folders...
-            OctoPrint.files.createFolder("local", name, self.currentPath())
-                .done(function ()  {
-                    self.addFolderDialog.modal("hide");
-                });
         };
 
         self.loadFile = function (file, printAfterLoad) {
@@ -970,10 +932,6 @@ $(function ()  {
             return isLoadActionPossible && !self.listHelper.isSelected(data);
         };
 
-        self.enableSlicing = function (data) {
-            return self.loginState.isUser() && self.slicing.enableSlicingDialog();
-        };
-
         self.enableAdditionalData = function (data) {
             // TODO: Add anaylsing icon in files additional data.
             return data["gcodeAnalysis"] || data["prints"] && data["prints"]["last"];
@@ -1221,10 +1179,6 @@ $(function ()  {
             if (payload.type == "gcode") {
                 self.requestData(undefined, undefined, self.currentPath());
             }
-        };
-
-        self.onEventSlicingDone = function (payload) {
-            self.requestData(undefined, undefined, self.currentPath());
         };
 
         self.onEventMetadataAnalysisStarted = function (payload) {

@@ -31,6 +31,7 @@ $(function () {
         self.totalProgress = ko.observable(undefined);
 
         self.isHeating = ko.observable(false);
+        self.isStabilizing = ko.observable(false);
 
         self._printerProfileUpdated = function () {
             // Initialize the tools
@@ -132,22 +133,26 @@ $(function () {
             // Process temperature update fed from LUI
             var tools = self.tools();
             var isHeating = false;
+            var isStabilizing = false;
             for (var i = 0; i < tools.length; i++) {
 
                 if (tool_status.hasOwnProperty("tool" + i)) {
-                    tools[i]["status"](self.getToolStatusString(tool_status["tool" + i].status));
-                    tools[i]["css_class"](tool_status["tool" + i].css_class);
-                    isHeating = isHeating || tool_status["tool" + i].status == "HEATING";
+                    tools[i]["status"](self.getToolStatusString(tool_status["tool" + i]));
+                    tools[i]["css_class"](self.getToolCssClass(tool_status["tool" + i]));
+                    isHeating = isHeating || tool_status["tool" + i] == "HEATING";
+                    isStabilizing = isStabilizing || tool_status["tool" + i] == "STABILIZING";
                 }
             }
 
             if (tool_status.hasOwnProperty("bed")) {
-                self.bedTemp["status"](self.getToolStatusString(tool_status.bed.status));
-                self.bedTemp["css_class"](tool_status.bed.css_class);
-                isHeating = isHeating || tool_status.bed.status == "HEATING";
+                self.bedTemp["status"](self.getToolStatusString(tool_status["bed"]));
+                self.bedTemp["css_class"](self.getToolCssClass(tool_status["bed"]));
+                isHeating = isHeating || tool_status["bed"] == "HEATING";
+                isStabilizing = isStabilizing || tool_status["bed"] == "STABILIZING";
             }
 
             self.isHeating(isHeating);
+            self.isStabilizing(isStabilizing);
         };
 
         self.getToolName = function(key) {
@@ -167,6 +172,8 @@ $(function () {
             switch(status) {
                 case "HEATING":
                     return gettext("Heating");
+                case "STABILIZING":
+                    return gettext("Stabilizing");
                 case "COOLING":
                     return gettext("Cooling");
                 case "IDLE":
@@ -175,6 +182,24 @@ $(function () {
                     return gettext("Ready");
                 default:
                     return "";
+            }
+        }
+
+
+        self.getToolCssClass = function (status) {
+            switch (status) {
+                case "HEATING":
+                    return "bg-orange";
+                case "STABILIZING":
+                    return "bg-orange";
+                case "COOLING":
+                    return "bg-yellow";
+                case "IDLE":
+                    return "bg-main";
+                case "READY":
+                    return "bg-green"
+                default:
+                    return "bg-main";
             }
         }
 
@@ -187,8 +212,13 @@ $(function () {
             return result;
         }
 
-        self.statusString = ko.pureComputed(function() {
-            return (self.isHeating() ? gettext('Heating') : gettext('Printing'))
+        self.printingStatusString = ko.pureComputed(function() {
+            if (self.isStabilizing())
+                return gettext('Stabilizing');
+            else if (self.isHeating())
+                return gettext('Heating');
+            else
+                return gettext('Printing');
         });
 
         self.onAfterTabChange = function(current, previous) {

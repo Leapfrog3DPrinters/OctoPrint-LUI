@@ -100,7 +100,7 @@
           <div class="Table-item">{{ _('Status') }}</div>
           <div class="Table-item Table-item-grow-5">
             <div class="progress progress-striped">
-              <span class="bg-main" data-bind="text: temperatureState.statusString, css: {'bg-orange': temperatureState.isHeating()}, style: {width: temperatureState.totalProgress() + '%'}"></span>
+              <span class="bg-main" data-bind="text: temperatureState.printingStatusString, css: {'bg-orange': temperatureState.isHeating() || temperatureState.isStabilizing() }, style: {width: temperatureState.totalProgress() + '%'}"></span>
             </div>
           </div>
         </div>

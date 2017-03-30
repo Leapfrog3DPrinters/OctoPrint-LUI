@@ -8,7 +8,7 @@ $(function () {
 
     //~~ Logging setup
 
-    log.setLevel(CONFIG_DEBUG ? "debug" : "info");
+    log.setLevel(DEBUG_LUI ? "debug" : "info");
 
     //~~ OctoPrint client setup
     OctoPrint.options.baseurl = BASEURL;
@@ -170,6 +170,7 @@ $(function () {
     var allViewModelData = [];
     var pass = 1;
     var optionalDependencyPass = false;
+    var t0 = performance.now();
     log.info("Starting dependency resolution...");
     while (unprocessedViewModels.length > 0) {
         log.debug("Dependency resolution, pass #" + pass);
@@ -253,7 +254,8 @@ $(function () {
         log.debug("Dependency resolution pass #" + pass + " finished, " + unprocessedViewModels.length + " view models left to process");
         pass++;
     }
-    log.info("... dependency resolution done");
+    var t1 = performance.now();
+    log.info("... dependency resolution done in " + (t1 - t0).toFixed() + " ms");
 
     //~~ Custom knockout.js bindings
 
@@ -444,10 +446,13 @@ $(function () {
         throw new Error("settingsViewModel is missing, can't run UI");
     }
 
+    var t0 = performance.now();
     log.info("Initial application setup done, connecting to server...");
     var dataUpdater = new DataUpdater(allViewModels);
     dataUpdater.connect()
         .done(function () {
+            var t1 = performance.now();
+            log.info("Connected in " + (t1 - t0).toFixed() + " ms");
             log.info("Finalizing application startup");
 
             var startup = function() {
@@ -518,7 +523,45 @@ $(function () {
     });
 
     // notifyjs init
-
+    $.notify.addStyle("lui", {
+        html:
+            "<div>" +
+                "<div class='image' data-notify-html='image'/>" +
+                "<div class='text-wrapper'>" +
+                    "<div class='notify-title' data-notify-html='title'/>" +
+                    "<div class='notify-text' data-notify-html='text'/>" +
+                "</div>" +
+            "</div>",
+        classes: {
+            error: {
+                "color": "#fafafa !important",
+                "background-color": "#CC2B14",
+                "border": "1px solid #FF0026"
+            },
+            success: {
+                "background-color": "#A9CC3C",
+                "border": "1px solid #4DB149"
+            },
+            info: {
+                "color": "#fafafa !important",
+                "background-color": "#4590cd",
+                "border": "1px solid #1E90FF"
+            },
+            warning: {
+                "background-color": "#EDDB53",
+                "border": "1px solid #EEEE45"
+            },
+            black: {
+                "color": "#fafafa !important",
+                "background-color": "#333",
+                "border": "1px solid #000"
+            },
+            white: {
+                "background-color": "#f1f1f1",
+                "border": "1px solid #ddd"
+            }
+        }
+    });
     $.notify.defaults( 
         {
             arrowShow: false,

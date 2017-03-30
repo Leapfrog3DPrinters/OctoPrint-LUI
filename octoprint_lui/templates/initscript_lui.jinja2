@@ -4,20 +4,19 @@
   var API_BASEURL = BASEURL + "api/";
   var PLUGIN_BASEURL = BASEURL + "plugin/";
 
+  var IS_LOCAL = {%  if local_addr -%} true; {% else %} false; {%- endif %}
+  var DEBUG_LUI = {%  if debug_lui -%} true; {% else %} false; {%- endif %}
 
   var OCTOPRINT_VIEWMODELS = [];
   var ADDITIONAL_VIEWMODELS = [];
   var OCTOPRINT_ADDITIONAL_BINDINGS = [];
-
-  var CONFIG_DEBUG = {%  if debug -%} true; {% else %} false; {%- endif %}
-  var CONFIG_SD_SUPPORT = {% if enableSdSupport -%} true; {% else %} false; {%- endif %}
 
   var FILAMENT_DETECTION = {%  if printer_profile["filamentDetection"] -%} true; {% else %} false; {%- endif %}
   var FILAMENT_ROLL_LENGTH = {{ printer_profile["filamentRollLength"]|default(320) }};
   var REQUIRE_OVERSCROLL = {%  if printer_profile["requireOverscroll"] -%} true; {% else %} false; {%- endif %}
 
   var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
-  var SOCKJS_DEBUG = CONFIG_DEBUG;
+  var SOCKJS_DEBUG = DEBUG_LUI;
   // sockjs should define CLOSE_NORMAL for us, but they don't (from ws spec)
   var SOCKJS_CLOSE_NORMAL = 1000;
 
@@ -27,9 +26,6 @@
   var CONFIG_LOGFILESPERPAGE = 8;
   var CONFIG_USERSPERPAGE = 5;
   var CONFIG_ACCESS_CONTROL = true;
-
-  var IS_LOCAL = {%  if local_addr -%} true; {% else %} false; {%- endif %}
-  var DEBUG_LUI = {%  if debug_lui -%} true; {% else %} false; {%- endif %}
-
+  
   var LPFRG_MODEL = "{{ model }}"
 </script>

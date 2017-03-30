@@ -39,6 +39,13 @@ from octoprint.server.util.flask import get_remote_address
 from octoprint.events import Events
 from octoprint_lui.util.exceptions import UpdateError
 
+# Constants
+TOOL_STATUS_IDLE = 'IDLE'
+TOOL_STATUS_HEATING = 'HEATING'
+TOOL_STATUS_COOLING = 'COOLING'
+TOOL_STATUS_STABILIZING = 'STABILIZING'
+TOOL_STATUS_READY = 'READY'
+
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.AssetPlugin,
@@ -129,16 +136,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_info = None
 
         ##~ Temperature status
+        self.tool_status_stabilizing = False
         self.tool_status = {
-            "tool0": {"status": 'IDLE', 'css_class': "bg-none"},
-            "tool1": {"status": 'IDLE', 'css_class': "bg-none"},
-            "bed": {"status": 'IDLE', 'css_class': "bg-none"},
+            "tool0": TOOL_STATUS_IDLE,
+            "tool1": TOOL_STATUS_IDLE,
+            "bed": TOOL_STATUS_IDLE
         }
 
         self.old_temperature_data = None
         self.current_temperature_data = None
-        self.temperature_window = 6
-        self.ready_timer_default = {'tool0': 5, 'tool1': 5, 'bed': 5}
+        self.temperature_window = [-6, 10] # Below, Above target temp
+        self.ready_timer_default = {'tool0': 10, 'tool1': 10, 'bed': 10}
         self.ready_timer = {'tool0': 0, 'tool1': 0, 'bed': 0}
         self.callback_mutex = threading.RLock()
         self.callbacks = list()
@@ -1123,7 +1131,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/loglevel-1.4.1.js',
                     'plugin/lui/js/lib/md5-2.4.0.js',
                     'plugin/lui/js/lib/notify-0.4.2.js',
-                    'plugin/lui/js/lib/notify-lui.js',
                     'plugin/lui/js/lib/nouislider-9.2.0.js',
                     'plugin/lui/js/lib/sockjs-1.1.2.js',
                     'plugin/lui/js/lib/sprintf-1.0.3.js'
@@ -2635,7 +2642,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.wait_for_movements_command_sent and "ok" in line:
             self.wait_for_movements_command_sent = False
             self._on_movements_complete()
-            
+          
+        # Check if it is a temperature update, and we're waiting for a stabilized temperature
+        if line.startswith("T0:"):
+            self.tool_status_stabilizing = "W:" in line and not "W:?" in line
+
         return line
 
     def hook_actiontrigger(self, comm, line, action_trigger):
@@ -2709,7 +2720,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         We use this call to update the tool status with the function check_tool_status()
         """
-
+        
         if self.current_temperature_data == None:
             self.current_temperature_data = data
         self.old_temperature_data = deepcopy(self.current_temperature_data)
@@ -2726,6 +2737,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         A tool can be:
             - IDLE
             - HEATING
+            - STABILIZING
             - COOLING
             - READY
         """
@@ -2733,57 +2745,36 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if tool == 'time':
                 continue
 
-            if data['target'] != self.old_temperature_data[tool]['target']:
-                    # the target changed, reset the tool timer
-                    self.ready_timer[tool] = self.ready_timer_default[tool]
-
-            if self.ready_timer[tool] <= 0:
-                    # not waiting for any event on this tool, we can ignore it
-                    continue
-
             # some state vars
-            heating = data['target'] > 0
-            delta = data['target'] - data['actual']
-            abs_delta = abs(delta)
-            in_window = abs_delta <= self.temperature_window
-            stable = False
+            has_target = data['target'] > 0
 
-            if self.ready_timer[tool]:
-                # we are waiting for a stable target temperature, check if we are in our
-                # window and if so decrease the counter. If we fall out of the window,
-                # reset the counter
-                if in_window:
-                    self.ready_timer[tool] -= 1
-                    if self.ready_timer[tool] <= 0:
-                            stable = True
-                else:
-                    self.ready_timer[tool] = self.ready_timer_default[tool]
-
-            # process the status
-            if not heating and data["actual"] <= 35:
-                status = "IDLE"
-                css_class = "bg-main"
-            elif stable:
-                status = "READY"
-                css_class = "bg-green"
-            elif abs_delta > 0:
-                status = "HEATING"
-                css_class = "bg-orange"
+            if not has_target and data["actual"] <= 35:
+                status = TOOL_STATUS_IDLE
             else:
-                status = "COOLING"
-                css_class = "bg-yellow"
+                delta = data['target'] - data['actual']
+                in_window = data['actual'] >= data['target'] + self.temperature_window[0] and delta <= data['target'] + self.temperature_window[1]
+                stabilizing = self.tool_status_stabilizing
 
-            self.tool_status[tool]['status'] = status
-            self.tool_status[tool]['css_class'] = css_class
+                # process the status
+                if in_window and stabilizing:
+                    status = TOOL_STATUS_STABILIZING
+                elif in_window and not stabilizing:
+                    status = TOOL_STATUS_READY
+                elif delta > 0:
+                    status = TOOL_STATUS_HEATING
+                else:
+                    status = TOOL_STATUS_COOLING
+
+            self.tool_status[tool] = status
             self.change_status(tool, status)
-        self.send_client_tool_status()
 
+        self.send_client_tool_status()
 
     def change_status(self, tool, new_status):
         """
         Calls callback registered to tool change to status
         """
-        if new_status == "READY":
+        if new_status == TOOL_STATUS_READY:
             with self.callback_mutex:
                 for callback in self.callbacks:
                     try: callback(tool)
@@ -2801,7 +2792,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.debug("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
-        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool]['status'] == "READY"):
+        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool] == TOOL_STATUS_READY):
             if callback:
                 callback(tool)
             self.send_client_heating()

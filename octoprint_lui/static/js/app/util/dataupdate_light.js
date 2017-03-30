@@ -158,15 +158,6 @@ function DataUpdater(allViewModels) {
         callViewModels(self.allViewModels, "fromCurrentData", [event.data]);
     };
 
-    self._onSlicingProgress = function(event) {
-        callViewModels(self.allViewModels, "onSlicingProgress", [
-            data["slicer"],
-            data["model_path"],
-            data["machinecode_path"],
-            data["progress"]
-        ]);
-    };
-
     self._onEvent = function(event) {
         var gcodeUploadProgress = $("#gcode_upload_progress");
         var gcodeUploadProgressBar = $(".bar", gcodeUploadProgress);
@@ -183,41 +174,6 @@ function DataUpdater(allViewModels) {
                 if (payload && payload.hasOwnProperty("config_hash")) {
                     self._configHash = payload.config_hash;
                 }
-            } else if (type == "MovieRendering") {
-            } else if (type == "MovieDone") {
-            } else if (type == "MovieFailed") {
-            } else if (type == "PostRollStart") {
-            } else if (type == "SlicingStarted") {
-                gcodeUploadProgress.addClass("progress-striped").addClass("active");
-                gcodeUploadProgressBar.css("width", "100%");
-                if (payload.progressAvailable) {
-                    gcodeUploadProgressBar.text(_.sprintf(gettext("Slicing ... (%(percentage)d%%)"), { percentage: 0 }));
-                } else {
-                    gcodeUploadProgressBar.text(gettext("Slicing ..."));
-                }
-            } else if (type == "SlicingDone") {
-                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-                gcodeUploadProgressBar.css("width", "0%");
-                gcodeUploadProgressBar.text("");
-            } else if (type == "SlicingCancelled") {
-                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-                gcodeUploadProgressBar.css("width", "0%");
-                gcodeUploadProgressBar.text("");
-            } else if (type == "SlicingFailed") {
-                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-                gcodeUploadProgressBar.css("width", "0%");
-                gcodeUploadProgressBar.text("");
-
-                html = _.sprintf(gettext("Could not slice %(stl)s to %(gcode)s: %(reason)s"), payload);
-            } else if (type == "TransferStarted") {
-                gcodeUploadProgress.addClass("progress-striped").addClass("active");
-                gcodeUploadProgressBar.css("width", "100%");
-                gcodeUploadProgressBar.text(gettext("Streaming ..."));
-            } else if (type == "TransferDone") {
-                gcodeUploadProgress.removeClass("progress-striped").removeClass("active");
-                gcodeUploadProgressBar.css("width", "0%");
-                gcodeUploadProgressBar.text("");
-                filesViewModel.requestData(payload.remote, "sdcard");
             } else if (type == "PrintStarted") {
                 $.notify({
                     title: gettext("Print job started"),
@@ -265,23 +221,9 @@ function DataUpdater(allViewModels) {
                 )
             }
         }
-
-        var legacyEventHandlers = {
-            "UpdatedFiles": "onUpdatedFiles",
-            "MetadataStatisticsUpdated": "onMetadataStatisticsUpdated",
-            "MetadataAnalysisFinished": "onMetadataAnalysisFinished",
-            "SlicingDone": "onSlicingDone",
-            "SlicingCancelled": "onSlicingCancelled",
-            "SlicingFailed": "onSlicingFailed"
-        };
         _.each(self.allViewModels, function(viewModel) {
             if (viewModel.hasOwnProperty("onEvent" + type)) {
                 viewModel["onEvent" + type](payload);
-            } else if (legacyEventHandlers.hasOwnProperty(type) && viewModel.hasOwnProperty(legacyEventHandlers[type])) {
-                // there might still be code that uses the old callbacks, make sure those still get called
-                // but log a warning
-                log.warn("View model " + viewModel.name + " is using legacy event handler " + legacyEventHandlers[type] + ", new handler is called " + legacyEventHandlers[type]);
-                viewModel[legacyEventHandlers[type]](payload);
             }
         });
     };
@@ -314,7 +256,6 @@ function DataUpdater(allViewModels) {
         .onMessage("connected", self._onConnected)
         .onMessage("history", self._onHistoryData)
         .onMessage("current", self._onCurrentData)
-        .onMessage("slicingProgress", self._onSlicingProgress)
         .onMessage("event", self._onEvent)
         .onMessage("timelapse", self._onTimelapse)
         .onMessage("plugin", self._onPluginMessage);
