@@ -111,6 +111,10 @@ class DropboxCloudService(CloudService):
         return self._flow.start()
 
     def handle_auth_response(self, request):
+        if not self._flow:
+            self._logger.error("Could not handle unrequested Dropbox authentication")
+            return False
+
         try:
             self._access_token, _, _ = self._flow.finish(request.values)
             self._save_credentials()
@@ -223,6 +227,8 @@ class GoogleDriveCloudService(CloudService):
             if self._credentials.access_token_expired:
                 self._logger.warn("Google Drive credentials expired")
                 self._delete_credentials()
+            else:
+                self._http = self._credentials.authorize(self._http)
 
         return self._credentials
 
@@ -264,9 +270,14 @@ class GoogleDriveCloudService(CloudService):
         return self._flow.step1_get_authorize_url()
 
     def handle_auth_response(self, request):
+        if not self._flow:
+            self._logger.error("Could not handle unrequested Google Drive authentication")
+            return False
+
         access_token = request.values.get("code")
         try:
             self._credentials = self._flow.step2_exchange(access_token)
+            self._http = self._credentials.authorize(self._http)
             self._save_credentials()
             self._logger.info("Google Drive authenticated")
             return True
