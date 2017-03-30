@@ -5,8 +5,8 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function () { headMaintenancePosition() }">
-          <a href="">
+        <li class="button" data-bind="touchClick: function () { headMaintenancePosition() }">
+          <a href="#">
             <span>{{ _('Head maintenance position') }}</span>
           </a>
         </li>
@@ -16,8 +16,8 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function () { cleanBedPosition() }">
-          <a href="">
+        <li class="button" data-bind="touchClick: function () { cleanBedPosition() }">
+          <a href="#">
             <span>{{ _('Clean bed position') }}</span>
           </a>
         </li>
@@ -27,7 +27,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function () { setFilamentAmount() } ">
+        <li class="button" data-bind="touchClick: function () { setFilamentAmount() } ">
           <a href="#">
             <span>{{ _('Set filament amount') }}</span>
           </a>
@@ -39,7 +39,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function () { calibrateExtruders() }">
+        <li class="button" data-bind="touchClick: function () { calibrateExtruders() }">
           <a href="#">
             <span>{{ _('Calibrate extruders') }}</span>
           </a>
@@ -51,7 +51,7 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function () { calibrateBed() }">
+        <li class="button" data-bind="touchClick: function () { calibrateBed() }">
           <a href="#">
             <span>{{ _('Calibrate bed') }}</span>
           </a>
@@ -64,7 +64,7 @@
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="click: function () { $root.beginPurgeWizard(tool()); }, css: {disabled: materialProfileName() == 'None' || $root.printerState.isPrinting || !$root.printerState.isOperational() || !$root.loginState.loggedIn() } ">
+          <a href="#" data-bind="touchClick: function () { $root.beginPurgeWizard(tool()); }, css: {disabled: materialProfileName() == 'None' || $root.printerState.isPrinting || !$root.printerState.isOperational() || !$root.loginState.loggedIn() } ">
               <span data-bind="html: $root.getPurgeButtonContents(tool())"></span>
           </a>
         </li>
@@ -75,8 +75,8 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="click: function () { logFiles() }">
-          <a href="">
+        <li class="button" data-bind="touchClick: function () { logFiles() }">
+          <a href="#">
             <span>{{ _('Log files') }}</span>
           </a>
         </li>

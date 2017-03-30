@@ -161,7 +161,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_firmware_update_started = False
         self.fetching_firmware_update = False
 
-        self.firmware_info_command_sent = False
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
         self.firmware_info_properties["firmware_version"] = "LEAPFROG_FIRMWARE"
@@ -202,6 +201,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Update
         self.fetching_updates = False
+        self.installing_updates = False
+        self.git_lock = threading.RLock()
 
         ##~ Changelog
         self.changelog_filename = 'CHANGELOG.md'
@@ -337,6 +338,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Fix stuff on the image
             first_run_results.append(self._add_server_commands())
             first_run_results.append(self._disable_ssh())
+            first_run_results.append(self._set_chromium_args())
 
             # Clean up caches
             first_run_results.append(self._clean_webassets())
@@ -377,17 +379,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.warning("Install is not on master branch, going to switch")
             # So we are really still on devel, let's switch to master
             checkout_master_branch = None
-            try:
-                checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=self.update_info[4]["path"])
-            except subprocess.CalledProcessError as err:
-                self._logger.error("Can't switch branch to master: {path}. {err}".format(path=self.update_info[4]['path'], err=err))
-                return False
+            with self.git_lock:
+                try:
+                    checkout_master_branch = subprocess.check_output(['git', 'checkout', 'master'], cwd=self.update_info[4]["path"])
+                except subprocess.CalledProcessError as err:
+                    self._logger.error("Can't switch branch to master: {path}. {err}".format(path=self.update_info[4]['path'], err=err))
+                    return False
             
-            if checkout_master_branch:
-                self._logger.info("Switched OctoPrint from devel to master")
-                self.update_info[4]["update"] = True
-                self._send_client_message("forced_update")
-                self._update_plugins("OctoPrint")
+                if checkout_master_branch:
+                    self._logger.info("Switched OctoPrint from devel to master. Performing update later.")
+                    self.update_info[4]["forced_update"] = True
         
         # Return success by default
         return True
@@ -401,6 +402,64 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.exception("Could not disable SSH")
                 return False
         
+        return True
+
+    def _set_chromium_args(self):
+        """
+        Checks the command line arguments of chromium and updates them if necessary.
+        Part of the first_run
+        """
+
+        required_chromium_arguments = ["--touch-events", "--disable-pinch"]
+
+        if self.platform == "RPi" and not self.platform_info:
+            # If we don't have platform_info, it means we are < image v1.1
+
+            # Read current arguments
+            chromium_startfile = "/home/pi/.config/autostart/chromium.desktop"
+            
+            if not os.path.isfile(chromium_startfile):
+                self._logger.warning("Chromium file not found. Skipping update of command line arguments.")
+                return True
+
+            try:
+                with open(chromium_startfile, "r") as fr:
+                    chromium_startfile_contents = fr.readlines()
+            except Exception as e:
+                self._logger.exception("Could not read chromium file: {0}".format(e.message))
+                return False
+
+            full_line = chromium_startfile_contents[2]
+            prefix = "Exec=chromium-browser "
+            full_line_prefix = full_line[:len(prefix)]
+            full_line_suffix = full_line[len(prefix):]
+            for arg in required_chromium_arguments:
+                if not arg in full_line_suffix:
+                    full_line_suffix = arg + " " + full_line_suffix
+
+            new_full_line = full_line_prefix + full_line_suffix
+            
+            if new_full_line != full_line:
+
+                # Take ownership of the file (as we need to write to it)
+                octoprint_lui.util.execute("sudo chown pi:pi {0}".format(chromium_startfile))
+
+                # Prepare file contents
+                chromium_startfile_contents[2] = new_full_line
+
+                # Write new command line to file
+                try:
+                    with open(chromium_startfile, "w") as fw:
+                        fw.writelines(chromium_startfile_contents)
+                except Exception as e:
+                    self._logger.exception("Could not write to chromium file: {0}".format(e.message))
+                    return False
+
+                self._logger.info("Chromium command line updated to: {0}".format(new_full_line))
+            else:
+                self._logger.info("No changes for chromium command line")
+        else:
+            self._logger.info("Not on old RPi image, so skipping chromium command line update")
         return True
 
     def _clean_webassets(self):
@@ -686,7 +745,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "requires_lui_update": requires_lui_update
                     })
 
-
     def _auto_firmware_update(self):
         """
         Performs an auto-update of firmware if there's a firmware version requirement that doesn't match the current firmware version.
@@ -785,18 +843,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["GET"])
     def get_updates(self):
+        # Not the complete update_info array has to be send to front end
+        update_frontend = self._create_update_frontend(self.update_info)
+
         # Only update if we passed 30 min since last fetch or if we are forced
         force = request.values.get("force", "false") in valid_boolean_trues
         current_time = time.time()
         cache_time_expired = (current_time - self.last_git_fetch) > 3600
-        if not cache_time_expired and not force:
+
+        # First check if there's any forced update we need to execute
+        # If so, return the cache of updates
+        if self._perform_forced_updates():
+            self._logger.debug("Performing forced updates. Not fetching.")
+        elif not cache_time_expired and not force:
             self._logger.debug("Cache time of updates not expired, so not fetching updates yet")
-        # Not the complete update_info array has to be send to front end
-        update_frontend = self._create_update_frontend(self.update_info)
-        if (cache_time_expired or force) and not self.fetching_updates:
-            self._logger.debug("Cache time expired or forced to fetch gits. Start fetch worker.  ")
+        elif not self.fetching_updates:
+            self._logger.debug("Cache time expired or forced to fetch gits. Start fetch worker.")
             self._fetch_update_info_list(force)
             return make_response(jsonify(status="fetching", update=update_frontend, machine_info=self.machine_info), 200)
+
+        # By default return the cache
         return make_response(jsonify(status="cache", update=update_frontend, machine_info=self.machine_info), 200)
 
     @octoprint.plugin.BlueprintPlugin.route("/update", methods=["POST"])
@@ -829,7 +895,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.debug("No plugin given! Can't update that.")
             return make_response("No plugin given, can't update", 400)
 
+    def _perform_forced_updates(self):
+        """ 
+        Loops the update info list checking for any update that needs to be executed on startup. When found, executed immediately.
+        """
+        any_update = False
+        for update_info in self.update_info:
+            if update_info["forced_update"]:
+                update_info["update"] = True
+                any_update = True
+        
+        if any_update:
+            self._send_client_message("forced_update")
+            self._update_plugins("all")
+        
+        return any_update
+
     def _update_plugins(self, plugin):
+        if self.installing_updates:
+            self._logger.warn("Update installer thread already started. Not starting another one.")
+            self._send_client_message("update_error")
+            return
+
         plugins_to_update = []
         if plugin == "all":
             for update in self.update_info:
@@ -842,6 +929,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if not plugins_to_update:
             self._logger.debug("The updated plugin list remained empty. Can't start an empty update list.")
             return self._send_client_message("update_error")
+
+        self.installing_updates = True
 
         update_thread = threading.Thread(target=self._update_worker, args=((plugins_to_update,)))
         update_thread.daemon = False
@@ -864,6 +953,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # We made it! We have updated everything, send this great news to the front end
         self._logger.info("Update done!")
         self._send_client_message("update_success")
+
+        # We're closing the thread, so release the lock
+        self.installing_updates = False
 
         # And let's just restart the service also
         return self._perform_service_restart()
@@ -907,8 +999,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.fetching_updates = False
             self.last_git_fetch = time.time()
 
-        self._get_firmware_info()
-        data = dict(update=self._create_update_frontend(self.update_info), machine_info=  self.machine_info)
+        data = dict(update=self._create_update_frontend(self.update_info), machine_info=self.machine_info)
         return self._send_client_message("update_fetch_success", data)
 
 
@@ -922,35 +1013,38 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _is_update_needed(self, path):
         branch_name = None
-        try:
-            branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
-            branch_name = branch_name.strip('\n')
-        except subprocess.CalledProcessError as e:
-            msg = "Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output)
-            self._logger.warn(msg)
-            raise UpdateError(msg, e)
+        with self.git_lock:
+            try:
+                branch_name = subprocess.check_output(['git', 'symbolic-ref', '--short', '-q', 'HEAD'], cwd=path)
+                branch_name = branch_name.strip('\n')
+            except subprocess.CalledProcessError as e:
+                msg = "Can't get branch for:{path}. Output: {output}".format(path=path, output = e.output)
+                self._logger.warn(msg)
+                raise UpdateError(msg, e)
 
         if branch_name:
             local = None
             remote = None
 
-            try:
-                local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
-                local = local.strip('\n')
-            except subprocess.CalledProcessError as e:
-                msg = "Git check failed for local:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
-                self._logger.warn(msg)
-                raise UpdateError(msg, e)
+            with self.git_lock:
+                try:
+                    local = subprocess.check_output(['git', 'rev-parse', branch_name], cwd=path)
+                    local = local.strip('\n')
+                except subprocess.CalledProcessError as e:
+                    msg = "Git check failed for local:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                    self._logger.warn(msg)
+                    raise UpdateError(msg, e)
 
-            try:
-                remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
-                remote_s = remote_r.split()
-                if len(remote_s) > 0:
-                    remote = remote_s[0]
-            except subprocess.CalledProcessError as e:
-                msg = "Git check failed for remote:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
-                self._logger.warn(msg)
-                raise UpdateError(msg, e)
+            with self.git_lock:
+                try:
+                    remote_r = subprocess.check_output(['git', 'ls-remote', 'origin', '-h', 'refs/heads/' + branch_name], cwd=path)
+                    remote_s = remote_r.split()
+                    if len(remote_s) > 0:
+                        remote = remote_s[0]
+                except subprocess.CalledProcessError as e:
+                    msg = "Git check failed for remote:{path}. Message: {message}. Output: {output}".format(path=path, message = e.message, output = e.output)
+                    self._logger.warn(msg)
+                    raise UpdateError(msg, e)
 
             if not local or not remote:
                 return False ## If anything failed, at least try to pull
@@ -958,15 +1052,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 return local != remote
         else:
             return False
-
-
-    def _fetch_git_repo(self, path):
-        try:
-            output = subprocess.check_output(['git', 'fetch'],cwd=path)
-        except subprocess.CalledProcessError as err:
-            self._logger.warn("Can't fetch git with path: {path}. {err}".format(path=path, err=err))
-        self._logger.debug("Fetched git repo: {path}".format(path=path))
-
 
     ##~ OctoPrint Settings
     def get_settings_defaults(self):
@@ -1415,20 +1500,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _copy_calibration_file(self, calibration_src_filename):
         calibration_src_path = None
         calibration_dst_filename = "calibration.gcode"
-        calibration_dst_relpath = ".calibration"
+        calibration_dst_relpath = "calibration"
         calibration_dst_path = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_relpath, calibration_dst_filename)
         calibration_src_path = os.path.join(self._basefolder, "gcodes", calibration_src_filename)
-
+        self._logger.debug("Calibration destination path: {0}".format(calibration_dst_path))
         upload = octoprint.filemanager.util.DiskFileWrapper(calibration_src_filename, calibration_src_path, move = False)
 
         try:
             # This will do the actual copy
             added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_path, upload, allow_overwrite=True)
         except octoprint.filemanager.storage.StorageError:
+            self._logger.exception("Could not add calibration file: {0}".format(calibration_dst_path))
             self._send_client_message("calibration_failed", { "calibration_type": self.calibration_type})
             return None
 
-        return octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file)
+        path_on_disk = octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file)
+        self._logger.debug("Calibration path on disk: {0}".format(path_on_disk))
+        return path_on_disk
 
     def _disable_timelapse(self):
         config = self._settings.global_get(["webcam", "timelapse"], merged=True)
@@ -2526,9 +2614,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.head_in_maintenance_position()
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
-        if self.firmware_info_command_sent:
-            if "echo:" in line:
-                self._on_firmware_info_received(line)
+        if "echo:" in line and "FIRMWARE_NAME:" in line:
+            self._on_firmware_info_received(line) 
 
         if self.home_command_sent:
             if "ok" in line:
@@ -2832,6 +2919,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('lui').version,
                 'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2840,6 +2928,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('networkmanager').version,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2848,6 +2937,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('flasharduino').version,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2856,6 +2946,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': self._plugin_manager.get_plugin_info('gcoderender').version,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
@@ -2864,6 +2955,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'version': VERSION,
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'update': False,
+                'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             }
         ]
@@ -2966,7 +3058,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands('M115')
 
     def _on_firmware_info_received(self, line):
-        self.firmware_info_command_sent = False
         self._logger.info("M115 data received: %s" % line)
         line = line[5:].rstrip() # Strip echo and newline
        

@@ -24,7 +24,7 @@
             <span>{{ _('Yes') }}</span>
           </li>
           <li class="button  secondary-button">
-            <a href="#" data-bind="click: function () { startSwapFilamentWizard() }">
+            <a href="#" data-bind="touchClick: function () { startSwapFilamentWizard() }">
 
               <span>
                 <i class="fa fa-refresh"></i>{{ _('Swap filament') }}
@@ -90,7 +90,7 @@
               {{ _('Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind="text: filament.loadedFilamentAmount" class="bold"></span> left.') }}
             </div>
             <ul class="button-area">
-              <li class="button ok-button" id="fd_unload_cmd" data-bind="click: function () { filament.unloadFilament() }, css: { disabled: !loginState.loggedIn() || filament.filamentLoading()}">
+              <li class="button ok-button" id="fd_unload_cmd" data-bind="touchClick: function () { filament.unloadFilament() }, css: { disabled: !loginState.loggedIn() || filament.filamentLoading()}">
                 <a href="#">
                   <span>
                     <i class="fa fa-arrow-up"></i>{{ _('Unload') }}
@@ -116,7 +116,7 @@
             </div>
             <div class="explain">{{ _('Insert the filament in the filament drawer past both wheels.') }}</div>
             <ul class="button-area">
-              <li class="button ok-button" id="fd_unload_cmd" data-bind="click: function () { filament.loadFilament('filament-detection'); }, css: { disabled: !filament.selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filament.filamentLoading()}">
+              <li class="button ok-button" id="fd_unload_cmd" data-bind="touchClick: function () { filament.loadFilament('filament-detection'); }, css: { disabled: !filament.selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filament.filamentLoading()}">
                 <a href="#">
                   <span>{{ _('Load') }}</span>
                 </a>
@@ -129,14 +129,14 @@
     <div class="Table-row fd_swap_process_step" id="fd_finished_filament" >
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () { filament.loadFilamentCont() }, css: { disabled: filament.filamentLoadCont()}">
+          <li class="button" data-bind="touchClick: function () { filament.loadFilamentCont() }, css: { disabled: filament.filamentLoadCont()}">
             <a href="#">
               <span>
                 <i class="fa fa-arrow-down"></i>{{ _('Load extra filament') }}
               </span>
             </a>
           </li>
-          <li class="button failed-button" data-bind="click: function () { filament.loadFilamentContStop() }, css: { disabled: !filament.filamentLoadCont()}">
+          <li class="button failed-button" data-bind="touchClick: function () { filament.loadFilamentContStop() }, css: { disabled: !filament.filamentLoadCont()}">
             <a href="#">
               <span>
                 <i class="fa fa-close"></i>{{ _('Stop loading') }}
@@ -147,7 +147,7 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button ok-button" data-bind="click: function () { showFilamentDetectionWizardComplete() }, css: { disabled: !loginState.loggedIn()}">
+          <li class="button ok-button" data-bind="touchClick: function () { showFilamentDetectionWizardComplete() }, css: { disabled: !loginState.loggedIn()}">
             <a href="#">
               <span>
                 <i class="fa fa-check"></i>{{ _('Done') }}
@@ -200,19 +200,19 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button  ok-button">
-            <a href="#" data-bind="click: function () { completeFilamentDetection() }">
+            <a href="#" data-bind="touchClick: function () { completeFilamentDetection() }">
               <span>{{ _('Resume printing') }}</span>
             </a>
           </li>
           <li class="button  secondary-button">
-            <a href="#" data-bind="click: function () { startSwapFilamentWizard() }">
+            <a href="#" data-bind="touchClick: function () { startSwapFilamentWizard() }">
               <span>
                 <i class="fa fa-refresh"></i>{{ _('Swap filament') }}
               </span>
             </a>
           </li>
           <li class="button secondary-button">
-            <a href="#" data-bind="click: function () { startPurgeWizard() }">
+            <a href="#" data-bind="touchClick: function () { startPurgeWizard() }">
               <span>
                 <i class="fa fa-arrow-down"></i>{{ _('Purge filament') }}
               </span>
