@@ -1779,7 +1779,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/detection/stop_timer", methods=["POST"])
-    def filament_detection_stop_timer(self):
+    def filament_detection_stop_timer(self, tool):
         """
         Stops the filament detection temperature safety timer
         """
@@ -1792,7 +1792,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/detection/finish", methods=["POST"])
-    def filament_detection_finish(self):
+    def filament_detection_finish(self, tool):
         """
         Finishes the filament detection wizard, resets target temperaturess
         """
@@ -1809,7 +1809,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/detection/cancel", methods=["POST"])
-    def filament_detection_cancel(self):
+    def filament_detection_cancel(self, tool):
         """
         Cancels the print if there was a "filament detection". Does not stop the temperature timer!
         """
