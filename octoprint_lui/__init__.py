@@ -1346,15 +1346,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_api_commands(self):
             return dict(
-                    change_filament = ["tool"],
-                    change_filament_cancel = [],
-                    change_filament_done = [],
                     filament_detection_cancel = [],
                     filament_detection_complete = [],
-                    unload_filament = [],
-                    load_filament = ["materialProfileName", "amount"],
-                    load_filament_cont = ["tool", "direction"],
-                    load_filament_cont_stop = [],
                     move_to_head_maintenance_position = [],
                     after_head_maintenance = [],
                     move_to_bed_maintenance_position = [],
@@ -1591,7 +1584,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response(jsonify({ "filaments": self._get_current_filaments() }), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>", methods=["POST"])
-    def update_filament(self, tool):
+    def set_filament(self, tool):
         """
         Overrides the currently loaded filament materials and amounts
         """
@@ -1618,6 +1611,176 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/filament/<string:tool>/change/start", methods=["POST"])
+    def change_filament_start(self, tool):
+        """
+        Starts the change filament procedure, by setting the state variables server side and initiating the filament unload sequence. 
+        """
+        # Send to the front end that we are currently changing filament.
+        if self._printer.is_paused():
+            self.send_client_filament_in_progress(self.paused_materials)
+        else:
+            self.send_client_filament_in_progress()
+
+        # If paused, we need to restore the current parameters after the filament swap
+        self.paused_filament_swap = self._printer.is_paused()
+
+        # Set filament change tool and profile
+        self.filament_change_tool = tool
+        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
+        self._printer.change_tool(tool)
+
+        self.move_to_filament_load_position()
+
+        # Check if filament is loaded, if so report to front end.
+        if (self.filament_loaded_profile['material']['name'] == 'None'):
+            # No filament is loaded in this tool, directly continue to load section
+            self.send_client_skip_unload();
+
+        self._logger.info("Start change filament called with tool: {tool}, profile: {profile}".format(tool=tool, profile=self.filament_loaded_profile['material']['name']))
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/unload", methods=["POST"])
+    def change_filament_unload(self, tool):
+        """
+        The first step after starting the filament change procedure:
+        preheats and unloads the filament from the extruder
+        """
+        # Heat up to old profile temperature and unload filament
+        temp = int(self.filament_loaded_profile['material']['extruder'])
+        self.heat_to_temperature(self.filament_change_tool,
+                                temp,
+                                self.unload_filament)
+
+        self._logger.debug("Unload filament called")
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/load", methods=["POST"])
+    def change_filament_load(self, tool):
+        """
+        Preheats and loads the filament into the extruder.
+        Request: { loadFor, materialProfileName, amount }
+        """
+        data  = request.json
+        loadFor = data.get("loadFor", "swap")
+        materialProfileName = data.get("materialProfileName")
+        amount = data.get("amount", 0)
+
+        selectedProfile = None
+
+        if loadFor == "filament-detection" or loadFor == "filament-detection-purge":
+            # Get stored profile when filament detection was hit
+            selectedProfile = self.filament_detection_profile
+            temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
+        elif loadFor == "purge":
+            # Select current profile
+            selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
+            temp = int(selectedProfile['extruder'])
+        else:
+            if not materialProfileName or materialProfileName == "None":
+                # The user wants to load a None profile. So we just finish the swap wizard
+                self.send_client_finished(dict(profile=None))
+                return make_response(jsonify(), 200)
+
+            # Find profile from key
+            selectedProfile = self._get_profile_from_name(materialProfileName)
+            temp = int(selectedProfile['extruder'])
+
+        # Heat up to new profile temperature and load filament
+        self.filament_change_profile = selectedProfile
+
+        if loadFor == "filament-detection-purge" or loadFor == "purge":
+            self.filament_amount = self.get_filament_amount()
+            tool_num = int(self.filament_change_tool[len("tool"):])
+            self.filament_change_amount = self.filament_amount[tool_num]
+            self.loading_for_purging = True
+        else:
+            self.loading_for_purging = False
+            self.filament_change_amount = amount
+
+        self._logger.debug("Load filament called with profile {profile}, tool {tool}, amount {amount}".format(profile=selectedProfile, tool=self.filament_change_tool, amount=self.filament_change_amount))
+
+        self.heat_to_temperature(self.filament_change_tool,
+                                temp,
+                                self.load_filament)
+
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/extrude/start", methods=["POST"])
+    def extrude_start(self, tool):
+        """
+        Begins continuous purging of the extruder. 
+        Request: { direction (-1 or +1) }
+        """
+        data = request.json
+        direction = data.get("direction", 1)
+
+        # Limit input to positive or negative, no multiplication factors allowed here
+        if direction < 0:
+            direction = -1
+        elif direction >= 0:
+            direction = 1
+
+        self.load_filament_cont(tool, direction)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/extrude/finish", methods=["POST"])
+    def extrude_finish(self, tool):
+        """
+        Stops continuous purging of the extruder. 
+        """
+
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/finish", methods=["POST"])
+    def change_filament_finish(self, tool):
+        # Still don't know if this is the best spot TODO
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+
+        context = { "filamentAction": self.filament_action,
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
+				    "pausedFilamentSwap": self.paused_filament_swap 
+					}
+
+        self.execute_printer_script("change_filament_done", context)
+
+        self._restore_after_load_filament()
+        self._logger.debug("Finish change filament called")
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/cancel", methods=["POST"])
+    def change_filament_cancel(self, tool):
+        """
+        Abort mission! Stop filament loading.
+        Cancel all heat up and reset
+        """
+        
+        # Loading has already started, so just cancel the loading, which will stop heating already.
+        context = { "filamentAction": self.filament_action,
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
+				    "pausedFilamentSwap": self.paused_filament_swap
+					}
+
+        self._immediate_cancel(False)
+
+        self.execute_printer_script("change_filament_done", context)
+
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+        # Other wise we haven't started loading yet, so cancel the heating
+        # and clear all callbacks added to the heating.
+        else:
+            with self.callback_mutex:
+                del self.callbacks[:]
+            self._restore_after_load_filament()
+            self.send_client_cancelled()
+
+        self._logger.debug("Cancel change filament called")
+        return make_response(jsonify(), 200)
+
     def _on_api_command_temperature_safety_timer_cancel(self):
         if self.temperature_safety_timer:
             self.temperature_safety_timer.cancel()
@@ -1640,121 +1803,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_z_after_filament_load()
         self._printer.toggle_pause_print()
 
-    def _on_api_command_change_filament(self, tool, *args, **kwargs):
-        # Send to the front end that we are currently changing filament.
-        if self._printer.is_paused():
-            self.send_client_filament_in_progress(self.paused_materials)
-        else:
-            self.send_client_filament_in_progress()
+   
+ 
 
-        # If paused, we need to restore the current parameters after the filament swap
-        self.paused_filament_swap = self._printer.is_paused()
+    
 
-        # Set filament change tool and profile
-        self.filament_change_tool = tool
-        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
-        self._printer.change_tool(tool)
-
-        self.move_to_filament_load_position()
-
-        # Check if filament is loaded, if so report to front end.
-        if (self.filament_loaded_profile['material']['name'] == 'None'):
-            # No filament is loaded in this tool, directly continue to load section
-            self.send_client_skip_unload();
-
-        self._logger.info("Change filament called with tool: {tool}, profile: {profile} and {args}, {kwargs}".format(tool=tool, profile=self.filament_loaded_profile['material']['name'], args=args, kwargs=kwargs))
-
-    def _on_api_command_unload_filament(self, *args, **kwargs):
-
-        # Heat up to old profile temperature and unload filament
-        temp = int(self.filament_loaded_profile['material']['extruder'])
-        self.heat_to_temperature(self.filament_change_tool,
-                                temp,
-                                self.unload_filament)
-
-        self._logger.info("Unload filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
-
-    def _on_api_command_load_filament(self, materialProfileName, amount, *args, **kwargs):
-
-        if (materialProfileName == "None"):
-            # The user wants to load a None profile. So we just finish the swap wizard
-            self.send_client_finished(dict(profile=None))
-            return None
-
-        selectedProfile = None
-
-        if materialProfileName == "filament-detection" or materialProfileName == "filament-detection-purge":
-            # Get stored profile when filament detection was hit
-            selectedProfile = self.filament_detection_profile
-            temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
-        elif materialProfileName == "purge":
-            # Select current profile
-            selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
-            temp = int(selectedProfile['extruder'])
-        else:
-            # Find profile from key
-            selectedProfile = self._get_profile_from_name(materialProfileName)
-
-            temp = int(selectedProfile['extruder'])
-
-        # Heat up to new profile temperature and load filament
-        self.filament_change_profile = selectedProfile
-
-        if materialProfileName == "filament-detection-purge" or materialProfileName == "purge":
-            self.filament_amount = self.get_filament_amount()
-            tool_num = int(self.filament_change_tool[len("tool"):])
-            self.filament_change_amount = self.filament_amount[tool_num]
-            self.loading_for_purging = True
-        else:
-            self.loading_for_purging = False
-            self.filament_change_amount = amount
-
-        self._logger.info("Load filament called with profile {profile}, tool {tool}, amount {amount}, {args}, {kwargs}".format(profile=selectedProfile, tool=self.filament_change_tool, amount=self.filament_change_amount, args=args, kwargs=kwargs))
-
-        self.heat_to_temperature(self.filament_change_tool,
-                                temp,
-                                self.load_filament)
-
-    def _on_api_command_change_filament_cancel(self, *args, **kwargs):
-        # Abort mission! Stop filament loading.
-        # Cancel all heat up and reset
-        # Loading has already started, so just cancel the loading
-        # which will stop heating already.
-        context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
-				    "pausedFilamentSwap": self.paused_filament_swap
-					}
-
-        self._immediate_cancel(False)
-
-        self.execute_printer_script("change_filament_done", context)
-
-        if self.load_filament_timer:
-            self.load_filament_timer.cancel()
-        # Other wise we haven't started loading yet, so cancel the heating
-        # and clear all callbacks added to the heating.
-        else:
-            with self.callback_mutex:
-                del self.callbacks[:]
-            self._restore_after_load_filament()
-            self.send_client_cancelled()
-
-        self._logger.info("Cancel change filament called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
-
-    def _on_api_command_change_filament_done(self, *args, **kwargs):
-        # Still don't know if this is the best spot TODO
-        if self.load_filament_timer:
-            self.load_filament_timer.cancel()
-
-        context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
-				    "pausedFilamentSwap": self.paused_filament_swap 
-					}
-
-        self.execute_printer_script("change_filament_done", context)
-
-        self._restore_after_load_filament()
-        self._logger.info("Change filament done called with {args}, {kwargs}".format(args=args, kwargs=kwargs))
+    
 
     def _get_current_materials(self):
         """ Returns a dictionary of the currently loaded materials """
@@ -1772,12 +1826,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     
 
-    def _on_api_command_load_filament_cont(self, tool, direction, *args, **kwargs):
-        self.load_filament_cont(tool, direction)
-
-    def _on_api_command_load_filament_cont_stop(self, *args, **kwargs):
-        if self.load_filament_timer:
-            self.load_filament_timer.cancel()
 
     def _on_api_command_move_to_head_maintenance_position(self, *args, **kwargs):
 
@@ -2395,10 +2443,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message('filament_loading')
 
     def send_client_loading_cont(self):
-        self._send_client_message('filament_loading_cont')
+        self._send_client_message('filament_extruding')
 
     def send_client_loading_cont_stop(self):
-        self._send_client_message('filament_loading_cont_stop')
+        self._send_client_message('filament_extruding_finished')
 
     def send_client_loading_progress(self, data=None):
         self._send_client_message('filament_load_progress', data)

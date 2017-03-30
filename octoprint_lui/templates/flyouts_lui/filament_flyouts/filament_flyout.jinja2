@@ -81,10 +81,10 @@
     <div class="Table-row swap_process_step" id="finished_filament" >
         <div class="Table-item">
             <ul class="button-area">
-                <li class="button" data-bind="touchClick: function () { loadFilamentCont() }, css: { disabled: filamentLoadCont()}">
+                <li class="button" data-bind="touchClick: function () { startExtruding() }, css: { disabled: isExtruding()}">
                     <a href="#"><span><i class="fa fa-arrow-down"></i>{{ _('Extrude more filament') }}</span></a>
                 </li>
-                <li class="button failed-button" data-bind="touchClick: function () { loadFilamentContStop() }, css: { disabled: !filamentLoadCont()}">
+                <li class="button failed-button" data-bind="touchClick: function () { finishExtruding() }, css: { disabled: !isExtruding()}">
                     <a href="#"><span><i class="fa fa-close"></i>{{ _('Stop extruding') }}</span></a>
                 </li>
             </ul>

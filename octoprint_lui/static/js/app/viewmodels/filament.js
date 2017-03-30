@@ -67,7 +67,7 @@ $(function ()  {
         self.filamentLoading = ko.observable(false);
         self.filamentInProgress = ko.observable(false);
 
-        self.filamentLoadCont = ko.observable(false);
+        self.isExtruding = ko.observable(false);
 
         self.getFilamentUpdateButtonContents = function (tool)
         {
@@ -145,8 +145,8 @@ $(function ()  {
             }
             };
 
-                // Views
-                // ------------------
+        // Views
+        // ------------------
 
         self.showFilamentChangeFlyout = function (tool, forPurge) {
             self.isProfileLocked(false);
@@ -155,7 +155,7 @@ $(function ()  {
             self.filamentInProgress(true);
             self.forPurge(forPurge);
 
-            self.changeFilament(tool);
+            self.startChangeFilament(tool);
 
             if (!forPurge) {
                 self.filamentActionText(gettext("Swap"));
@@ -179,13 +179,9 @@ $(function ()  {
                 self.filamentInProgress(false);
                 self.selectedTemperatureProfile(undefined);
             })
-            .done(function ()  {
-                self.changeFilamentDone();
-            })
-            .fail(function ()  {
-                self.changeFilamentCancel();
-            });
-            };
+            .done(self.finishChangeFilament)
+            .fail(self.cancelChangeFilament);
+        };
 
         self.lockTemperatureProfile = function(paused_materials)
             {
@@ -235,37 +231,17 @@ $(function ()  {
             }
 
         self.finishedLoading = function ()  {
-                // We are finished close the flyout
+            // We are finished, close the flyout
             self.flyout.closeFlyoutAccept();
-            };
+        };
 
-        self.changeFilament = function (tool) {
-            return self._sendApi({
-                command: "change_filament",
-                tool: tool
-            });
-            }
+        self.startChangeFilament = function (tool) {
+            return self._sendApi("filament/" + tool + "/change/start");
+        }
 
-        self.changeFilamentCancel = function ()  {
-            self._sendApi({
-                command: "change_filament_cancel"
-            }).done(function(){
-                self.requestData();
-            });
-
-            }
-
-        self.changeFilamentDone = function ()  {
-            self._sendApi({
-                command: "change_filament_done"
-            });
-            }
-
-        self.unloadFilament = function ()  {
-            self._sendApi({
-                command: "unload_filament"
-            });
-            }
+        self.unloadFilament = function () {
+            return self._sendApi("filament/" + self.tool() + "/change/unload");
+        }
 
         self.loadFilament = function (loadFor) {
 
@@ -284,26 +260,34 @@ $(function ()  {
                 amount = 0;
             }
 
-            if (loadFor == "filament-detection" || loadFor == "filament-detection-purge" || loadFor == "purge") {
-                materialProfileName = loadFor;
-            }
-            else {
+            if (loadFor == "swap")
+            {
                 var profile = undefined;
 
                 if (self.isProfileLocked())
                     profile = self.preselectedTemperatureProfile();
-            else
+                else
                     profile = self.selectedTemperatureProfile()
 
                 materialProfileName = profile.name;
             }
 
-            self._sendApi({
-                command: "load_filament",
-                materialProfileName: materialProfileName,
-                amount: amount
-            });
-            };
+            return self._sendApi("filament/" + self.tool() + "/change/load",
+                {
+                    loadFor: loadFor,
+                    materialProfileName: materialProfileName,
+                    amount: amount
+                });
+        }
+
+        self.finishChangeFilament = function () {
+            return self._sendApi("filament/" + self.tool() + "/change/finish");
+        }
+
+        self.cancelChangeFilament = function () {
+            return self._sendApi("filament/" + self.tool() + "/change/cancel")
+                .done(self.requestData);
+        }
 
         self.updateFilament = function (tool, amount, materialProfileName) {
             var profile = self.materialProfiles().find(function (profile) { return profile.name == materialProfileName });
@@ -320,7 +304,7 @@ $(function ()  {
                 amount = 0;
             }
 
-            self._sendBlueprintApi("filament/" + tool, {
+            self._sendApi("filament/" + tool, {
                 amount: amount,
                 materialProfileName: materialProfileName
             }).done(function () {
@@ -347,22 +331,16 @@ $(function ()  {
 
         }
 
-        self.loadFilamentCont = function ()  {
-            tool = self.tool();
-            direction = 1;
+        self.startExtruding = function ()  {
+            self._sendApi("filament/" + self.tool() + "/extrude/start",
+                {
+                    direction: 1
+                });
+        }
 
-            self._sendApi({
-                command: "load_filament_cont",
-                tool: tool,
-                direction: direction
-            });
-            };
-
-        self.loadFilamentContStop = function ()  {
-            self._sendApi({
-                command: "load_filament_cont_stop"
-            });
-            };
+        self.finishExtruding = function ()  {
+            self._sendApi("filament/" + self.tool() + "/extrude/finish");
+        }
 
         // Handle plugin messages
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -398,11 +376,11 @@ $(function ()  {
                     self.filamentLoadProgress(messageData.progress);
                     break;
 
-                case "filament_loading_cont":
-                    self.filamentLoadCont(true);
+                case "filament_extruding":
+                    self.isExtruding(true);
                     break;
-                case "filament_loading_cont_stop":
-                    self.filamentLoadCont(false);
+                case "filament_extruding_finished":
+                    self.isExtruding(false);
                     break;
                 case "filament_unloading":
                 // Show unloading 
@@ -486,13 +464,7 @@ $(function ()  {
             return OctoPrint.get(url);
         }
 
-        //TODO: Get rid of this legacy method, and refactor the blueprint out
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
-        self._sendBlueprintApi = function (urlSuffix, data) {
+        self._sendApi = function (urlSuffix, data) {
             url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
             return OctoPrint.postJson(url, data);
         };

@@ -29,12 +29,12 @@ $(function ()  {
 
             self.flyout.showFlyout('filament_detection', true)
                 .done(function ()  {
-                    self.filament.changeFilamentDone();
+                    self.filament.finishChangeFilament();
                     self._completeFilamentDetectionApi();
                     console.log('Filament detection flyout accepted');
                 })
                 .fail(function ()  {
-                    self.filament.changeFilamentCancel();
+                    self.filament.cancelChangeFilament();
                 })
                 .always(function ()  {
                     // If this closes we need to reset stuff
