@@ -1346,12 +1346,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def get_api_commands(self):
             return dict(
-                    filament_detection_cancel = [],
-                    filament_detection_complete = [],
                     move_to_head_maintenance_position = [],
                     after_head_maintenance = [],
                     move_to_bed_maintenance_position = [],
-                    temperature_safety_timer_cancel = [],
                     begin_homing = [],
                     get_files = ["origin"],
                     select_usb_file = ["filename"],
@@ -1781,17 +1778,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Cancel change filament called")
         return make_response(jsonify(), 200)
 
-    def _on_api_command_temperature_safety_timer_cancel(self):
+    @BlueprintPlugin.route("/filament/<string:tool>/detection/stop_timer", methods=["POST"])
+    def filament_detection_stop_timer(self):
+        """
+        Stops the filament detection temperature safety timer
+        """
+
         if self.temperature_safety_timer:
             self.temperature_safety_timer.cancel()
             self.temperature_safety_timer = None
             self._send_client_message("temperature_safety", { "timer": self.temperature_safety_timer_value })
+        
+        return make_response(jsonify(), 200)
 
-    def _on_api_command_filament_detection_cancel(self):
-        self._printer.cancel_print()
-        #TODO: cancel temperature timer
-
-    def _on_api_command_filament_detection_complete(self):
+    @BlueprintPlugin.route("/filament/<string:tool>/detection/finish", methods=["POST"])
+    def filament_detection_finish(self):
+        """
+        Finishes the filament detection wizard, resets target temperaturess
+        """
         if self.filament_detection_tool_temperatures:
             for tool, data in self.filament_detection_tool_temperatures.items():
                 if tool != 'time':
@@ -1802,14 +1806,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.restore_z_after_filament_load()
         self._printer.toggle_pause_print()
+        return make_response(jsonify(), 200)
 
-   
+    @BlueprintPlugin.route("/filament/<string:tool>/detection/cancel", methods=["POST"])
+    def filament_detection_cancel(self):
+        """
+        Cancels the print if there was a "filament detection". Does not stop the temperature timer!
+        """
+        self._printer.cancel_print()
+        return make_response(jsonify(), 200)
  
-
-    
-
-    
-
     def _get_current_materials(self):
         """ Returns a dictionary of the currently loaded materials """
         #TODO: Fancy list comprehension stuff
