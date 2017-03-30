@@ -508,6 +508,7 @@ $(function ()  {
                     break;
                 case "machine_info_updated":
                     //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
+                    self.modelName(messageData.machine_type);
                     self.requestFirmwareData(); // Check if lui <> firmware requirement is met (and show/hide matching flyout)
                     break;
                 case "internet_offline":

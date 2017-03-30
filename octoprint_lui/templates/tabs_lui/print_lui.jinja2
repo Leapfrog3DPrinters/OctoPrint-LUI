@@ -46,7 +46,7 @@
         <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button" data-bind="click: function () {gotoFileSelect()}, css: {disabled: waitingForCancel() || !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select">
+              <li class="button" data-bind="touchClick: function () {gotoFileSelect()}, css: {disabled: waitingForCancel() || !isOperational() || isPrinting() || !loginState.loggedIn()} " id="file_select">
                 <a href="#">
                   <span>
                     <i class="fa fa-file"></i>{{ _('Select print job') }}
@@ -66,7 +66,7 @@
         <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button" data-bind="click: function () {showInfoFlyout()}">
+              <li class="button" data-bind="touchClick: function () {showInfoFlyout()}">
                 <a href="#">
                   <span>
                     <i class="fa fa-gears"></i>{{ _('Info') }}
@@ -77,7 +77,7 @@
           </div>
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button ok-button" data-bind="click: function () { print() }, css: { disabled: !isOperational() || waitingForCancel() || !fileSelected() || !loginState.loggedIn()}">
+              <li class="button ok-button" data-bind="touchClick: function () { print() }, css: { disabled: !isOperational() || waitingForCancel() || !fileSelected() || !loginState.loggedIn()}">
                 <a href="#">
                   <span>
                     <i class="fa fa-play"></i>{{ _('Start print') }}
@@ -94,7 +94,7 @@
         <div class="Table-row Table-header">
           <div class="Table-item">{{ _('Print Status') }}</div>
         </div>
-        <div class="Table-row" data-bind="click: function () {showInfoFlyout()}">
+        <div class="Table-row" data-bind="touchClick: function () {showInfoFlyout()}">
           <div class="Table-item">{{ _('Status') }}</div>
           <div class="Table-item Table-item-grow-5">
             <div class="progress progress-striped">
@@ -102,7 +102,7 @@
             </div>
           </div>
         </div>
-        <div class="Table-row" data-bind="click: function () {showInfoFlyout()}">
+        <div class="Table-row" data-bind="touchClick: function () {showInfoFlyout()}">
           <div class="Table-item">{{ _('Total') }}</div>
           <div class="Table-item Table-item-grow-5">
             <div class="progress">
@@ -113,7 +113,7 @@
         <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button" data-bind="click: function () {showInfoFlyout()}">
+              <li class="button" data-bind="touchClick: function () {showInfoFlyout()}">
                 <a href="#">
                   <span>
                     <i class="fa fa-gears"></i>{{ _('Info') }}
@@ -124,7 +124,7 @@
           </div>
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button" data-bind="click: function () { pause() }, css: {active: isPaused(), disabled: !enablePause()}, attr: {title: titlePauseButton}">
+              <li class="button" data-bind="touchClick: function () { pause() }, css: {active: isPaused(), disabled: !enablePause()}, attr: {title: titlePauseButton}">
                 <a href="#">
                   <span data-bind="visible: !isPaused()">
                     <i class="fa" data-bind="css: {'fa-pause': !isPaused(), 'fa-play': isPaused()}"></i> {{ _('Pause') }}
@@ -138,7 +138,7 @@
           </div>
           <div class="Table-item">
             <ul class="button-area">
-              <li class="button failed-button" data-bind="click: function () { cancel() }, css: {disabled: !enableCancel()}" title="{{ _('Cancels the print job') }}">
+              <li class="button failed-button" data-bind="touchClick: function () { cancel() }, css: {disabled: !enableCancel()}" title="{{ _('Cancels the print job') }}">
                 <a href="#">
                   <span>
                     <i class="fa fa-stop"></i>{{ _('Cancel') }}
@@ -171,7 +171,7 @@
           <div class="Table-row">
             <div class="Table-item">
               <ul class="button-area">
-                <li class="button secondary-button" data-bind="click: function () {showFilamentChangeFlyout('tool1')}, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() }">
+                <li class="button secondary-button" data-bind="touchClick: function () {showFilamentChangeFlyout('tool1')}, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() }">
                   <a href="#">
                     <span>
                       <i class="fa fa-refresh"></i>{{ _('Swap left') }}
@@ -184,7 +184,7 @@
           <div class="Table-row">
             <div class="Table-item">
               <ul class="button-area">
-                <li class="button secondary-button" data-bind="click: function () {showFilamentChangeFlyout('tool0')}, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() } ">
+                <li class="button secondary-button" data-bind="touchClick: function () {showFilamentChangeFlyout('tool0')}, css: { disabled: !printerState.isOperational() || !loginState.loggedIn() } ">
                   <a href="#">
                     <span>
                       <i class="fa fa-refresh"></i>{{ _('Swap right') }}
