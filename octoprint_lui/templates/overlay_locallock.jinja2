@@ -1,0 +1,6 @@
+<div id="locallock-unlock-container" data-bind="visible: isLocalLocked">
+	<h2>{{ _('Printer locked') }}</h2>
+	<span>{{ _('Your printer is currently locked. Please enter the unlock code to continue.') }}</span>
+
+  <input type="password" data-bind="value: settings.locallock_code" pattern="[0-9]*" inputmode="numeric" />
+</div>

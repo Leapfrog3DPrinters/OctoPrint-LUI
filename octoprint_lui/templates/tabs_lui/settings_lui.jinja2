@@ -84,17 +84,17 @@
         </ul>
       </div><!-- /Webcam -->
 
-      <!-- Users -->
+      <!-- Security -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('users')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('security')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
           <li class="topic_dash">
             <a href="#">
-              <i class="fa fa-user"></i>
+              <i class="fa fa-lock"></i>
             </a>
           </li>
           <li class="topic_name">
             <a href="#topic">
-              <span>{{ _('Users') }}</span>
+              <span>{{ _('Security') }}</span>
             </a>
           </li>
           <li class="topic_info">
@@ -103,7 +103,7 @@
             </a>
           </li>
         </ul>
-      </div><!-- /Users -->
+      </div><!-- /Security -->
       {% if local_addr %}
       <!-- Wireless -->
       <div class="settings_topic">

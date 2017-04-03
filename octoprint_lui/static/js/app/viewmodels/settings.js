@@ -35,6 +35,10 @@ $(function () {
         self.server_diskspace_warning_str = sizeObservable(self.server_diskspace_warning);
         self.server_diskspace_critical_str = sizeObservable(self.server_diskspace_critical);
 
+        self.locallock_enabled = ko.observable(false);
+        self.locallock_code = ko.observable(undefined);
+        self.locallock_timeout = ko.observable(0);
+
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 

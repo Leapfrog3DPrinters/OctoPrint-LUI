@@ -1,8 +1,9 @@
 $(function () {
-    function UsersViewModel(parameters) {
+    function SecurityViewModel(parameters) {
         var self = this;
 
         self.loginState = parameters[0];
+        self.settings = parameters[1];
 
         self.reservedUsernames = [];
 
@@ -312,11 +313,17 @@ $(function () {
                 self.requestData();
             }
         }
+
+        self.toggleLocalLock = function()
+        {
+            var currentValue = self.settings.locallock_enabled();
+            self.settings.locallock_enabled(!currentValue);
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
-        UsersViewModel,
-        ["loginStateViewModel"],
-        ["#users_settings_flyout_content"]
+        SecurityViewModel,
+        ["loginStateViewModel", "settingsViewModel"],
+        ["#security_settings_flyout_content"]
     ]);
 });

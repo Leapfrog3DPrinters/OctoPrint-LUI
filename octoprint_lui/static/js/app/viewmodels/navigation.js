@@ -10,8 +10,32 @@ $(function () {
 
         self.numUpdates = ko.observable(0);
 
+        self.isLocalLocked = ko.observable(false);
+
         self.showLoginFlyout = function ()  {
             self.flyout.showFlyout('login');
+        }
+
+        self.setOverlay = function () {
+            var flyouts = self.flyout.flyouts();
+            var isFlyoutOpen = self.flyout.warnings().length > 0 || self.flyout.infos().length > 0 || self.flyout.flyouts().length > 0 ||
+                $('#confirmation_flyout').hasClass('active') || $(self.flyout.template_flyout).hasClass('active');
+
+            if (isFlyoutOpen || self.isLocalLocked())
+                $('.overlay').addClass('active');
+            else
+                $('.overlay').removeClass('active');
+        }
+        
+        self.lock = function()
+        {
+            //TODO: Notify and lock backend
+            self.isLocalLocked(true);
+        }
+
+        self.unlock = function (code) {
+            //TODO: Confirm code before unlocking
+            self.isLocalLocked(false);
         }
 
         //TODO: Remove!
@@ -109,7 +133,13 @@ $(function () {
 
         self.onStartup = function()
         {
-            $('.network-status a').click(function ()  { self.showSettingsTopic('wireless') });
+            $('.network-status a').click(function () { self.showSettingsTopic('wireless') });
+
+            self.isLocalLocked.subscribe(self.setOverlay);
+            self.flyout.warnings.subscribe(self.setOverlay);
+            self.flyout.infos.subscribe(self.setOverlay);
+            self.flyout.flyouts.subscribe(self.setOverlay);
+            self.flyout.confirmation_title.subscribe(self.setOverlay);
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -128,6 +158,6 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
         ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "settingsViewModel", "systemViewModel"],
-        ["#header", "#settings", "#auto_shutdown_flyout", "#printer_error_flyout", "#startup_flyout"]
+        ["#header", "#settings", "#auto_shutdown_flyout", "#printer_error_flyout", "#startup_flyout", "#locallock-unlock-container"]
     ]);
 });

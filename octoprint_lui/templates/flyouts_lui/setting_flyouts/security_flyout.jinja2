@@ -1,3 +1,49 @@
+<div id="local-lock-settings">
+  <div class="Table">
+    <div class="Table-header Table-row">
+      <div class="Table-item">
+        {{ _('Printer Lock') }}
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        {{ _('Enabled') }}
+      </div>
+      <div class="Table-item">
+        <div class="check_toggle">
+          <input type="checkbox" data-bind="click: toggleLocalLock, checked: settings.locallock_enabled" id="settings-locallock-enabled" />
+          <label for="settings-locallock-enabled"></label>
+        </div>
+      </div>
+    </div>
+    <div class="Table-row" data-bind="visible: settings.locallock_enabled">
+      <div class="Table-item">
+        {{ _('Code') }}
+      </div>
+      <div class="Table-item">
+        <input type="password" data-bind="value: settings.locallock_code" pattern="[0-9]*" inputmode="numeric" />
+      </div>
+    </div>
+  </div>
+  <div class="Table-row" data-bind="visible: settings.locallock_enabled">
+    <div class="Table-item">
+      {{ _('Auto-lock after') }}
+    </div>
+    <div class="Table-item">
+      <select data-bind="value: settings.locallock_timeout" >
+        <option value="30">{{ _("30 seconds") }}</option>
+        <option value="60">{{ _("1 minute") }}</option>
+        <option value="120">{{ _("2 minutes") }}</option>
+        <option value="300">{{ _("5 minutes") }}</option>
+        <option value="900">{{ _("15 minutes") }}</option>
+        <option value="1800">{{ _("30 minutes") }}</option>
+        <option value="3600">{{ _("1 hour") }}</option>
+        <option value="7200">{{ _("2 hours") }}</option>
+        <option value="0">{{ _("Never") }}</option>
+      </select>
+    </div>
+  </div>
+</div>
 <div id="user-list" data-bind="visible: !addUserDialogVisible() && !editUserDialogVisible() && !changePasswordDialogVisible()">
   <div class="Table">
     <div class="Table-row Table-header">

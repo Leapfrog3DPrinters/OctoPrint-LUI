@@ -46,6 +46,19 @@
 	    </div>
 	</div>
 	{% endif %}
+  <div class="Table-row">
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button">
+          <a href="#" data-bind="touchClick: function () {navigation.lock()}">
+            <span>
+              <i class="fa fa-lock" style="padding-left: 0.5em;"></i>{{ _('Lock printer') }}
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
 	<div class="Table-row Table-header" data-bind="visible: settings.autoShutdown">
 		<div class="Table-item">{{ _('Auto-shutdown') }}</div>
 	</div>

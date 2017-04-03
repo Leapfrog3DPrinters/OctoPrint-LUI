@@ -106,7 +106,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         UserSettingsViewModel,
-        ["loginStateViewModel", "usersViewModel", "flyoutViewModel", "navigationViewModel", "settingsViewModel"],
+        ["loginStateViewModel", "securityViewModel", "flyoutViewModel", "navigationViewModel", "settingsViewModel"],
         ["#login_flyout"]
     ]);
 });

@@ -77,15 +77,15 @@
       </ul>
     </div>
   </aside>
-  <aside id="users_settings_flyout" class="flyout">
+  <aside id="security_settings_flyout" class="flyout">
     <div class="flyout-header">
-      <h4>{{ _('Users') }}</h4>
+      <h4>{{ _('Security') }}</h4>
       <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
-      <div id="users_settings_flyout_content" class="flyout_content">
-        {% include "flyouts_lui/setting_flyouts/users_flyout.jinja2" %}
+      <div id="security_settings_flyout_content" class="flyout_content">
+        {% include "flyouts_lui/setting_flyouts/security_flyout.jinja2" %}
       </div>
       <!-- /ko -->
       <ul class="button-area">

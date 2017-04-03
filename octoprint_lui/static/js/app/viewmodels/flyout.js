@@ -36,7 +36,6 @@ $(function () {
         };
 
         self.warnings.push(warningVm);
-        self.setOverlay();
 
         return warningVm;
     }
@@ -44,13 +43,11 @@ $(function () {
     self.closeWarning = function(warningVm)
     {
         self.warnings.remove(warningVm);
-        self.setOverlay();
     };
 
     self.closeLastWarning = function()
     {
         self.warnings.pop();
-        self.setOverlay();
     }
 
     self.showInfo = function (title, message, blocking, callback) {
@@ -65,19 +62,16 @@ $(function () {
         };
 
         self.infos.push(infoVm);
-        self.setOverlay();
 
         return infoVm;
     }
 
     self.closeInfo = function (infoVm) {
         self.infos.remove(infoVm);
-        self.setOverlay();
     };
 
     self.closeLastInfo = function ()  {
         self.infos.pop();
-        self.setOverlay();
     }
 
     self.showFlyout = function (flyout, blocking, high_priority) {
@@ -138,12 +132,11 @@ $(function () {
       // Show the confirmation flyout
       $('#confirmation_flyout').addClass('active');
       $('#confirmation_flyout').css("z-index", self.flyouts().length + 75); // Put them above high priority flyouts
-      self.setOverlay();
 
       self.confirmationDeferred = $.Deferred()
           .done(function ()  {
               $('#confirmation_flyout').removeClass('active');
-              self.setOverlay();
+              self.confirmation_title(undefined);
 
               if (self.flyouts().length !== 0 && !leaveFlyout)
                   self.closeFlyoutAccept();
@@ -153,7 +146,7 @@ $(function () {
           })
           .fail(function ()  {
               $('#confirmation_flyout').removeClass('active');
-              self.setOverlay();
+              self.confirmation_title(undefined);
 
               self.confirmationDeferred = undefined;
           });
@@ -266,22 +259,10 @@ $(function () {
             $(template_flyout).css("z-index", 50 + _.sumBy(self.flyouts(),  function (v) { return v.high_priority ? 1 : 0 }));
         else
             $(template_flyout).css("z-index", _.sumBy(self.flyouts(), function (v) { return v.high_priority ? 0 : 1; }));
-
-        self.setOverlay();
     }
 
     self.deactivateFlyout = function (template_flyout) {
         $(template_flyout).removeClass('active');
-        self.setOverlay();
-    }
-
-    self.setOverlay = function () {
-        var flyouts = self.flyouts();
-        if (self.warnings().length == 0 && self.infos().length == 0 && self.flyouts().length == 0 &&
-            !$('#confirmation_flyout').hasClass('active') && !$(self.template_flyout).hasClass('active'))
-            $('.overlay').removeClass('active');
-        else
-            $('.overlay').addClass('active');
     }
 
     self.onAllBound = function(allViewModels) {

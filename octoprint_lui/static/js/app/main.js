@@ -651,10 +651,28 @@ $(function () {
                 'accept':'Accept:Accept',
                 'clear':'Clear:Clear'
             }
+        },
+        integer: {
+            layout: 'custom',
+            customLayout: {
+                normal: [
+                    '7 8 9 {clear}',
+                    '4 5 6 {cancel}',
+                    '1 2 3 {accept}',
+                    '  0 {sp:3.1}',
+                ]
+            },
+            usePreview: true,
+            display: {
+                'accept': 'Accept:Accept',
+                'clear': 'Clear:Clear'
+            }
         }
     };
 
     if (IS_LOCAL) {
+        $("input[inputmode='numeric']").keyboard(keyboardLayouts.integer);
+
         $("input[type='text'], input[type='password']").keyboard(keyboardLayouts.qwerty);
 
         $("input[type='number']").keyboard(keyboardLayouts.number);
