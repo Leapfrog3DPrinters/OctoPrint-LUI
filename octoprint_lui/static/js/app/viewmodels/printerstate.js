@@ -495,15 +495,15 @@ $(function ()  {
 
         self.refreshPrintPreview = function(url)
         {
-            var filename = self.filepath(); // Includes subfolder
+            var path = self.filepath(); // Includes subfolder
 
             if (url)
             {
                 self.printPreviewUrl(url);
             }
-            else if (filename)
+            else if (path)
             {
-                $.get('/plugin/gcoderender/previewstatus', { filename: filename, make: true })
+                $.get('/plugin/gcoderender/previewstatus/' + path)
                     .done(function (data)
                      {
                         if(data.status == 'ready')
