@@ -227,6 +227,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.requesting_temperature_after_mintemp = False # Force another temperature poll to check if extruder is disconnected or it's just very cold
         self.send_M999_on_reconnect = False
 
+        self.api_exceptions = [ "plugin.lui.webcamstream" ]
+
     def initialize(self):
 
         #~~ get debug from yaml
@@ -1223,7 +1225,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return response
 
     def is_blueprint_protected(self):
-        # By default, the routes to LUI are not protected. SimpleAPI calls are protected though.
+        # Override OctoPrint blueprint protection method
+        # this allows us to make exceptions for certain URLs
+        from octoprint.server.util import apiKeyRequestHandler, corsResponseHandler
+
+        def luiApiKeyRequestHandler():
+            if request.endpoint in self.api_exceptions:
+                print request.endpoint
+                return
+            else:
+                return apiKeyRequestHandler()
+
+        self._blueprint.before_request(luiApiKeyRequestHandler)
+        self._blueprint.after_request(corsResponseHandler)
+
         return False
 
     @BlueprintPlugin.route("/webcamstream", methods=["GET"])
@@ -1287,9 +1302,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ##~ OctoPrint SimpleAPI Plugin
     def on_api_get(self, request = None):
-        # Because blueprint is not protected, manually check for API key
-        octoprint.server.util.apiKeyRequestHandler()
-
         command = None
 
         if("command" in request.values):
@@ -3397,9 +3409,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ Helper method that calls api defined functions
     def _call_api_method(self, command, *args, **kwargs):
         """Call the method responding to api command"""
-
-        # Because blueprint is not protected, manually check for API key
-        octoprint.server.util.apiKeyRequestHandler()
 
         name = "_on_api_command_{}".format(command)
         method = getattr(self, name, None)
