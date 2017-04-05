@@ -155,7 +155,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Firmware
         # If a lower version is found, user is required to update
         # Don't use any signs here. Version requirements are automatically prefixed with '>='
-        self.firmware_version_requirement = { "bolt": "2.7" }
+        self.firmware_version_requirement = { "bolt": "2.7.1", "xcel": "2.8.1" }
         self.firmware_info_received_hooks = []
         self.fw_version_info = None
         self.auto_firmware_update_started = False
@@ -557,7 +557,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.exception("Could not update printer profile")
                 return False
             
-            self._printer._printerProfileManager.set_default(self.model.lower())
+            # Due to a typo in OctoPrint, we can't use set_default here. 
+            #self._printer._printerProfileManager.set_default(self.model.lower())
+
+            self._settings.global_set(["printerProfiles", "default"], self.model.lower())
+            self._settings.save()
+
             self._printer._printerProfileManager.select(self.model.lower())
             
         else:
@@ -3052,7 +3057,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.model = self.default_model
 
             if oldModelName != self.model:
-                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, newModelName))
+                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
                 self._init_model()
                 self._update_printer_scripts_profiles()
 
