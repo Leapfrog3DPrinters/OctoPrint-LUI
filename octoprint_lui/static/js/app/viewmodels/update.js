@@ -35,7 +35,7 @@ $(function ()  {
         self.firmwareUpdating = ko.observable(false);
 
         self.flashingAllowed = ko.computed(function ()  {
-            return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.loggedIn();
+            return !self.printerState.isPrinting() && self.loginState.loggedIn();
         });
 
         self.getUpdateText = function (data) {
