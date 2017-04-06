@@ -63,6 +63,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         var index = self.allItems.indexOf(item);
         if (index > -1) {
             self.allItems.splice(index, 1);
+            self.allSize(self.allItems.length);
             self._updateItems();
         }
     };

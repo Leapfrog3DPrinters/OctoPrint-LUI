@@ -10,6 +10,7 @@ $(function ()  {
         self.filament = parameters[5];
         self.network = parameters[6];
         self.cloud = parameters[7];
+        self.navigation = parameters[8];
 
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
@@ -97,11 +98,25 @@ $(function ()  {
             return self.network.status.connection.ethernet() || self.network.status.connection.wifi();
         })
 
+        self.formatFilamentHeader = function (tool) {
+            switch (tool) {
+                case "tool0":
+                    return gettext("Filament right:");
+                case "tool1":
+                    return gettext("Filament left:");
+            }
+        }
+
         var preProcessList = function (response) {
             var recursiveCheck = function (element, index, list) {
                 if (!element.hasOwnProperty("parent")) element.parent = { children: list, parent: undefined };
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
+
+                element.gcodeAnalysis = ko.observable(element.gcodeAnalysis);
+
+                element.prints = ko.observable(element.prints);
+
                 if (element.origin == "local" && !element.hasOwnProperty("previewUrl")) {
                     previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == element["name"].toLowerCase(); });
                     if (previewItem)
@@ -326,6 +341,27 @@ $(function ()  {
             
         };
 
+        self.focusOnFile = function(filenameToFocus, locationToFocus)
+        {
+            if (filenameToFocus) {
+                // got a file to scroll to
+                if (locationToFocus === undefined) {
+                    locationToFocus = "local";
+                }
+                var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
+                if (entryElement) {
+                    var container = $('#files');
+                    var scrollTo = $(entryElement);
+
+                    setTimeout(function () {
+                        container.animate({
+                            scrollTop: scrollTo.offset().top - container.offset().top + container.scrollTop() - 60
+                        }, 500, 'swing');
+                    }, 100);
+                }
+            }
+        }
+
         self.fromResponse = function (response, filenameToFocus, locationToFocus, switchToPath) {
             var files = response.files;
 
@@ -339,23 +375,7 @@ $(function ()  {
                 self.changeFolderByPath(switchToPath);
             }
 
-            if (filenameToFocus) {
-                // got a file to scroll to
-                if (locationToFocus === undefined) {
-                    locationToFocus = "local";
-                }
-                var entryElement = self.getEntryElement({ name: filenameToFocus, origin: locationToFocus });
-                if (entryElement) {
-                    var container = $('#files');
-                    var scrollTo = $(entryElement);
-
-                    setTimeout(function(){
-                        container.animate({
-                            scrollTop: scrollTo.offset().top - container.offset().top + container.scrollTop() - 60
-                        }, 500, 'swing');
-                    }, 100); 
-                }
-            }
+            self.focusOnFile(filenameToFocus, locationToFocus);
 
             if (response.free != undefined) {
                 self.freeSpace(response.free);
@@ -449,7 +469,7 @@ $(function ()  {
 
         self.showCloudSettings = function()
         {
-            self.settings.showSettingsTopic('cloud');
+            self.navigation.showSettingsTopic('cloud');
         }
 
         self.showAddFolderDialog = function ()  {
@@ -474,8 +494,8 @@ $(function ()  {
 
                 self.isLoadingFile = false;
             }
-            else if (file.origin == "cloud") {
-                self._sendBlueprintApi("files/cloud/" + file.path)
+            else if (file.origin != "local") {
+                self._sendBlueprintApi("files/select/" + file.origin + "/" + file.path)
                 .done(function () {
                     self.setProgressBar(0);
 
@@ -489,22 +509,6 @@ $(function ()  {
                     self.browseOrigin("local",file.name);
                 })
                 .always(function () { self.isLoadingFile = false; })
-            }
-            else if (file.origin == "usb") {
-                self._sendApi({ command: "select_usb_file", filename: file.path })
-                .done(function ()  {
-                    self.setProgressBar(0);
-
-                    if (printAfterLoad) {
-                        self.printerState.print();
-                    }
-
-                    if (self.flyout.flyouts().length > 0)
-                        self.flyout.closeFlyoutAccept();
-
-                    self.browseOrigin("local",file.name);
-                })
-                .always(function ()  { self.isLoadingFile = false; })
             }
             else {
                 OctoPrint.files.select(file.origin, file.path)
@@ -598,7 +602,12 @@ $(function ()  {
             .done(function () {        
                 OctoPrint.files.delete(file.origin, file.path)
                     .done(function () {
-                        self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
+
+                        self.focusOnFile(filenameToFocus);
+                        self.listHelper.removeItem(function (item) {
+                           return item.path == file.path
+                        });
+
                         $.notify({
                             title: gettext("File removed succesfully"),
                             text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
@@ -635,11 +644,11 @@ $(function ()  {
             // sometimes falsely puts some extrusion on one of the tools 
             // at start up script (or something)
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
-                var analysis = self.selectedFile()["gcodeAnalysis"];
+                var analysis = self.selectedFile()["gcodeAnalysis"]();
                 if (!analysis) {
                     return false;
                 }
-                var filamentInfo = self.selectedFile()['gcodeAnalysis']['filament'];
+                var filamentInfo = analysis['filament'];
                 var requiredTools = ["tool0", "tool1"];
                 var lengthThreshold = 100;
 
@@ -671,14 +680,14 @@ $(function ()  {
         self.gcodeAnalysisFinished = ko.computed(function(){
             return true // 1.0.2 work around
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
-                var analysis = self.selectedFile()["gcodeAnalysis"];
+                var analysis = self.selectedFile()["gcodeAnalysis"]();
                 return analysis ? true : false;
             }
         });
 
         self.enoughFilament = ko.computed(function () {
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
-                var analysis = self.selectedFile()["gcodeAnalysis"];
+                var analysis = self.selectedFile()["gcodeAnalysis"]();
                 if (!analysis) {
                     return true;
                 }
@@ -714,18 +723,18 @@ $(function ()  {
             if (self.printerState.forcePrint())
                 return true;
 
-            var analysis = data["gcodeAnalysis"];
+            var analysis = data["gcodeAnalysis"]();
             if (!analysis) {
                 // This should be false but is true atm to cater for the analysis blocking.
                 return true;
             }
 
-            var printingArea = data["gcodeAnalysis"]["printingArea"];
+            var printingArea = analysis["printingArea"];
             if (!printingArea) {
                 return true;
             }
 
-            var dimensions = data["gcodeAnalysis"]["dimensions"];
+            var dimensions = analysis["dimensions"];
             if (!dimensions) {
                 return true;
             }
@@ -985,7 +994,7 @@ $(function ()  {
 
         self.enableAdditionalData = function (data) {
             // TODO: Add anaylsing icon in files additional data.
-            return data["gcodeAnalysis"] || data["prints"] && data["prints"]["last"];
+            return data["gcodeAnalysis"]() || data["prints"] && data["prints"]["last"];
         };
 
         self.toggleAdditionalData = function (data) {
@@ -996,36 +1005,6 @@ $(function ()  {
             additionalInfo.toggleClass("hide");
             var angleIcon = $(".file_info i", entryElement);
             angleIcon.toggleClass("fa-angle-down fa-angle-up");
-        };
-
-        self.getAdditionalData = function (data) {
-            var output = "";
-            //add the full name of the gcode
-            output += "<strong>" +gettext("Filename") + ":</strong><br/>" + data["name"] + "<br/>";
-            if (data["gcodeAnalysis"]) {
-                if (data["gcodeAnalysis"]["filament"] && typeof (data["gcodeAnalysis"]["filament"]) == "object") {
-                    var filament = data["gcodeAnalysis"]["filament"];
-                    if (_.keys(filament).length == 1) {
-                        output += "<strong>" + gettext("Filament") + ":</strong><br/>" + formatFilament(data["gcodeAnalysis"]["filament"]["tool" + 0]) + "<br>";
-                    } else if (_.keys(filament).length > 1) {
-                        for (var toolKey in filament) {
-                            if (!_.startsWith(toolKey, "tool") || !filament[toolKey] || !filament[toolKey].hasOwnProperty("length") || filament[toolKey]["length"] <= 0) continue;
-
-                            output += "<strong>" + gettext("Filament") + "</strong> (" + (toolKey == 'tool0' ? gettext('Right') : gettext('Left')) + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
-                        }
-                    }
-                }
-                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
-            } else {
-                output += "<strong>" + gettext('Analysing job')+ "</strong> <i class='fa fa-spinner fa-pulse'></i>"
-            }
-            if (data["prints"] && data["prints"]["last"]) {
-                output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
-                if (data["prints"]["last"]["lastPrintTime"]) {
-                    output += "<strong>">gettext("Last Print Time") + ":</strong><br/>" + formatDuration(data["prints"]["last"]["lastPrintTime"]);
-                }
-            }
-            return output;
         };
 
         self.refreshPrintPreview = function (filename, url) {
@@ -1244,27 +1223,24 @@ $(function ()  {
                 // Don't call onChanged, as it is the initialization
             });
         }
-
-        self.onEventUpdatedFiles = function (payload) {
-            //TODO: Fix for USB
-            if (payload.type == "gcode") {
-                self.requestData(undefined, undefined, self.currentPath());
-            }
-        };
-
-        self.onEventMetadataAnalysisStarted = function (payload) {
-        };
-
         self.onEventMetadataAnalysisFinished = function (payload) {
-            self.requestData(undefined, undefined, self.currentPath());
+            
+            var file = self.getFileByFilename(payload.path);
+
+            if(file)
+                file["gcodeAnalysis"](payload.result);
         };
 
         self.onEventMetadataStatisticsUpdated = function (payload) {
-            self.requestData(undefined, undefined, self.currentPath());
-        };
 
-        self.onEventTransferDone = function (payload) {
-            self.requestData(payload.remote, "sdcard");
+            var file = self.getFileByFilename(payload.path);
+
+            if (file && file.refs.resource)
+            {
+                OctoPrint.get(file.refs.resource).done(function (metadata) {
+                    file.prints(metadata.prints);
+                });
+            }
         };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -1347,7 +1323,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         FilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel", "cloudViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel", "cloudViewModel", "navigationViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });

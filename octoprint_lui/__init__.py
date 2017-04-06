@@ -229,7 +229,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.cloud_connect = None
         self.cloud_storage = None
 
-        self.api_exceptions = [ "plugin.lui.webcamstream" ]
+        self.api_exceptions = [ "plugin.lui.webcamstream", 
+                                "plugin.lui.connect_to_cloud_service", 
+                                "plugin.lui.connect_to_cloud_service_finished",
+                                "plugin.lui.logout_cloud_service",
+                                "plugin.lui.logout_cloud_service_finished"
+                               ]
 
     def initialize(self):
 
@@ -1409,7 +1414,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     after_head_maintenance = [],
                     move_to_bed_maintenance_position = [],
                     begin_homing = [],
-                    select_usb_file = ["filename"],
                     copy_gcode_to_usb = ["filename"],
                     delete_all_uploads = [],
                     copy_timelapse_to_usb = ["filename"],
@@ -1947,8 +1951,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
         self.move_to_bed_maintenance_position()
 
-    @octoprint.plugin.BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)
-    @octoprint.plugin.BlueprintPlugin.route("/files/<string:origin>", methods=["GET"], strict_slashes=False)
+    ## Files
+
+    @BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)
+    @BlueprintPlugin.route("/files/<string:origin>", methods=["GET"], strict_slashes=False)
     def get_files(self, origin, path = None):
         if origin == "cloud":
             files = self.cloud_storage.list_files(path, filter=self.browser_filter, recursive=False)
@@ -1991,15 +1997,33 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return jsonify(files=files)
         else:
             # Return original OctoPrint API response
-            return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
-    @octoprint.plugin.BlueprintPlugin.route("/files/cloud/<path:path>", methods=["POST"])
-    def select_cloud_file(self, path):
+            if path and octoprint.filemanager.valid_file_type(path, type="machinecode"):
+                # File
+                return octoprint.server.api.files.readGcodeFile(origin, path)
+            else:
+                # Folder
+                return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
+
+    @BlueprintPlugin.route("/files/<string:target>/<path:filename>", methods=["GET"])
+    def readGcodeFile(target, filename):
+        """ 
+        Alias for gcode files requests from OctoPrints
+        """
+        return octoprint.server.api.files.readGcodeFile(target, filename)
+
+    @BlueprintPlugin.route("/files/select/<string:origin>/<path:path>", methods=["POST"])
+    def select_file(self, origin, path):
+        if origin == "cloud":
+            return self._select_cloud_file(path)
+        elif origin == "usb":
+            return self._select_usb_file(path)
+
+    def _select_cloud_file(self, path):
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
             return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
 
         _, filename = self._file_manager.split_path("cloud", path)
-        selectAfterUpload = True
 
         # determine current job
         currentPath = None
@@ -2031,14 +2055,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message("media_file_copy_progress", { "percentage" : progress*100 })
 
         self.cloud_storage.download_file(path, futureFullPath, download_progress)
-        self._send_client_message("media_file_copy_complete")
-        self._event_bus.fire(Events.UPLOAD, {"file": filename, "target": "cloud"})
-
-        files = {}
+        self._send_client_message(ClientMessages.MEDIA_FILE_COPY_COMPLETE)
+        self._event_bus.fire(Events.UPLOAD, {"name": futureFilename, "path": futureFilename, "target": "local"})
 
         location = "/files/" + FileDestinations.LOCAL + "/" + str(filename)
 
-        files.update({
+        files = {
             FileDestinations.LOCAL: {
                 "name": filename,
                 "origin": FileDestinations.LOCAL,
@@ -2047,7 +2069,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "download": "downloads/files/" + FileDestinations.LOCAL + "/" + str(filename)
                 }
             }
-        })
+        }
 
 
         self._printer.select_file(futureFullPath, False, False)
@@ -2056,40 +2078,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r
 
-
-    def _on_api_command_select_usb_file(self, filename, *args, **kwargs):
-
+    def _select_usb_file(self, path):
         target = "usb"
 
         #TODO: Feels like it's not really secure. Fix
-        path = os.path.join(self.media_folder, filename)
+        path = os.path.join(self.media_folder, path)
         if not (os.path.exists(path) and os.path.isfile(path)):
             return make_response("File not found on '%s': %s" % (target, filename), 404)
 
         # selects/loads a file
-        if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
+        if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
             return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
 
-        printAfterLoading = False
-
         # Now the full path is known, remove any folder names from file name
-        _, filename = octoprint.server.fileManager.split_path("usb", filename)
-
-        self._logger.debug("File selected: %s" % path)
-
+        _, filename = self._file_manager.split_path("usb", path)
         upload = octoprint.filemanager.util.DiskFileWrapper(filename, path, move = False)
-
-        #TODO: Find out if necessary and if so, implement using method arguments
-        userdata = None
-        if "userdata" in request.values:
-            import json
-            try:
-                userdata = json.loads(request.values["userdata"])
-            except:
-                return make_response("userdata contains invalid JSON", 400)
-
-        selectAfterUpload = True
-        printAfterSelect = False
 
         # determine current job
         currentPath = None
@@ -2115,12 +2118,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response("Trying to overwrite file that is currently being printed: %s" % currentFilename, 409)
 
-        def selectAndOrPrint(filename, absFilename, destination):
-            if octoprint.filemanager.valid_file_type(added_file, "gcode") and (selectAfterUpload or printAfterSelect or (currentFilename == filename and currentOrigin == destination)):
-                self._printer.select_file(absFilename, False, printAfterSelect)
-            return filename
-
-        futureFullPath = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, futurePath, futureFilename)
+        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
 
         def on_selected_usb_file_copy():
             percentage = (float(os.path.getsize(futureFullPath)) / float(os.path.getsize(path))) * 100.0
@@ -2154,37 +2152,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Stop the timer
         is_copying = False
 
-        if octoprint.filemanager.valid_file_type(added_file, "stl"):
-            filename = added_file
-            done = True
-        else:
-            filename = selectAndOrPrint(added_file, octoprint.server.fileManager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, added_file), target)
-            done = True
+        self._printer.select_file(futureFullPath, False, False)
 
-        if userdata is not None:
-            # upload included userdata, add this now to the metadata
-            octoprint.server.fileManager.set_additional_metadata(octoprint.filemanager.FileDestinations.LOCAL, added_file, "userdata", userdata)
+        self._event_bus.fire(octoprint.events.Events.UPLOAD, {"name": added_file, "path": added_file, "target": "local"})
 
-        octoprint.server.eventManager.fire(octoprint.events.Events.UPLOAD, {"file": filename, "path": filename, "target": target})
+        location = flask.url_for(".readGcodeFile", target=octoprint.filemanager.FileDestinations.LOCAL, filename=added_file, _external=True)
 
-        files = {}
-
-        #location = flask.url_for(".readGcodeFile", target=octoprint.filemanager.FileDestinations.LOCAL, filename=filename, _external=True)
-        location = "/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(filename)
-
-        files.update({
+        files = {
             octoprint.filemanager.FileDestinations.LOCAL: {
-                "name": filename,
-                "path": filename,
+                "name": added_file,
+                "path": added_file,
                 "origin": octoprint.filemanager.FileDestinations.LOCAL,
                 "refs": {
                     "resource": location,
-                    "download": "downloads/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(filename)
+                    "download": "downloads/files/" + octoprint.filemanager.FileDestinations.LOCAL + "/" + str(added_file)
                 }
             }
-        })
+        }
 
-        r = make_response(jsonify(files=files, done=done), 201)
+        r = make_response(jsonify(files=files, done=True), 201)
         r.headers["Location"] = location
 
         return r

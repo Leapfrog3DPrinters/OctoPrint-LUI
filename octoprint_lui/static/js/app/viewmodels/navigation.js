@@ -8,6 +8,8 @@ $(function () {
         self.settings = parameters[3];
         self.system = parameters[4];
 
+        self.allViewModels = [];
+
         self.numUpdates = ko.observable(0);
 
         self.showLoginFlyout = function ()  {
@@ -122,6 +124,10 @@ $(function () {
                         self.requestSystemShutdown();
                 }
             }
+        }
+
+        self.onAllBound = function (allViewModels) {
+            self.allViewModels = allViewModels;
         }
     }
 

@@ -236,7 +236,43 @@
                 <img data-bind="attr: {src: $data.previewUrl() }, visible: $data.previewUrl()" style="width: 100%; max-width: 150px;" />
                 <i data-bind="visible: !$data.previewUrl()" class="fa fa-cube" style="font-size: 3em; color: lightgrey"></i>
               </div>
-              <div class="file_add_info_content" data-bind="html: $root.getAdditionalData($data)"></div>
+              <div class="file_add_info_content">
+                <strong>{{ _("Filename:") }}</strong>
+                <br/>
+                <span data-bind="text: name"></span>
+                <br />
+                <!-- ko if: gcodeAnalysis() -->
+                <div data-bind="foreachprop: gcodeAnalysis().filament">
+                    <strong data-bind="text: $root.formatFilamentHeader(key)"></strong>
+                    <br />
+                    <span data-bind="text: formatFilament(value)"></span>
+                    <br/>
+                </div>
+                
+                <strong>{{ _("Est. Print Time:") }}</strong>
+                <br />
+                <span data-bind="text: formatFuzzyPrintTime(gcodeAnalysis().estimatedPrintTime)"></span>
+                <br />                
+                <!-- /ko -->
+                <!-- ko if: !gcodeAnalysis() -->
+                <strong>{{ _("Analyzing job") }}</strong> <i class='fa fa-spinner fa-pulse'></i>
+                <br />
+                <!-- /ko -->
+                
+                <!-- ko if: prints() -->
+                
+                <!-- ko if: prints().last-->
+                <strong>{{ _("Last printed:") }}</strong><br/>
+                <span data-bind="text: formatTimeAgo(prints().last.date)"></span><br />
+                <!-- /ko -->
+                
+                <!-- ko if: prints().last.lastPrintTime-->
+                <strong>{{ _("Last print duration:") }}</strong><br/>
+                <span data-bind="text: formatDuration(prints().last.lastPrintTime)"></span>
+                <!-- /ko -->
+                
+                <!-- /ko -->
+              </div>
               <div class="file_add_info_buttons">
                 <ul class="button-area">
                   {% if local_addr %}
