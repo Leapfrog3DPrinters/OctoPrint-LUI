@@ -12,7 +12,6 @@ $(function ()  {
             steps: [
                 {
                     //1
-                    element: 'none',
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
                     " steps you have to take to start printing your creations.<br>" +
@@ -23,53 +22,15 @@ $(function ()  {
                 },
                 {
                     //2
-                    element: 'none',
+                    element: document.querySelector('#swap-left'),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
-                    "<div class=\"step-text\">Before we start printing, we have to be sure that the bed is level and" +
-                    " that the extruder is aligned</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
-                    "class=\"introjs-button\" data-bind=\"click: function (){ nextButton(3) }\">Next</a></div></div>"
+                    "<div class=\"step-text\">In order to print stuff, we first have to " +
+                    "load some filament in the printer. Click <i class=\"fa fa-refresh\"></i> <b> Swap Left</b> " +
+                    "to load the filament in the left and main extruder.</div>",
+                    position: 'top'
                 },
                 {
                     //3
-                    element: document.querySelector('#maintenance'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
-                    "<div class=\"step-text\">To get to the maintenance menu, click here</div>",
-                    position: 'bottom'
-                },
-                {
-                    //4
-                    element: document.querySelector('#bed_calibrate'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
-                    "<div class=\"step-text\">To calibrate the bed, click here</div>",
-                    position: 'top'
-                },
-                {
-                    //5
-                    element: document.querySelector('#continue_calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
-                    "<div class=\"step-text\">To calibrate the bed, click here</div>",
-                    position: 'top'
-                },
-                {
-                    //6
-                    element: document.querySelector('#bed_calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
-                    "<div class=\"step-text\">To calibrate the bed, click here" +
-                    "<a id=\"nextButton\" role=\"button\" class=\"introjs-button\" " +
-                    "data-bind=\"click: function (){nextButton(7)}\">Done</a></div>",
-                    position: 'bottom'
-                },
-                {
-                    //7
-                    element: document.querySelector('#swap_button'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
-                    "<div class=\"step-text\">In order to print stuff, we first have to " +
-                    "load some filament in the printer. Click <i class=\"fa fa-refresh\"></i> <b> Swap Right</b> " +
-                    "to load the filament in the right and main extruder.</div>",
-                    position: 'top'
-                },
-                {
-                    //8
                     element: document.querySelector('#load_filament'),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
@@ -78,7 +39,7 @@ $(function ()  {
                     tooltipClass: "tooltip_hidden"
                 },
                 {
-                    //9
+                    //4
                     element: document.querySelector('#filament_loading'),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">The filament is being loaded. When something goes wrong you can press " +
@@ -86,7 +47,7 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //10
+                    //5
                     element: document.querySelector('#finished_filament'),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">We are now done loading the filament. If your not satisfied with the " +
@@ -94,28 +55,99 @@ $(function ()  {
                     "the next step press <b>Done</b>.</div>"
                 },
                 {
+                    //6
+                    element: document.querySelector('#swap-right'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">In order to print stuff, we first have to " +
+                    "load some filament in the printer. Click <i class=\"fa fa-refresh\"></i> <b> Swap Right</b> " +
+                    "to load the filament in the right and main extruder.</div>",
+                    position: 'top'
+                },
+                {
+                    //7
+                    element: document.querySelector('#load_filament'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
+                    "that you are loading. This way the printer knows what it's using.</div>",
+                    position: 'bottom',
+                    tooltipClass: "tooltip_hidden"
+                },
+                {
+                    //8
+                    element: document.querySelector('#filament_loading'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">The filament is being loaded. When something goes wrong you can press " +
+                    "Abort to cancel the action.</div>",
+                    position: 'bottom'
+                },
+                {
+                    //9
+                    element: document.querySelector('#finished_filament'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">We are now done loading the filament. If your not satisfied with the " +
+                    "amount that came out of the nozzle you can press <b>Extrude More</b>. If you are ready for " +
+                    "the next step press <b>Done</b>.</div>"
+                },
+                {
+                    //10
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">Now that we have loaded the filament we have to calibrate the printer to make sure that the bed and" +
+                    " the extruders are aligned</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
+                    "class=\"introjs-button\" data-bind=\"click: function (){ nextButton(11) }\">Next</a></div></div>"
+                },
+                {
                     //11
+                    element: document.querySelector('#maintenance'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">To get to the maintenance menu, click here</div>",
+                    position: 'bottom'
+                },
+                {
+                    //12
+                    element: document.querySelector('#bed_calibrate'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">To calibrate the bed, click here</div>",
+                    position: 'top'
+                },
+                {
+                    //13
+                    element: document.querySelector('#continue_calibration'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">To calibrate the bed, click here</div>",
+                    position: 'top'
+                },
+                {
+                    //14
+                    element: document.querySelector('#bed_calibration'),
+                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    "<div class=\"step-text\">To calibrate the bed, click here" +
+                    "<a id=\"nextButton\" role=\"button\" class=\"introjs-button\" " +
+                    "data-bind=\"click: function (){nextButton(7)}\">Next</a></div>",
+                    position: 'bottom'
+                },
+                {
+                    //15
                     element: document.querySelector('#job_button'),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">Now we can select our print job for the printer. To" +
                     " select a print job, click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.</div>"
                 },
                 {
-                    //12
+                    //16
                     element: document.querySelector('#local_button'),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">Now we can select a GCODE file that's saved on the printer. " +
                     "There is a sample print you can try out.</div>"
                 },
                 {
-                    //13
+                    //17
                     element: document.querySelector("#print_files"),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">Select the file and press on the <i class=\"fa fa-play\">" +
                     "</i> button next to it</div>"
                 },
                 {
-                    //14
+                    //18
                     element: document.querySelector('#start_print'),
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">For the first print we will keep it simple and print in normal" +
@@ -124,7 +156,7 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //15
+                    //19
                     element: 'none',
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">Good Job!<br>The printer is now printing the first print. " +
@@ -138,7 +170,7 @@ $(function ()  {
             exitOnOverLayClick: false,
             showBullets: true,
             showButtons: false,
-            keyboardNavigation: true
+            keyboardNavigation: false
 
         });
 
@@ -160,7 +192,9 @@ $(function ()  {
         self.introInstance.onafterchange(function (targetElement) {
             var element = document.getElementById('introjs-container');
             ko.cleanNode(element);
-            ko.applyBindings(self, element);
+            console.log('clean');
+            setTimeout(function(){ko.applyBindings(self, element)}, 1000);
+            console.log('rebind');
         });
 
         self.introInstance.oncomplete(function(){

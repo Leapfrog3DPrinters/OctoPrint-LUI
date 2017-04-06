@@ -381,7 +381,7 @@ $(function ()  {
                     self.hideToolLoading();
                     if (self.introView.firstRun) {
                         if (self.selectedTemperatureProfile != "None") {
-                            self.introView.introInstance.goToStep(10);
+                            self.introView.introInstance.goToStep(5);
                         }
                     }
                     self.filamentLoadProgress(0);
@@ -480,7 +480,7 @@ $(function ()  {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
-                    self.introView.introInstance.goToStep(8);
+                    self.introView.introInstance.goToStep(4);
                 }
             });
         };
@@ -491,7 +491,7 @@ $(function ()  {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
-                    self.introView.introInstance.goToStep(9);
+                    self.introView.introInstance.goToStep(5);
                     self.loadFilament(false);
                 }
             }else{
