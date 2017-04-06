@@ -107,7 +107,7 @@
                     </span>
                   </li>
                   <li>
-                    <a href="#" data-bind="touchClick: function () { removeAllFiles() }, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
+                    <a href="#" data-bind="touchClick: function () { removeAllFiles() }, css: { disabled: currentOrigin() != 'local' || !loginState.isAdmin() || listHelper.allSize() == 0 }">
                       <i class="fa fa-trash"></i>{{ _('Delete all') }}</a>
                   </li>
                 </ul>

@@ -29,12 +29,12 @@ $(function ()  {
 
             self.flyout.showFlyout('filament_detection', true)
                 .done(function ()  {
-                    self.filament.changeFilamentDone();
-                    self._completeFilamentDetectionApi();
+                    self.filament.finishChangeFilament();
+                    self._finishFilamentDetectionApi();
                     console.log('Filament detection flyout accepted');
                 })
                 .fail(function ()  {
-                    self.filament.changeFilamentCancel();
+                    self.filament.cancelChangeFilament();
                 })
                 .always(function ()  {
                     // If this closes we need to reset stuff
@@ -44,7 +44,7 @@ $(function ()  {
         }
 
         self.startSwapFilamentWizard = function ()  {
-            self._cancelTempSafetyTimer();
+            self._stopTempSafetyTimer();
             self.filament.filamentInProgress(true);
             self.filament.showUnload();
 
@@ -56,7 +56,7 @@ $(function ()  {
 
         self.startPurgeWizard = function()
         {
-            self._cancelTempSafetyTimer();
+            self._stopTempSafetyTimer();
 
             $('.fd_step').removeClass('active');
             $('#fd_filament_swap_wizard').addClass('active');
@@ -86,36 +86,28 @@ $(function ()  {
             })
                 .done(function ()  {
                     //Cancel print
-                    self._cancelTempSafetyTimer();
+                    self._stopTempSafetyTimer();
                     self._cancelFilamentDetectionApi();
                     self.filament.requestData();
                 });
            
         }
 
-        self._cancelFilamentDetectionApi = function()
-        {
-            self._sendApi({
-                command: "filament_detection_cancel"
-            });
+        self._stopTempSafetyTimer = function () {
+            self._sendApi("filament/" + self.filament.tool() + "/detection/stop_timer");
         }
 
-        self._completeFilamentDetectionApi = function ()  {
-            self._sendApi({
-                command: "filament_detection_complete"
-            });
+        self._finishFilamentDetectionApi = function ()  {
+            self._sendApi("filament/" + self.filament.tool() + "/detection/finish");
         }
 
-        self._cancelTempSafetyTimer = function()
-        {
-            self._sendApi({
-                command: "temperature_safety_timer_cancel"
-            });
+        self._cancelFilamentDetectionApi = function () {
+            self._sendApi("filament/" + self.filament.tool() + "/detection/cancel");
         }
 
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
+        self._sendApi = function (urlSuffix, data) {
+            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
+            return OctoPrint.postJson(url, data);
         };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -136,10 +128,11 @@ $(function ()  {
         }
     };
 
-    OCTOPRINT_VIEWMODELS.push([
-        FilamentDetectionViewModel,
-        ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel", "filamentViewModel"],
-        ["#filament_detection_flyout"]
-    ]);
-
+    if (FILAMENT_DETECTION) {
+        OCTOPRINT_VIEWMODELS.push([
+            FilamentDetectionViewModel,
+            ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel", "filamentViewModel"],
+            ["#filament_detection_flyout"]
+        ]);
+    }
 });

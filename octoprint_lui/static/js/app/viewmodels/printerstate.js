@@ -1,13 +1,11 @@
 $(function ()  {
     function PrinterStateViewModel(parameters) {
-        // TODO Adapt to LUI
         var self = this;
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
         self.temperatureState = parameters[2];
         self.settings = parameters[3];
-        self.system = parameters[4];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -39,8 +37,7 @@ $(function ()  {
         self.timelapse = ko.observable(undefined);
 
         // These are updated from the filament viewmodel
-        self.leftFilamentMaterial = ko.observable(undefined);
-        self.rightFilamentMaterial = ko.observable(undefined);
+        self.loadedFilaments = undefined;
 
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
@@ -81,7 +78,7 @@ $(function ()  {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser() && !self.waitingForCancel();
         });
 
-        self.filament = ko.observableArray([]);
+        self.requiredFilaments = ko.observableArray([]);
         self.estimatedPrintTime = ko.observable(undefined);
         self.lastPrintTime = ko.observable(undefined);
 
@@ -141,39 +138,6 @@ $(function ()  {
                 return gettext("Pause");
         });
 
-        self.leftFilament = ko.computed(function ()  {
-            var filaments = self.filament();
-            var filament = _.find(filaments, function (f) { return f.name == "tool1" });
-
-            if (filament)
-                return formatFilament(filament.data());
-            else
-                return "-";
-        });
-
-        self.rightFilament = ko.computed(function ()  {
-            var filaments = self.filament();
-            var filament = _.find(filaments, function (f) { return f.name == "tool0" });
-
-            if(filament)
-                return formatFilament(filament.data());
-            else
-                return "-";
-        });
-
-        // self.stateStepString = ko.computed(function ()  {
-        //     if (self.temperatureState.isHeating()) return "Heating";
-        //     return self.stateString();
-        // });
-
-        // self.stateStepColor = ko.computed(function ()  {
-        //     if (self.temperatureState.isHeating()) return "bg-orange"
-        //     if (self.isPrinting()) return "bg-main"
-        //     if (self.isError()) return "bg-red"
-        //     return "bg-none"
-        // });
-
-
         self.fileSelected = ko.computed(function ()  {
             if (self.filename())
                 return true
@@ -216,6 +180,17 @@ $(function ()  {
             self._processZData(data.currentZ);
             self._processBusyFiles(data.busyFiles);
         };
+
+        self.getShortToolName = function (tool)
+        {
+            switch (tool)
+            {
+                case "tool0":
+                    return gettext("R");
+                case "tool1":
+                    return gettext("L");
+            }
+        }
 
         self._processStateData = function (data) {
             var prevPaused = self.isPaused();
@@ -329,7 +304,7 @@ $(function ()  {
                     });
                 }
             }
-            self.filament(result);
+            self.requiredFilaments(result);
         };
 
         self._processProgressData = function (data) {
@@ -378,21 +353,41 @@ $(function ()  {
         self.pause = function () {
 
             if (self.isPaused()) {
-                var needed = self.filament();
-
-                var needsLeft = _.some(needed,  {name: 'tool1' });
-                var needsRight = _.some(needed, {name: 'tool0' });
+                var tools = self.temperatureState.tools();
+                var loaded = self.loadedFilaments();
+                var needed = self.requiredFilaments();
                 
-                var materialLeft = self.leftFilamentMaterial();
-                var materialRight = self.rightFilamentMaterial();
-
                 var message = undefined;
-                if (self.printMode() != "normal" && (materialLeft == "None" || materialRight == "None"))
-                    message = gettext("Please load filament in both the left and right extruder before you resume your print.")
-                else if (needsLeft && materialLeft  == "None")
-                    message = gettext("Please load filament in the left extruder before you resume your print.")
-                else if (needsRight && materialRight == "None")
-                    message = gettext("Please load filament in the right extruder before you resume your print.")
+                var anyEmpty = false;
+
+                if (self.printMode() != "normal")
+                {
+                    // Check if all extruders are loaded with filament
+                    
+                    for (var i = 0; i < tools.length; i++)
+                    {
+                        // Look in the loaded filaments for the current tool and check if it has 'None' loaded
+                        if (_.some(loaded, function(filament) { return filament.tool() == tools[i].key && filament.materialProfileName() == "None" }))
+                            anyEmpty = true;
+                    }
+
+                    if(anyEmpty)
+                        message = gettext("Please load filament in both the left and right extruder before you resume your print.")
+                }
+                else
+                {
+                    // Check if required extruders are loaded with filament
+
+                    for (var i = 0; i < needed.length; i++)
+                    {
+                        // Look in the loaded filaments for the current tool and check if it has 'None' loaded
+                        if (_.some(loaded, function(filament) { return filament.tool() == needed[i].name && filament.materialProfileName() == "None" }))
+                            anyEmpty = true;
+                    }
+
+                    if(anyEmpty)
+                        message = gettext("Please load filament in the required extruders before you resume your print.")
+                }
                 
                 if (message) {
                     $.notify({ title: gettext('Cannot resume print'), text: message }, "error");
@@ -464,16 +459,6 @@ $(function ()  {
             self._sendApi({ command: "begin_homing" });
         }
 
-        self.showMaintenanceFlyout = function () 
-        {
-            self.settings.showSettingsTopic('maintenance', true)
-        }
-
-        self.showLogsFlyout = function ()
-        {
-            self.settings.showSettingsTopic('logs', true)
-        }
-
         self.cancelAutoShutdown = function () {
             self._sendApi({command: 'auto_shutdown_timer_cancel'});
         }
@@ -510,15 +495,15 @@ $(function ()  {
 
         self.refreshPrintPreview = function(url)
         {
-            var filename = self.filepath(); // Includes subfolder
+            var path = self.filepath(); // Includes subfolder
 
             if (url)
             {
                 self.printPreviewUrl(url);
             }
-            else if (filename)
+            else if (path)
             {
-                $.get('/plugin/gcoderender/previewstatus', { filename: filename, make: true })
+                $.get('/plugin/gcoderender/previewstatus/' + path)
                     .done(function (data)
                      {
                         if(data.status == 'ready')
@@ -654,7 +639,7 @@ $(function ()  {
 
         self.updateAnalyzingActivity = function()
         {
-            if (self.filename() && (!self.estimatedPrintTime() || self.filament().length == 0))
+            if (self.filename() && (!self.estimatedPrintTime() || self.requiredFilaments().length == 0))
                 self.activities.push('Analyzing');
             else
                 self.activities.remove('Analyzing');
@@ -669,32 +654,14 @@ $(function ()  {
             
             self.filepath.subscribe(function ()  {
                 self.activities.remove(gettext('Creating preview'));
-                //self.updateAnalyzingActivity();
                 self.refreshPrintPreview(); // Important to pass no parameters 
-            });
-
-            // As of 1.0.8, model analysis is no longer shown to the user
-           // self.estimatedPrintTime.subscribe(self.updateAnalyzingActivity);
-            // self.filament.subscribe(self.updateAnalyzingActivity);
-        }
-
-        //TODO: Remove!
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
-        }
-
-        //TODO: Remove!
-        self.doDebuggingAction = function () {
-            self._sendApi({
-                command: "trigger_debugging_action"
             });
         }
     }
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel", "systemViewModel"],
-        ["#print", "#info_flyout", "#startup_flyout", "#auto_shutdown_flyout", "#printer_error_flyout"]
+        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
+        ["#print", "#info_flyout"]
     ]);
 });

@@ -8,8 +8,18 @@ $(function ()  {
         self.printerState = parameters[3];
         self.filament = parameters[4];
 
+        self.getToolName = function (tool)
+        {
+            switch (tool) {
+                case 'tool0':
+                    return gettext('right');
+                case 'tool1':
+                    return gettext('left');
+            }
+        }
+
         self.mayStartLargeCalibration = ko.pureComputed(function ()  {
-            return self.filament.leftFilament() != "None" && self.filament.rightFilament() != "None"
+            return !_.some(self.filament.filaments(), function (filament) { return filament.materialProfileName() == "None" });
         });
 
         self.smallYAxisCorrection = ko.observable(0);

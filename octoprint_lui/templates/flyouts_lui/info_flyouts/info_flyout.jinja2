@@ -11,22 +11,38 @@
                 <span>{{ _('Target') }}</span>
             </div>
         </div>
-        <!-- ko foreach: toolStatus -->
+        <!-- ko foreach: tools -->
         <div class="Table-row">
-            <div class="Table-item Table-item-grow-2" data-bind="text: $parent.returnToolString($data)"></div>
+            <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
             <div class="Table-item Table-item-grow-4">
                 <div class="progress">
-                    <span style="width: 0%" data-bind="text: $parent.returnToolStatusString($index()), style: { width: $parent.returnProgressString($data) + '%'}, visible: $parent.isOperational(), css: css_class"></span>
+                    <span style="width: 0%" data-bind="text: status, style: { width: progress() + '%'}, css: css_class"></span>
                 </div>
             </div>
             <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
-                <span data-bind="text:  $parent.returnActualTemp($data) "></span>
+                <span data-bind="text: actual"></span>
             </div>
             <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
-                <span data-bind="text:  $parent.returnTargetTemp($data) "></span>
+                <span data-bind="text: target"></span>
             </div>
         </div>
         <!-- /ko -->
+      <!-- ko if: hasBed -->
+      <div class="Table-row" data-bind="with: bedTemp">
+        <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
+        <div class="Table-item Table-item-grow-4">
+          <div class="progress">
+            <span style="width: 0%" data-bind="text: status, style: { width: progress() + '%'}, css: css_class"></span>
+          </div>
+        </div>
+        <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
+          <span data-bind="text: actual"></span>
+        </div>
+        <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
+          <span data-bind="text: target"></span>
+        </div>
+      </div>
+      <!-- /ko -->
     </div> 
 </div>
 {% if not local_addr %}

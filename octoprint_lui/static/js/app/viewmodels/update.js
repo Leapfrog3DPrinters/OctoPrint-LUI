@@ -3,7 +3,7 @@ $(function ()  {
         var self = this;
 
         self.loginState = parameters[0];
-        self.system = parameters[1];
+        self.system = parameters[1]; //TODO: Remove dependency
         self.flyout = parameters[2];
         self.files = parameters[3];
         self.settings = parameters[4];
@@ -11,6 +11,7 @@ $(function ()  {
         self.flashArduino = parameters[6];
         self.networkManager = parameters[7];
         self.userSettings = parameters[8];
+        self.navigation = parameters[9];
 
         self.initialCheck = false;
         self.updateinfo = ko.observableArray([]);
@@ -214,18 +215,17 @@ $(function ()  {
         self.showUpdateFlyout = function()
         {
             // Show the update flyout blocking and with high priority
-            self.settings.showSettingsTopic('update', true, true); 
+            self.navigation.showSettingsTopic('update', true, true); 
         }
 
         self.showWirelessFlyout = function()
         {
             // Show the wireless flyout blocking and with high priority
-            self.settings.showSettingsTopic('wireless', true, true);
+            self.navigation.showSettingsTopic('wireless', true, true);
         }
 
         self.showLoginFlyout = function()
         {
-            self.userSettings.show();
             self.flyout.showFlyout('login', true, true);
         }
 
@@ -377,7 +377,7 @@ $(function ()  {
 
                 self.flyout.showConfirmationFlyout(dialog)
                     .done(function ()  {
-                        self.settings.showSettingsTopic('update');
+                        self.navigation.showSettingsTopic('update');
                         self.flashArduino.onLocalFileSelected(file);
                     });
             }
@@ -501,11 +501,6 @@ $(function ()  {
                     self.hideFirmwareUpdateWarning(true);
                     self.firmwareUpdateAvailable(false); // The update succeeded so there shouldn't be any updates available
                     break;
-                case "firmware_update_found":
-                    if(DEBUG_LUI) {
-                        self.onFirmwareUpdateFound(messageData.file);
-                    }
-                    break;
                 case "machine_info_updated":
                     //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
                     self.modelName(messageData.machine_type);
@@ -586,7 +581,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
-      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel", "userSettingsViewModel"],
+      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "filesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel", "userSettingsViewModel", "navigationViewModel"],
       ['#update', '#update_icon', '#firmware_update_required', '#changelog_flyout']
     ]);
 

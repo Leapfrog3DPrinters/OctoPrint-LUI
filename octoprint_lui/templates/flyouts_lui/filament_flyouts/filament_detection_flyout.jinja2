@@ -129,14 +129,14 @@
     <div class="Table-row fd_swap_process_step" id="fd_finished_filament" >
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="touchClick: function () { filament.loadFilamentCont() }, css: { disabled: filament.filamentLoadCont()}">
+          <li class="button" data-bind="touchClick: function () { filament.startExtruding() }, css: { disabled: filament.isExtruding()}">
             <a href="#">
               <span>
                 <i class="fa fa-arrow-down"></i>{{ _('Load extra filament') }}
               </span>
             </a>
           </li>
-          <li class="button failed-button" data-bind="touchClick: function () { filament.loadFilamentContStop() }, css: { disabled: !filament.filamentLoadCont()}">
+          <li class="button failed-button" data-bind="touchClick: function () { filament.finishExtruding() }, css: { disabled: !filament.isExtruding()}">
             <a href="#">
               <span>
                 <i class="fa fa-close"></i>{{ _('Stop loading') }}
@@ -164,7 +164,7 @@
     <div id="fd_tool_heating" class = "Table-row">
     <div class="Table-item Table-item-grow-3">
         <div class="progress progress-large">
-            <span style="width: 100%" data-bind="text: temperatureState.toolStatus()[filament.toolNum()].text, css: temperatureState.toolStatus()[filament.toolNum()].css_class, style: { width: temperatureState.toolProgress()[filament.toolNum()]() + '%' }"></span>
+            <span style="width: 100%" data-bind="text: temperatureState.tools()[toolNum()].status, css: temperatureState.tools()[toolNum()].css_class, style: { width: temperatureState.tools()[toolNum()].progress + '%' }"></span>
         </div>
     </div>
     </div>

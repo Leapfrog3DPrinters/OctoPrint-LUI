@@ -24,7 +24,7 @@
       {% if local_addr %}
       <!-- Maintenance -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('maintenance')}, css: { disabled: !isOperational() || isPaused() || isPrinting() } ">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('maintenance')}, css: { disabled: !printerState.isOperational() || printerState.isPaused() || printerState.isPrinting() } ">
           <li class="topic_dash">
             <a href="#">
               <i class="fa fa-wrench"></i>
@@ -150,12 +150,12 @@
       {% endif %}
       <!-- Update -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('update')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('update')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || printerState.isPrinting() || printerState.isPaused()}">
           <li class="topic_dash">
             <a href="#">
               <!-- ko allowBindings: false -->
               <i id="update_icon" class="fa fa-refresh">
-                <span data-bind="text: update_needed() + firmwareUpdateAvailable() == 0 ? '' : update_needed() + firmwareUpdateAvailable(), css: {badge: update_needed()+ firmwareUpdateAvailable()}"></span>
+                <span data-bind="text: update_needed() + firmwareUpdateAvailable() == 0 ? '' : update_needed() + firmwareUpdateAvailable(), css: {badge: update_needed() + firmwareUpdateAvailable()}"></span>
               </i>
               <!-- /ko -->
             </a>
@@ -214,7 +214,7 @@
       </div><!-- /Languanges -->
       {% if not local_addr %}
       <!-- Logs -->
-      <div class="settings_topic" data-bind="touchClick: function () {showSettingsTopic('logs')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPrinting() || isPaused()}">
+      <div class="settings_topic" data-bind="touchClick: function () {showSettingsTopic('logs')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || printerState.isPrinting() || printerState.isPaused()}">
         <ul class="topic_main">
           <li class="topic_dash">
             <a href="#">

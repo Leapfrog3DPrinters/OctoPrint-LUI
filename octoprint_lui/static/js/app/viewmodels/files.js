@@ -1,6 +1,5 @@
 $(function ()  {
-    function GcodeFilesViewModel(parameters) {
-        // TODO Fully adapt to LUI
+    function FilesViewModel(parameters) {
         var self = this;
 
         self.settings = parameters[0];
@@ -11,15 +10,6 @@ $(function ()  {
         self.filament = parameters[5];
         self.network = parameters[6];
         self.cloud = parameters[7];
-
-        self.isErrorOrClosed = ko.observable(undefined);
-        self.isOperational = ko.observable(undefined);
-        self.isPrinting = ko.observable(undefined);
-        self.isPaused = ko.observable(undefined);
-        self.isError = ko.observable(undefined);
-        self.isReady = ko.observable(undefined);
-        self.isLoading = ko.observable(undefined);
-        self.isSdReady = ko.observable(undefined);
 
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
@@ -96,12 +86,6 @@ $(function ()  {
 
         self.isLoadingFile = false;
         self.isLoadingFileList = ko.observable(false);
-
-        self.addFolderDialog = undefined;
-        self.addFolderName = ko.observable(undefined);
-        self.enableAddFolder = ko.computed(function ()  {
-            return self.loginState.isUser() && self.addFolderName() && self.addFolderName().trim() != "";
-        });
 
         self.allItems = ko.observable(undefined);
         self.listStyle = ko.observable("folders_files");
@@ -189,10 +173,7 @@ $(function ()  {
             filter = filter || "";
             path = path || "";
             
-            if (origin == "local")
-                return OctoPrint.getWithQuery("api/files", { recursive: true, force: true });
-            else
-                return self._getBlueprintApi("files/" + origin + "/" + path);
+            return self._getBlueprintApi("files/" + origin + "/" + path);
         }
 
         self._getApi = function (data) {
@@ -240,21 +221,6 @@ $(function ()  {
                 }
             },
             {
-                "printed": function (data) {
-                    return !(data["prints"] && data["prints"]["success"] && data["prints"]["success"] > 0) || (data["type"] && data["type"] == "folder");
-                },
-                "sd": function (data) {
-                    return data["origin"] && data["origin"] == "sdcard";
-                },
-                "local": function (data) {
-                    return !(data["origin"] && data["origin"] == "sdcard");
-                },
-                "machinecode": function (data) {
-                    return data["type"] && (data["type"] == "machinecode" || data["type"] == "folder");
-                },
-                "model": function (data) {
-                    return data["type"] && (data["type"] == "model" || data["type"] == "folder");
-                },
                 "emptyFolder": function (data) {
                     // Hide the calibration folder
                     if (data["origin"] == "local" && data["type"] == "folder" && data["name"] == "calibration") {
@@ -273,7 +239,7 @@ $(function ()  {
             },
             "name",
             ["emptyFolder"],
-            [["sd", "local"], ["machinecode", "model"]],
+            [],
             0
         );
 
@@ -304,11 +270,11 @@ $(function ()  {
         });
 
         self.isLoadActionPossible = ko.computed(function ()  {
-            return self.loginState.isUser() && !self.isPrinting() && !self.isPaused() && !self.isLoading() && !self.printerState.waitingForCancel();
+            return self.loginState.isUser() && !self.printerState.isPrinting() && !self.printerState.isPaused() && !self.printerState.isLoading() && !self.printerState.waitingForCancel();
         });
 
         self.isLoadAndPrintActionPossible = ko.computed(function ()  {
-            return self.loginState.isUser() && self.isOperational() && self.isLoadActionPossible();
+            return self.loginState.isUser() && self.printerState.isOperational() && self.isLoadActionPossible();
         });
 
         self.printerState.filename.subscribe(function (newValue) {
@@ -336,25 +302,6 @@ $(function ()  {
                     }
                 });
             }
-        };
-
-        self.fromCurrentData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self.fromHistoryData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self._processStateData = function (data) {
-            self.isErrorOrClosed(data.flags.closedOrError);
-            self.isOperational(data.flags.operational);
-            self.isPaused(data.flags.paused);
-            self.isPrinting(data.flags.printing);
-            self.isError(data.flags.error);
-            self.isReady(data.flags.ready);
-            self.isLoading(data.flags.loading);
-            self.isSdReady(data.flags.sdReady);
         };
 
         self._otherRequestInProgress = false;
@@ -511,16 +458,6 @@ $(function ()  {
             }
         };
 
-        self.addFolder = function ()  {
-            var name = self.addFolderName();
-
-            // "local" only for now since we only support local and sdcard,
-            // and sdcard doesn't support creating folders...
-            OctoPrint.files.createFolder("local", name, self.currentPath())
-                .done(function ()  {
-                    self.addFolderDialog.modal("hide");
-                });
-        };
 
         self.loadFile = function (file, printAfterLoad) {
             if (!file || self.isLoadingFile) {
@@ -765,10 +702,6 @@ $(function ()  {
                 }
             }
         });
-
-        self.enableForcePrint = function () {
-            self.printerState.forcePrint(true);
-        };
 
         self.evaluatePrintDimensions = function (data, mode, notify) {
             // This functionality is temporarily disabled for 1.0.8
@@ -1046,12 +979,8 @@ $(function ()  {
         };
 
         self.enableSelect = function (data, printAfterSelect) {
-            var isLoadActionPossible = self.loginState.isUser() && self.isOperational() && !(self.printerState.waitingForCancel() || self.isPrinting() || self.isPaused() || self.isLoading());
+            var isLoadActionPossible = self.loginState.isUser() && self.printerState.isOperational() && !(self.printerState.waitingForCancel() || self.printerState.isPrinting() || self.printerState.isPaused() || self.printerState.isLoading());
             return isLoadActionPossible && !self.listHelper.isSelected(data);
-        };
-
-        self.enableSlicing = function (data) {
-            return self.loginState.isUser() && self.slicing.enableSlicingDialog();
         };
 
         self.enableAdditionalData = function (data) {
@@ -1323,10 +1252,6 @@ $(function ()  {
             }
         };
 
-        self.onEventSlicingDone = function (payload) {
-            self.requestData(undefined, undefined, self.currentPath());
-        };
-
         self.onEventMetadataAnalysisStarted = function (payload) {
         };
 
@@ -1421,7 +1346,7 @@ $(function ()  {
     }
 
     OCTOPRINT_VIEWMODELS.push([
-        GcodeFilesViewModel,
+        FilesViewModel,
         ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel", "cloudViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);

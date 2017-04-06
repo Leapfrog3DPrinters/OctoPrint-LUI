@@ -11,15 +11,15 @@ for to_print in ['1mm', '100um']:
         offset = 0.1    # Difference between each line in mm (the accuracy of the calibration)
         xdiff = 10      # Distance between vertical lines in mm
         ydiff = 10      # Distance between horizontal lines in mm
-        xymin = 180     # The y position of the bottom of the vertical lines
-        yymin = 50      # The y position of the last (bottom) horizontal line
+        xymin = 140     # The y position of the bottom of the vertical lines
+        yymin = 10      # The y position of the last (bottom) horizontal line
     elif to_print == '1mm':
         n_lines = 17    # The number of lines to draw. Must be uneven (so 0 can be in the center)!
         draw_y = False  # Whether or not to draw the horizontal y-axis lines
         offset = 1      # Difference between each line in mm (the accuracy of the calibration)
         xdiff = 15      # Distance between vertical lines in mm
         ydiff = 15      # Distance between horizontal lines in mm
-        xymin = 50      # The y position of the bottom of the vertical lines 
+        xymin = 230     # The y position of the bottom of the vertical lines 
         yymin = 50      # (not used here) The y position of the last (bottom) horizontal line
 
 
