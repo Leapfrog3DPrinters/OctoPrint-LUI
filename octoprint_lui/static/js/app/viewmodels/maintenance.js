@@ -62,9 +62,7 @@ $(function () {
         };
 
         self.afterHeadMaintenance = function () {
-            self._sendApi({
-                command: 'after_head_maintenance'
-            });
+            self._sendBlueprintApi("maintenance/head/swap/finish");
         }
 
         self.afterMaintenance = function()
@@ -85,15 +83,8 @@ $(function () {
             OctoPrint.printer.home(axis);
         };
 
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
         self.moveToCleanBedPosition = function () {
-            self._sendApi({
-                command: 'move_to_bed_maintenance_position'
-            }).done(function ()  {
+            self._sendBlueprintApi("maintenance/bed/clean/start").done(function ()  {
                 $.notify({ title: gettext("Clean bed"), text: gettext("The printer is moving towards the clean bed position.") }, "success");
             });
         };
@@ -119,9 +110,7 @@ $(function () {
             }
 
             // From here only executed if temperatures are < 50, or heat check is ignored
-            self._sendApi({
-                command: 'move_to_head_maintenance_position'
-            });
+            self._sendBlueprintApi("maintenance/head/swap/start");
 
             self.movingToMaintenancePositionInfo = self.flyout.showInfo(gettext("Maintenance position"), gettext("The printhead is moving towards the maintenance position."), true);
         };
@@ -133,7 +122,7 @@ $(function () {
                 self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterHeadMaintenance);
                 self.movingToMaintenancePositionInfo = undefined;
             }
-            
+
         }
 
         self.beginPurgeWizard = function (tool)
@@ -162,10 +151,21 @@ $(function () {
             self.navigation.showSettingsTopic('logs');
         }
 
-        self.onSettingsShown = function () { 
+        self.onSettingsShown = function () {
             $('#maintenance_control').addClass('active');
             $('#maintenance_filament').removeClass('active');
 
+        };
+
+        self._sendBlueprintApi = function (urlSuffix, data) {
+            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
+            return OctoPrint.postJson(url, data);
+        };
+
+        //TODO: Get rid of this legacy method, and refactor the blueprint out
+        self._sendApi = function (data) {
+            url = OctoPrint.getSimpleApiUrl('lui');
+            return OctoPrint.postJson(url, data);
         };
 
         // Handle plugin messages
