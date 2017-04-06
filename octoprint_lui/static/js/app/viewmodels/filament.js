@@ -351,7 +351,7 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
-                case "filament_in_progress":
+                case "filament_change_in_progress":
                     self.filamentInProgress(true);
 
                     if (messageData !== null && messageData.hasOwnProperty('paused_materials'))
