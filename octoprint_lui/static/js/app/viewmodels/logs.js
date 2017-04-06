@@ -69,10 +69,8 @@ $(function() {
         };
 
         self.copyLogToUsb = function(filename) {
-            self._sendApi({
-                command: "copy_log_to_usb",
-                filename: filename
-            }).done(function ()  {
+            self._sendBlueprintApi('usb/save/log/' + filename)
+                .done(function () {
                 $.notify(
                     { 
                         title: gettext('Log file copied'), 
@@ -95,10 +93,10 @@ $(function() {
             self.requestData();
         };
 
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
+        self._sendBlueprintApi = function (url_suffix, data) {
+            url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
             return OctoPrint.postJson(url, data);
-        };
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

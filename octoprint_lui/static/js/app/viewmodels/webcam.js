@@ -240,17 +240,15 @@ $(function ()  {
         self.copyToUsb = function (filename) {
             self.isCopying(true);
 
-            self._sendApi({
-                command: "copy_timelapse_to_usb",
-                filename: filename
-            }).done(function ()  {
-                self.setProgressBar(0);
-                $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
-            }).fail(function ()  {
-                $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
-            }).always(function ()  {
-                self.isCopying(false);
-            });
+            self._sendBlueprintApi('usb/save/timelapse/' + filename)
+                .done(function () {
+                    self.setProgressBar(0);
+                    $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
+                }).fail(function ()  {
+                    $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
+                }).always(function ()  {
+                    self.isCopying(false);
+                });
         }
 
         self.removeUnrendered = function (name) {
@@ -358,6 +356,11 @@ $(function ()  {
             url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.postJson(url, data);
         };
+
+        self._sendBlueprintApi = function (url_suffix, data) {
+            url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
+            return OctoPrint.postJson(url, data);
+        }
 
         self.setProgressBar = function (percentage) {
             self.copyProgressBar

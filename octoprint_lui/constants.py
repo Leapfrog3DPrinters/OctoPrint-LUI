@@ -38,6 +38,18 @@ class ClientMessages(object):
     MEDIA_FILE_COPY_COMPLETE = "media_file_copy_complete"
     MEDIA_FILE_COPY_FAILED = "media_file_copy_failed"
 
+    GCODE_COPY_PROGRESS = "gcode_copy_progress"
+    GCODE_COPY_FINISHED = "gcode_copy_complete"
+    GCODE_COPY_FAILED = "gcode_copy_failed"
+
+    TIMELAPSE_COPY_PROGRESS = "timelapse_copy_progress"
+    TIMELAPSE_COPY_FINISHED = "timelapse_copy_complete"
+    TIMELAPSE_COPY_FAILED = "timelapse_copy_failed"
+
+    LOGS_COPY_PROGRESS = "logs_copy_progress"
+    LOGS_COPY_FINISHED = "logs_copy_complete"
+    LOGS_COPY_FAILED = "logs_copy_failed"
+
     POWERBUTTON_PRESSED = "powerbutton_pressed"
 
     MACHINE_INFO_UPDATED = "machine_info_updated"

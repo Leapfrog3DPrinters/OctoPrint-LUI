@@ -33,16 +33,20 @@ $(function ()  {
                 return "-";
             return formatSize(self.freeSpace()) + gettext(" free");
         });
+
         self.totalSpaceString = ko.computed(function ()  {
             if (!self.totalSpace())
                 return "-";
             return formatSize(self.totalSpace());
         });
 
+        self.wasDiskusageWarning = false;
         self.diskusageWarning = ko.computed(function ()  {
             return self.freeSpace() != undefined
                 && self.freeSpace() < self.settings.server_diskspace_warning();
         });
+
+        self.wasDiskusageCritical = false;
         self.diskusageCritical = ko.computed(function ()  {
             return self.freeSpace() != undefined
                 && self.freeSpace() < self.settings.server_diskspace_critical();
@@ -57,30 +61,29 @@ $(function ()  {
             }
         });
 
-        self.diskusageNotificationCheck = function() {
-            if (self.diskusageCritical()) {
+        self.showDiskUsageWarnings = function () {
+            if (!self.wasDiskusageCritical && self.diskusageCritical()) {
                 $.notify({
                     title: gettext("Disk space critically low!"),
-                    text: _.sprintf(gettext('Free some space by deleting jobs or timelapses to continue usage.'), {})
-                },
-                { 
-                    className: "error",
-                    autoHide: false
-                }
-                )
-                return
-            } else if (self.diskusageWarning()) {
+                    text: gettext('Free some space by deleting jobs or timelapses to continue usage.')
+                }, { className: "error", autoHide: false });
+
+                self.wasDiskusageCritical = true;
+            }
+            else if (!self.wasDiskusageWarning && self.diskusageWarning()) {
                 $.notify({
                     title: gettext("Disk space very low!"),
-                    text: _.sprintf(gettext('Please free some space by deleting jobs or timelapses.'), {})
-                },
-                { 
-                    className: "warning",
-                    autoHide: false
-                }
-                )
+                    text: gettext('Please free some space by deleting jobs or timelapses.')
+                }, { className: "warning", autoHide: false });
+
+                self.wasDiskusageWarning = true;
             }
-        };
+            else
+            {
+                self.wasDiskusageWarning = false;
+                self.wasDiskusageCritical = false;
+            }
+        }
 
         self.uploadButton = undefined;
         self.uploadProgressBar = undefined;
@@ -385,7 +388,7 @@ $(function ()  {
                 self.totalSpace(response.total);
             }
 
-            self.diskusageNotificationCheck();
+            self.showDiskUsageWarnings();
 
             self.highlightCurrentFilename();
         };
@@ -535,7 +538,7 @@ $(function ()  {
                 return;
             }
 
-            self._sendApi({ command: "copy_gcode_to_usb", filename: file.name });
+            self._sendBlueprintApi("usb/save/gcode/" + file.path);
         }
 
         self.removeAllFiles = function()
@@ -551,7 +554,7 @@ $(function ()  {
 
             self.flyout.showConfirmationFlyout(dialog)
             .done(function ()  {
-                return self._sendApi({ command: 'delete_all_uploads' })
+                return self._sendBlueprintApi('files/delete_all')
                     .done(function ()  {
                         
                         $.notify({

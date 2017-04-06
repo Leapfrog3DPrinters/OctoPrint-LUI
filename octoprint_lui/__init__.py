@@ -1414,10 +1414,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     after_head_maintenance = [],
                     move_to_bed_maintenance_position = [],
                     begin_homing = [],
-                    copy_gcode_to_usb = ["filename"],
-                    delete_all_uploads = [],
-                    copy_timelapse_to_usb = ["filename"],
-                    copy_log_to_usb = ["filename"],
                     delete_all_timelapses = [],
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
@@ -2014,10 +2010,49 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @BlueprintPlugin.route("/files/select/<string:origin>/<path:path>", methods=["POST"])
     def select_file(self, origin, path):
+        """
+        Selects a file to be printed. Intened for non-local origins (usb, cloud ...)
+        """
         if origin == "cloud":
             return self._select_cloud_file(path)
         elif origin == "usb":
             return self._select_usb_file(path)
+
+    @BlueprintPlugin.route("/files/delete_all", methods=["POST"])
+    def delete_all_uploads(self):
+        """
+        Deletes all gcode files in the uploads folder
+        """
+        # Find the filename of the current print job
+        selectedfile = None
+
+        if self._printer._selectedFile:
+            selectedfile = self._printer._selectedFile["filename"]
+
+
+        # Get the full path to the uploads folder
+        uploads_folder = self._settings.global_get_basefolder("uploads")
+
+        has_failed = False
+
+        # Walk through all files
+        for filename in os.listdir(uploads_folder):
+            if filename == selectedfile:
+                continue
+
+            file_path = os.path.join(uploads_folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path): shutil.rmtree(file_path) # Recursively delete all files in subfolders
+            except Exception as e:
+                self._logger.exception("Could not delete file: %s" % filename)
+                has_failed = True
+
+        if has_failed:
+            return make_response(jsonify(result = "Could not delete all files"), 500)
+        else:
+            return make_response(jsonify(result = "OK"), 200);
 
     def _select_cloud_file(self, path):
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
@@ -2175,6 +2210,73 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r
 
+       
+
+    def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
+        # Get the full path to the uploads folder
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+
+        has_failed = False
+
+        # Walk through all files
+        for filename in os.listdir(timelapse_folder):
+            file_path = os.path.join(timelapse_folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                # Don't remove subfolders as they may contain images for current renders. OctoPrint handles their removal.
+                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
+            except Exception as e:
+                self._logger.exception("Could not delete file: %s" % filename)
+                has_failed = True
+
+        if has_failed:
+            return make_response(jsonify(result = "Could not delete all files"), 500)
+        else:
+            return make_response(jsonify(result = "OK"), 200);
+
+    @BlueprintPlugin.route("/usb/save/<string:source_type>/<path:path>", methods=["POST"])
+    def save_to_usb(self, source_type, path):
+        if source_type == "gcode":
+            return self._copy_gcode_to_usb(path)
+        elif source_type == "timelapse":
+            return self._save_timelapse_to_usb(path)
+        elif source_type == "log":
+            return self._copy_log_to_usb(path)
+
+    def _copy_gcode_to_usb(self, filename):
+        if not self.is_media_mounted:
+            return make_response("Could not access the media folder", 400)
+
+        if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
+            return make_response(jsonify(error="Not allowed to copy this file"), 400)
+
+        uploads_folder = self._settings.global_get_basefolder("uploads")
+        src_path = os.path.join(uploads_folder, filename)
+
+        return self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", ClientMessages.GCODE_COPY_PROGRESS , ClientMessages.GCODE_COPY_FINISHED, ClientMessages.GCODE_COPY_FAILED)
+
+    def _copy_timelapse_to_usb(self, filename):
+        if not self.is_media_mounted:
+            return make_response("Could not access the media folder", 400)
+
+        if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
+            return make_response(jsonify(error="Not allowed to copy this file"), 400)
+
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+        src_path = os.path.join(timelapse_folder, filename)
+
+        return self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", ClientMessages.TIMELAPSE_COPY_PROGRESS, ClientMessages.TIMELAPSE_COPY_FINISHED, ClientMessages.TIMELAPSE_COPY_FAILED)
+
+    def _copy_log_to_usb(self, filename, *args, **kwargs):
+        if not self.is_media_mounted:
+            return make_response(jsonify(error="Could not access the media folder"), 400)
+        
+        logs_folder = self._settings.global_get_basefolder("logs")
+        src_path = os.path.join(logs_folder, filename)
+
+        return self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", ClientMessages.LOGS_COPY_PROGRESS, ClientMessages.LOGS_COPY_FINISHED, ClientMessages.LOGS_COPY_FAILED)
+
     def _copy_file_to_usb(self, filename, src_path, dst_folder, message_progress, message_complete, message_failed):
         # Loop through all directories in the media folder and find the mount with most free space
         bytes_available = 0
@@ -2201,10 +2303,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         filesize = os.path.getsize(src_path)
 
         if filesize > bytes_available:
-            return make_response("Insuffient space available on USB drive", 400)
+            return make_response(jsonify(error="Insuffient space available on USB drive"), 400)
 
         if drive_folder is None:
-            return make_response("Insuffient space available on USB drive", 400)
+            return make_response(jsonify(error="Insuffient space available on USB drive"), 400)
 
         folder_path = os.path.join(drive_folder, dst_folder)
         new_full_path = os.path.join(folder_path, filename)
@@ -2239,122 +2341,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if not os.path.isdir(folder_path):
                 os.mkdir(folder_path)
 
-            import shutil
             shutil.copy2(src_path, new_full_path)
         except Exception as e:
             timer.cancel()
-
-            return make_response("File error during copying: %s" % e.message, 500)
+            self._send_client_message(message_failed)
+            return make_response(jsonify(error="File error during copying: %s" % e.message), 500)
         finally:
             is_copying = False
-            self._send_client_message(message_failed)
 
-        return make_response("OK", 200)
-
-
-    def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
-        if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
-
-        if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
-            return make_response("Not allowed to copy this file", 400)
-
-        timelapse_folder = self._settings.global_get_basefolder("timelapse")
-        src_path = os.path.join(timelapse_folder, filename)
-
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress", "timelapse_copy_complete", "timelapse_copy_failed")
-
-    def _on_api_command_copy_log_to_usb(self, filename, *args, **kwargs):
-        if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
-
-        # Rotated log files have also dates as extension, this check out for now. 
-        # if not octoprint.util.is_allowed_file(filename, ["log"]):
-        #     return make_response("Not allowed to copy this file", 400)
-
-        logs_folder = self._settings.global_get_basefolder("logs")
-        src_path = os.path.join(logs_folder, filename)
-
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", "logs_copy_progress", "logs_copy_complete", "logs_copy_failed")
-        
-
-    def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
-        import shutil
-
-        # Get the full path to the uploads folder
-        timelapse_folder = self._settings.global_get_basefolder("timelapse")
-
-        has_failed = False
-
-        # Walk through all files
-        for filename in os.listdir(timelapse_folder):
-            file_path = os.path.join(timelapse_folder, filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                # Don't remove subfolders as they may contain images for current renders. OctoPrint handles their removal.
-                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
-            except Exception as e:
-                self._logger.exception("Could not delete file: %s" % filename)
-                has_failed = True
-
-        if has_failed:
-            return make_response(jsonify(result = "Could not delete all files"), 500)
-        else:
-            return make_response(jsonify(result = "OK"), 200);
-
-    def _on_api_command_copy_gcode_to_usb(self, filename, *args, **kwargs):
-        if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
-
-        if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
-            return make_response("Not allowed to copy this file", 400)
-
-        uploads_folder = self._settings.global_get_basefolder("uploads")
-        src_path = os.path.join(uploads_folder, filename)
-
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", "gcode_copy_progress", "gcode_copy_complete", "gcode_copy_failed")
-
-    def _on_api_command_delete_all_uploads(self, *args, **kwargs):
-        import shutil
-
-        # Find the filename of the current print job
-        selectedfile = None
-
-        if self._printer._selectedFile:
-            selectedfile = self._printer._selectedFile["filename"]
-
-        ## Pause any gcode analyses (which may have open file handles)
-        #self._printer._analysisQueue.pause()
-        #self._printer._analysisQueue
-
-        # Get the full path to the uploads folder
-        uploads_folder = self._settings.global_get_basefolder("uploads")
-
-        has_failed = False
-
-        # Walk through all files
-        for filename in os.listdir(uploads_folder):
-            if filename == selectedfile:
-                continue
-
-            file_path = os.path.join(uploads_folder, filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path): shutil.rmtree(file_path) # Recursively delete all files in subfolders
-            except Exception as e:
-                self._logger.exception("Could not delete file: %s" % filename)
-                has_failed = True
-
-        ## Restart the analyses, if we're not printing
-        #if self._printer._state != octoprint.util.comm.MachineCom.STATE_PRINTING:
-        #    self._printer._analysisQueue.resume()
-
-        if has_failed:
-            return make_response(jsonify(result = "Could not delete all files"), 500)
-        else:
-            return make_response(jsonify(result = "OK"), 200);
+        return make_response(jsonify(), 200)     
 
     def _on_api_command_auto_shutdown_timer_cancel(self):
         # User cancelled timer. So cancel the timer and send to front-end to close flyout.
