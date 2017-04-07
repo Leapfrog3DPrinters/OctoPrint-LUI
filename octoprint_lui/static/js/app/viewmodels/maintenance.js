@@ -19,18 +19,6 @@ $(function () {
                 case 'tool1':
                     return '<i class="fa fa-arrow-down"></i>' + gettext('Purge left');
             }
-        }
-
-        self.sendJogCommand = function (axis, multiplier, distance) {
-            if (typeof distance === "undefined")
-                distance = $('#jog_distance button.active').data('distance');
-            if (self.settings.printerProfiles.currentProfileData() && self.settings.printerProfiles.currentProfileData()["axes"] && self.settings.printerProfiles.currentProfileData()["axes"][axis] && self.settings.printerProfiles.currentProfileData()["axes"][axis]["inverted"]()) {
-                multiplier *= -1;
-            }
-
-            var data = {};
-            data[axis] = distance * multiplier;
-            OctoPrint.printer.jog(data);
         };
 
         self.headMaintenancePosition = function () {
@@ -63,21 +51,21 @@ $(function () {
 
         self.afterHeadMaintenance = function () {
             self._sendBlueprintApi("maintenance/head/swap/finish");
-        }
+        };
 
         self.afterMaintenance = function()
         {
             OctoPrint.printer.home(['x', 'y']);
-        }
+        };
 
         self.calibrateExtruders = function ()  {
             self.flyout.showFlyout('extrudercalibration', true);
-        }
+        };
 
         self.calibrateBed = function()
         {
             self.flyout.showFlyout('bedcalibration', true);
-        }
+        };
 
         self.sendHomeCommand = function (axis) {
             OctoPrint.printer.home(axis);
@@ -123,7 +111,7 @@ $(function () {
                 self.movingToMaintenancePositionInfo = undefined;
             }
 
-        }
+        };
 
         self.beginPurgeWizard = function (tool)
         {
@@ -149,7 +137,7 @@ $(function () {
         self.logFiles = function ()
         {
             self.navigation.showSettingsTopic('logs');
-        }
+        };
 
         self.onSettingsShown = function () {
             $('#maintenance_control').addClass('active');
@@ -159,12 +147,6 @@ $(function () {
 
         self._sendBlueprintApi = function (urlSuffix, data) {
             url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
-            return OctoPrint.postJson(url, data);
-        };
-
-        //TODO: Get rid of this legacy method, and refactor the blueprint out
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.postJson(url, data);
         };
 

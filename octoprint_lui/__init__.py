@@ -1857,7 +1857,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.script(full_script_name, context, must_be_set = False)
 
     def _head_in_maintenance_position(self):
-        # TODO
+        """
+        Decides when to update UI when head is in maintenance position
+        """
         if self.powerbutton_handler:
             self._disconnect_and_powerdown() #UI is updated after power down
         else:
@@ -1867,35 +1869,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
          """
          Disconnects and powers down the printer
          """
-         if self.powerbutton_handler:
-            self.powerdown_after_disconnect = True
-            self.intended_disconnect = True
-            self._printer.disconnect()
+         self.powerdown_after_disconnect = True
+         self.intended_disconnect = True
+         self._printer.disconnect()
 
     def _do_powerdown_after_disconnect(self):
         """
         Powers down printer after disconnect
         """
-        if self.powerbutton_handler:
-            self.powerbutton_handler.disableAuxPower()
-            self._logger.debug("Auxiliary power down for maintenance")
-            self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
+        self.powerbutton_handler.disableAuxPower()
+        self._logger.debug("Auxiliary power down for maintenance")
+        self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
 
     def _power_up_after_maintenance(self):
         """
         Powers up printer after maintenance
         """
-        if self.powerbutton_handler:
-            self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
-            # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
-            self.powerbutton_handler.enableAuxPower()
-            self._logger.debug("Auxiliary power up after maintenance")
-            time.sleep(5) # Give it 5 sec to power up
-
-            #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
-            #TODO: Or monitor if /dev/ttyUSB0 exists?
-            self.connecting_after_maintenance = True
-            self._printer.connect()
+        self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
+        # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
+        self.powerbutton_handler.enableAuxPower()
+        self._logger.debug("Auxiliary power up after maintenance")
+        time.sleep(5) # Give it 5 sec to power up
+        #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
+        #TODO: Or monitor if /dev/ttyUSB0 exists?
+        self.connecting_after_maintenance = True
+        self._printer.connect()
 
     def _auto_home_after_maintenance(self):
         """
@@ -2872,7 +2870,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         self._set_movement_mode("absolute")
         self._execute_printer_script("bed_maintenance_position")
-        self._restore_movement_mode()
+        self.restore_movement_mode()
 
     def _set_movement_mode(self, mode):
         self.last_movement_mode = self.movement_mode
@@ -2890,7 +2888,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self._printer.commands(["M82"])
 
-    def _restore_movement_mode(self):
+    def restore_movement_mode(self):
         self._set_movement_mode(self.last_movement_mode)
 
     def restore_extrusion_mode(self):
