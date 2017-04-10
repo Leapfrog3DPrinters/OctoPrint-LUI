@@ -655,9 +655,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         md = os.linesep.join(self.changelog_contents)
         return markdown.markdown(md)
 
-	##~ Cloud
+	## Cloud API
     @octoprint.plugin.BlueprintPlugin.route("/cloud", methods=["GET"], strict_slashes=False)
     def get_cloud_info(self):
+        """
+        Returns a list of available cloud services
+        {
+            name: string,
+            friendlyName: string,
+            loggedIn: string
+        } 
+        """
         info_obj = []
         for service in cloud.AVAILABLE_SERVICES:
             info_obj.append({ 
@@ -669,12 +677,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/login", methods=["GET"])
     def connect_to_cloud_service(self, service):
+        """
+        Provides the redirect URL to authenticate a cloud service
+        """
         auth_url = self.cloud_connect.get_auth_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/login/finished'.format(service))
         return make_response(jsonify({'auth_url' : auth_url }))
             
     
     @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/login/finished", methods=["GET"])
     def connect_to_cloud_service_finished(self, service):
+        """
+        Redirected to by the cloud service after authentication
+        """
         auth_result = self.cloud_connect.handle_auth_response(service, request)
 
         if not auth_result:
@@ -684,15 +698,53 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["GET"])
     def logout_cloud_service(self, service):
+        """
+        Provides the redirect URL to logout from a cloud service
+        """
         logout_url = self.cloud_connect.get_logout_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/logout/finished'.format(service))
         return make_response(jsonify({'logout_url' : logout_url }))
 
     @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/logout/finished", methods=["GET"])
     def logout_cloud_service_finished(self, service):
+        """
+        Redirected to by the cloud service after logging out
+        """
         self.cloud_connect.handle_logout_response(service, request)
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
-	##~ Update
+	##~ Software API
+
+    @BlueprintPlugin.route("/software/changelog/seen", methods=["POST"])
+    def changelog_seen(self):
+        """
+        Records that the changelog has been seen by the user, so it won't appear on startup again
+        """
+        
+        self._logger.debug("changelog_seen")
+        self._settings.set(["changelog_version"], self._plugin_manager.get_plugin_info('lui').version)
+        self.show_changelog = False
+        self._settings.save()
+
+        return make_response(jsonify(), 200);
+
+    @BlueprintPlugin.route("/software/changelog", methods=["GET"])
+    def get_changelog(self):
+        """
+        Gets whether the changelog needs to be shown on startup. If so, also includes the contents.
+        """
+        return jsonify({
+            'contents': self._get_changelog_html(),
+            'show_on_startup': self.show_changelog,
+            'lui_version': self.plugin_version
+            })
+
+    @BlueprintPlugin.route("/software/changelog/refresh", methods=["GET"])
+    def refresh_changelog(self):
+        """
+        Forces to re-read and parse the changelog. Retuns the contents of the changelog
+        """
+        self._read_changelog_file()
+        return self.get_changelog()
 
     def _check_version_requirement(self, current_version, requirement):
         """Helper function that checks if a given version matches a version requirement"""
@@ -710,19 +762,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return StrictVersion(current_version) == StrictVersion(requirement[1:])
         else:
             return StrictVersion(current_version) == StrictVersion(requirement)
-
-    @BlueprintPlugin.route("/software/changelog", methods=["GET"])
-    def get_changelog(self):
-        return jsonify({
-            'contents': self._get_changelog_html(),
-            'show_on_startup': self.show_changelog,
-            'lui_version': self.plugin_version
-            })
-
-    @BlueprintPlugin.route("/software/changelog/refresh", methods=["GET"])
-    def refresh_changelog(self):
-        self._read_changelog_file()
-        return self.get_changelog()
 
     @BlueprintPlugin.route("/firmware", methods=["GET"])
     def get_firmware_version_info(self):
@@ -1401,24 +1440,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     restore_calibration_values = [],
                     prepare_for_calibration_position = [],
                     move_to_calibration_position = ["corner_num"],
-                    restore_from_calibration_position = [],
-                    start_print = ["mode"],
-                    unselect_file = [],
-                    auto_shutdown = ["toggle"],
-                    auto_shutdown_timer_cancel = [],
-                    changelog_seen = [],
-                    notify_intended_disconnect = [],
-                    connect_after_error = [],
-                    immediate_cancel = [],
-                    trigger_debugging_action = [] #TODO: Remove!
+                    restore_from_calibration_position = []
             )
 
     def on_api_command(self, command, data):
         # Data already has command in, so only data is needed
         return self._call_api_method(**data)
-
-    def _on_api_command_immediate_cancel(self, *args, **kwargs):
-        self._immediate_cancel()
 
     def _immediate_cancel(self, cancel_print = True):
         self._logger.debug("Immediate cancel")
@@ -1432,30 +1459,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if cancel_print:
             self._printer.cancel_print()
-
-    def _on_api_command_trigger_debugging_action(self, *args, **kwargs):
-        """
-        Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing
-        """
-        self._printer.commands(['!!DEBUG:mintemp_error0']) # Let's the virtual printer send a MINTEMP message which brings the printer in error state
-
-    def _on_api_command_changelog_seen(self, *args, **kwargs):
-        self._logger.info("changelog_seen")
-        self._settings.set(["changelog_version"], self._plugin_manager.get_plugin_info('lui').version)
-        self.show_changelog = False
-        self._settings.save()
-
-    def _on_api_command_unselect_file(self):
-        self._printer.unselect_file()
-
-    def _on_api_command_auto_shutdown(self, toggle):
-        self.auto_shutdown = toggle
-        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TOGGLE, { "toggle" : toggle })
-        self._logger.info("Auto shutdown set to {toggle}".format(toggle=toggle))
-
-    def _on_api_command_start_print(self, mode):
-        self.set_print_mode(mode)
-        self._printer.start_print()
 
     def _on_api_command_prepare_for_calibration_position(self):
         
@@ -1918,6 +1921,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.move_to_bed_maintenance_position()
 
     ## Printer API
+    @BlueprintPlugin.route("/printer/start_print/<string:mode>", methods=["POST"])
+    def start_print(self, mode):
+        """
+        Sends a M605 command to the printer to initiate the given print mode and starts the currently selected job afterwards.
+        """
+        
+        self.set_print_mode(mode)
+        self._printer.start_print()
+
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/printer", methods=["GET"])
     def get_printer_info(self):
@@ -1953,6 +1966,59 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         self._printer.commands('G28')
         self._send_client_message(ClientMessages.IS_HOMING)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/reconnect", methods=["POST"])
+    def printer_reconnect(self):
+        """
+        Tries to reconnect the printer after an error has occurred (will also try to send a M999)
+        """
+        self.send_M999_on_reconnect = True
+        self._printer.connect()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/notify_intended_disconnect", methods=["POST"])
+    def notify_intended_disconnect(self):
+        """
+        Notifies that a disconnect of the printer was intended. Useful for maintenance procedures.
+        """
+        self.intended_disconnect = True
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/immediate_cancel", methods=["POST"])
+    def immediate_cancel(self):
+        """
+        Tries to break the firmware out of the heating loop (with M108) and cancels the current print job.
+        """
+        self._immediate_cancel()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/auto_shutdown/<string:toggle>", methods=["POST"])
+    def auto_shutdown_toggle(self, toggle):
+        """
+        Sets auto-shutdown either on or off
+        """
+        self.auto_shutdown = toggle == "on"
+        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TOGGLE, { "toggle" : self.auto_shutdown })
+        self._logger.info("Auto shutdown set to {toggle}".format(toggle="on" if self.auto_shutdown else "off"))
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/auto_shutdown/cancel", methods=["POST"])
+    def auto_shutdown_cancel(self):
+        # User cancelled timer. So cancel the timer and send to front-end to close flyout.
+        if self.auto_shutdown_timer:
+            self.auto_shutdown_timer.cancel()
+            self.auto_shutdown_timer = None
+        self.auto_shutdown_after_movie_done = False
+        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TIMER_CANCELLED)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/debugging_action", methods=["POST"])
+    def debugging_action(self):
+        """
+        Allows to trigger something in the back-end. Wired to the logo on the front-end. 
+        """
+        self._printer.commands(['!!DEBUG:mintemp_error0']) # Lets the virtual printer send a MINTEMP message which brings the printer in error state
         return make_response(jsonify(), 200)
 
     ## Files API
@@ -2028,6 +2094,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return self._select_cloud_file(path)
         elif origin == "usb":
             return self._select_usb_file(path)
+
+    @BlueprintPlugin.route("/files/unselect", methods=["POST"])
+    def unselect_file(self):
+        """
+        Resets the currently selected file to None
+        """
+        self._printer.unselect_file()
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/files/delete_all", methods=["POST"])
     def delete_all_uploads(self):
@@ -2375,14 +2449,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return make_response(jsonify(), 200)     
 
-    def _on_api_command_auto_shutdown_timer_cancel(self):
-        # User cancelled timer. So cancel the timer and send to front-end to close flyout.
-        if self.auto_shutdown_timer:
-            self.auto_shutdown_timer.cancel()
-            self.auto_shutdown_timer = None
-        self.auto_shutdown_after_movie_done = False
-        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TIMER_CANCELLED)
-
     ##~ Load and Unload methods
 
     def load_filament(self, tool):
@@ -2536,14 +2602,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # send cancelled info.
         self._restore_after_load_filament()
         self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELED)
-
-    def _on_api_command_notify_intended_disconnect(self):
-        self.intended_disconnect = True
-
-    def _on_api_command_connect_after_error(self):
-        self.send_M999_on_reconnect = True
-        self._printer.connect()
-        
 
     def _restore_after_load_filament(self):
         target_temp = 0

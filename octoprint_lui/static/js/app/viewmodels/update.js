@@ -442,7 +442,7 @@ $(function ()  {
 
         self.onFlashingBegin = function()
         {
-            self._sendApi({ command: 'notify_intended_disconnect' });
+            sendToApi("printer/notify_intended_disconnect");
         }
 
         self.showChangelogFlyout = function (updateContents) {
@@ -454,7 +454,7 @@ $(function ()  {
             // Show it on top of other flyouts (high priority)
             self.flyout.showFlyout('changelog', true, true)
                 .always(function () {
-                        self._sendApi({ command: "changelog_seen" });
+                    sendToApi("software/changelog/seen");
                 });
         }
 

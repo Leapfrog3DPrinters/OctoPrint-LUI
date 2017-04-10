@@ -430,8 +430,7 @@ $(function ()  {
                         autoHide: true
                     });
 
-                    //OctoPrint.job.cancel()
-                    self._sendApi({ command: "immediate_cancel" });
+                    sendToApi("printer/immediate_cancel");
                 });
         };
 
@@ -460,7 +459,7 @@ $(function ()  {
         }
 
         self.cancelAutoShutdown = function () {
-            self._sendApi({command: 'auto_shutdown_timer_cancel'});
+            sendToApi('printer/auto_shutdown/cancel');
         }
 
         self.onDoorOpen = function ()  {
@@ -489,7 +488,7 @@ $(function ()  {
         self.restorePrinterConnection = function()
         {
             self.isConnecting(true);
-            self._sendApi({ command: 'connect_after_error' }); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
+            sendToApi("printer/reconnect") // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
 
         }
 

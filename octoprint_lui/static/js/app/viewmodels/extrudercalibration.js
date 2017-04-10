@@ -150,7 +150,7 @@ $(function ()  {
                 }).fail(function()
                 {
                     $.notify({ title: gettext('Calibration failed'), text: gettext('An error has occured while storing the calibration settings. Please try again.') }, "error");
-                }).always(function ()  { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
+                }).always(function ()  { self.restoreState(); sendToApi("files/unselect"); });
         };
 
         self.abort = function () 
@@ -159,12 +159,12 @@ $(function ()  {
             OctoPrint.printer.setBedTargetTemperature(0);
 
             if (self.isPrintingCalibration()) {
-                self._sendApi({ command: "immediate_cancel" });
+                sendToApi("printer/immediate_cancel");
             }
             
             if (self.calibrationProcessStarted()) {
                 console.log("Unselecting file");
-                self._sendApi({ command: "unselect_file" });
+                sendToApi("files/unselect");
             }
 
             self.flyout.closeFlyoutAccept();

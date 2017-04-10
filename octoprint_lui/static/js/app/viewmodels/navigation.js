@@ -16,17 +16,8 @@ $(function () {
             self.flyout.showFlyout('login');
         }
 
-        //TODO: Remove!
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
-        }
-
-        //TODO: Remove!
         self.doDebuggingAction = function ()  {
-            self._sendApi({
-                command: "trigger_debugging_action"
-            });
+            sendToApi("printer/debugging_action");
         }
 
         self.showMaintenanceFlyout = function () {
@@ -78,7 +69,7 @@ $(function () {
                         .done(function () {
                             // Enable auto-shutdown
                             self.settings.autoShutdown(true);
-                            self.settings.sendAutoShutdownStatus();
+                            self.settings.sendAutoShutdownStatus(true);
                         });
                 }
                 else {

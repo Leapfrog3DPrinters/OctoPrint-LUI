@@ -611,10 +611,7 @@ $(function ()  {
             var withinPrintDimensions = self.evaluatePrintDimensions(file, mode, true);
 
             if (withinPrintDimensions) {
-                self._sendApi({
-                    command: "start_print",
-                    mode: mode
-                })
+                sendToApi('printer/start_print/' + mode);
                 self.flyout.closeFlyoutAccept();
             }
 

@@ -124,11 +124,7 @@ $(function () {
 
         self.sendAutoShutdownStatus = function(toggle)
         {
-            var data = {
-                command: "auto_shutdown",
-                toggle: toggle
-            };
-            self._sendApi(data);
+            sendToApi("printer/auto_shutdown/" + toggle ? "on" : "off");
         }
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
