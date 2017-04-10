@@ -459,10 +459,6 @@ $(function ()  {
         }
 
         // Api functions
-        self._getApi = function (urlSuffix) {
-            var url = OctoPrint.getBlueprintUrl("lui") + urlSuffix;
-            return OctoPrint.get(url);
-        }
 
         self._sendApi = function (urlSuffix, data) {
             url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
@@ -470,7 +466,7 @@ $(function ()  {
         };
 
         self.requestData = function ()  {
-            self._getApi("filament").done(self.fromResponse);
+            getFromApi("filament").done(self.fromResponse);
         };
 
         self.onMaterialsSettingsShown = function () {

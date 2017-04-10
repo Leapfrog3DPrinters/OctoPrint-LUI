@@ -1269,7 +1269,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "local_addr": from_localhost,
             "debug_lui": self.debug,
             "model": self.model,
-            "printer_profile": self.current_printer_profile
+            "printer_profile": self.current_printer_profile,
+            "reserved_usernames": self.reserved_usernames
         }
 
         args.update(render_kwargs)
@@ -1317,8 +1318,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_preemptive_caching_enabled(self):
         return True
 
+    ## Settings API
+
     @BlueprintPlugin.route("/settings", methods=["GET"])
     def get_settings(self):
+        """
+        Returns a stripped down version of the OctoPrint settings, extended with the current autoshutdown setting.
+        """
         s = self._settings
 
         data = {
@@ -1346,39 +1352,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             "plugins": {
                 "lui": {
-                    "action_door": s.getBoolean(["action_door"]),
-                    "action_door": s.getFloat(["zoffset"])
+                    "actionDoor": s.getBoolean(["action_door"]),
+                    "actionFilament": s.getBoolean(["action_filament"]),
+                    "zoffset": s.getFloat(["zoffset"]),
+                    "autoShutdown": self.auto_shutdown,
                 }
             }
         }
 
         return make_response(jsonify(data), 200)
-
-    ##~ OctoPrint SimpleAPI Plugin
-    def on_api_get(self, request = None):
-        command = None
-
-        if("command" in request.values):
-            command = request.values["command"]
-
-        if(command == "is_media_mounted"):
-            return jsonify({ "is_media_mounted" : self.is_media_mounted })
-        elif(command == "storage_info"):
-            import psutil
-            usage = psutil.disk_usage(self._settings.global_get_basefolder("timelapse"))
-            return jsonify(free=usage.free, total=usage.total)
-        else:
-            result = dict({
-                'machine_info': self.machine_info,
-                'is_homed': self.is_homed,
-                'is_homing': self.is_homing,
-                'reserved_usernames': self.reserved_usernames,
-                'auto_shutdown': self.auto_shutdown,
-                'lui_version': self.plugin_version,
-                'printer_error_reason': self.printer_error_reason,
-                'printer_error_extruder': self.printer_error_extruder
-                })
-            return make_response(jsonify(result), 200)
 
     def _firmware_update_required(self):
         
@@ -1413,7 +1395,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     move_to_head_maintenance_position = [],
                     after_head_maintenance = [],
                     move_to_bed_maintenance_position = [],
-                    begin_homing = [],
                     delete_all_timelapses = [],
                     start_calibration = ["calibration_type"],
                     set_calibration_values = ["width_correction", "extruder_offset_y"],
@@ -1618,18 +1599,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # We don't want the M501 response to interferere with the M115, which is why on_sent is used (which requires an acknowledge)
         self._printer._comm.sendCommand("M501", on_sent = self._get_firmware_info)
 
-    def _on_api_command_begin_homing(self):
-        self._printer.commands('G28')
-        self._send_client_message(ClientMessages.IS_HOMING)
-
-    #TODO: Remove?
-    @BlueprintPlugin.route("/remote_homing", methods=["GET"])
-    def remote_homing(self):
-        if self.debug:
-            self._printer.commands('G28')
-            self._send_client_message(ClientMessages.IS_HOMING)
-
-    ## Filament
+    ## Filament API
 
     @BlueprintPlugin.route("/filament", methods=["GET"])
     def get_filament(self):
@@ -1947,11 +1917,52 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _on_api_command_move_to_bed_maintenance_position(self, *args, **kwargs):
         self.move_to_bed_maintenance_position()
 
-    ## Files
+    ## Printer API
+
+    @BlueprintPlugin.route("/printer", methods=["GET"])
+    def get_printer_info(self):
+        """
+        Returns information about the printer state, whether it is homed and whether it is in an error state.
+        {
+        isHomed: bool,
+        isHoming: bool,
+        printerErrorReason: string,
+        printerErrorExtruder: string
+        }
+        """
+        return make_response(jsonify({
+                'isHomed': self.is_homed,
+                'isHoming': self.is_homing,
+                'printerErrorReason': self.printer_error_reason,
+                'printerErrorExtruder': self.printer_error_extruder
+                }), 200)
+
+    @BlueprintPlugin.route("/printer/machine_info", methods=["GET"])
+    def get_machine_info(self):
+        """
+        Returns information provided by the machine's firmware
+        """
+        return make_response(jsonify({
+                'machine_info': self.machine_info
+                }), 200)
+
+    @BlueprintPlugin.route("/printer/homing/start", methods=["POST"])
+    def homing_start(self):
+        """
+        Begins the homing procedure, required on startup of the printer
+        """ 
+        self._printer.commands('G28')
+        self._send_client_message(ClientMessages.IS_HOMING)
+        return make_response(jsonify(), 200)
+
+    ## Files API
 
     @BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)
     @BlueprintPlugin.route("/files/<string:origin>", methods=["GET"], strict_slashes=False)
     def get_files(self, origin, path = None):
+        """
+        A wrapper around OctoPrint's get_files. Also returns file lists for origins usb and cloud.
+        """ 
         if origin == "cloud":
             files = self.cloud_storage.list_files(path, filter=self.browser_filter, recursive=False)
             return jsonify(files=files)
@@ -1993,7 +2004,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return jsonify(files=files)
         else:
             # Return original OctoPrint API response
-
+            
             if path and octoprint.filemanager.valid_file_type(path, type="machinecode"):
                 # File
                 return octoprint.server.api.files.readGcodeFile(origin, path)
@@ -2235,8 +2246,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             return make_response(jsonify(result = "OK"), 200);
 
+    ## USB Api
+    @BlueprintPlugin.route("/usb", methods=["GET"])
+    def get_usb(self):
+        """ 
+        Returns { isMediaMounted: bool } , indicating whether a USB stick is inserted and mounted.
+        """
+        return make_response(jsonify({
+            "isMediaMounted": self.is_media_mounted
+            }), 200)
+
     @BlueprintPlugin.route("/usb/save/<string:source_type>/<path:path>", methods=["POST"])
     def save_to_usb(self, source_type, path):
+        """
+        Saves a file to the usb drive. source_type must be either 'gcode', 'timelapse' or 'log'
+        """
         if source_type == "gcode":
             return self._copy_gcode_to_usb(path)
         elif source_type == "timelapse":
@@ -2268,7 +2292,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", ClientMessages.TIMELAPSE_COPY_PROGRESS, ClientMessages.TIMELAPSE_COPY_FINISHED, ClientMessages.TIMELAPSE_COPY_FAILED)
 
-    def _copy_log_to_usb(self, filename, *args, **kwargs):
+    def _copy_log_to_usb(self, filename):
         if not self.is_media_mounted:
             return make_response(jsonify(error="Could not access the media folder"), 400)
         
@@ -2992,7 +3016,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             octoprint.server.fileManager.add_storage("usb", self.usb_storage)
         except:
             self._logger.exception("Could not add USB storage")
-            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "is_media_mounted": False, "error": True })
+            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "isMediaMounted": False, "error": True })
             return
 
         # Start watching the folder for changes (i.e. mounted/unmouted)
@@ -3137,12 +3161,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             number_of_dirs = len(get_immediate_subdirectories(self.media_folder)) > 0
         except:
             self._logger.warning("Could not read USB")
-            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "is_media_mounted": False, "error": True })
+            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "isMediaMounted": False, "error": True })
             return
 
         if(event is None or (number_of_dirs > 0 and not was_media_mounted) or (number_of_dirs == 0 and was_media_mounted)):
             # If event is None, it's a forced message
-            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "is_media_mounted": number_of_dirs > 0 })
+            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "isMediaMounted": number_of_dirs > 0 })
 
         self.is_media_mounted = number_of_dirs > 0
 

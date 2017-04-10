@@ -149,7 +149,10 @@ $(function () {
             self.requestData();
         };
 
-        self.requestData = function(local) {
+        self.requestData = function (local) {
+
+            console.log("Requesting settings");
+
             // handle old parameter format
             var callback = undefined;
             if (arguments.length == 2 || _.isFunction(local)) {
@@ -193,7 +196,7 @@ $(function () {
 
             // perform the request
             self.receiving(true);
-            return self._getApi('settings')
+            return getFromApi('settings')
                 .done(function(response) {
                     self.fromResponse(response, local);
 
@@ -234,31 +237,7 @@ $(function () {
             }
 
             // some special read functions for various observables
-            var specialMappings = {
-                scripts: {
-                    gcode: function () {
-                        // we have a special handler function for the gcode scripts since the
-                        // server will always send us those that have been set already, so we
-                        // can't depend on all keys that we support to be present in the
-                        // original request we iterate through in mapFromObservables to
-                        // generate our response - hence we use our observables instead
-                        //
-                        // Note: If we ever introduce sub categories in the gcode scripts
-                        // here (more _ after the prefix), we'll need to adjust this code
-                        // to be able to cope with that, right now it only strips the prefix
-                        // and uses the rest as key in the result, no recursive translation
-                        // is done!
-                        var result = {};
-                        var prefix = "scripts_gcode_";
-                        var observables = _.filter(_.keys(self), function(key) { return _.startsWith(key, prefix); });
-                        _.each(observables, function(observable) {
-                            var script = observable.substring(prefix.length);
-                            result[script] = self[observable]();
-                        });
-                        return result;
-                    }
-                }
-            };
+            var specialMappings = {};
 
             var mapFromObservables = function(data, mapping, keyPrefix) {
                 var flag = false;
@@ -338,7 +317,13 @@ $(function () {
                 terminalFilters: function(value) { self.terminalFilters($.extend(true, [], value)) },
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
-                }
+                },
+                plugins: 
+                    {
+                        lui: {
+                            autoShutdown: function (value) { self.autoShutdown(value); }
+                        }
+                    }
             };
 
             var mapToObservables = function(data, mapping, local, keyPrefix) {
@@ -500,12 +485,6 @@ $(function () {
             url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.postJson(url, data);
         };
-
-        self._getApi = function (urlSuffix) {
-            var url = OctoPrint.getBlueprintUrl("lui") + urlSuffix;
-            return OctoPrint.get(url);
-        }
-
 
         // Translations code
 

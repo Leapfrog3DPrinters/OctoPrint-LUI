@@ -456,7 +456,7 @@ $(function ()  {
 
         self.beginHoming = function () {
             self.isHomingRequested(true);
-            self._sendApi({ command: "begin_homing" });
+            sendToApi('printer/homing/start');
         }
 
         self.cancelAutoShutdown = function () {
@@ -520,12 +520,9 @@ $(function ()  {
         }
 
         self.fromResponse = function (data) {
-            self.isHomed(data.is_homed);
-            self.isHoming(data.is_homing);
+            self.isHomed(data.isHomed);
+            self.isHoming(data.isHoming);
             self.isHomingRequested(false);
-
-            self.settings.autoShutdown(data.auto_shutdown);
-
 
             // Startup flyout priority:
             // 1. Printer error
@@ -541,9 +538,9 @@ $(function ()  {
                 self.showStartupFlyout();
             }
 
-            if (data.printer_error_reason) {
-                self.errorReason(data.printer_error_reason);
-                self.erroredExtruder(data.printer_error_extruder);
+            if (data.printerErrorReason) {
+                self.errorReason(data.printerErrorReason);
+                self.erroredExtruder(data.printerErrorExtruder);
                 self.showPrinterErrorFlyout();
             }
             else {
@@ -563,9 +560,7 @@ $(function ()  {
         self.requestData = function ()  {
             self.refreshPrintPreview();
 
-            OctoPrint.simpleApiGet('lui', {
-                success: self.fromResponse
-            });
+            getFromApi('printer').done(self.fromResponse);
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {

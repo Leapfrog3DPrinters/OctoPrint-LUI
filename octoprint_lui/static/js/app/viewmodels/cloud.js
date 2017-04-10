@@ -33,7 +33,7 @@ $(function () {
         }
 
         self.loginService = function (service) {
-            self._getApi('cloud/' + service + '/login').done(function (data) {
+            getFromApi('cloud/' + service + '/login').done(function (data) {
                 var loginWindow = window.open(data.auth_url, "_blank");
                 // Can't work with events here because we don't have control over the child's HTML
                 var timer = setInterval(checkChild, 500);
@@ -48,7 +48,7 @@ $(function () {
         }
 
         self.logoutService = function (service) {
-            self._getApi('cloud/' + service + '/logout').done(function (data) {
+            getFromApi('cloud/' + service + '/logout').done(function (data) {
                 var logoutWindow = window.open(data.logout_url, "_blank");
                 // Can't work with events here because we don't have control over the child's HTML
                 var timer = setInterval(checkChild, 500);
@@ -63,7 +63,7 @@ $(function () {
         }
 
         self.requestData = function () {
-            self._getApi('cloud').done(function (response) {
+            getFromApi('cloud').done(function (response) {
                 ko.mapping.fromJS(response.services, {}, self.serviceInfo);
 
                 _.forEach(self._onServiceInfoUpdated, function (func) { func(); });
@@ -88,11 +88,6 @@ $(function () {
             self.network.requestData();
             self.requestData();
         }
-
-        self._getApi = function (url_suffix) {
-            url = OctoPrint.getBlueprintUrl("lui") + url_suffix;
-            return OctoPrint.get(url);
-        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {

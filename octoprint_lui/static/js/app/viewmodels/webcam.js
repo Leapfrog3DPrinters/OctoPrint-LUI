@@ -240,7 +240,7 @@ $(function ()  {
         self.copyToUsb = function (filename) {
             self.isCopying(true);
 
-            self._sendBlueprintApi('usb/save/timelapse/' + filename)
+            sendToApi('usb/save/timelapse/' + filename)
                 .done(function () {
                     self.setProgressBar(0);
                     $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
@@ -347,20 +347,10 @@ $(function ()  {
             self.requestData();
         };
 
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, { data: data });
-        };
-
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.postJson(url, data);
         };
-
-        self._sendBlueprintApi = function (url_suffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
-            return OctoPrint.postJson(url, data);
-        }
 
         self.setProgressBar = function (percentage) {
             self.copyProgressBar

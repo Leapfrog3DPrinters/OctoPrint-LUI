@@ -191,27 +191,11 @@ $(function ()  {
             filter = filter || "";
             path = path || "";
             
-            return self._getBlueprintApi("files/" + origin + "/" + path);
-        }
-
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, { data: data });
-        }
-
-        self._getBlueprintApi = function (url_suffix) {
-            url = OctoPrint.getBlueprintUrl("lui") + url_suffix;
-            return OctoPrint.get(url);
+            return getFromApi("files/" + origin + "/" + path);
         }
 
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        }
-
-        self._sendBlueprintApi = function (url_suffix, data)
-        {
-            url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
             return OctoPrint.postJson(url, data);
         }
 
@@ -498,7 +482,7 @@ $(function ()  {
                 self.isLoadingFile = false;
             }
             else if (file.origin != "local") {
-                self._sendBlueprintApi("files/select/" + file.origin + "/" + file.path)
+                sendToApi("files/select/" + file.origin + "/" + file.path)
                 .done(function () {
                     self.setProgressBar(0);
 
@@ -538,7 +522,7 @@ $(function ()  {
                 return;
             }
 
-            self._sendBlueprintApi("usb/save/gcode/" + file.path);
+            sendToApi("usb/save/gcode/" + file.path);
         }
 
         self.removeAllFiles = function()
@@ -554,7 +538,7 @@ $(function ()  {
 
             self.flyout.showConfirmationFlyout(dialog)
             .done(function ()  {
-                return self._sendBlueprintApi('files/delete_all')
+                return sendToApi('files/delete_all')
                     .done(function ()  {
                         
                         $.notify({
@@ -1221,8 +1205,8 @@ $(function ()  {
         };
 
         self.checkUsbMounted = function ()  {
-            self._getApi({ "command": "is_media_mounted" }).done(function (data) {
-                self.isUsbAvailable(data.is_media_mounted);
+            getFromApi("usb").done(function (data) {
+                self.isUsbAvailable(data.isMediaMounted);
                 // Don't call onChanged, as it is the initialization
             });
         }
@@ -1274,7 +1258,7 @@ $(function ()  {
                 var copying = gettext("Copying");
                 switch (messageType) {
                     case "media_folder_updated":
-                        self.isUsbAvailable(messageData.is_media_mounted);
+                        self.isUsbAvailable(messageData.isMediaMounted);
                         self.onUsbAvailableChanged();
 
                         if (messageData.error) {

@@ -69,7 +69,7 @@ $(function() {
         };
 
         self.copyLogToUsb = function(filename) {
-            self._sendBlueprintApi('usb/save/log/' + filename)
+            sendToApi('usb/save/log/' + filename)
                 .done(function () {
                 $.notify(
                     { 
@@ -92,11 +92,6 @@ $(function() {
         self.onSettingsShown = function() {
             self.requestData();
         };
-
-        self._sendBlueprintApi = function (url_suffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
-            return OctoPrint.postJson(url, data);
-        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

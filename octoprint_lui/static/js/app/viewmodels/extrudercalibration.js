@@ -191,7 +191,7 @@ $(function ()  {
         }
 
         self.requestData = function ()  {
-            self._getApi().done(self.fromResponse);
+            getFromApi('printer/machine_info').done(self.fromResponse);
         }
 
         self.fromResponse = function (response) {
@@ -205,11 +205,6 @@ $(function ()  {
         self._sendApi = function (data) {
             url = OctoPrint.getSimpleApiUrl('lui');
             return OctoPrint.postJson(url, data);
-        };
-
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, data);
         };
 
         self.onAfterBinding = function ()  {

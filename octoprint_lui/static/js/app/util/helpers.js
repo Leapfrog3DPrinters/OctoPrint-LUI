@@ -791,3 +791,15 @@ ko.bindingHandlers.foreachprop = {
         return { controlsDescendantBindings: true };
     }
 };
+
+function getFromApi(url_suffix)
+{
+    url = OctoPrint.getBlueprintUrl("lui") + url_suffix;
+    return OctoPrint.get(url);
+}
+
+function sendToApi(url_suffix, data)
+{
+    url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
+    return OctoPrint.postJson(url, data);
+}

@@ -105,11 +105,6 @@ $(function ()  {
             return OctoPrint.postJson(url, data);
         };
 
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, data);
-        };
-
         self.onAfterBinding = function ()  {
             
         }
