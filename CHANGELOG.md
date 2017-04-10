@@ -4,6 +4,7 @@ Changelog for OctoPrint-LUI.
 
 ## 1.1.1
 
+- Improved: Feedback when copying file to USB
 - Improved: German translations
 - Improved: course and fine extruder calibration do not overlap anymore
 - Fixed: fine extruder calibration does not generate any overlapping lines

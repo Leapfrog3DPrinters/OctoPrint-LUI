@@ -545,7 +545,25 @@ $(function ()  {
                 return;
             }
 
-            self._sendApi({ command: "copy_gcode_to_usb", filename: file.name });
+            self._sendApi({ command: "copy_gcode_to_usb", filename: file.name }).fail(function(response)
+            {
+                if (response && response.filename) {
+                    $.notify({
+                        title: gettext("Error during file copy."),
+                        text: _.sprintf(gettext('Could not copy "%(filename)s" to your USB drive. Please ensure there is enough space available.'), { filename: response.filename })
+                    },
+                        "error"
+                    );
+                } else
+                {
+                    $.notify({
+                        title: gettext("Error during file copy."),
+                        text: _.sprintf(gettext('Could not copy this file to your USB drive. Please ensure there is enough space available.'))
+                    },
+                       "error"
+                   );
+                }
+            });
         }
 
         self.removeAllFiles = function()
@@ -1345,10 +1363,24 @@ $(function ()  {
                     case "gcode_copy_complete":
                         self.setProgressBar(0);
                         self.printerState.activities.remove(copying);
+                        
+                        $.notify({
+                            title: gettext("File copied"),
+                            text: _.sprintf(gettext('"%(filename)s" has been copied to your USB drive.'), { filename: filename = messageData["filename"] })
+                        },
+                            "success"
+                        );
                         break;
                     case "gcode_copy_failed":
                         self.setProgressBar(0);
                         self.printerState.activities.remove(copying);
+                        filename = messageData["filename"];
+                        $.notify({
+                            title: gettext("Error during file copy."),
+                            text: _.sprintf(gettext('Could not copy "%(filename)s" to your USB drive. Please ensure there is enough space available.'), { filename: messageData["filename"] })
+                        },
+                            "error"
+                        );
                         break;
 
                 }

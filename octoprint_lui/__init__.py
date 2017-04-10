@@ -1980,10 +1980,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         filesize = os.path.getsize(src_path)
 
         if filesize > bytes_available:
-            return make_response("Insuffient space available on USB drive", 400)
+            return make_response(jsonify({ "message": "Insuffient space available on USB drive", "filename": filename }), 400)
 
         if drive_folder is None:
-            return make_response("Insuffient space available on USB drive", 400)
+            return make_response(jsonify({ "message": "Insuffient space available on USB drive", "filename": filename }), 400)
 
         folder_path = os.path.join(drive_folder, dst_folder)
         new_full_path = os.path.join(folder_path, filename)
@@ -1999,7 +1999,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 percentage = 0
             self._logger.debug("File copy progress: %f" % percentage)
-            self._send_client_message(message_progress, { "percentage" : percentage })
+            self._send_client_message(message_progress, { "percentage" : percentage, "filename": filename })
 
         is_copying = True
 
@@ -2007,7 +2007,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return is_copying
 
         def file_copying_finished():
-            self._send_client_message(message_complete)
+            self._send_client_message(message_complete, { "filename": filename })
 
         # Start monitoring copy status
         timer = RepeatedTimer(1, on_file_copy, run_first = False, condition = is_copying_file, on_finish = file_copying_finished)
@@ -2022,30 +2022,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             shutil.copy2(src_path, new_full_path)
         except Exception as e:
             timer.cancel()
-
-            return make_response("File error during copying: %s" % e.message, 500)
+            self._send_client_message(message_failed, { "filename": filename })
+            return make_response(jsonify({ "message" : "File error during copying: %s" % e.message, "filename": filename }), 500)
         finally:
             is_copying = False
-            self._send_client_message(message_failed)
 
-        return make_response("OK", 200)
+
+        return make_response(jsonify({ "message" :"OK", "filename": filename }), 200)
 
 
     def _on_api_command_copy_timelapse_to_usb(self, filename, *args, **kwargs):
         if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
+            return make_response(jsonify({ "message": "Could not access the media folder", "filename": filename }), 400)
 
         if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
-            return make_response("Not allowed to copy this file", 400)
+            return make_response(jsonify({ "message": "Not allowed to copy this file", "filename": filename }), 400)
 
         timelapse_folder = self._settings.global_get_basefolder("timelapse")
         src_path = os.path.join(timelapse_folder, filename)
 
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress", "timelapse_copy_complete", "timelapse_copy_failed")
+        return self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", "timelapse_copy_progress", "timelapse_copy_complete", "timelapse_copy_failed")
 
     def _on_api_command_copy_log_to_usb(self, filename, *args, **kwargs):
         if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
+            return make_response(jsonify({"message":"Could not access the media folder", "filename": filename }), 400)
 
         # Rotated log files have also dates as extension, this check out for now. 
         # if not octoprint.util.is_allowed_file(filename, ["log"]):
@@ -2054,7 +2054,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         logs_folder = self._settings.global_get_basefolder("logs")
         src_path = os.path.join(logs_folder, filename)
 
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", "logs_copy_progress", "logs_copy_complete", "logs_copy_failed")
+        return self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", "logs_copy_progress", "logs_copy_complete", "logs_copy_failed")
         
 
     def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
@@ -2084,15 +2084,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_api_command_copy_gcode_to_usb(self, filename, *args, **kwargs):
         if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
+            return make_response(jsonify({ "message": "Could not access the media folder", "filename": filename}), 400)
 
         if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
-            return make_response("Not allowed to copy this file", 400)
+            return make_response(jsonify({ "message": "Not allowed to copy this file", "filename": filename}), 400)
 
         uploads_folder = self._settings.global_get_basefolder("uploads")
         src_path = os.path.join(uploads_folder, filename)
 
-        self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", "gcode_copy_progress", "gcode_copy_complete", "gcode_copy_failed")
+        return self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", "gcode_copy_progress", "gcode_copy_complete", "gcode_copy_failed")
 
     def _on_api_command_delete_all_uploads(self, *args, **kwargs):
         import shutil
