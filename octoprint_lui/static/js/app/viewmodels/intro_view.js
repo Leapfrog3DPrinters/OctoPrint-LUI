@@ -170,7 +170,7 @@ $(function ()  {
             exitOnOverLayClick: false,
             showBullets: true,
             showButtons: false,
-            keyboardNavigation: false
+            keyboardNavigation: true
 
         });
 

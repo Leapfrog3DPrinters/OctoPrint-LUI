@@ -131,8 +131,6 @@ $(function ()  {
 
             self.changeFilament(tool);
 
-            self.deferredWaitLoad = $.Deferred();
-
             if (!forPurge) {
                 self.filamentActionText(gettext("Swap"));
                 self.showUnload();
@@ -162,7 +160,6 @@ $(function ()  {
                 self.changeFilamentCancel();
             });
 
-            return self.deferredWaitLoad.promise();
         };
 
         // Below functions swap views for both filament swap and filament detection swap
@@ -178,7 +175,17 @@ $(function ()  {
             $('.swap_process_step,.fd_swap_process_step').removeClass('active');
             $('#load_filament,#fd_load_filament').addClass('active');
             self.filamentLoading(false);
-            self.deferredWaitLoad.resolve();
+            if (self.introView.firstRun) {
+                    setTimeout(function () {
+                        self.introView.introInstance.refresh()
+                    }, 300);
+                    if(tool == 'tool1') {
+                        self.introView.introInstance.goToStep(3);
+                    }
+                    else{
+                        self.introView.introInstance.goToStep(6);
+                    }
+            }
         };
 
         self.showFinished = function ()  {
@@ -189,7 +196,7 @@ $(function ()  {
         };
 
         self.onToolHeating = function ()  {
-            $('#swap-info,#fd-swap-info').addClass('active')
+            $('#swap-info,#fd-swap-info').addClass('active');
             $('#swap-load-unload,#fd-swap-load-unload').removeClass('active');
         };
 
@@ -199,6 +206,7 @@ $(function ()  {
 
         self.finishedLoading = function ()  {
             // We are finished close the flyout
+            //TODO INTRO
             if(self.introView.firstRun) {
                 self.introView.introInstance.goToStep(11);
             }
@@ -379,11 +387,13 @@ $(function ()  {
                     self.filamentLoading(false);
                     self.showFinished();
                     self.hideToolLoading();
+                    //TODO INTRO
                     if (self.introView.firstRun) {
-                        if (self.selectedTemperatureProfile != "None") {
-                            self.introView.introInstance.goToStep(5);
-                        }
-                    }
+                                self.introView.introInstance.goToStep(5);
+                            }
+                            else{
+                                self.introView.introInstance.goToStep(9);
+                            }
                     self.filamentLoadProgress(0);
                     if (!messageData.profile) {
                         self.flyout.closeFlyoutAccept();
@@ -415,8 +425,8 @@ $(function ()  {
                 case "update_filament_amount":
                     //console.log(messageData.extrusion)
                     // TODO
-                    self.rightAmount(messageData.filament[0])
-                    self.leftAmount(messageData.filament[1])
+                    self.rightAmount(messageData.filament[0]);
+                    self.leftAmount(messageData.filament[1]);
                     break;
 
             }
@@ -475,23 +485,22 @@ $(function ()  {
         };
 
         self.showFilamentChange = function (tool) {
-            self.showFilamentChangeFlyout(tool).done(function() {
-                if (self.introView.firstRun) {
-                    setTimeout(function () {
-                        self.introView.introInstance.refresh()
-                    }, 300);
-                    self.introView.introInstance.goToStep(4);
-                }
-            });
+            self.showFilamentChangeFlyout(tool);
         };
 
         self.showLoading = function () {
+            //TODO INTRO
             if (self.introView.firstRun) {
                 if(self.selectedTemperatureProfileName != "None") {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
-                    self.introView.introInstance.goToStep(5);
+                    if(self.tool() == 'tool1') {
+                        self.introView.introInstance.goToStep(4);
+                    }
+                    else{
+                        self.introView.introInstance.goToStep(7);
+                    }
                     self.loadFilament(false);
                 }
             }else{
