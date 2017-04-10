@@ -157,7 +157,6 @@ $(function () {
             }
 
             var messageType = data['type'];
-            var messageData = data['data'];
             switch (messageType) {
 
                 case "head_in_maintenance_position":

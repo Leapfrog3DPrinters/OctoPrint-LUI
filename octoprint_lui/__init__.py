@@ -1850,7 +1850,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _execute_printer_script(self, script_name, context = None):
         """
-        Executes a printer script
+        Executes a printer script in form of a .jinja2 file
         """
         full_script_name = self.model.lower() + "_" + script_name + ".jinja2"
         self._logger.debug("Executing script {0}".format(full_script_name))
@@ -1869,31 +1869,34 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
          """
          Disconnects and powers down the printer
          """
-         self.powerdown_after_disconnect = True
-         self.intended_disconnect = True
-         self._printer.disconnect()
+         if self.powerbutton_handler:
+			 self.powerdown_after_disconnect = True
+			 self.intended_disconnect = True
+			 self._printer.disconnect()
 
     def _do_powerdown_after_disconnect(self):
         """
         Powers down printer after disconnect
         """
-        self.powerbutton_handler.disableAuxPower()
-        self._logger.debug("Auxiliary power down for maintenance")
-        self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
+        if self.powerbutton_handler:
+			self.powerbutton_handler.disableAuxPower()
+			self._logger.debug("Auxiliary power down for maintenance")
+			self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
 
     def _power_up_after_maintenance(self):
         """
         Powers up printer after maintenance
         """
-        self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
-        # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
-        self.powerbutton_handler.enableAuxPower()
-        self._logger.debug("Auxiliary power up after maintenance")
-        time.sleep(5) # Give it 5 sec to power up
-        #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
-        #TODO: Or monitor if /dev/ttyUSB0 exists?
-        self.connecting_after_maintenance = True
-        self._printer.connect()
+        if self.powerbutton_handler:
+			self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
+			# Enable auxiliary power. This will fully reset the printer, so full homing is required after.
+			self.powerbutton_handler.enableAuxPower()
+			self._logger.debug("Auxiliary power up after maintenance")
+			time.sleep(5) # Give it 5 sec to power up
+			#TODO: Maybe a loop with some retries instead of a 5-sec-timer?
+			#TODO: Or monitor if /dev/ttyUSB0 exists?
+			self.connecting_after_maintenance = True
+			self._printer.connect()
 
     def _auto_home_after_maintenance(self):
         """
