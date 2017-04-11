@@ -1363,12 +1363,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     copy_timelapse_to_usb = ["filename"],
                     copy_log_to_usb = ["filename"],
                     delete_all_timelapses = [],
-                    start_calibration = ["calibration_type"],
-                    set_calibration_values = ["width_correction", "extruder_offset_y"],
-                    restore_calibration_values = [],
-                    prepare_for_calibration_position = [],
-                    move_to_calibration_position = ["corner_num"],
-                    restore_from_calibration_position = [],
                     start_print = ["mode"],
                     unselect_file = [],
                     auto_shutdown = ["toggle"],
@@ -1424,8 +1418,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.set_print_mode(mode)
         self._printer.start_print()
 
-    def _on_api_command_prepare_for_calibration_position(self):
-
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/start", methods=["POST"])
+    def calibration_bed_start(self):
+        """
+        Starts the bed calibration procedure by preparing the printer for the calibration
+        """
         self.set_print_mode('fullcontrol')
 
         self._set_movement_mode("absolute")
@@ -1433,9 +1430,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.change_tool("tool1")
         self.manual_bed_calibration_tool = "tool1"
         self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
+        return make_response(jsonify(), 200)
 
-    def _on_api_command_move_to_calibration_position(self, corner_num):
-        # TODO HERE
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/move_to_position/<string:corner_name>", methods=["POST"])
+    def calibration_bed_move_to_position(self, corner_name):
+        """
+        Moves the heads to the given corners
+        """
+        if corner_name == 'top_left':
+            corner_num = 0
+        elif corner_name == 'top_right':
+            corner_num = 1
+        elif corner_name == 'bottom_left':
+            corner_num = 2
+        elif corner_name == 'bottom_right':
+            corner_num = 3
+
         corner = self.manual_bed_calibration_positions[corner_num]
         self._printer.commands(['G1 Z5 F600'])
 
@@ -1453,8 +1463,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])])
         self._printer.commands(['G1 Z0 F600'])
+        return make_response(jsonify(), 200)
 
-    def _on_api_command_restore_from_calibration_position(self):
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/finish", methods=["POST"])
+    def calibration_bed_finish(self):
+        """
+        Finishes the bed calibration by homing the x and y axis
+        """
         self._printer.commands(['G1 Z5 F600'])
         self.set_print_mode('normal')
         self._printer.home(['y', 'x'])
@@ -1465,8 +1480,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         self.restore_movement_mode()
+        return make_response(jsonify(), 200)
 
-    def _on_api_command_start_calibration(self, calibration_type):
+    @BlueprintPlugin.route("/maintenance/head/calibrate/start/<string:calibration_type>", methods=["POST"])
+    def calibration_head_start(self, calibration_type):
+        """
+        Starts the calibration of the extruders, calibration_type gives which calibration step 
+        """
         self.calibration_type = calibration_type
 
         self._disable_timelapse()
@@ -1482,22 +1502,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.set_print_mode('normal')
             self._preheat_for_calibration()
             self._printer.select_file(abs_path, False, True)
+        return make_response(jsonify(), 200)
 
     def _preheat_for_calibration(self):
-        targetBedTemp = 0
+        target_bed_temp = 0
 
         for tool in ["tool0", "tool1"]:
             extruder = self.filament_database.get(self._filament_query.tool == tool)
-            targetTemp = int(extruder["material"]["extruder"])
-            bedTemp = int(extruder["material"]["bed"])
+            target_temp = int(extruder["material"]["extruder"])
+            bed_temp = int(extruder["material"]["bed"])
 
-            if bedTemp > targetBedTemp:
-                targetBedTemp = bedTemp
+            if bed_temp > target_bed_temp:
+                target_bed_temp = bed_temp
 
-            self.heat_to_temperature(tool, targetTemp)
+            self.heat_to_temperature(tool, target_temp)
 
-        if targetBedTemp > 0:
-            self.heat_to_temperature("bed", targetBedTemp)
+        if target_bed_temp > 0:
+            self.heat_to_temperature("bed", target_bed_temp)
 
     def _copy_calibration_file(self, calibration_src_filename):
         calibration_src_path = None
@@ -1547,7 +1568,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.calibration_type = None
             self._restore_timelapse()
 
-    def _on_api_command_set_calibration_values(self, width_correction, extruder_offset_y, persist = False):
+    @BlueprintPlugin.route("/maintenance/head/calibrate/set_values", methods=["POST"])
+    def calibration_head_set_values(self):
+        """
+        Sets the calibration values in the firmware
+        """
+        data = request.json
+        width_correction = data.get("width_correction")
+        extruder_offset_y = data.get("extruder_offset_y")
+        persist = data.get("persist")
+
         self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
 
         #TODO: Consider changing firmware to accept positive value for S (M115, M219 and EEPROM_printSettings)
@@ -1560,11 +1590,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             # Read the settings back from the machine
             self._get_firmware_info()
+        return make_response(jsonify(), 200)
 
-    def _on_api_command_restore_calibration_values(self):
+    @BlueprintPlugin.route("/maintenance/head/calibrate/restore_values", methods=["POST"])
+    def calibration_head_restore_values(self):
+        """
+        Requests the values from the firmware
+        """
         # Read back from machine (which may constrain the correction value)
         # We don't want the M501 response to interferere with the M115, which is why on_sent is used (which requires an acknowledge)
         self._printer._comm.sendCommand("M501", on_sent = self._get_firmware_info)
+        return make_response(jsonify(), 200)
 
     def _on_api_command_begin_homing(self):
         self._printer.commands('G28')
@@ -1745,8 +1781,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         context = { "filamentAction": self.filament_action,
                     "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
-				    "pausedFilamentSwap": self.paused_filament_swap
-					}
+                    "pausedFilamentSwap": self.paused_filament_swap
+                    }
 
         self._execute_printer_script("change_filament_done", context)
 
@@ -1764,8 +1800,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Loading has already started, so just cancel the loading, which will stop heating already.
         context = { "filamentAction": self.filament_action,
                     "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
-				    "pausedFilamentSwap": self.paused_filament_swap
-					}
+                    "pausedFilamentSwap": self.paused_filament_swap
+                    }
 
         self._immediate_cancel(False)
 
@@ -1870,33 +1906,33 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
          Disconnects and powers down the printer
          """
          if self.powerbutton_handler:
-			 self.powerdown_after_disconnect = True
-			 self.intended_disconnect = True
-			 self._printer.disconnect()
+             self.powerdown_after_disconnect = True
+             self.intended_disconnect = True
+             self._printer.disconnect()
 
     def _do_powerdown_after_disconnect(self):
         """
         Powers down printer after disconnect
         """
         if self.powerbutton_handler:
-			self.powerbutton_handler.disableAuxPower()
-			self._logger.debug("Auxiliary power down for maintenance")
-			self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
+            self.powerbutton_handler.disableAuxPower()
+            self._logger.debug("Auxiliary power down for maintenance")
+            self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
 
     def _power_up_after_maintenance(self):
         """
         Powers up printer after maintenance
         """
         if self.powerbutton_handler:
-			self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
-			# Enable auxiliary power. This will fully reset the printer, so full homing is required after.
-			self.powerbutton_handler.enableAuxPower()
-			self._logger.debug("Auxiliary power up after maintenance")
-			time.sleep(5) # Give it 5 sec to power up
-			#TODO: Maybe a loop with some retries instead of a 5-sec-timer?
-			#TODO: Or monitor if /dev/ttyUSB0 exists?
-			self.connecting_after_maintenance = True
-			self._printer.connect()
+            self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
+            # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
+            self.powerbutton_handler.enableAuxPower()
+            self._logger.debug("Auxiliary power up after maintenance")
+            time.sleep(5) # Give it 5 sec to power up
+            #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
+            #TODO: Or monitor if /dev/ttyUSB0 exists?
+            self.connecting_after_maintenance = True
+            self._printer.connect()
 
     def _auto_home_after_maintenance(self):
         """
