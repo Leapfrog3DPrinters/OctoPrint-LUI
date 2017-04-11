@@ -46,7 +46,7 @@ modelSizeDetection: true
 doorSafety: false
 filamentDetection: true
 filamentQuickLoad: false
-dualX: true
+dualX: false
 materialMinTemp: 150
 materialMaxTemp: 275
 filament:
