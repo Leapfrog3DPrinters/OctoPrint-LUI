@@ -1437,16 +1437,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Moves the heads to the given corners
         """
-        if corner_name == 'top_left':
-            corner_num = 0
-        elif corner_name == 'top_right':
-            corner_num = 1
-        elif corner_name == 'bottom_left':
-            corner_num = 2
-        elif corner_name == 'bottom_right':
-            corner_num = 3
-
-        corner = self.manual_bed_calibration_positions[corner_num]
+        corner = self.manual_bed_calibration_positions[corner_name]
         self._printer.commands(['G1 Z5 F600'])
 
         if corner["mode"] == 'fullcontrol' and not self.print_mode == "fullcontrol":
