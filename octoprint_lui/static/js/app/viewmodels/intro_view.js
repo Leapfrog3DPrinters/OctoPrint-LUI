@@ -166,7 +166,7 @@ $(function ()  {
                 }
             ],
             showStepNumbers: false,
-            scrollToElement: true,
+            scrollToElement: false,
             exitOnOverLayClick: false,
             showBullets: true,
             showButtons: false,
@@ -176,7 +176,7 @@ $(function ()  {
 
         self.introInstance.onbeforechange(function(targetElement) {
             switch(targetElement.id) {
-                case 'swap_button':
+                case 'swap_left' || 'swap_right':
                     $('#print_icon').click();
                     console.log('beforeswap');
                     break;
