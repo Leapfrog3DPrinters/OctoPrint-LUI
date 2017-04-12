@@ -2162,7 +2162,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.debug("load_filament")
                 load_initial = self.current_printer_profile["filament"]["loadInitial"]
 
-                if "load_change" in self.current_printer_profile["filament"]:
+                if "loadChange" in self.current_printer_profile["filament"]:
                     load_change = self.current_printer_profile["filament"]["loadChange"]
 
                 self.load_amount_stop = self.current_printer_profile["filament"]["loadAmountStop"]
@@ -2188,7 +2188,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             unload_initial = self.current_printer_profile["filament"]["unloadInitial"]
             unload_change = None
-            if "unload_change" in self.current_printer_profile["filament"]:
+            if "unloadChange" in self.current_printer_profile["filament"]:
                 unload_change = self.current_printer_profile["filament"]["unloadChange"]
 
             self.load_amount_stop = self.current_printer_profile["filament"]["unloadAmountStop"]
