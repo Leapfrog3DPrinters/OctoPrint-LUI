@@ -26,7 +26,7 @@ $(function () {
 
         self.settingsDialog = undefined;
         self.settings_dialog_update_detected = undefined;
-        
+
         self.api_enabled = ko.observable(undefined);
         self.api_key = ko.observable(undefined);
         self.api_allowCrossOrigin = ko.observable(undefined);
@@ -114,7 +114,7 @@ $(function () {
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 
-        //Template observable 
+        //Template observable
         self.settingsTopic = ko.observable(undefined);
 
         // Webcam
@@ -162,7 +162,7 @@ $(function () {
                     $.notify({ title: title, text: "\"" + profile.name + _.sprintf(gettext('" must have an extruder temperature between %(mintemp)s &deg;C and %(maxtemp)s &deg;C.'), { "mintemp": minTemp, "maxtemp": maxTemp }) }, 'error');
                     return;
                 }
-                
+
 
                 if (isNaN(profile.bed) || profile.bed < 0) {
                     $.notify({ title: title, text: profile + profile.name + gettext('" must have a bed temperature of at least 0 &deg;C.') }, 'error');
@@ -668,7 +668,7 @@ $(function () {
                     setTimeout(function(){
                         self.introView.introInstance.refresh();
                     }, 300);
-                    self.introView.introInstance.goToStep(4);
+                    self.introView.introInstance.goToStep(12);
                 }
             }
         };
@@ -759,7 +759,7 @@ $(function () {
             [],
             0
         );
-        
+
 
         self.translationUploadFilename = ko.observable();
         self.invalidTranslationArchive = ko.pureComputed(function() {

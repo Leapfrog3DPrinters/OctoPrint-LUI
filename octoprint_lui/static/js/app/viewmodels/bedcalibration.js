@@ -55,6 +55,12 @@ $(function ()  {
                 if (self.showManualBedCalibration())
                     self.restoreFromCalibrationPosition();
                 self.flyout.closeFlyoutAccept();
+                if(self.introView.firstRun) {
+                    setTimeout(function () {
+                        self.introView.introInstance.refresh();
+                    }, 300);
+                    self.introView.introInstance.goToStep(15);
+                }
             }
         }
 
@@ -64,11 +70,12 @@ $(function ()  {
             self.showManualBedCalibration(true);
             self.mayAbort(false);
             self.mayAccept(true);
+            //IntroJS
             if(self.introView.firstRun){
                 setTimeout(function(){
                     self.introView.introInstance.refresh();
-                });
-                self.introView.introInstance.goToStep(6);
+                }, 300);
+                self.introView.introInstance.goToStep(14);
             }
         }
 

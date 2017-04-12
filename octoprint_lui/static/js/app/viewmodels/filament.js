@@ -175,15 +175,16 @@ $(function ()  {
             $('.swap_process_step,.fd_swap_process_step').removeClass('active');
             $('#load_filament,#fd_load_filament').addClass('active');
             self.filamentLoading(false);
+            //IntroJS
             if (self.introView.firstRun) {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
-                    if(tool == 'tool1') {
+                    if(tool == "tool1") {
                         self.introView.introInstance.goToStep(3);
                     }
                     else{
-                        self.introView.introInstance.goToStep(6);
+                        self.introView.introInstance.goToStep(7);
                     }
             }
         };
@@ -206,9 +207,18 @@ $(function ()  {
 
         self.finishedLoading = function ()  {
             // We are finished close the flyout
-            //TODO INTRO
+            //IntroJS
             if(self.introView.firstRun) {
-                self.introView.introInstance.goToStep(11);
+                setTimeout(function () {
+                        self.introView.introInstance.refresh()
+                }, 300);
+                tool = self.tool();
+                if(tool == 'tool1'){
+                    self.introView.introInstance.goToStep(6);
+                }
+                else {
+                    self.introView.introInstance.goToStep(10);
+                }
             }
             self.flyout.closeFlyoutAccept();
         };
@@ -387,13 +397,16 @@ $(function ()  {
                     self.filamentLoading(false);
                     self.showFinished();
                     self.hideToolLoading();
-                    //TODO INTRO
+                    //IntroJS
                     if (self.introView.firstRun) {
-                                self.introView.introInstance.goToStep(5);
-                            }
-                            else{
-                                self.introView.introInstance.goToStep(9);
-                            }
+                        tool = self.tool();
+                        if (tool == 'tool1') {
+                            self.introView.introInstance.goToStep(5);
+                        }
+                        else {
+                            self.introView.introInstance.goToStep(9);
+                        }
+                    }
                     self.filamentLoadProgress(0);
                     if (!messageData.profile) {
                         self.flyout.closeFlyoutAccept();
@@ -489,21 +502,21 @@ $(function ()  {
         };
 
         self.showLoading = function () {
-            //TODO INTRO
+            //IntroJS
             if (self.introView.firstRun) {
-                if(self.selectedTemperatureProfileName != "None") {
-                    setTimeout(function () {
-                        self.introView.introInstance.refresh()
-                    }, 300);
-                    if(self.tool() == 'tool1') {
-                        self.introView.introInstance.goToStep(4);
-                    }
-                    else{
-                        self.introView.introInstance.goToStep(7);
-                    }
-                    self.loadFilament(false);
+                setTimeout(function () {
+                    self.introView.introInstance.refresh()
+                }, 300);
+                tool = self.tool();
+                if(tool == 'tool1') {
+                    self.introView.introInstance.goToStep(4);
                 }
-            }else{
+                else{
+                    self.introView.introInstance.goToStep(8);
+                }
+                self.loadFilament(false);
+            }
+            else{
                 self.loadFilament(false);
             }
         }

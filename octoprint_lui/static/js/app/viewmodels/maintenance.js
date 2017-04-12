@@ -65,6 +65,12 @@ $(function () {
 
         self.calibrateExtruders = function ()  {
             self.flyout.showFlyout('extrudercalibration', true);
+            if(self.introView.firstRun){
+                setTimeout(function(){
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(16);
+            }
         }
 
         self.calibrateBed = function()
@@ -74,7 +80,7 @@ $(function () {
                 setTimeout(function(){
                     self.introView.introInstance.refresh();
                 }, 300);
-                self.introView.introInstance.goToStep(5);
+                self.introView.introInstance.goToStep(13);
             }
         }
 
@@ -130,7 +136,7 @@ $(function () {
                 self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterHeadMaintenance);
                 self.movingToMaintenancePositionInfo = undefined;
             }
-            
+
         }
 
         self.beginPurgeWizard = function (tool)
@@ -154,7 +160,7 @@ $(function () {
             self.flyout.showFlyout('filament_override')
         };
 
-        self.onSettingsShown = function () { 
+        self.onSettingsShown = function () {
             $('#maintenance_control').addClass('active');
             $('#maintenance_filament').removeClass('active');
 

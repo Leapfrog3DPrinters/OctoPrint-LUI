@@ -1092,7 +1092,7 @@
       this._introAfterChangeCallback.call(this, targetElement.element);
     }
 
-    console.log('showStep');
+    console.log('showStep: ' + (this._currentStep + 1));
   }
 
   /**

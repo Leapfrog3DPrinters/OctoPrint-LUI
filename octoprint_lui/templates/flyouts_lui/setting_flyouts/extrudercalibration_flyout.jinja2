@@ -6,6 +6,7 @@
         {{ _('Extruder calibration') }}
       </div>
     </div>
+      <div id="start_extruder_calibration">
     <div class="Table-row">
       <div class="Table-item">
         {{ _('Make sure the print bed is empty and calibrated. Also ensure both extruders are loaded with differently colored filament. Apply a print adhesive to the bed and press Start calibration.') }}
@@ -37,8 +38,9 @@
       </div>
     </div>
   </div>
+  </div>
 </div>
-<div class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && !largeCalibrationCompleted()">
+<div id="large-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && !largeCalibrationCompleted()">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -160,7 +162,7 @@
     </div>
   </div>
 </div>
-<div class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && smallXCalibrationCompleted() ">
+<div id="y-small-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && smallXCalibrationCompleted() ">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -211,7 +213,7 @@
   </div>
 </div>
 
-<div class="bolt-bed-width-calibration-step" data-bind="visible: isPrintingCalibration(), with: printerState">
+<div id="printing-extruder-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: isPrintingCalibration(), with: printerState">
 
   <p>{{ _('Please wait until the print has completed.') }}</p>
 

@@ -7,6 +7,7 @@ $(function ()  {
         self.flyout = parameters[2];
         self.printerState = parameters[3];
         self.filament = parameters[4];
+        self.introView = parameters[5];
 
         self.mayStartLargeCalibration = ko.pureComputed(function ()  {
             return self.filament.leftFilament() != "None" && self.filament.rightFilament() != "None"
@@ -71,7 +72,12 @@ $(function ()  {
                 console.log("Calibration set to 0, 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
             });
-            
+            if(self.introView.firstRun) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 500);
+                self.introView.introInstance.goToStep(17);
+            }
         };
 
         self.prepareSmallExtruderCalibration = function ()  {
@@ -87,12 +93,23 @@ $(function ()  {
                 console.log("Calibration set to " + self.largeBedWidthCorrection() + ", 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_small" });
             });
-
+            if(self.introView.firstRun) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(19);
+            }
         };
 
         self.showSmallYCalibration = function()
         {
             self.smallXCalibrationCompleted(true);
+            if(self.introView.firstRun) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(21);
+            }
         }
 
         self.onCalibrationPrintCompleted = function (calibration_type) {
@@ -126,26 +143,32 @@ $(function ()  {
             OctoPrint.printer.setBedTargetTemperature(0);
 
             self.setCalibration(self.bedWidthCorrection(), self.smallYAxisCorrection(), true)
-                .done(function () 
+                .done(function ()
                 {
                     self.flyout.closeFlyoutAccept();
                     $.notify({ title: gettext('Calibration stored'), text: gettext('The printer has been calibrated successfully.') }, "success");
-                
+
                 }).fail(function()
                 {
                     $.notify({ title: gettext('Calibration failed'), text: gettext('An error has occured while storing the calibration settings. Please try again.') }, "error");
                 }).always(function ()  { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
+            if(self.introView.firstRun) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(22);
+            }
         };
 
-        self.abort = function () 
+        self.abort = function ()
         {
             OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
             OctoPrint.printer.setBedTargetTemperature(0);
 
             if (self.isPrintingCalibration()) {
-                OctoPrint.job.cancel();    
+                OctoPrint.job.cancel();
             }
-            
+
             if (self.calibrationProcessStarted()) {
                 console.log("Unselecting file");
                 self._sendApi({ command: "unselect_file" });
@@ -243,7 +266,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "filamentViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "filamentViewModel", "introViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#extrudercalibration_flyout"]
