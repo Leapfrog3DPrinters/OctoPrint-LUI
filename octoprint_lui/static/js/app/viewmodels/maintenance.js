@@ -19,18 +19,6 @@ $(function () {
                 case 'tool1':
                     return '<i class="fa fa-arrow-down"></i>' + gettext('Purge left');
             }
-        }
-
-        self.sendJogCommand = function (axis, multiplier, distance) {
-            if (typeof distance === "undefined")
-                distance = $('#jog_distance button.active').data('distance');
-            if (self.settings.printerProfiles.currentProfileData() && self.settings.printerProfiles.currentProfileData()["axes"] && self.settings.printerProfiles.currentProfileData()["axes"][axis] && self.settings.printerProfiles.currentProfileData()["axes"][axis]["inverted"]()) {
-                multiplier *= -1;
-            }
-
-            var data = {};
-            data[axis] = distance * multiplier;
-            OctoPrint.printer.jog(data);
         };
 
         self.headMaintenancePosition = function () {
@@ -62,38 +50,29 @@ $(function () {
         };
 
         self.afterHeadMaintenance = function () {
-            self._sendApi({
-                command: 'after_head_maintenance'
-            });
-        }
+            self._sendApi("maintenance/head/swap/finish");
+        };
 
         self.afterMaintenance = function()
         {
             OctoPrint.printer.home(['x', 'y']);
-        }
+        };
 
         self.calibrateExtruders = function ()  {
             self.flyout.showFlyout('extrudercalibration', true);
-        }
+        };
 
         self.calibrateBed = function()
         {
             self.flyout.showFlyout('bedcalibration', true);
-        }
+        };
 
         self.sendHomeCommand = function (axis) {
             OctoPrint.printer.home(axis);
         };
 
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
         self.moveToCleanBedPosition = function () {
-            self._sendApi({
-                command: 'move_to_bed_maintenance_position'
-            }).done(function ()  {
+            self._sendApi("maintenance/bed/clean/start").done(function ()  {
                 $.notify({ title: gettext("Clean bed"), text: gettext("The printer is moving towards the clean bed position.") }, "success");
             });
         };
@@ -119,9 +98,7 @@ $(function () {
             }
 
             // From here only executed if temperatures are < 50, or heat check is ignored
-            self._sendApi({
-                command: 'move_to_head_maintenance_position'
-            });
+            self._sendApi("maintenance/head/swap/start");
 
             self.movingToMaintenancePositionInfo = self.flyout.showInfo(gettext("Maintenance position"), gettext("The printhead is moving towards the maintenance position."), true);
         };
@@ -133,8 +110,8 @@ $(function () {
                 self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterHeadMaintenance);
                 self.movingToMaintenancePositionInfo = undefined;
             }
-            
-        }
+
+        };
 
         self.beginPurgeWizard = function (tool)
         {
@@ -160,12 +137,17 @@ $(function () {
         self.logFiles = function ()
         {
             self.navigation.showSettingsTopic('logs');
-        }
+        };
 
-        self.onSettingsShown = function () { 
+        self.onSettingsShown = function () {
             $('#maintenance_control').addClass('active');
             $('#maintenance_filament').removeClass('active');
 
+        };
+
+        self._sendApi = function (urlSuffix, data) {
+            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
+            return OctoPrint.postJson(url, data);
         };
 
         // Handle plugin messages
@@ -175,7 +157,6 @@ $(function () {
             }
 
             var messageType = data['type'];
-            var messageData = data['data'];
             switch (messageType) {
 
                 case "head_in_maintenance_position":
