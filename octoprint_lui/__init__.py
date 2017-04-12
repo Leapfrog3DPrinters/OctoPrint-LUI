@@ -48,7 +48,6 @@ from octoprint_lui.constants import *
 class LUIPlugin(octoprint.plugin.UiPlugin,
                 octoprint.plugin.TemplatePlugin,
                 octoprint.plugin.AssetPlugin,
-                octoprint.plugin.SimpleApiPlugin,
                 BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
@@ -655,8 +654,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         md = os.linesep.join(self.changelog_contents)
         return markdown.markdown(md)
 
+    # Begin API
+
 	## Cloud API
-    @octoprint.plugin.BlueprintPlugin.route("/cloud", methods=["GET"], strict_slashes=False)
+    @BlueprintPlugin.route("/cloud", methods=["GET"], strict_slashes=False)
     def get_cloud_info(self):
         """
         Returns a list of available cloud services
@@ -675,7 +676,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 });
         return make_response(jsonify(services=info_obj))
 
-    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/login", methods=["GET"])
+    @BlueprintPlugin.route("/cloud/<string:service>/login", methods=["GET"])
     def connect_to_cloud_service(self, service):
         """
         Provides the redirect URL to authenticate a cloud service
@@ -684,7 +685,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response(jsonify({'auth_url' : auth_url }))
             
     
-    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/login/finished", methods=["GET"])
+    @BlueprintPlugin.route("/cloud/<string:service>/login/finished", methods=["GET"])
     def connect_to_cloud_service_finished(self, service):
         """
         Redirected to by the cloud service after authentication
@@ -696,7 +697,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
-    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["GET"])
+    @BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["GET"])
     def logout_cloud_service(self, service):
         """
         Provides the redirect URL to logout from a cloud service
@@ -704,7 +705,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         logout_url = self.cloud_connect.get_logout_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/logout/finished'.format(service))
         return make_response(jsonify({'logout_url' : logout_url }))
 
-    @octoprint.plugin.BlueprintPlugin.route("/cloud/<string:service>/logout/finished", methods=["GET"])
+    @BlueprintPlugin.route("/cloud/<string:service>/logout/finished", methods=["GET"])
     def logout_cloud_service_finished(self, service):
         """
         Redirected to by the cloud service after logging out
@@ -712,7 +713,61 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.cloud_connect.handle_logout_response(service, request)
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
-	##~ Software API
+	## Software API
+
+    @BlueprintPlugin.route("/software", methods=["GET"])
+    def get_updates(self):
+        # Not the complete update_info array has to be send to front end
+        update_frontend = self._create_update_frontend(self.update_info)
+
+        # Only update if we passed 30 min since last fetch or if we are forced
+        force = request.values.get("force", "false") in valid_boolean_trues
+        current_time = time.time()
+        cache_time_expired = (current_time - self.last_git_fetch) > 3600
+
+        # First check if there's any forced update we need to execute
+        # If so, return the cache of updates
+        if self._perform_forced_updates():
+            self._logger.debug("Performing forced updates. Not fetching.")
+        elif not cache_time_expired and not force:
+            self._logger.debug("Cache time of updates not expired, so not fetching updates yet")
+        elif not self.fetching_updates:
+            self._logger.debug("Cache time expired or forced to fetch gits. Start fetch worker.")
+            self._fetch_update_info_list(force)
+            return make_response(jsonify(status="fetching", update=update_frontend, machine_info=self.machine_info), 200)
+
+        # By default return the cache
+        return make_response(jsonify(status="cache", update=update_frontend, machine_info=self.machine_info), 200)
+
+    @BlueprintPlugin.route("/software/update", methods=["POST"])
+    def do_updates(self):
+        plugin = request.json["plugin"]
+        update_info = self.update_info
+        plugin_names = [update['name'] for update in update_info]
+        if plugin == "all":
+            # Updating all plugins
+            # Start update thread with all updates
+            self._logger.debug("Starting update of all installed plugins")
+            self._update_plugins(plugin)
+            # Send to front end that we started updating
+            return make_response(jsonify(status="updating", text="Starting update of all modules"), 200)
+            pass
+        elif plugin:
+            # Going to update only a single plugin part this is for debugging purpouse only
+            # Check if plugin is installed:
+            if plugin not in plugin_names:
+                #if not return a fail
+                self._logger.debug("{plugin} seemed to not be installed".format(plugin=plugin))
+                return make_response("Failed to start update of plugin: {plugin}. Not installed.".format(plugin=plugin), 400)
+            self._logger.debug("Starting update of {plugin}".format(plugin=plugin))
+            # Send updating to front end
+            self._update_plugins(plugin)
+            return make_response(jsonify(status="updating", text="Starting update of {plugin}".format(plugin=plugin)), 200)
+
+        else:
+            # We didn't get a plugin, should never happen
+            self._logger.debug("No plugin given! Can't update that.")
+            return make_response("No plugin given, can't update", 400)
 
     @BlueprintPlugin.route("/software/changelog/seen", methods=["POST"])
     def changelog_seen(self):
@@ -746,22 +801,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._read_changelog_file()
         return self.get_changelog()
 
-    def _check_version_requirement(self, current_version, requirement):
-        """Helper function that checks if a given version matches a version requirement"""
-        if requirement.startswith('<='):
-            return StrictVersion(current_version) <= StrictVersion(requirement[2:])
-        elif requirement.startswith('<'):
-            return StrictVersion(current_version) < StrictVersion(requirement[1:])
-        elif requirement.startswith('>='):
-            return StrictVersion(current_version) >= StrictVersion(requirement[2:])
-        elif requirement.startswith('>'):
-            return StrictVersion(current_version) > StrictVersion(requirement[1:])
-        elif requirement.startswith('=='):
-            return StrictVersion(current_version) == StrictVersion(requirement[2:])
-        elif requirement.startswith('='):
-            return StrictVersion(current_version) == StrictVersion(requirement[1:])
-        else:
-            return StrictVersion(current_version) == StrictVersion(requirement)
+    ## Firmware API
 
     @BlueprintPlugin.route("/firmware", methods=["GET"])
     def get_firmware_version_info(self):
@@ -781,6 +821,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "auto_update_started": self.auto_firmware_update_started
         })
 
+    @BlueprintPlugin.route("/firmware/update", methods=["POST"])
+    def do_firmware_update(self):
+        if self.fw_version_info:
+            fw_path = self.firmware_update_info.download_firmware(self.fw_version_info["url"])
+            if fw_path:
+                if self.flash_firmware_update(fw_path):
+                    return make_response(jsonify(), 200)
+                else:
+                    return make_response(jsonify({ "error": "Something went wrong while flashing the firmware update"}), 400)
+            else:
+                return make_response(jsonify({ "error": "An error occured while downloading the firmware update" }), 400)
+        else:
+            return make_response(jsonify({ "error": "No firmware update available" }), 400)
+
     @BlueprintPlugin.route("/firmware/update", methods=["GET"], strict_slashes=False)
     @BlueprintPlugin.route("/firmware/update/<string:silent>", methods=["GET"], strict_slashes=False)
     def get_firmware_update_info(self, silent = ''):
@@ -798,6 +852,707 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             firmware_fetch_thread.start()
 
             return make_response(jsonify(), 200)
+
+    ## Settings API
+
+    @BlueprintPlugin.route("/settings", methods=["GET"])
+    def get_settings(self):
+        """
+        Returns a stripped down version of the OctoPrint settings, extended with the current autoshutdown setting.
+        """
+        s = self._settings
+
+        data = {
+            "appearance": {
+                "name": s.global_get(["appearance", "name"]),
+                "defaultLanguage": s.global_get(["appearance", "defaultLanguage"])
+            },
+            "feature": {
+                "modelSizeDetection": s.global_get_boolean(["feature", "modelSizeDetection"]),
+            },
+            "serial": {
+                "autoconnect": s.global_get_boolean(["serial", "autoconnect"]),
+                "log": s.global_get_boolean(["serial", "log"]),
+            },
+            "temperature": {
+                "profiles": s.global_get(["temperature", "profiles"]),
+                "cutoff": s.global_get_int(["temperature", "cutoff"])
+            },
+            "terminalFilters": s.global_get(["terminalFilters"]),
+            "server": {
+                "diskspace": {
+                    "warning": s.global_get_int(["server", "diskspace", "warning"]),
+                    "critical": s.global_get_int(["server", "diskspace", "critical"])
+                }
+            },
+            "plugins": {
+                "lui": {
+                    "actionDoor": s.getBoolean(["action_door"]),
+                    "actionFilament": s.getBoolean(["action_filament"]),
+                    "zoffset": s.getFloat(["zoffset"]),
+                    "autoShutdown": self.auto_shutdown,
+                }
+            }
+        }
+
+        return make_response(jsonify(data), 200)
+
+    ## Maintenance API
+
+    @BlueprintPlugin.route("/maintenance/bed/clean/start", methods=["POST"])
+    def maintenance_bed_clean_start(self):
+        """
+        Moves bed to cleaning position
+        """
+        self._move_to_bed_maintenance_position()
+        return make_response(jsonify(), 200)
+
+
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/start", methods=["POST"])
+    def calibration_bed_start(self):
+        """
+        Starts the bed calibration procedure by preparing the printer for the calibration
+        """
+        self.set_print_mode('fullcontrol')
+
+        self._set_movement_mode("absolute")
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.change_tool("tool1")
+        self.manual_bed_calibration_tool = "tool1"
+        self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/move_to_position/<string:corner_name>", methods=["POST"])
+    def calibration_bed_move_to_position(self, corner_name):
+        """
+        Moves the heads to the given corners
+        """
+        corner = self.manual_bed_calibration_positions[corner_name]
+        self._printer.commands(['G1 Z5 F600'])
+
+        if corner["mode"] == 'fullcontrol' and not self.print_mode == "fullcontrol":
+            self.set_print_mode('fullcontrol')
+            self._printer.home(['x'])
+        elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
+            self.set_print_mode('mirror')
+            self._printer.home(['x'])
+
+        if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
+            self._printer.home(['x'])
+            self._printer.change_tool(corner["tool"])
+            self.manual_bed_calibration_tool = corner["tool"]
+
+        self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])])
+        self._printer.commands(['G1 Z0 F600'])
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/finish", methods=["POST"])
+    def calibration_bed_finish(self):
+        """
+        Finishes the bed calibration by homing the x and y axis
+        """
+        self._printer.commands(['G1 Z5 F600'])
+        self.set_print_mode('normal')
+        self._printer.home(['y', 'x'])
+
+        if self.current_printer_profile["defaultStepperTimeout"]:
+            self._printer.commands(["M84 S{0}".format(self.current_printer_profile["defaultStepperTimeout"])]) # Reset stepper disable timeout
+            self._printer.commands(["M84"]) # And disable them right away for now
+
+
+        self.restore_movement_mode()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/head/swap/start", methods=["POST"])
+    def maintenance_swap_head_start(self):
+        """
+        Moves heads to maintenance position
+        """
+        self._execute_printer_script('head_maintenance_position', { "currentZ": self._printer._currentZ })
+        self.wait_for_maintenance_position = True
+        self._printer.commands(['M400']) #Wait for movements to complete
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/head/swap/finish", methods=["POST"])
+    def maintenance_head_swap_finish(self, *args, **kwargs):
+        if self.powerbutton_handler:
+            self._power_up_after_maintenance()
+        else:
+            self._printer.home(['x','y','z'])
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/head/calibrate/start/<string:calibration_type>", methods=["POST"])
+    def calibration_head_start(self, calibration_type):
+        """
+        Starts the calibration of the extruders, calibration_type gives which calibration step 
+        """
+        self.calibration_type = calibration_type
+
+        self._disable_timelapse()
+
+        if calibration_type == "bed_width_small":
+            calibration_src_filename = "bolt_bedwidthcalibration_100um.gcode"
+        elif calibration_type == "bed_width_large":
+            calibration_src_filename = "bolt_bedwidthcalibration_1mm.gcode"
+
+        abs_path = self._copy_calibration_file(calibration_src_filename)
+
+        if abs_path:
+            self.set_print_mode('normal')
+            self._preheat_for_calibration()
+            self._printer.select_file(abs_path, False, True)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/head/calibrate/set_values", methods=["POST"])
+    def calibration_head_set_values(self):
+        """
+        Sets the calibration values in the firmware
+        """
+        data = request.json
+        width_correction = data.get("width_correction")
+        extruder_offset_y = data.get("extruder_offset_y")
+        persist = data.get("persist")
+
+        self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
+
+        #TODO: Consider changing firmware to accept positive value for S (M115, M219 and EEPROM_printSettings)
+        self._printer.commands("M219 S%f" % -width_correction)
+        self._printer.commands("M50 Y%f" % extruder_offset_y)
+
+        if persist:
+            # Store settings and read back from machine
+            self._printer._comm.sendCommand("M500", on_sent = self._get_firmware_info)
+        else:
+            # Read the settings back from the machine
+            self._get_firmware_info()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/head/calibrate/restore_values", methods=["POST"])
+    def calibration_head_restore_values(self):
+        """
+        Requests the values from the firmware
+        """
+        # Read back from machine (which may constrain the correction value)
+        # We don't want the M501 response to interferere with the M115, which is why on_sent is used (which requires an acknowledge)
+        self._printer._comm.sendCommand("M501", on_sent = self._get_firmware_info)
+        return make_response(jsonify(), 200)
+
+    ## Filament API
+
+    @BlueprintPlugin.route("/filament", methods=["GET"])
+    def get_filament(self):
+        """
+        Returns a JSON response with the currently loaded filaments per tool
+        """
+        return make_response(jsonify({ "filaments": self._get_current_filaments() }), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>", methods=["POST"])
+    def set_filament(self, tool):
+        """
+        Overrides the currently loaded filament materials and amounts
+        """
+        data = request.json
+        amount = data.get("amount", 0)
+        materialProfileName = data.get("materialProfileName")
+
+        # Update the filament amount that is logged in the machine
+        if not materialProfileName or materialProfileName == "None":
+            update_profile = {
+                "amount": 0,
+                "material": self.default_material
+            }
+        else:
+            selectedProfile = self._get_profile_from_name(materialProfileName)
+            update_profile = {
+                "amount": amount,
+                "material": selectedProfile
+            }
+
+        self.set_filament_profile(tool, update_profile)
+        self.update_filament_amount()
+        self.send_client_filament_amount()
+
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/start", methods=["POST"])
+    def change_filament_start(self, tool):
+        """
+        Starts the change filament procedure, by setting the state variables server side and initiating the filament unload sequence. 
+        """
+        # Send to the front end that we are currently changing filament.
+        if self._printer.is_paused():
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_IN_PROGRESS, { "paused_materials": self.paused_materials })
+        else:
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_IN_PROGRESS)
+
+        # If paused, we need to restore the current parameters after the filament swap
+        self.paused_filament_swap = self._printer.is_paused()
+
+        # Set filament change tool and profile
+        self.filament_change_tool = tool
+        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
+        self._printer.change_tool(tool)
+
+        self.move_to_filament_load_position()
+
+        # Check if filament is loaded, if so report to front end.
+        if (self.filament_loaded_profile['material']['name'] == 'None'):
+            # No filament is loaded in this tool, directly continue to load section
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_SKIP_UNLOAD)
+
+        self._logger.info("Start change filament called with tool: {tool}, profile: {profile}".format(tool=tool, profile=self.filament_loaded_profile['material']['name']))
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/unload", methods=["POST"])
+    def change_filament_unload(self, tool):
+        """
+        The first step after starting the filament change procedure:
+        preheats and unloads the filament from the extruder
+        """
+        # Heat up to old profile temperature and unload filament
+        temp = int(self.filament_loaded_profile['material']['extruder'])
+        self.heat_to_temperature(self.filament_change_tool,
+                                temp,
+                                self.unload_filament)
+
+        self._logger.debug("Unload filament called")
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/load", methods=["POST"])
+    def change_filament_load(self, tool):
+        """
+        Preheats and loads the filament into the extruder.
+        Request: { loadFor, materialProfileName, amount }
+        """
+        data  = request.json
+        loadFor = data.get("loadFor", "swap")
+        materialProfileName = data.get("materialProfileName")
+        amount = data.get("amount", 0)
+
+        selectedProfile = None
+
+        if loadFor == "filament-detection" or loadFor == "filament-detection-purge":
+            # Get stored profile when filament detection was hit
+            selectedProfile = self.filament_detection_profile
+            temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
+        elif loadFor == "purge":
+            # Select current profile
+            selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
+            temp = int(selectedProfile['extruder'])
+        else:
+            if not materialProfileName or materialProfileName == "None":
+                # The user wants to load a None profile. So we just finish the swap wizard
+                self._send_client_message(ClientMessages.FILAMENT_CHANGE_FINISHED, { "profile": None })
+                return make_response(jsonify(), 200)
+
+            # Find profile from key
+            selectedProfile = self._get_profile_from_name(materialProfileName)
+            temp = int(selectedProfile['extruder'])
+
+        # Heat up to new profile temperature and load filament
+        self.filament_change_profile = selectedProfile
+
+        if loadFor == "filament-detection-purge" or loadFor == "purge":
+            self.filament_amount = self.get_filament_amount()
+            tool_num = int(self.filament_change_tool[len("tool"):])
+            self.filament_change_amount = self.filament_amount[tool_num]
+            self.loading_for_purging = True
+        else:
+            self.loading_for_purging = False
+            self.filament_change_amount = amount
+
+        self._logger.debug("Load filament called with profile {profile}, tool {tool}, amount {amount}".format(profile=selectedProfile, tool=self.filament_change_tool, amount=self.filament_change_amount))
+
+        self.heat_to_temperature(self.filament_change_tool,
+                                temp,
+                                self.load_filament)
+
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/extrude/start", methods=["POST"])
+    def extrude_start(self, tool):
+        """
+        Begins continuous purging of the extruder. 
+        Request: { direction (-1 or +1) }
+        """
+        data = request.json
+        direction = data.get("direction", 1)
+
+        # Limit input to positive or negative, no multiplication factors allowed here
+        if direction < 0:
+            direction = -1
+        elif direction >= 0:
+            direction = 1
+
+        self.load_filament_cont(tool, direction)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/extrude/finish", methods=["POST"])
+    def extrude_finish(self, tool):
+        """
+        Stops continuous purging of the extruder. 
+        """
+
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/finish", methods=["POST"])
+    def change_filament_finish(self, tool):
+        # Still don't know if this is the best spot TODO
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+
+        context = { "filamentAction": self.filament_action,
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
+                    "pausedFilamentSwap": self.paused_filament_swap
+                    }
+
+        self._execute_printer_script("change_filament_done", context)
+
+        self._restore_after_load_filament()
+        self._logger.debug("Finish change filament called")
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/change/cancel", methods=["POST"])
+    def change_filament_cancel(self, tool):
+        """
+        Abort mission! Stop filament loading.
+        Cancel all heat up and reset
+        """
+
+        # Loading has already started, so just cancel the loading, which will stop heating already.
+        context = { "filamentAction": self.filament_action,
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
+                    "pausedFilamentSwap": self.paused_filament_swap
+                    }
+
+        self._immediate_cancel(False)
+
+        self._execute_printer_script("change_filament_done", context)
+
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+        # Other wise we haven't started loading yet, so cancel the heating
+        # and clear all callbacks added to the heating.
+        else:
+            with self.callback_mutex:
+                del self.callbacks[:]
+            self._restore_after_load_filament()
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELED)
+
+        self._logger.debug("Cancel change filament called")
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/detection/stop_timer", methods=["POST"])
+    def filament_detection_stop_timer(self, tool):
+        """
+        Stops the filament detection temperature safety timer
+        """
+
+        if self.temperature_safety_timer:
+            self.temperature_safety_timer.cancel()
+            self.temperature_safety_timer = None
+            self._send_client_message(ClientMessages.TEMPERATURE_SAFETY, { "timer": self.temperature_safety_timer_value })
+
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/detection/finish", methods=["POST"])
+    def filament_detection_finish(self, tool):
+        """
+        Finishes the filament detection wizard, resets target temperaturess
+        """
+        if self.filament_detection_tool_temperatures:
+            for tool, data in self.filament_detection_tool_temperatures.items():
+                if tool != 'time':
+                    self._printer.set_temperature(tool, data['target'])
+
+            self._logger.info("Filament detection complete. Restoring temperatures: {temps}".format(temps = self.filament_detection_tool_temperatures))
+            self.filament_detection_tool_temperatures = None
+
+        self.restore_z_after_filament_load()
+        self._printer.toggle_pause_print()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/detection/cancel", methods=["POST"])
+    def filament_detection_cancel(self, tool):
+        """
+        Cancels the print if there was a "filament detection". Does not stop the temperature timer!
+        """
+        self._printer.cancel_print()
+        return make_response(jsonify(), 200)
+
+    ## Printer API
+
+    @BlueprintPlugin.route("/printer/start_print/<string:mode>", methods=["POST"])
+    def start_print(self, mode):
+        """
+        Sends a M605 command to the printer to initiate the given print mode and starts the currently selected job afterwards.
+        """
+        
+        self.set_print_mode(mode)
+        self._printer.start_print()
+
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer", methods=["GET"])
+    def get_printer_info(self):
+        """
+        Returns information about the printer state, whether it is homed and whether it is in an error state.
+        {
+        isHomed: bool,
+        isHoming: bool,
+        printerErrorReason: string,
+        printerErrorExtruder: string
+        }
+        """
+        return make_response(jsonify({
+                'isHomed': self.is_homed,
+                'isHoming': self.is_homing,
+                'printerErrorReason': self.printer_error_reason,
+                'printerErrorExtruder': self.printer_error_extruder
+                }), 200)
+
+    @BlueprintPlugin.route("/printer/machine_info", methods=["GET"])
+    def get_machine_info(self):
+        """
+        Returns information provided by the machine's firmware
+        """
+        return make_response(jsonify({
+                'machine_info': self.machine_info
+                }), 200)
+
+    @BlueprintPlugin.route("/printer/homing/start", methods=["POST"])
+    def homing_start(self):
+        """
+        Begins the homing procedure, required on startup of the printer
+        """ 
+        self._printer.commands('G28')
+        self._send_client_message(ClientMessages.IS_HOMING)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/reconnect", methods=["POST"])
+    def printer_reconnect(self):
+        """
+        Tries to reconnect the printer after an error has occurred (will also try to send a M999)
+        """
+        self.send_M999_on_reconnect = True
+        self._printer.connect()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/notify_intended_disconnect", methods=["POST"])
+    def notify_intended_disconnect(self):
+        """
+        Notifies that a disconnect of the printer was intended. Useful for maintenance procedures.
+        """
+        self.intended_disconnect = True
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/immediate_cancel", methods=["POST"])
+    def immediate_cancel(self):
+        """
+        Tries to break the firmware out of the heating loop (with M108) and cancels the current print job.
+        """
+        self._immediate_cancel()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/auto_shutdown/<string:toggle>", methods=["POST"])
+    def auto_shutdown_toggle(self, toggle):
+        """
+        Sets auto-shutdown either on or off
+        """
+        self.auto_shutdown = toggle == "on"
+        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TOGGLE, { "toggle" : self.auto_shutdown })
+        self._logger.info("Auto shutdown set to {toggle}".format(toggle="on" if self.auto_shutdown else "off"))
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/auto_shutdown/cancel", methods=["POST"])
+    def auto_shutdown_cancel(self):
+        # User cancelled timer. So cancel the timer and send to front-end to close flyout.
+        if self.auto_shutdown_timer:
+            self.auto_shutdown_timer.cancel()
+            self.auto_shutdown_timer = None
+        self.auto_shutdown_after_movie_done = False
+        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TIMER_CANCELLED)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/debugging_action", methods=["POST"])
+    def debugging_action(self):
+        """
+        Allows to trigger something in the back-end. Wired to the logo on the front-end. 
+        """
+        self._printer.commands(['!!DEBUG:mintemp_error0']) # Lets the virtual printer send a MINTEMP message which brings the printer in error state
+        return make_response(jsonify(), 200)
+
+    ## Files API
+
+    @BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)
+    @BlueprintPlugin.route("/files/<string:origin>", methods=["GET"], strict_slashes=False)
+    def get_files(self, origin, path = None):
+        """
+        A wrapper around OctoPrint's get_files. Also returns file lists for origins usb and cloud.
+        """ 
+        if origin == "cloud":
+            files = self.cloud_storage.list_files(path, filter=self.browser_filter, recursive=False)
+            return jsonify(files=files)
+        elif(origin == "usb"):
+            # Read USB files pretty much like an SD card
+            # Alternative:
+            # files = self.usb_storage.list_files(recursive = True).values()
+
+            if("filter" in request.values and request.values["filter"] == "firmware"):
+                filter = self.browser_filter_firmware
+            else:
+                filter = self.browser_filter
+
+            try:
+                files = octoprint.server.fileManager.list_files("usb", filter=filter, recursive = True)["usb"].values()
+            except Exception as e:
+                self._logger.exception("Could not access the media folder", e.message)
+                return make_response("Could not access the media folder", 500)
+
+
+            # Decorate them
+            def analyse_recursively(files, path=None):
+                if path is None:
+                    path = ""
+
+                for file in files:
+                    file["origin"] = "usb"
+                    file["refs"] = { "resource": "/api/plugins/lui/" }
+
+                    if file["type"] == "folder":
+                        file["children"] = analyse_recursively(file["children"].values(), path + file["name"] + "/")
+                    elif file["type"] == "firmware":
+                        file["refs"]["local_path"] = os.path.join(self.media_folder, path + file["name"])
+
+                return files
+
+            analyse_recursively(files)
+
+            return jsonify(files=files)
+        else:
+            # Return original OctoPrint API response
+            
+            if path and octoprint.filemanager.valid_file_type(path, type="machinecode"):
+                # File
+                return octoprint.server.api.files.readGcodeFile(origin, path)
+            else:
+                # Folder
+                return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
+
+    @BlueprintPlugin.route("/files/<string:target>/<path:filename>", methods=["GET"])
+    def readGcodeFile(target, filename):
+        """ 
+        Alias for gcode files requests from OctoPrints
+        """
+        return octoprint.server.api.files.readGcodeFile(target, filename)
+
+    @BlueprintPlugin.route("/files/select/<string:origin>/<path:path>", methods=["POST"])
+    def select_file(self, origin, path):
+        """
+        Selects a file to be printed. Intened for non-local origins (usb, cloud ...)
+        """
+        if origin == "cloud":
+            return self._select_cloud_file(path)
+        elif origin == "usb":
+            return self._select_usb_file(path)
+
+    @BlueprintPlugin.route("/files/unselect", methods=["POST"])
+    def unselect_file(self):
+        """
+        Resets the currently selected file to None
+        """
+        self._printer.unselect_file()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/files/delete_all", methods=["POST"])
+    def delete_all_uploads(self):
+        """
+        Deletes all gcode files in the uploads folder
+        """
+        # Find the filename of the current print job
+        selectedfile = None
+
+        if self._printer._selectedFile:
+            selectedfile = self._printer._selectedFile["filename"]
+
+
+        # Get the full path to the uploads folder
+        uploads_folder = self._settings.global_get_basefolder("uploads")
+
+        has_failed = False
+
+        # Walk through all files
+        for filename in os.listdir(uploads_folder):
+            if filename == selectedfile:
+                continue
+
+            file_path = os.path.join(uploads_folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path): shutil.rmtree(file_path) # Recursively delete all files in subfolders
+            except Exception as e:
+                self._logger.exception("Could not delete file: %s" % filename)
+                has_failed = True
+
+        if has_failed:
+            return make_response(jsonify(result = "Could not delete all files"), 500)
+        else:
+            return make_response(jsonify(result = "OK"), 200);
+
+    ## Timelapse API
+
+    @BlueprintPlugin.route("/timelapse/delete_all", methods=["POST"])
+    def delete_all_timelapses(self):
+        # Get the full path to the uploads folder
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+
+        has_failed = False
+
+        # Walk through all files
+        for filename in os.listdir(timelapse_folder):
+            file_path = os.path.join(timelapse_folder, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                # Don't remove subfolders as they may contain images for current renders. OctoPrint handles their removal.
+                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
+            except Exception as e:
+                self._logger.exception("Could not delete file: %s" % filename)
+                has_failed = True
+
+        if has_failed:
+            return make_response(jsonify(result = "Could not delete all files"), 500)
+        else:
+            return make_response(jsonify(result = "OK"), 200);
+
+    ## USB Api
+
+    @BlueprintPlugin.route("/usb", methods=["GET"])
+    def get_usb(self):
+        """ 
+        Returns { isMediaMounted: bool } , indicating whether a USB stick is inserted and mounted.
+        """
+        return make_response(jsonify({
+            "isMediaMounted": self.is_media_mounted
+            }), 200)
+
+    @BlueprintPlugin.route("/usb/save/<string:source_type>/<path:path>", methods=["POST"])
+    def save_to_usb(self, source_type, path):
+        """
+        Saves a file to the usb drive. source_type must be either 'gcode', 'timelapse' or 'log'
+        """
+        if source_type == "gcode":
+            return self._copy_gcode_to_usb(path)
+        elif source_type == "timelapse":
+            return self._save_timelapse_to_usb(path)
+        elif source_type == "log":
+            return self._copy_log_to_usb(path)
+
+
+    # End API
 
     def _notify_firmware_update(self, silent = False):
 
@@ -908,21 +1663,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # By default return success
         return True
 
-
-    @BlueprintPlugin.route("/firmware/update", methods=["POST"])
-    def do_firmware_update(self):
-        if self.fw_version_info:
-            fw_path = self.firmware_update_info.download_firmware(self.fw_version_info["url"])
-            if fw_path:
-                if self.flash_firmware_update(fw_path):
-                    return make_response(jsonify(), 200)
-                else:
-                    return make_response(jsonify({ "error": "Something went wrong while flashing the firmware update"}), 400)
-            else:
-                return make_response(jsonify({ "error": "An error occured while downloading the firmware update" }), 400)
-        else:
-            return make_response(jsonify({ "error": "No firmware update available" }), 400)
-
     def flash_firmware_update(self, firmware_path):
         flash_plugin = self._plugin_manager.get_plugin('flasharduino')
 
@@ -943,59 +1683,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self._logger.warning("Could not flash firmware. FlashArduino plugin not loaded.")
 
-    @BlueprintPlugin.route("/update", methods=["GET"])
-    def get_updates(self):
-        # Not the complete update_info array has to be send to front end
-        update_frontend = self._create_update_frontend(self.update_info)
-
-        # Only update if we passed 30 min since last fetch or if we are forced
-        force = request.values.get("force", "false") in valid_boolean_trues
-        current_time = time.time()
-        cache_time_expired = (current_time - self.last_git_fetch) > 3600
-
-        # First check if there's any forced update we need to execute
-        # If so, return the cache of updates
-        if self._perform_forced_updates():
-            self._logger.debug("Performing forced updates. Not fetching.")
-        elif not cache_time_expired and not force:
-            self._logger.debug("Cache time of updates not expired, so not fetching updates yet")
-        elif not self.fetching_updates:
-            self._logger.debug("Cache time expired or forced to fetch gits. Start fetch worker.")
-            self._fetch_update_info_list(force)
-            return make_response(jsonify(status="fetching", update=update_frontend, machine_info=self.machine_info), 200)
-
-        # By default return the cache
-        return make_response(jsonify(status="cache", update=update_frontend, machine_info=self.machine_info), 200)
-
-    @BlueprintPlugin.route("/update", methods=["POST"])
-    def do_updates(self):
-        plugin = request.json["plugin"]
-        update_info = self.update_info
-        plugin_names = [update['name'] for update in update_info]
-        if plugin == "all":
-            # Updating all plugins
-            # Start update thread with all updates
-            self._logger.debug("Starting update of all installed plugins")
-            self._update_plugins(plugin)
-            # Send to front end that we started updating
-            return make_response(jsonify(status="updating", text="Starting update of all modules"), 200)
-            pass
-        elif plugin:
-            # Going to update only a single plugin part this is for debugging purpouse only
-            # Check if plugin is installed:
-            if plugin not in plugin_names:
-                #if not return a fail
-                self._logger.debug("{plugin} seemed to not be installed".format(plugin=plugin))
-                return make_response("Failed to start update of plugin: {plugin}. Not installed.".format(plugin=plugin), 400)
-            self._logger.debug("Starting update of {plugin}".format(plugin=plugin))
-            # Send updating to front end
-            self._update_plugins(plugin)
-            return make_response(jsonify(status="updating", text="Starting update of {plugin}".format(plugin=plugin)), 200)
-
+    def _check_version_requirement(self, current_version, requirement):
+        """Helper function that checks if a given version matches a version requirement"""
+        if requirement.startswith('<='):
+            return StrictVersion(current_version) <= StrictVersion(requirement[2:])
+        elif requirement.startswith('<'):
+            return StrictVersion(current_version) < StrictVersion(requirement[1:])
+        elif requirement.startswith('>='):
+            return StrictVersion(current_version) >= StrictVersion(requirement[2:])
+        elif requirement.startswith('>'):
+            return StrictVersion(current_version) > StrictVersion(requirement[1:])
+        elif requirement.startswith('=='):
+            return StrictVersion(current_version) == StrictVersion(requirement[2:])
+        elif requirement.startswith('='):
+            return StrictVersion(current_version) == StrictVersion(requirement[1:])
         else:
-            # We didn't get a plugin, should never happen
-            self._logger.debug("No plugin given! Can't update that.")
-            return make_response("No plugin given, can't update", 400)
+            return StrictVersion(current_version) == StrictVersion(requirement)
 
     def _perform_forced_updates(self):
         """ 
@@ -1357,49 +2060,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_preemptive_caching_enabled(self):
         return True
 
-    ## Settings API
-
-    @BlueprintPlugin.route("/settings", methods=["GET"])
-    def get_settings(self):
-        """
-        Returns a stripped down version of the OctoPrint settings, extended with the current autoshutdown setting.
-        """
-        s = self._settings
-
-        data = {
-            "appearance": {
-                "name": s.global_get(["appearance", "name"]),
-                "defaultLanguage": s.global_get(["appearance", "defaultLanguage"])
-            },
-            "feature": {
-                "modelSizeDetection": s.global_get_boolean(["feature", "modelSizeDetection"]),
-            },
-            "serial": {
-                "autoconnect": s.global_get_boolean(["serial", "autoconnect"]),
-                "log": s.global_get_boolean(["serial", "log"]),
-            },
-            "temperature": {
-                "profiles": s.global_get(["temperature", "profiles"]),
-                "cutoff": s.global_get_int(["temperature", "cutoff"])
-            },
-            "terminalFilters": s.global_get(["terminalFilters"]),
-            "server": {
-                "diskspace": {
-                    "warning": s.global_get_int(["server", "diskspace", "warning"]),
-                    "critical": s.global_get_int(["server", "diskspace", "critical"])
-                }
-            },
-            "plugins": {
-                "lui": {
-                    "actionDoor": s.getBoolean(["action_door"]),
-                    "actionFilament": s.getBoolean(["action_filament"]),
-                    "zoffset": s.getFloat(["zoffset"]),
-                    "autoShutdown": self.auto_shutdown,
-                }
-            }
-        }
-
-        return make_response(jsonify(data), 200)
+    
 
     def _firmware_update_required(self):
 
@@ -1429,17 +2090,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.warn('Unable to compare firmware versions. Probably firmware doesn\'t send version correctly. Requiring update.')
             return True # Unable to check, require a firmware update
 
-    def get_api_commands(self):
-            return dict(
-                    
-                    delete_all_timelapses = [],
-                    
-            )
-
-    def on_api_command(self, command, data):
-        # Data already has command in, so only data is needed
-        return self._call_api_method(**data)
-
     def _immediate_cancel(self, cancel_print = True):
         self._logger.debug("Immediate cancel")
 
@@ -1454,82 +2104,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.cancel_print()
 
     
-    @BlueprintPlugin.route("/maintenance/bed/calibrate/start", methods=["POST"])
-    def calibration_bed_start(self):
-        """
-        Starts the bed calibration procedure by preparing the printer for the calibration
-        """
-        self.set_print_mode('fullcontrol')
-
-        self._set_movement_mode("absolute")
-        self._printer.home(['x', 'y', 'z'])
-        self._printer.change_tool("tool1")
-        self.manual_bed_calibration_tool = "tool1"
-        self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/maintenance/bed/calibrate/move_to_position/<string:corner_name>", methods=["POST"])
-    def calibration_bed_move_to_position(self, corner_name):
-        """
-        Moves the heads to the given corners
-        """
-        corner = self.manual_bed_calibration_positions[corner_name]
-        self._printer.commands(['G1 Z5 F600'])
-
-        if corner["mode"] == 'fullcontrol' and not self.print_mode == "fullcontrol":
-            self.set_print_mode('fullcontrol')
-            self._printer.home(['x'])
-        elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
-            self.set_print_mode('mirror')
-            self._printer.home(['x'])
-
-        if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
-            self._printer.home(['x'])
-            self._printer.change_tool(corner["tool"])
-            self.manual_bed_calibration_tool = corner["tool"]
-
-        self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])])
-        self._printer.commands(['G1 Z0 F600'])
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/maintenance/bed/calibrate/finish", methods=["POST"])
-    def calibration_bed_finish(self):
-        """
-        Finishes the bed calibration by homing the x and y axis
-        """
-        self._printer.commands(['G1 Z5 F600'])
-        self.set_print_mode('normal')
-        self._printer.home(['y', 'x'])
-
-        if self.current_printer_profile["defaultStepperTimeout"]:
-            self._printer.commands(["M84 S{0}".format(self.current_printer_profile["defaultStepperTimeout"])]) # Reset stepper disable timeout
-            self._printer.commands(["M84"]) # And disable them right away for now
-
-
-        self.restore_movement_mode()
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/maintenance/head/calibrate/start/<string:calibration_type>", methods=["POST"])
-    def calibration_head_start(self, calibration_type):
-        """
-        Starts the calibration of the extruders, calibration_type gives which calibration step 
-        """
-        self.calibration_type = calibration_type
-
-        self._disable_timelapse()
-
-        if calibration_type == "bed_width_small":
-            calibration_src_filename = "bolt_bedwidthcalibration_100um.gcode"
-        elif calibration_type == "bed_width_large":
-            calibration_src_filename = "bolt_bedwidthcalibration_1mm.gcode"
-
-        abs_path = self._copy_calibration_file(calibration_src_filename)
-
-        if abs_path:
-            self.set_print_mode('normal')
-            self._preheat_for_calibration()
-            self._printer.select_file(abs_path, False, True)
-        return make_response(jsonify(), 200)
+    
 
     def _preheat_for_calibration(self):
         target_bed_temp = 0
@@ -1595,284 +2170,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.calibration_type = None
             self._restore_timelapse()
 
-    @BlueprintPlugin.route("/maintenance/head/calibrate/set_values", methods=["POST"])
-    def calibration_head_set_values(self):
-        """
-        Sets the calibration values in the firmware
-        """
-        data = request.json
-        width_correction = data.get("width_correction")
-        extruder_offset_y = data.get("extruder_offset_y")
-        persist = data.get("persist")
-
-        self._logger.debug("Setting {0} calibration values: {1}, {2}".format("persisting" if persist else "non-persisting",width_correction, extruder_offset_y))
-
-        #TODO: Consider changing firmware to accept positive value for S (M115, M219 and EEPROM_printSettings)
-        self._printer.commands("M219 S%f" % -width_correction)
-        self._printer.commands("M50 Y%f" % extruder_offset_y)
-
-        if persist:
-            # Store settings and read back from machine
-            self._printer._comm.sendCommand("M500", on_sent = self._get_firmware_info)
-        else:
-            # Read the settings back from the machine
-            self._get_firmware_info()
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/maintenance/head/calibrate/restore_values", methods=["POST"])
-    def calibration_head_restore_values(self):
-        """
-        Requests the values from the firmware
-        """
-        # Read back from machine (which may constrain the correction value)
-        # We don't want the M501 response to interferere with the M115, which is why on_sent is used (which requires an acknowledge)
-        self._printer._comm.sendCommand("M501", on_sent = self._get_firmware_info)
-        return make_response(jsonify(), 200)
-
-    ## Filament API
-
-    @BlueprintPlugin.route("/filament", methods=["GET"])
-    def get_filament(self):
-        """
-        Returns a JSON response with the currently loaded filaments per tool
-        """
-        return make_response(jsonify({ "filaments": self._get_current_filaments() }), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>", methods=["POST"])
-    def set_filament(self, tool):
-        """
-        Overrides the currently loaded filament materials and amounts
-        """
-        data = request.json
-        amount = data.get("amount", 0)
-        materialProfileName = data.get("materialProfileName")
-
-        # Update the filament amount that is logged in the machine
-        if not materialProfileName or materialProfileName == "None":
-            update_profile = {
-                "amount": 0,
-                "material": self.default_material
-            }
-        else:
-            selectedProfile = self._get_profile_from_name(materialProfileName)
-            update_profile = {
-                "amount": amount,
-                "material": selectedProfile
-            }
-
-        self.set_filament_profile(tool, update_profile)
-        self.update_filament_amount()
-        self.send_client_filament_amount()
-
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/change/start", methods=["POST"])
-    def change_filament_start(self, tool):
-        """
-        Starts the change filament procedure, by setting the state variables server side and initiating the filament unload sequence. 
-        """
-        # Send to the front end that we are currently changing filament.
-        if self._printer.is_paused():
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_IN_PROGRESS, { "paused_materials": self.paused_materials })
-        else:
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_IN_PROGRESS)
-
-        # If paused, we need to restore the current parameters after the filament swap
-        self.paused_filament_swap = self._printer.is_paused()
-
-        # Set filament change tool and profile
-        self.filament_change_tool = tool
-        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
-        self._printer.change_tool(tool)
-
-        self.move_to_filament_load_position()
-
-        # Check if filament is loaded, if so report to front end.
-        if (self.filament_loaded_profile['material']['name'] == 'None'):
-            # No filament is loaded in this tool, directly continue to load section
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_SKIP_UNLOAD)
-
-        self._logger.info("Start change filament called with tool: {tool}, profile: {profile}".format(tool=tool, profile=self.filament_loaded_profile['material']['name']))
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/change/unload", methods=["POST"])
-    def change_filament_unload(self, tool):
-        """
-        The first step after starting the filament change procedure:
-        preheats and unloads the filament from the extruder
-        """
-        # Heat up to old profile temperature and unload filament
-        temp = int(self.filament_loaded_profile['material']['extruder'])
-        self.heat_to_temperature(self.filament_change_tool,
-                                temp,
-                                self.unload_filament)
-
-        self._logger.debug("Unload filament called")
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/change/load", methods=["POST"])
-    def change_filament_load(self, tool):
-        """
-        Preheats and loads the filament into the extruder.
-        Request: { loadFor, materialProfileName, amount }
-        """
-        data  = request.json
-        loadFor = data.get("loadFor", "swap")
-        materialProfileName = data.get("materialProfileName")
-        amount = data.get("amount", 0)
-
-        selectedProfile = None
-
-        if loadFor == "filament-detection" or loadFor == "filament-detection-purge":
-            # Get stored profile when filament detection was hit
-            selectedProfile = self.filament_detection_profile
-            temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
-        elif loadFor == "purge":
-            # Select current profile
-            selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
-            temp = int(selectedProfile['extruder'])
-        else:
-            if not materialProfileName or materialProfileName == "None":
-                # The user wants to load a None profile. So we just finish the swap wizard
-                self._send_client_message(ClientMessages.FILAMENT_CHANGE_FINISHED, { "profile": None })
-                return make_response(jsonify(), 200)
-
-            # Find profile from key
-            selectedProfile = self._get_profile_from_name(materialProfileName)
-            temp = int(selectedProfile['extruder'])
-
-        # Heat up to new profile temperature and load filament
-        self.filament_change_profile = selectedProfile
-
-        if loadFor == "filament-detection-purge" or loadFor == "purge":
-            self.filament_amount = self.get_filament_amount()
-            tool_num = int(self.filament_change_tool[len("tool"):])
-            self.filament_change_amount = self.filament_amount[tool_num]
-            self.loading_for_purging = True
-        else:
-            self.loading_for_purging = False
-            self.filament_change_amount = amount
-
-        self._logger.debug("Load filament called with profile {profile}, tool {tool}, amount {amount}".format(profile=selectedProfile, tool=self.filament_change_tool, amount=self.filament_change_amount))
-
-        self.heat_to_temperature(self.filament_change_tool,
-                                temp,
-                                self.load_filament)
-
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/extrude/start", methods=["POST"])
-    def extrude_start(self, tool):
-        """
-        Begins continuous purging of the extruder. 
-        Request: { direction (-1 or +1) }
-        """
-        data = request.json
-        direction = data.get("direction", 1)
-
-        # Limit input to positive or negative, no multiplication factors allowed here
-        if direction < 0:
-            direction = -1
-        elif direction >= 0:
-            direction = 1
-
-        self.load_filament_cont(tool, direction)
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/extrude/finish", methods=["POST"])
-    def extrude_finish(self, tool):
-        """
-        Stops continuous purging of the extruder. 
-        """
-
-        if self.load_filament_timer:
-            self.load_filament_timer.cancel()
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/change/finish", methods=["POST"])
-    def change_filament_finish(self, tool):
-        # Still don't know if this is the best spot TODO
-        if self.load_filament_timer:
-            self.load_filament_timer.cancel()
-
-        context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
-                    "pausedFilamentSwap": self.paused_filament_swap
-                    }
-
-        self._execute_printer_script("change_filament_done", context)
-
-        self._restore_after_load_filament()
-        self._logger.debug("Finish change filament called")
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/change/cancel", methods=["POST"])
-    def change_filament_cancel(self, tool):
-        """
-        Abort mission! Stop filament loading.
-        Cancel all heat up and reset
-        """
-
-        # Loading has already started, so just cancel the loading, which will stop heating already.
-        context = { "filamentAction": self.filament_action,
-                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
-                    "pausedFilamentSwap": self.paused_filament_swap
-                    }
-
-        self._immediate_cancel(False)
-
-        self._execute_printer_script("change_filament_done", context)
-
-        if self.load_filament_timer:
-            self.load_filament_timer.cancel()
-        # Other wise we haven't started loading yet, so cancel the heating
-        # and clear all callbacks added to the heating.
-        else:
-            with self.callback_mutex:
-                del self.callbacks[:]
-            self._restore_after_load_filament()
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELED)
-
-        self._logger.debug("Cancel change filament called")
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/detection/stop_timer", methods=["POST"])
-    def filament_detection_stop_timer(self, tool):
-        """
-        Stops the filament detection temperature safety timer
-        """
-
-        if self.temperature_safety_timer:
-            self.temperature_safety_timer.cancel()
-            self.temperature_safety_timer = None
-            self._send_client_message(ClientMessages.TEMPERATURE_SAFETY, { "timer": self.temperature_safety_timer_value })
-
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/detection/finish", methods=["POST"])
-    def filament_detection_finish(self, tool):
-        """
-        Finishes the filament detection wizard, resets target temperaturess
-        """
-        if self.filament_detection_tool_temperatures:
-            for tool, data in self.filament_detection_tool_temperatures.items():
-                if tool != 'time':
-                    self._printer.set_temperature(tool, data['target'])
-
-            self._logger.info("Filament detection complete. Restoring temperatures: {temps}".format(temps = self.filament_detection_tool_temperatures))
-            self.filament_detection_tool_temperatures = None
-
-        self.restore_z_after_filament_load()
-        self._printer.toggle_pause_print()
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/filament/<string:tool>/detection/cancel", methods=["POST"])
-    def filament_detection_cancel(self, tool):
-        """
-        Cancels the print if there was a "filament detection". Does not stop the temperature timer!
-        """
-        self._printer.cancel_print()
-        return make_response(jsonify(), 200)
+    
 
     def _get_current_materials(self):
         """ Returns a dictionary of the currently loaded materials """
@@ -1890,15 +2188,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
 
-    @BlueprintPlugin.route("/maintenance/head/swap/start", methods=["POST"])
-    def maintenance_swap_head_start(self):
-        """
-        Moves heads to maintenance position
-        """
-        self._execute_printer_script('head_maintenance_position', { "currentZ": self._printer._currentZ })
-        self.wait_for_maintenance_position = True
-        self._printer.commands(['M400']) #Wait for movements to complete
-        return make_response(jsonify(), 200)
+   
 
     def _execute_printer_script(self, script_name, context = None):
         """
@@ -1957,240 +2247,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.is_homed = False #Reset is_homed, so LUI waits for a G28 complete, and then sends UI update
         self._printer.home(['x','y','z'])
 
-    @BlueprintPlugin.route("/maintenance/head/swap/finish", methods=["POST"])
-    def maintenance_head_swap_finish(self, *args, **kwargs):
-        if self.powerbutton_handler:
-            self._power_up_after_maintenance()
-        else:
-            self._printer.home(['x','y','z'])
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/maintenance/bed/clean/start", methods=["POST"])
-    def maintenance_bed_clean_start(self):
-        """
-        Moves bed to cleaning position
-        """
-        self._move_to_bed_maintenance_position()
-        return make_response(jsonify(), 200)
-
-    ## Printer API
-    @BlueprintPlugin.route("/printer/start_print/<string:mode>", methods=["POST"])
-    def start_print(self, mode):
-        """
-        Sends a M605 command to the printer to initiate the given print mode and starts the currently selected job afterwards.
-        """
-        
-        self.set_print_mode(mode)
-        self._printer.start_print()
-
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer", methods=["GET"])
-    def get_printer_info(self):
-        """
-        Returns information about the printer state, whether it is homed and whether it is in an error state.
-        {
-        isHomed: bool,
-        isHoming: bool,
-        printerErrorReason: string,
-        printerErrorExtruder: string
-        }
-        """
-        return make_response(jsonify({
-                'isHomed': self.is_homed,
-                'isHoming': self.is_homing,
-                'printerErrorReason': self.printer_error_reason,
-                'printerErrorExtruder': self.printer_error_extruder
-                }), 200)
-
-    @BlueprintPlugin.route("/printer/machine_info", methods=["GET"])
-    def get_machine_info(self):
-        """
-        Returns information provided by the machine's firmware
-        """
-        return make_response(jsonify({
-                'machine_info': self.machine_info
-                }), 200)
-
-    @BlueprintPlugin.route("/printer/homing/start", methods=["POST"])
-    def homing_start(self):
-        """
-        Begins the homing procedure, required on startup of the printer
-        """ 
-        self._printer.commands('G28')
-        self._send_client_message(ClientMessages.IS_HOMING)
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer/reconnect", methods=["POST"])
-    def printer_reconnect(self):
-        """
-        Tries to reconnect the printer after an error has occurred (will also try to send a M999)
-        """
-        self.send_M999_on_reconnect = True
-        self._printer.connect()
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer/notify_intended_disconnect", methods=["POST"])
-    def notify_intended_disconnect(self):
-        """
-        Notifies that a disconnect of the printer was intended. Useful for maintenance procedures.
-        """
-        self.intended_disconnect = True
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer/immediate_cancel", methods=["POST"])
-    def immediate_cancel(self):
-        """
-        Tries to break the firmware out of the heating loop (with M108) and cancels the current print job.
-        """
-        self._immediate_cancel()
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer/auto_shutdown/<string:toggle>", methods=["POST"])
-    def auto_shutdown_toggle(self, toggle):
-        """
-        Sets auto-shutdown either on or off
-        """
-        self.auto_shutdown = toggle == "on"
-        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TOGGLE, { "toggle" : self.auto_shutdown })
-        self._logger.info("Auto shutdown set to {toggle}".format(toggle="on" if self.auto_shutdown else "off"))
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer/auto_shutdown/cancel", methods=["POST"])
-    def auto_shutdown_cancel(self):
-        # User cancelled timer. So cancel the timer and send to front-end to close flyout.
-        if self.auto_shutdown_timer:
-            self.auto_shutdown_timer.cancel()
-            self.auto_shutdown_timer = None
-        self.auto_shutdown_after_movie_done = False
-        self._send_client_message(ClientMessages.AUTO_SHUTDOWN_TIMER_CANCELLED)
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer/debugging_action", methods=["POST"])
-    def debugging_action(self):
-        """
-        Allows to trigger something in the back-end. Wired to the logo on the front-end. 
-        """
-        self._printer.commands(['!!DEBUG:mintemp_error0']) # Lets the virtual printer send a MINTEMP message which brings the printer in error state
-        return make_response(jsonify(), 200)
-
-    ## Files API
-
-    @BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)
-    @BlueprintPlugin.route("/files/<string:origin>", methods=["GET"], strict_slashes=False)
-    def get_files(self, origin, path = None):
-        """
-        A wrapper around OctoPrint's get_files. Also returns file lists for origins usb and cloud.
-        """ 
-        if origin == "cloud":
-            files = self.cloud_storage.list_files(path, filter=self.browser_filter, recursive=False)
-            return jsonify(files=files)
-        elif(origin == "usb"):
-            # Read USB files pretty much like an SD card
-            # Alternative:
-            # files = self.usb_storage.list_files(recursive = True).values()
-
-            if("filter" in request.values and request.values["filter"] == "firmware"):
-                filter = self.browser_filter_firmware
-            else:
-                filter = self.browser_filter
-
-            try:
-                files = octoprint.server.fileManager.list_files("usb", filter=filter, recursive = True)["usb"].values()
-            except Exception as e:
-                self._logger.exception("Could not access the media folder", e.message)
-                return make_response("Could not access the media folder", 500)
-
-
-            # Decorate them
-            def analyse_recursively(files, path=None):
-                if path is None:
-                    path = ""
-
-                for file in files:
-                    file["origin"] = "usb"
-                    file["refs"] = { "resource": "/api/plugins/lui/" }
-
-                    if file["type"] == "folder":
-                        file["children"] = analyse_recursively(file["children"].values(), path + file["name"] + "/")
-                    elif file["type"] == "firmware":
-                        file["refs"]["local_path"] = os.path.join(self.media_folder, path + file["name"])
-
-                return files
-
-            analyse_recursively(files)
-
-            return jsonify(files=files)
-        else:
-            # Return original OctoPrint API response
-            
-            if path and octoprint.filemanager.valid_file_type(path, type="machinecode"):
-                # File
-                return octoprint.server.api.files.readGcodeFile(origin, path)
-            else:
-                # Folder
-                return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
-
-    @BlueprintPlugin.route("/files/<string:target>/<path:filename>", methods=["GET"])
-    def readGcodeFile(target, filename):
-        """ 
-        Alias for gcode files requests from OctoPrints
-        """
-        return octoprint.server.api.files.readGcodeFile(target, filename)
-
-    @BlueprintPlugin.route("/files/select/<string:origin>/<path:path>", methods=["POST"])
-    def select_file(self, origin, path):
-        """
-        Selects a file to be printed. Intened for non-local origins (usb, cloud ...)
-        """
-        if origin == "cloud":
-            return self._select_cloud_file(path)
-        elif origin == "usb":
-            return self._select_usb_file(path)
-
-    @BlueprintPlugin.route("/files/unselect", methods=["POST"])
-    def unselect_file(self):
-        """
-        Resets the currently selected file to None
-        """
-        self._printer.unselect_file()
-        return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/files/delete_all", methods=["POST"])
-    def delete_all_uploads(self):
-        """
-        Deletes all gcode files in the uploads folder
-        """
-        # Find the filename of the current print job
-        selectedfile = None
-
-        if self._printer._selectedFile:
-            selectedfile = self._printer._selectedFile["filename"]
-
-
-        # Get the full path to the uploads folder
-        uploads_folder = self._settings.global_get_basefolder("uploads")
-
-        has_failed = False
-
-        # Walk through all files
-        for filename in os.listdir(uploads_folder):
-            if filename == selectedfile:
-                continue
-
-            file_path = os.path.join(uploads_folder, filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path): shutil.rmtree(file_path) # Recursively delete all files in subfolders
-            except Exception as e:
-                self._logger.exception("Could not delete file: %s" % filename)
-                has_failed = True
-
-        if has_failed:
-            return make_response(jsonify(result = "Could not delete all files"), 500)
-        else:
-            return make_response(jsonify(result = "OK"), 200);
+    
 
     def _select_cloud_file(self, path):
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
@@ -2347,53 +2404,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         r.headers["Location"] = location
 
         return r
-
-       
-
-    def _on_api_command_delete_all_timelapses(self, *args, **kwargs):
-        # Get the full path to the uploads folder
-        timelapse_folder = self._settings.global_get_basefolder("timelapse")
-
-        has_failed = False
-
-        # Walk through all files
-        for filename in os.listdir(timelapse_folder):
-            file_path = os.path.join(timelapse_folder, filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                # Don't remove subfolders as they may contain images for current renders. OctoPrint handles their removal.
-                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
-            except Exception as e:
-                self._logger.exception("Could not delete file: %s" % filename)
-                has_failed = True
-
-        if has_failed:
-            return make_response(jsonify(result = "Could not delete all files"), 500)
-        else:
-            return make_response(jsonify(result = "OK"), 200);
-
-    ## USB Api
-    @BlueprintPlugin.route("/usb", methods=["GET"])
-    def get_usb(self):
-        """ 
-        Returns { isMediaMounted: bool } , indicating whether a USB stick is inserted and mounted.
-        """
-        return make_response(jsonify({
-            "isMediaMounted": self.is_media_mounted
-            }), 200)
-
-    @BlueprintPlugin.route("/usb/save/<string:source_type>/<path:path>", methods=["POST"])
-    def save_to_usb(self, source_type, path):
-        """
-        Saves a file to the usb drive. source_type must be either 'gcode', 'timelapse' or 'log'
-        """
-        if source_type == "gcode":
-            return self._copy_gcode_to_usb(path)
-        elif source_type == "timelapse":
-            return self._save_timelapse_to_usb(path)
-        elif source_type == "log":
-            return self._copy_log_to_usb(path)
 
     def _copy_gcode_to_usb(self, filename):
         if not self.is_media_mounted:
@@ -3580,16 +3590,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.warn("Shutdown stdout:\n%s" % e.stdout)
             self._logger.warn("Shutdown stderr:\n%s" % e.stderr)
             raise exceptions.RestartFailed()
-
-
-    ##~ Helper method that calls api defined functions
-    def _call_api_method(self, command, *args, **kwargs):
-        """Call the method responding to api command"""
-
-        name = "_on_api_command_{}".format(command)
-        method = getattr(self, name, None)
-        if method is not None and callable(method):
-            return method(*args, **kwargs)
 
     def _call_hooks(self, hooks, *args, **kwargs):
         """ For a given list of callable hooks, executes them all with given args """

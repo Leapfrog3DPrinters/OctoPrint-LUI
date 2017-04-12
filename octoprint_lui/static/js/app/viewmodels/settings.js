@@ -476,12 +476,6 @@ $(function () {
 
         };
 
-        // Api send functions
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
         // Translations code
 
         self.translations = new ItemListHelper(

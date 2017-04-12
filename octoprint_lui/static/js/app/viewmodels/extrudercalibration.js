@@ -70,7 +70,7 @@ $(function ()  {
             // First set calibration at 0, 0
             self.setCalibration(0, 0, false).done(function ()  {
                 console.log("Calibration set to 0, 0");
-                self._sendBlueprintApi("maintenance/head/calibrate/start/bed_width_large");
+                sendToApi("maintenance/head/calibrate/start/bed_width_large");
             });
 
         };
@@ -86,7 +86,7 @@ $(function ()  {
             // Send the large bed width correction to the printer and print the small calibration
             self.setCalibration(self.largeBedWidthCorrection(), 0, false).done(function ()  {
                 console.log("Calibration set to " + self.largeBedWidthCorrection() + ", 0");
-                self._sendBlueprintApi("maintenance/head/calibrate/start/bed_width_small");
+                sendToApi("maintenance/head/calibrate/start/bed_width_small");
             });
 
         };
@@ -107,7 +107,7 @@ $(function ()  {
         };
 
         self.restoreCalibration = function ()  {
-            return self._sendBlueprintApi("maintenance/head/calibrate/restore_values");
+            return sendToApi("maintenance/head/calibrate/restore_values");
         };
 
         self.changeLargeBedWidthCalibration = function(value)
@@ -127,7 +127,7 @@ $(function ()  {
 
         self.setCalibration = function(width_correction, extruder_offset_y, persist)
         {
-            return self._sendBlueprintApi("maintenance/head/calibrate/set_values",
+            return sendToApi("maintenance/head/calibrate/set_values",
                 {
                     width_correction: width_correction,
                     extruder_offset_y: extruder_offset_y,
@@ -199,17 +199,6 @@ $(function ()  {
 
             if (response.machine_info.extruder_offset_y)
                 self.smallYAxisCorrection(parseFloat(response.machine_info.extruder_offset_y));
-        };
-
-        self._sendBlueprintApi = function (urlSuffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
-            return OctoPrint.postJson(url, data);
-        };
-
-        //TODO Replace by sendBlueprintApi
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
         };
 
         self.onAfterBinding = function ()  {

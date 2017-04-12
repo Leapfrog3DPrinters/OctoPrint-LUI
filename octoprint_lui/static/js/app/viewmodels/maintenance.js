@@ -50,7 +50,7 @@ $(function () {
         };
 
         self.afterHeadMaintenance = function () {
-            self._sendApi("maintenance/head/swap/finish");
+            sendToApi("maintenance/head/swap/finish");
         };
 
         self.afterMaintenance = function()
@@ -72,7 +72,7 @@ $(function () {
         };
 
         self.moveToCleanBedPosition = function () {
-            self._sendApi("maintenance/bed/clean/start").done(function ()  {
+            sendToApi("maintenance/bed/clean/start").done(function ()  {
                 $.notify({ title: gettext("Clean bed"), text: gettext("The printer is moving towards the clean bed position.") }, "success");
             });
         };
@@ -98,7 +98,7 @@ $(function () {
             }
 
             // From here only executed if temperatures are < 50, or heat check is ignored
-            self._sendApi("maintenance/head/swap/start");
+            sendToApi("maintenance/head/swap/start");
 
             self.movingToMaintenancePositionInfo = self.flyout.showInfo(gettext("Maintenance position"), gettext("The printhead is moving towards the maintenance position."), true);
         };
@@ -143,11 +143,6 @@ $(function () {
             $('#maintenance_control').addClass('active');
             $('#maintenance_filament').removeClass('active');
 
-        };
-
-        self._sendApi = function (urlSuffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
-            return OctoPrint.postJson(url, data);
         };
 
         // Handle plugin messages

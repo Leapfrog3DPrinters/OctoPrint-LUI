@@ -87,10 +87,6 @@ $(function () {
                 });
             }
         };
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
     }
 
     OCTOPRINT_VIEWMODELS.push([

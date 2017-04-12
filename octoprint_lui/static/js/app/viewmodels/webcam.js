@@ -215,7 +215,7 @@ $(function ()  {
 
             self.flyout.showConfirmationFlyout(dialog, true)
             .done(function ()  {
-                return self._sendApi({ command: 'delete_all_timelapses' })
+                return sendToApi("timelapse/delete_all")
                     .done(function ()  {
 
                         $.notify({
@@ -345,11 +345,6 @@ $(function ()  {
                 "success");
 
             self.requestData();
-        };
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
         };
 
         self.setProgressBar = function (percentage) {

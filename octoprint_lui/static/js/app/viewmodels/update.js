@@ -128,7 +128,7 @@ $(function ()  {
         };
 
         self.update = function (plugin) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "update";
+            var endpoint = "software/update";
 
             var text, question, title, name = "";
             if (_.isObject(plugin)) {
@@ -149,7 +149,7 @@ $(function ()  {
             var dialog = { 'title': title, 'text': text, 'question': question };
             self.flyout.showConfirmationFlyout(dialog)
                 .done(function () {
-                    OctoPrint.postJson(url, {"plugin":name})
+                    sendToApi(endpoint, { "plugin": name })
                         .done(function () {
                             self.showUpdateWarning();
                          }).fail(function () {
@@ -166,8 +166,8 @@ $(function ()  {
         self.firmwareUpdate = function()
         {
             self.firmwareUpdating(true);
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
-            OctoPrint.postJson(url)
+            var endpoint = "firmware/update";
+            sendToApi(endpoint)
                 .done(function () {
                     self.firmwareUpdateAvailable(false);
                 }).fail(function () {
@@ -332,38 +332,31 @@ $(function ()  {
 
         self.requestData = function (force) {
             var force = force || false;
-            var url = OctoPrint.getBlueprintUrl("lui") + "update";
-            OctoPrint.getWithQuery(url, {force: force})
-                .done(function(response){
-                    self.fromResponse(response);
-                });
+            //TODO: Refactor force to endpoint
+            getFromApi("software", { force: force }).done(self.fromResponse);
         };
 
-        self.requestChangelogData = function (from_startup, refesh)
-        {
+        self.requestChangelogData = function (from_startup, refesh) {
+            var endpoint = "software/changelog";
+
             if (refesh)
-                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog/refresh";
-            else
-                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog";
+                endpoint = endpoint + "/refresh";
 
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromChangelogResponse(response, from_startup);
-                });
-        }
+            getFromApi(endpoint).done(function (response) {
+                self.fromChangelogResponse(response, from_startup);
+            });
+        };
 
-        self.requestFirmwareData = function ()
-        {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware";
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromFirmwareResponse(response);
-                });
-        }
+        self.requestFirmwareData = function () {
+            getFromApi("firmware").done(self.fromFirmwareResponse);
+        };
 
         self.requestFirmwareUpdateData = function (silent) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update/" + (silent ? 'silent' : '');
-            OctoPrint.get(url, { silent: silent });
+            var endpoint = "firmware/update";
+            if (silent)
+                endpoint = endpoint + "/silent";
+
+            getFromApi(endpoint);
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -467,11 +460,6 @@ $(function ()  {
             self.firmwareRefreshing(false);
             $('#firmware_update_spinner').removeClass('fa-spin');
         }
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {

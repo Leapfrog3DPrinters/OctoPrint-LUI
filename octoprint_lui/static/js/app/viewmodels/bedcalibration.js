@@ -58,7 +58,7 @@ $(function ()  {
 
         self.startManualBedCalibration = function()
         {
-            self._sendApi("maintenance/bed/calibrate/start");
+            sendToApi("maintenance/bed/calibrate/start");
             self.showManualBedCalibration(true);
             self.mayAbort(false);
             self.mayAccept(true);
@@ -77,11 +77,11 @@ $(function ()  {
 
         self.moveToCorner = function(cornerNum)
         {
-            self._sendApi("maintenance/bed/calibrate/move_to_position/" + cornerNum);
+            sendToApi("maintenance/bed/calibrate/move_to_position/" + cornerNum);
         }
 
         self.restoreFromCalibrationPosition = function () {
-            self._sendApi("maintenance/bed/calibrate/finish");
+            sendToApi("maintenance/bed/calibrate/finish");
         }
 
         $('.bed-canvas-item').click(function ()  {
@@ -90,11 +90,6 @@ $(function ()  {
 
             self.moveToCorner($(this).data('corner'));
         });
-
-        self._sendApi = function (urlSuffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
-            return OctoPrint.postJson(url, data);
-        };
 
         self.updateAutoBedCalibrationProgress = function(maxCorrectionValue)
         {

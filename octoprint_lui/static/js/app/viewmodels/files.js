@@ -194,11 +194,6 @@ $(function ()  {
             return getFromApi("files/" + origin + "/" + path);
         }
 
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        }
-
         // initialize list helper
         self.listHelper = new ItemListHelper(
             "gcodeFiles",

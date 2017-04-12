@@ -549,13 +549,6 @@ $(function ()  {
             }
         }
 
-        // Api send functions
-        
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
-        };
-
         self.requestData = function ()  {
             self.refreshPrintPreview();
 

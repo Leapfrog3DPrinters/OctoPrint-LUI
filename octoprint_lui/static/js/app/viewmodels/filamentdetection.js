@@ -94,21 +94,16 @@ $(function ()  {
         }
 
         self._stopTempSafetyTimer = function () {
-            self._sendApi("filament/" + self.filament.tool() + "/detection/stop_timer");
+            sendToApi("filament/" + self.filament.tool() + "/detection/stop_timer");
         }
 
         self._finishFilamentDetectionApi = function ()  {
-            self._sendApi("filament/" + self.filament.tool() + "/detection/finish");
+            sendToApi("filament/" + self.filament.tool() + "/detection/finish");
         }
 
         self._cancelFilamentDetectionApi = function () {
-            self._sendApi("filament/" + self.filament.tool() + "/detection/cancel");
+            sendToApi("filament/" + self.filament.tool() + "/detection/cancel");
         }
-
-        self._sendApi = function (urlSuffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
-            return OctoPrint.postJson(url, data);
-        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {

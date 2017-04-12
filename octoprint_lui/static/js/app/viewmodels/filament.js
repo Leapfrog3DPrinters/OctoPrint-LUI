@@ -236,11 +236,11 @@ $(function ()  {
         };
 
         self.startChangeFilament = function (tool) {
-            return self._sendApi("filament/" + tool + "/change/start");
+            return sendToApi("filament/" + tool + "/change/start");
         }
 
         self.unloadFilament = function () {
-            return self._sendApi("filament/" + self.tool() + "/change/unload");
+            return sendToApi("filament/" + self.tool() + "/change/unload");
         }
 
         self.loadFilament = function (loadFor) {
@@ -272,7 +272,7 @@ $(function ()  {
                 materialProfileName = profile.name;
             }
 
-            return self._sendApi("filament/" + self.tool() + "/change/load",
+            return sendToApi("filament/" + self.tool() + "/change/load",
                 {
                     loadFor: loadFor,
                     materialProfileName: materialProfileName,
@@ -281,11 +281,11 @@ $(function ()  {
         }
 
         self.finishChangeFilament = function () {
-            return self._sendApi("filament/" + self.tool() + "/change/finish");
+            return sendToApi("filament/" + self.tool() + "/change/finish");
         }
 
         self.cancelChangeFilament = function () {
-            return self._sendApi("filament/" + self.tool() + "/change/cancel")
+            return sendToApi("filament/" + self.tool() + "/change/cancel")
                 .done(self.requestData);
         }
 
@@ -304,7 +304,7 @@ $(function ()  {
                 amount = 0;
             }
 
-            self._sendApi("filament/" + tool, {
+            sendToApi("filament/" + tool, {
                 amount: amount,
                 materialProfileName: materialProfileName
             }).done(function () {
@@ -332,14 +332,14 @@ $(function ()  {
         }
 
         self.startExtruding = function ()  {
-            self._sendApi("filament/" + self.tool() + "/extrude/start",
+            sendToApi("filament/" + self.tool() + "/extrude/start",
                 {
                     direction: 1
                 });
         }
 
         self.finishExtruding = function ()  {
-            self._sendApi("filament/" + self.tool() + "/extrude/finish");
+            sendToApi("filament/" + self.tool() + "/extrude/finish");
         }
 
         // Handle plugin messages
@@ -457,13 +457,6 @@ $(function ()  {
             ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.filaments);
             ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.updateFilaments);
         }
-
-        // Api functions
-
-        self._sendApi = function (urlSuffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
-            return OctoPrint.postJson(url, data);
-        };
 
         self.requestData = function ()  {
             getFromApi("filament").done(self.fromResponse);
