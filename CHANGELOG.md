@@ -2,6 +2,14 @@
 
 Changelog for OctoPrint-LUI. 
 
+## 1.1.1
+
+- Improved: Feedback when copying file to USB
+- Improved: German translations
+- Improved: course and fine extruder calibration do not overlap anymore
+- Fixed: fine extruder calibration does not generate any overlapping lines
+- Fixed: compatibility with Leapfrog Xcel
+
 ## 1.1.0
 
 ### This update requires new slicing profiles. Go to bolt.lpfrg.com for the new Simplify3D slicing profiles or update your Creatr Software settings by pressing the Update profiles button in the Profile editor.

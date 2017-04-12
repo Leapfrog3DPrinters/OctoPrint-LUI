@@ -158,6 +158,7 @@ $(function ()  {
             }
 
             self.flyout.closeFlyoutAccept();
+            self.restoreState();
         }
 
         self.restoreState = function()
