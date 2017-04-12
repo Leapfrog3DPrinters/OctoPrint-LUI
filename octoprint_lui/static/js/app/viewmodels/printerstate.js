@@ -469,6 +469,10 @@ $(function ()  {
             self.settings.showSettingsTopic('maintenance', true)
         }
 
+        self.showUpdateFlyout = function () {
+            self.settings.showSettingsTopic('update', true)
+        }
+
         self.showLogsFlyout = function ()
         {
             self.settings.showSettingsTopic('logs', true)
