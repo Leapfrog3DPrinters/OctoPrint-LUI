@@ -1372,7 +1372,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing
         """
-        self._printer.commands(['!!DEBUG:mintemp_error0']); # Let's the virtual printer send a MINTEMP message which brings the printer in error state
+        self._on_filament_detection_during_print(self._printer._comm)
 
     def _on_api_command_changelog_seen(self, *args, **kwargs):
         self._logger.info("changelog_seen")
@@ -1564,7 +1564,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("Filament detection complete. Restoring temperatures: {temps}".format(temps = self.filament_detection_tool_temperatures))
             self.filament_detection_tool_temperatures = None
 
-        self.restore_z_after_filament_load()
         self._printer.toggle_pause_print()
 
     def _on_api_command_change_filament(self, tool, *args, **kwargs):
@@ -2634,6 +2633,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_detection_tool_temperatures = deepcopy(self.current_temperature_data)
         self.filament_action = True
 
+        # If paused, we need to restore the current parameters after the filament swap
+        self.paused_filament_swap = True
+
+
         # Copied partly from change filament
         # Send to the front end that we are currently changing filament.
         self.send_client_filament_in_progress()
@@ -2642,9 +2645,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
         self._printer.change_tool(tool)
 
-        self.z_before_filament_load = self._printer._currentZ
-        self._printer.jog({'z': 10})
-        self._printer.home(['x'])
+        self.move_to_filament_load_position()
 
         if not self.temperature_safety_timer:
             self.temperature_safety_timer_value = 900
@@ -2821,10 +2822,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def restore_extrusion_mode(self):
         self.set_extrusion_mode(self.last_extrusion_mode)
-
-    def restore_z_after_filament_load(self):
-       if(self.z_before_filament_load is not None):
-            self._printer.commands(["G1 Z%f F1200" % self.z_before_filament_load])
 
     def move_to_filament_load_position(self):
         self._logger.debug('move_to_filament_load_position')
