@@ -2422,7 +2422,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.execute_printer_script("before_print_resumed", context)
 
         if script_name == "afterPrintPaused":
-             self.execute_printer_script("after_print_paused")
+             self.execute_printer_script("after_print_paused", { "filamentAction": self.filament_action })
 
         return None, None
 

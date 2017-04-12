@@ -255,7 +255,7 @@ $(function ()  {
         }
 
         self.changeFilamentDone = function ()  {
-            self._sendApi({
+            return self._sendApi({
                 command: "change_filament_done"
             });
         }

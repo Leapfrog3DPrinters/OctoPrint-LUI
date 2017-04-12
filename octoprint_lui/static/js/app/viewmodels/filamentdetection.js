@@ -29,8 +29,8 @@ $(function ()  {
 
             self.flyout.showFlyout('filament_detection', true)
                 .done(function ()  {
-                    self.filament.changeFilamentDone();
-                    self._completeFilamentDetectionApi();
+                    self.filament.changeFilamentDone().done(function() { self._completeFilamentDetectionApi(); });
+                    
                     console.log('Filament detection flyout accepted');
                 })
                 .fail(function ()  {
