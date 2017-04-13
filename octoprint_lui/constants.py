@@ -50,6 +50,8 @@ class ClientMessages(object):
     LOGS_COPY_FINISHED = "logs_copy_complete"
     LOGS_COPY_FAILED = "logs_copy_failed"
 
+    CLOUD_LOGIN_FAILED = "cloud_login_failed"
+
     POWERBUTTON_PRESSED = "powerbutton_pressed"
 
     MACHINE_INFO_UPDATED = "machine_info_updated"
@@ -82,3 +84,34 @@ class ToolStatuses(object):
     COOLING = 'COOLING'
     STABILIZING = 'STABILIZING'
     READY = 'READY'
+
+class PrintModes(object):
+    FULL_CONTROL = 0
+    NORMAL = 1
+    SYNC = 2
+    MIRROR = 3
+
+    @staticmethod
+    def get_from_string(print_mode_string):
+        if print_mode_string == 'fullcontrol':
+            return PrintModes.FULL_CONTROL
+        elif print_mode_string == 'normal':
+            return PrintModes.NORMAL
+        elif print_mode_string == 'sync':
+            return PrintModes.SYNC
+        elif print_mode_string == 'mirror':
+            return PrintModes.MIRROR
+        else:
+            return PrintModes.NORMAL
+    @staticmethod
+    def to_string(print_mode):
+        if print_mode == PrintModes.FULL_CONTROL:
+            return 'fullcontrol'
+        elif print_mode == PrintModes.NORMAL:
+            return 'normal'
+        elif print_mode == PrintModes.SYNC:
+            return 'sync'
+        elif print_mode == PrintModes.MIRROR:
+            return 'mirror'
+        else:
+            return 'normal'

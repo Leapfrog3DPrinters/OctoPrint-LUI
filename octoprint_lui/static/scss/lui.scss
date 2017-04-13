@@ -1439,6 +1439,12 @@ select {
     #terminal-output {
       min-height: 150px;
       margin-bottom: 5px;
+      width: 100%;
+    }
+
+    #terminal-command
+        {
+        width: 100%;
     }
 
     margin-bottom: 30px;

@@ -144,6 +144,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.old_temperature_data = None
         self.current_temperature_data = None
         self.temperature_window = [-6, 10] # Below, Above target temp
+
+        # If we're in the window, but the temperature delta is greater than this value, consider the status to be 'stabilizing'
+        self.instable_temperature_delta = 3 
+
         self.ready_timer_default = {'tool0': 10, 'tool1': 10, 'bed': 10}
         self.ready_timer = {'tool0': 0, 'tool1': 0, 'bed': 0}
         self.callback_mutex = threading.RLock()
@@ -151,7 +155,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.temp_before_filament_detection = { 'tool0' : 0, 'tool1' : 0 }
 
-        self.print_mode = "normal"
+        self.print_mode = PrintModes.NORMAL
 
         ##~ Homing
         self.home_command_sent = False
@@ -166,6 +170,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fw_version_info = None
         self.auto_firmware_update_started = False
         self.fetching_firmware_update = False
+        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.7 MACHINE_TYPE:Bolt Model:Bolt PROTOCOL_VERSION:1.0 \
+      FIRMWARE_NAME:Marlin V1 EXTRUDER_COUNT:2 EXTRUDER_OFFSET_X:0.0 EXTRUDER_OFFSET_Y:0.0 \
+      BED_WIDTH_CORRECTION:0.0"
 
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
@@ -253,7 +260,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0,
                                                     'material': self.default_material} for i in range(2))
         ##~ TinyDB - firmware
-        #TODO: Do insert if property is not found (otherwise update fails later on)
         self.machine_database_path = os.path.join(self.get_plugin_data_folder(), "machine.json")
         self.machine_database = TinyDB(self.machine_database_path)
         self._machine_query = Query() # underscore for blueprintapi compatability
@@ -693,7 +699,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         auth_result = self.cloud_connect.handle_auth_response(service, request)
 
         if not auth_result:
-            self._send_client_message("cloud_login_failed", { "service": service })
+            self._send_client_message(ClientMessages.CLOUD_LOGIN_FAILED, { "service": service })
 
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
@@ -758,7 +764,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if plugin not in plugin_names:
                 #if not return a fail
                 self._logger.debug("{plugin} seemed to not be installed".format(plugin=plugin))
-                return make_response("Failed to start update of plugin: {plugin}. Not installed.".format(plugin=plugin), 400)
+                return make_response(jsonify({ "message": "Failed to start update of plugin: {plugin}. Not installed.".format(plugin=plugin) }), 400)
             self._logger.debug("Starting update of {plugin}".format(plugin=plugin))
             # Send updating to front end
             self._update_plugins(plugin)
@@ -767,7 +773,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             # We didn't get a plugin, should never happen
             self._logger.debug("No plugin given! Can't update that.")
-            return make_response("No plugin given, can't update", 400)
+            return make_response(jsonify({ "message": "No plugin given, can't update"}), 400)
 
     @BlueprintPlugin.route("/software/changelog/seen", methods=["POST"])
     def changelog_seen(self):
@@ -913,7 +919,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Starts the bed calibration procedure by preparing the printer for the calibration
         """
-        self.set_print_mode('fullcontrol')
+        self._set_print_mode(PrintModes.FULL_CONTROL)
 
         self._set_movement_mode("absolute")
         self._printer.home(['x', 'y', 'z'])
@@ -930,11 +936,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         corner = self.manual_bed_calibration_positions[corner_name]
         self._printer.commands(['G1 Z5 F600'])
 
-        if corner["mode"] == 'fullcontrol' and not self.print_mode == "fullcontrol":
-            self.set_print_mode('fullcontrol')
+        if corner["mode"] == 'fullcontrol' and not self.print_mode == PrintModes.FULL_CONTROL:
+            self._set_print_mode(PrintModes.FULL_CONTROL)
             self._printer.home(['x'])
-        elif corner["mode"] == 'mirror' and not self.print_mode == "mirror":
-            self.set_print_mode('mirror')
+        elif corner["mode"] == 'mirror' and not self.print_mode == PrintModes.MIRROR:
+            self._set_print_mode(PrintModes.MIRROR)
             self._printer.home(['x'])
 
         if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
@@ -952,7 +958,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Finishes the bed calibration by homing the x and y axis
         """
         self._printer.commands(['G1 Z5 F600'])
-        self.set_print_mode('normal')
+        self._set_print_mode(PrintModes.NORMAL)
         self._printer.home(['y', 'x'])
 
         if self.current_printer_profile["defaultStepperTimeout"]:
@@ -998,7 +1004,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         abs_path = self._copy_calibration_file(calibration_src_filename)
 
         if abs_path:
-            self.set_print_mode('normal')
+            self._set_print_mode(PrintModes.NORMAL)
             self._preheat_for_calibration()
             self._printer.select_file(abs_path, False, True)
         return make_response(jsonify(), 200)
@@ -1290,7 +1296,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Sends a M605 command to the printer to initiate the given print mode and starts the currently selected job afterwards.
         """
         
-        self.set_print_mode(mode)
+        self._set_print_mode(PrintModes.get_from_string(mode))
         self._printer.start_print()
 
         return make_response(jsonify(), 200)
@@ -1409,7 +1415,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 files = octoprint.server.fileManager.list_files("usb", filter=filter, recursive = True)["usb"].values()
             except Exception as e:
                 self._logger.exception("Could not access the media folder", e.message)
-                return make_response("Could not access the media folder", 500)
+                return make_response(jsonify({ "message": "Could not access the media folder"}), 500)
 
 
             # Decorate them
@@ -2154,7 +2160,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         octoprint.timelapse.configure_timelapse(config, False)
 
     def _on_calibration_event(self, event):
-        #TODO: Temporary disable timelapse, gcoderendering etc
         if event == Events.PRINT_STARTED:
             self._send_client_message(ClientMessages.CALIBRATION_STARTED, { "calibration_type": self.calibration_type})
         elif event == Events.PRINT_PAUSED: # TODO: Handle these cases or disable pause/resume when calibrating
@@ -2251,7 +2256,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _select_cloud_file(self, path):
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
-            return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
+            return make_response(jsonify({ "message": "Cannot select {filename} for printing, not a machinecode file".format(**locals()) }), 415)
 
         _, filename = self._file_manager.split_path("cloud", path)
 
@@ -2274,15 +2279,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             futureFilename = None
 
         if futureFilename is None:
-            return make_response("Can not select file %s, wrong format?" % filename, 415)
+            return make_response(jsonify({ "message": "Can not select file %s, wrong format?" % filename }), 415)
 
         if futurePath == currentPath and futureFilename == currentFilename and (self._printer.is_printing() or self._printer.is_paused()):
-            return make_response("Trying to overwrite file that is currently being printed: %s" % currentFilename, 409)
+            return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
         
         futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
 
         def download_progress(progress):
-            self._send_client_message("media_file_copy_progress", { "percentage" : progress*100 })
+            self._send_client_message(ClientMessages.MEDIA_FILE_COPY_PROGRESS, { "percentage" : progress*100 })
 
         self.cloud_storage.download_file(path, futureFullPath, download_progress)
         self._send_client_message(ClientMessages.MEDIA_FILE_COPY_COMPLETE)
@@ -2314,11 +2319,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #TODO: Feels like it's not really secure. Fix
         path = os.path.join(self.media_folder, path)
         if not (os.path.exists(path) and os.path.isfile(path)):
-            return make_response("File not found on '%s': %s" % (target, filename), 404)
+            return make_response(jsonify({ "message": "File not found on '%s': %s" % (target, filename) }), 404)
 
         # selects/loads a file
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
-            return make_response("Cannot select {filename} for printing, not a machinecode file".format(**locals()), 415)
+            return make_response(jsonify({ "message": "Cannot select {filename} for printing, not a machinecode file".format(**locals()) }), 415)
 
         # Now the full path is known, remove any folder names from file name
         _, filename = self._file_manager.split_path("usb", path)
@@ -2343,10 +2348,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             futureFilename = None
 
         if futureFilename is None:
-            return make_response("Can not select file %s, wrong format?" % upload.filename, 415)
+            return make_response(jsonify({ "message": "Can not select file %s, wrong format?" % upload.filename }), 415)
 
         if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (self._printer.is_printing() or self._printer.is_paused()):
-            return make_response("Trying to overwrite file that is currently being printed: %s" % currentFilename, 409)
+            return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
 
         futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
 
@@ -2373,9 +2378,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         except octoprint.filemanager.storage.StorageError as e:
             timer.cancel()
             if e.code == octoprint.filemanager.storage.StorageError.INVALID_FILE:
-                return make_response("Could not upload the file \"{}\", invalid type".format(upload.filename), 400)
+                return make_response(jsonify({ "message": "Could not upload the file \"{}\", invalid type".format(upload.filename) }), 400)
             else:
-                return make_response("Could not upload the file \"{}\"".format(upload.filename), 500)
+                return make_response(jsonify({ "message": "Could not upload the file \"{}\"".format(upload.filename) }), 500)
         finally:
              self._send_client_message(ClientMessages.MEDIA_FILE_COPY_FAILED)
 
@@ -2407,7 +2412,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _copy_gcode_to_usb(self, filename):
         if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
+            return make_response(jsonify({ "message": "Could not access the media folder" }), 400)
 
         if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
             return make_response(jsonify(error="Not allowed to copy this file"), 400)
@@ -2419,7 +2424,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _copy_timelapse_to_usb(self, filename):
         if not self.is_media_mounted:
-            return make_response("Could not access the media folder", 400)
+            return make_response(jsonify({ "message": "Could not access the media folder"}), 400)
 
         if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
             return make_response(jsonify(error="Not allowed to copy this file"), 400)
@@ -2726,8 +2731,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._execute_printer_script("after_printer_connected", context)
 
         if script_name == "beforePrintResumed":
-            self._logger.debug('Print resumed. Print mode: {0} Paused position: {1}'.format(self.paused_print_mode, self.paused_position))
-            context = { "paused_position": self.paused_position, "paused_print_mode": self._print_mode_to_M605_param(self.paused_print_mode) }
+            self._logger.debug('Print resumed. Print mode: {0} Paused position: {1}'.format(PrintModes.to_string(self.paused_print_mode), self.paused_position))
+            context = { "paused_position": self.paused_position, "paused_print_mode": self.paused_print_mode }
             self._execute_printer_script("before_print_resumed", context)
 
         if script_name == "afterPrintPaused":
@@ -2780,10 +2785,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Handle home command
             elif (gcode == "G28"):
                 self._process_G28(cmd)
-
-            # Handle info command
-            elif (gcode == "M115"):
-                self._process_M115(cmd)
 
             # Handle bed level command
             elif (gcode == "G32"):
@@ -2843,7 +2844,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 extrusion_amount = current_extrusion - self.last_extrusion
             # Add extrusion to current printing amount and remove from available filament
             # Use both tools when in sync or mirror mode.
-            if self.print_mode == "sync" or self.print_mode == "mirror":
+            if self.print_mode == PrintModes.SYNC or self.print_mode == PrintModes.MIRROR:
                 for i, tool_name in enumerate(self.filament_amount):
                     self.filament_amount[i] -= extrusion_amount
                     self.current_print_extrusion_amount[i] += extrusion_amount
@@ -2872,9 +2873,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.home_command_sent = True
                 self.is_homing = True
 
-    def _process_M115(self, cmd):
-        self.firmware_info_command_sent = True
-
     def _process_G32(self, cmd):
         self.levelbed_command_sent = True
 
@@ -2890,7 +2888,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._head_in_maintenance_position()
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
-        if "echo:" in line and "FIRMWARE_NAME:" in line:
+        if "FIRMWARE_NAME:" in line:
             self._on_firmware_info_received(line)
 
         if self.home_command_sent:
@@ -3021,8 +3019,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 status = ToolStatuses.IDLE
             else:
                 delta = data['target'] - data['actual']
-                in_window = data['actual'] >= data['target'] + self.temperature_window[0] and delta <= data['target'] + self.temperature_window[1]
-                stabilizing = self.tool_status_stabilizing
+                in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
+                stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
 
                 # process the status
                 if in_window and stabilizing:
@@ -3344,6 +3342,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(ClientMessages.MACHINE_INFO_UPDATED, self.machine_info)
 
     def _update_from_m115_properties(self, line):
+
+        port, _ = self._printer._comm.getConnection()
+
+        if port == "VIRTUAL":
+            line = self.virtual_m115
+            self._logger.debug("Virtual port detected. Assuming virtual M115 line")
+
         line = line.replace(': ', ':')
         properties = dict()
         idx_end = 0
@@ -3440,20 +3445,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.printer_error_reason = None
         self.printer_error_extruder = None
 
-    def set_print_mode(self, print_mode):
+    def _set_print_mode(self, print_mode):
         self.print_mode = print_mode
-        param = self._print_mode_to_M605_param(print_mode)
-        self._printer.commands(["M605 S{0}".format(param)])
-
-    def _print_mode_to_M605_param(self, print_mode):
-        if print_mode == "sync":
-            return 2
-        elif print_mode == "mirror":
-            return 3
-        elif print_mode == "fullcontrol":
-            return 0
-        else:
-            return 1
+        self._printer.commands(["M605 S{0}".format(print_mode)])
 
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
@@ -3466,7 +3460,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.current_print_extrusion_amount = [0.0, 0.0]
             self.save_filament_amount()
             # TODO: Move commands below to gcode script
-            self.set_print_mode('normal')
+            self._set_print_mode(PrintModes.NORMAL)
 
             if "boundaries" in self.current_printer_profile and "maxZ" in self.current_printer_profile["boundaries"]:
                maxZ = self.current_printer_profile["boundaries"]["maxZ"]
@@ -3521,7 +3515,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # We don't need to get the firmware info here, it's done by OctoPrint already
             # Glboal Settings -> "feature", "firmwareDetection"
             #self._get_firmware_info()
-            self.set_print_mode('normal')
+            self._set_print_mode(PrintModes.NORMAL)
 
             if self.connecting_after_maintenance:
                 self.connecting_after_maintenance = False

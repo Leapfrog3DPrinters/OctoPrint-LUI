@@ -1128,7 +1128,10 @@ select {
   margin-bottom: 30px; }
   #term .terminal #terminal-output {
     min-height: 150px;
-    margin-bottom: 5px; }
+    margin-bottom: 5px;
+    width: 100%; }
+  #term .terminal #terminal-command {
+    width: 100%; }
 
 #term #terminal-sendpanel {
   text-align: right; }

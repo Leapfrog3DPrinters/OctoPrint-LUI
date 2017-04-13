@@ -259,6 +259,9 @@ $(function ()  {
                 self.currentLuiVersion(lui_update.version());
 
             self.modelName(data.machine_info.machine_type);
+
+            if(data.status == "cache")
+                self.updateDoneOrError();
         };
 
         self.fromChangelogResponse = function (data, from_startup)
