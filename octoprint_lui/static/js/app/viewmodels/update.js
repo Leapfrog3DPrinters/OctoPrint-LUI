@@ -436,8 +436,8 @@ $(function ()  {
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
 
             // Wait for connection to be up so we can perform an initial software and firmware check
-            self.networkManager.status.connection.wifi.subscribe(self.onOnline);
-            self.networkManager.status.connection.ethernet.subscribe(self.onOnline);
+            self.networkManager.status.wifi.connected.subscribe(self.onOnline);
+            self.networkManager.status.ethernet.connected.subscribe(self.onOnline);
         }
 
         self.onFlashingBegin = function()

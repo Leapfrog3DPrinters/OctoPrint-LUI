@@ -12,6 +12,11 @@
           <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
         </span>
       </div>
+      <div class="Table-item" data-bind="visible: wifiIp" style="flex-basis: 40px; max-width: 40px;">
+        <a href="#" data-bind="touchClick: function() { editConnectionDetails(status.wifi.uuid()); }">
+          <i class="fa fa-pencil"></i>
+        </a>
+      </div>
     </div>
     <!-- ko foreach: listHelper.paginatedItems -->
     <div class="Table-row clickable" data-bind="touchClick: function () { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
@@ -56,7 +61,7 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="touchClick: function () {sendWifiDisconnect()}, css: {disabled: working() || !status.connection.wifi()}">
+          <li class="button" data-bind="touchClick: function () {sendWifiDisconnect()}, css: {disabled: working() || !status.wifi.connected()}">
             <a href="#">
               <span>{{ _('Disconnect') }}</span>
             </a>
@@ -70,6 +75,11 @@
       </div>
       <div class="Table-item Table-item-right">
         <span data-bind="text: ethernetIp"></span>
+      </div>
+      <div class="Table-item" data-bind="visible: wifiIp" style="flex-basis: 40px; max-width: 40px;">
+        <a href="#" data-bind="touchClick: function() { editConnectionDetails(status.ethernet.uuid()); }">
+          <i class="fa fa-pencil"></i>
+        </a>
       </div>
     </div>
     <div class="Table-row">
@@ -148,18 +158,18 @@
         {{ _('Password:') }}
       </div>
       <div class="Table-item">
-        <input type="text" data-bind="value: connectionDetails.password" />
+        <input type="password" data-bind="value: connectionDetails.password" />
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        {{ _('Settings:') }}
+        {{ _('Manual settings:') }}
       </div>
       <div class="Table-item">
-        <input type="checkbox" id="ipv4-auto" data-bind="checked: connectionDetails.ipv4.method() == 'auto'" />
-        <label for="ipv4-auto"></label>
-        <input type="checkbox" id="ipv4-manual" data-bind="checked: connectionDetails.ipv4.method() == 'manual'" />
-        <label for="ipv4-manual"></label>
+        <div class="check_toggle">
+          <input type="checkbox" id="ipv4-manual" data-bind="checked: connectionDetails.ipv4.manualSettings()" />
+          <label for="ipv4-manual"></label>
+        </div>
       </div>
     </div>
     <div class="Table-row">
@@ -167,7 +177,7 @@
         {{ _('IP address:') }}
       </div>
       <div class="Table-item">
-        <input type="text" data-bind="value: connectionDetails.ipv4.address" />
+        <input type="text" data-bind="value: connectionDetails.ipv4.ip, css: { disabled: !connectionDetails.ipv4.manualSettings() }" />
       </div>
     </div>
     <div class="Table-row">
@@ -175,7 +185,7 @@
         {{ _('DNS Server 1:') }}
       </div>
       <div class="Table-item">
-        <input type="text" data-bind="value: connectionDetails.ipv4.dns1" />
+        <input type="text" data-bind="value: connectionDetails.ipv4.dns1, css: { disabled: !connectionDetails.ipv4.manualSettings() }" />
       </div>
     </div>
     <div class="Table-row">
@@ -183,7 +193,7 @@
         {{ _('DNS Server 2:') }}
       </div>
       <div class="Table-item">
-        <input type="text" data-bind="value: connectionDetails.ipv4.dns2" />
+        <input type="text" data-bind="value: connectionDetails.ipv4.dns2, css: { disabled: !connectionDetails.ipv4.manualSettings() }" />
       </div>
     </div>
     <div class="Table-row">
@@ -191,7 +201,7 @@
         {{ _('Default gateway:') }}
       </div>
       <div class="Table-item">
-        <input type="text" data-bind="value: connectionDetails.ipv4.gateway" />
+        <input type="text" data-bind="value: connectionDetails.ipv4.gateway, css: { disabled: !connectionDetails.ipv4.manualSettings() }" />
       </div>
     </div>
     <div class="Table-row">
@@ -205,7 +215,7 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button secondary-button" data-bind="touchClick: function () { cancelWifiConfiguration() }">
+          <li class="button secondary-button" data-bind="touchClick: cancelConnectionDetails">
             <a href="#">
               <span>{{ _('Back') }}</span>
             </a>
@@ -214,7 +224,7 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="touchClick: function () { confirmConnectionDetails() } }">
+          <li class="button" data-bind="touchClick: saveConnectionDetails">
             <a href="#">
               <span>{{ _('Save') }}</span>
             </a>
