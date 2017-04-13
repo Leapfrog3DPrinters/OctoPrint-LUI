@@ -663,6 +663,7 @@ $(function () {
                 .always(function ()  {
                     callViewModels(self.allViewModels, "onSettingsHidden");
                 });
+            //IntroJS
             if(self.introView.firstRun){
                 if(topic === 'maintenance'){
                     setTimeout(function(){

@@ -65,6 +65,7 @@ $(function () {
 
         self.calibrateExtruders = function ()  {
             self.flyout.showFlyout('extrudercalibration', true);
+            //IntroJS
             if(self.introView.firstRun){
                 setTimeout(function(){
                     self.introView.introInstance.refresh();
@@ -76,6 +77,7 @@ $(function () {
         self.calibrateBed = function()
         {
             self.flyout.showFlyout('bedcalibration', true);
+            //IntroJS
             if(self.introView.firstRun){
                 setTimeout(function(){
                     self.introView.introInstance.refresh();

@@ -72,6 +72,7 @@ $(function ()  {
                 console.log("Calibration set to 0, 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
             });
+            //IntroJS
             if(self.introView.firstRun) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
@@ -93,6 +94,7 @@ $(function ()  {
                 console.log("Calibration set to " + self.largeBedWidthCorrection() + ", 0")
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_small" });
             });
+            //IntroJS
             if(self.introView.firstRun) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
@@ -104,6 +106,7 @@ $(function ()  {
         self.showSmallYCalibration = function()
         {
             self.smallXCalibrationCompleted(true);
+            //IntroJS
             if(self.introView.firstRun) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
@@ -152,6 +155,7 @@ $(function ()  {
                 {
                     $.notify({ title: gettext('Calibration failed'), text: gettext('An error has occured while storing the calibration settings. Please try again.') }, "error");
                 }).always(function ()  { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
+            //IntroJS
             if(self.introView.firstRun) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();

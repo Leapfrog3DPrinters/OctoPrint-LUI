@@ -55,6 +55,7 @@ $(function ()  {
                 if (self.showManualBedCalibration())
                     self.restoreFromCalibrationPosition();
                 self.flyout.closeFlyoutAccept();
+                //IntroJS
                 if(self.introView.firstRun) {
                     setTimeout(function () {
                         self.introView.introInstance.refresh();

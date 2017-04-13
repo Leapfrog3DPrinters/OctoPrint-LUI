@@ -214,9 +214,10 @@ $(function ()  {
                 }
             ],
             showStepNumbers: false,
+            showProgress: true,
             scrollToElement: false,
             exitOnOverLayClick: false,
-            showBullets: true,
+            showBullets: false,
             showButtons: false,
             keyboardNavigation: true
 

@@ -2,26 +2,16 @@
   text-align: center;
   white-space: nowrap;
   margin-top: 5px;
+  border-bottom: 1px solid #ff9734;
+  padding-bottom: 5px;
 }
 
 .introjs-fixParent {
   position: absolute;
 }
 
-#nextButton {
-  background-image: none;
-}
-
-#doneButton {
-  background-image: none;
-}
-
-#cancelButton {
-  background-image: none;
-}
-
 .step-header {
-  border-bottom: 1px solid #ff9734;
+  border-bottom: 2px solid #ff9734;
 }
 
 .introjs-bullets {
@@ -30,7 +20,7 @@
 }
 
 .introjs-tooltip {
-  max-width: none !important;
+  min-width: 250px !important;
 }
 
 .tooltip_hidden {
@@ -40,6 +30,22 @@
 /*
  Buttons style
 */
+
+#nextButton {
+  color: #ffffff;
+  background: #424a54 none;
+}
+
+#doneButton {
+  color: #ffffff;
+  background: #424a54 none;
+}
+
+#cancelButton {
+  color: #ffffff;
+  background: #424a54 none;
+}
+
 .introjs-button {
   box-sizing: content-box;
   position: relative;
@@ -47,9 +53,8 @@
   display: inline-block;
   padding: 0.3em 0.8em;
   border: 1px solid #434A54;
-  margin: 1px;
   text-decoration: none;
-  text-shadow: 1px 1px 0 #fff;
+  text-shadow: none;
   font: 18px/normal sans-serif;
   color: #333;
   white-space: nowrap;
@@ -64,9 +69,7 @@
   -moz-border-radius: 0;
   border-radius: 0;
   /* IE hacks */
-  margin-top: 5px;
-  margin-left: 5px;
-  margin-right: 5px;
+  margin: 5px 5px 1px;
   width: 30% !important;
 }
 
