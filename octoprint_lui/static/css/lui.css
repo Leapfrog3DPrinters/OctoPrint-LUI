@@ -1,7 +1,7 @@
-﻿/* 
-  Color Variables 
+﻿/*
+  Color Variables
 */
-/* 
+/*
   Font face
 */
 @font-face {
@@ -19,7 +19,7 @@
   src: url(../fonts/agenda-bold.ttf);
   font-weight: bold; }
 
-/* 
+/*
   Mixins
 */
 /* Design CSS */
@@ -204,8 +204,8 @@ a {
 #slider_wrapper {
   padding: 10px 0px; }
 
-/* 
-  Checkbox 
+/*
+  Checkbox
 */
 input[type=checkbox] {
   visibility: hidden; }
@@ -327,12 +327,8 @@ input[type=radio] {
 .network-status {
   margin-right: 20px; }
 
-#intro_button {
-  margin-left: auto;
-}
-
 #ethernet_connectivity {
-  margin-left: 20px;
+  margin-left: auto;
 }
 
 .wifi-status {
@@ -372,7 +368,7 @@ input[type=radio] {
   flex: 1 1 100%;
   min-width: 0; }
 
-/* 
+/*
   Overlay & Fly out
 
 */
@@ -508,7 +504,7 @@ a.disabled {
   color: #aaa; }
 
 /*
-  Icon Bar 
+  Icon Bar
 */
 .icon-bar {
   display: flex; }
@@ -517,8 +513,8 @@ a.disabled {
   flex: 1 1 auto;
   color: #ffffff; }
 
-/*   
-  Button-area 
+/*
+  Button-area
 */
 .button-area {
   display: flex;
@@ -542,7 +538,7 @@ a.disabled {
   flex: 1;
   text-align: center; }
 
-/* 
+/*
   Table
 */
 .Table {
@@ -705,8 +701,8 @@ a.disabled {
       border-color: #dddddd;
       cursor: default; }
 
-/* 
-  Control 
+/*
+  Control
 */
 #control .content
 .control-container {
@@ -846,7 +842,38 @@ a.disabled {
 .print_status .Table-item {
   line-height: 1.3; }
 
-/* 
+/*
+  Tutorial tab
+ */
+
+.tutorial_topic {
+  display: flex;
+  min-height: 50px;
+  border-bottom: 1px solid #ff9734;
+  flex-direction: column;
+  flex: 0 1 auto; }
+
+.tutorial_topic a {
+  align-items: center;
+  display: flex;
+  padding: 0px 20px;
+  min-width: 0px;
+  flex: 1;
+  color: #434A54; }
+
+.tutorial_topic i {
+  flex: 1;
+  text-align: center; }
+
+.tutorail_topic span {
+  flex: 1 1 auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0px; }
+
+
+/*
   Settings tab
 */
 .settings_topic {
@@ -925,7 +952,7 @@ select {
   appearance: none;
   outline: none; }
 
-/* 
+/*
   Settings Flyout
 */
 #maintenance_filament, #maintenance_control {
@@ -950,7 +977,7 @@ select {
 #print .filament_amount {
   padding-left: 0.5em; }
 
-/* 
+/*
   Files tab
 */
 #files .content {
@@ -1470,7 +1497,7 @@ ul.height-calibrator {
   animation: spin 1.5s linear infinite;
   /* Chrome, Firefox 16+, IE 10+, Opera */ }
 
-/* 
+/*
   Media Queries
 */
 @media screen and (min-width: 790px) {
@@ -1492,8 +1519,8 @@ ul.height-calibrator {
   #print .content > * {
     width: 50%; } }
 
-/* 
-  Animation Key frames 
+/*
+  Animation Key frames
 */
 @keyframes fadeOut {
   0% {

@@ -1191,6 +1191,8 @@
         styleText = '',
         self = this;
 
+    targetElm = document.body;
+
     //set css class name
     overlayLayer.className = 'introjs-overlay';
 

@@ -11,7 +11,7 @@ $(function ()  {
         self.introInstance.setOptions({
             steps: [
                 {
-                    //1
+                    element: 'none',
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
                     " steps you have to take to start printing your creations.<br>" +
@@ -90,6 +90,7 @@ $(function ()  {
                 },
                 {
                     //10
+                    element: 'none',
                     intro: "<div class=\"step-header\">Getting Started</div>" +
                     "<div class=\"step-text\">Now that we have loaded the filament we have to calibrate the printer to make sure that the bed and" +
                     " the extruders are aligned</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
@@ -224,16 +225,11 @@ $(function ()  {
         });
 
         self.introInstance.onbeforechange(function(targetElement) {
-            switch(targetElement.id) {
-                case 'swap_left' || 'swap_right':
-                    $('#print_icon').click();
+            switch (self.currentStep()){
+                case 1: self.introInstance.refresh(); $('#print_icon').click();
                     break;
-                case 'job_button':
-                    $('#print_icon').click();
-                    console.log('beforejob');
+                case 11: self.introInstance.refresh(); $('#settings_icon').click();
                     break;
-                case 'maintenance':
-                    $('#settings_icon').click();
             }
         });
 
@@ -249,17 +245,20 @@ $(function ()  {
 
         self.introInstance.oncomplete(function(){
             self.firstRun = false;
-            console.log('oncomplete');
+            console.log('oncomplete: ' + self.firstRun);
         });
 
         self.introInstance.onexit(function () {
             self.firstRun = false;
-            console.log('onexit');
+            console.log('onexit: ' + self.firstRun);
         });
 
-        self.startIntro = function () {
+        self.startIntro = function (introName) {
             self.firstRun = true;
-            self.introInstance.start();
+            switch (introName){
+                case "firstPrint": self.introInstance.start();
+                    break;
+            }
         };
 
         self.nextButton = function (step) {
@@ -284,9 +283,9 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        [ "flyoutViewModel"],
+        [ "flyoutViewModel" ],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
-        ["#intro_button"]
+        []
     ]);
 });

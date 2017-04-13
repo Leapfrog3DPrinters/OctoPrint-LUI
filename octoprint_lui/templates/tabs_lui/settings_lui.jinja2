@@ -192,7 +192,7 @@
           </li>
         </ul>
       </div><!-- /Logs -->
-      <!-- Languanges -->
+      <!-- Languages -->
       <div class="settings_topic">
         <ul class="topic_main" data-bind="click: function () {showSettingsTopic('languages')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
           <li class="topic_dash">
@@ -211,7 +211,27 @@
             </a>
           </li>
         </ul>
-      </div><!-- /Languanges -->
+      </div><!-- /Languages -->
+      <!-- Tutorials -->
+      <div class="settings_topic">
+          <ul class="topic_main" data-bind="click: function () {showSettingsTopic('tutorials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPaused()|| isPrinting()}">
+          <li class="topic_dash">
+            <a href="">
+              <i id="language_icon" class="fa fa-graduation-cap"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>{{ _('Tutorials') }}</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- /Tutorials -->
     </div>
     <!-- /Topics -->
   </div>

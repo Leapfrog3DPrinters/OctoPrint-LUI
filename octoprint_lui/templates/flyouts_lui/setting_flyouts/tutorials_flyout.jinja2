@@ -1,0 +1,28 @@
+<div id="tutorials">
+	<div class="Table">
+		<div class="Table-row Table-header">
+			<div class="Table-item">
+				{{ _('Tutorials') }}
+			</div>
+		</div>
+        <div class="tutorial_topic">
+          <ul class="topic_main" data-bind="click: function () { startFirstPrintTutorial() }, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() ||  filament.leftFilament() != 'None' ||  filament.rightFilament() != 'None'}">
+          <li class="topic_dash">
+            <a href="">
+              <i id="language_icon" class="fa fa-graduation-cap"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>{{ _('Your First Print') }}</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+	</div>
+</div>
