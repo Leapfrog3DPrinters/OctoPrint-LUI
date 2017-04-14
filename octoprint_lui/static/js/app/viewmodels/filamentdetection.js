@@ -126,7 +126,7 @@ $(function ()  {
     if (FILAMENT_DETECTION) {
         OCTOPRINT_VIEWMODELS.push([
             FilamentDetectionViewModel,
-            ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel", "filamentViewModel"],
+            ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel", "filamentViewModel"],
             ["#filament_detection_flyout"]
         ]);
     }

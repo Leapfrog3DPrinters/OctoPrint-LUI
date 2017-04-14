@@ -1,0 +1,92 @@
+<aside id="head_maintenance_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>{{ _('Filament material and amount') }}</h4>
+  </div>
+  <div class="flyout-body">
+    <div class="Table">
+      <div class="Table-header Table-row">
+        <div class="Table-item">{{ _('Filament settings') }}</div>
+      </div>
+      <div class="Table-row">
+        {% if local_addr %}
+        <!-- ko keyboardForeach: toolInfo.tools.slice(0).reverse() -->
+        {% else %}
+        <!-- ko foreach: toolInfo.tools.slice(0).reverse() -->
+        {% endif %}
+        <div class="Table-item Table-nested">
+          <div class="Table-row">
+            <div class="Table-item">
+              <select class="select-material" data-bind="
+                            options:  $root.filament.materialProfiles,
+                            optionsValue: 'name',
+                            optionsText: 'name',
+                            value: filament.materialProfileName,
+                            optionsCaption: '{{ _('Choose material') }}'">
+              </select>
+            </div>
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+              {{ _('Amount') }}
+            </div>
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+              <input type="number" data-bind="value: filament.amountMeter"/>
+            </div>
+          </div>
+
+          <div class="Table-row">
+            <div class="Table-item">
+              <ul class="button-area">
+                <li class="button" data-bind="visible: target() == 0">
+                  <a href="#" data-bind="touchClick: function() { $root.filament.startHeating(key()); }, css: { disabled: filament.materialProfileName() == 'None' }">
+                    <span>
+                      <i class="fa fa-thermometer-full"></i>{{ _('Pre-heat') }}
+                    </span>
+                  </a>
+                </li>
+                <li class="button failed-button" data-bind="visible: target() > 0">
+                  <a href="#" data-bind="touchClick: function() { $root.filament.finishHeating(key()); }, css: { disabled: filament.materialProfileName() == 'None' }">
+                    <span>
+                      <i class="fa fa-thermometer-empty"></i>{{ _('Switch off') }}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="Table-row">
+
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+              <ul class="button-area">
+                <li class="button">
+                  <a href="#" data-bind="touchClick: function() { $root.purge(key()); }, css: { disabled: filament.materialProfileName() == 'None' } ">
+                    <span data-bind="html: $root.getPurgeButtonContents(key())"></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- /ko -->
+      </div>
+    </div>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#" data-bind="touchClick: headSwapPosition">
+          <span>{{ _('Swap hot ends') }}</span>
+        </a>
+      </li>
+    </ul>
+    <ul class="button-area">
+      <li class="button">
+        <a href="#save" data-bind="touchClick: function ()  { flyout.closeFlyoutAccept() }">
+          <span>{{ _('Close') }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>

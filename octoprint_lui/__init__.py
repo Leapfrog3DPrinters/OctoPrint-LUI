@@ -196,7 +196,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~Maintenance
         self.manual_bed_calibration_tool = None
         self.wait_for_movements_command_sent = False # Generic wait for ok after M400
-        self.wait_for_maintenance_position = False # Wait for ok after M400 before aux powerdown
+        self.wait_for_swap_position = False # Wait for ok after M400 before aux powerdown
         self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
         self.connecting_after_maintenance = False #Wait for connected event and notify UI after
 
@@ -913,6 +913,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._move_to_bed_maintenance_position()
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/maintenance/bed/clean/finish", methods=["POST"])
+    def maintenance_bed_clean_finish(self):
+        """
+        Homes after clean bed position
+        """
+        self._printer.home(['x', 'y'])
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/bed/calibrate/start", methods=["POST"])
     def calibration_bed_start(self):
@@ -969,22 +976,39 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_movement_mode()
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/maintenance/head/start", methods=["POST"])
+    def maintenance_head_start(self):
+        """
+        Moves to the filament load position
+        """
+        self._execute_printer_script('filament_load_position', { "filamentChangeTool": None, "currentZ": self._printer._currentZ })
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/head/finish", methods=["POST"])
+    def maintenance_head_finish(self):
+        """
+        Homes the printer
+        """
+        self._printer.home(['x', 'y'])
+        return make_response(jsonify(), 200)
+
     @BlueprintPlugin.route("/maintenance/head/swap/start", methods=["POST"])
     def maintenance_swap_head_start(self):
         """
         Moves heads to maintenance position
         """
-        self._execute_printer_script('head_maintenance_position', { "currentZ": self._printer._currentZ })
-        self.wait_for_maintenance_position = True
+        self._execute_printer_script('head_swap_position', { "currentZ": self._printer._currentZ })
+        self.wait_for_swap_position = True
         self._printer.commands(['M400']) #Wait for movements to complete
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/head/swap/finish", methods=["POST"])
-    def maintenance_head_swap_finish(self, *args, **kwargs):
+    def maintenance_head_swap_finish(self):
         if self.powerbutton_handler:
             self._power_up_after_maintenance()
         else:
             self._printer.home(['x','y','z'])
+
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/head/calibrate/start/<string:calibration_type>", methods=["POST"])
@@ -1079,6 +1103,34 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_client_filament_amount()
 
         return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/heat/start", methods=["POST"])
+    def heat_filament_start(self, tool):
+        """ 
+        Begins heating of the given tool to the temperature of the currently loaded material
+        """
+
+        # Find the material that is loaded in this tool
+        selectedProfile = self.filament_database.get(self._filament_query.tool == tool)["material"]
+
+        if not selectedProfile:
+            return make_response(jsonify({ "message": "Tool not found."}), 400) 
+
+        # Start heating to the temperature
+        temp = int(selectedProfile['extruder'])
+        self.heat_to_temperature(tool, temp)
+
+        return make_response(jsonify(), 200) 
+
+    @BlueprintPlugin.route("/filament/<string:tool>/heat/finish", methods=["POST"])
+    def heat_filament_finish(self, tool):
+        """ 
+        Stops heating of the given tool
+        """
+
+        self.heat_to_temperature(tool, 0)
+
+        return make_response(jsonify(), 200) 
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/start", methods=["POST"])
     def change_filament_start(self, tool):
@@ -2178,22 +2230,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     
 
     def _get_current_materials(self):
-        """ Returns a dictionary of the currently loaded materials """
-        #TODO: Fancy list comprehension stuff
-        return dict({
-            "tool0": self.filament_database.get(self._filament_query.tool == "tool0")["material"],
-            "tool1": self.filament_database.get(self._filament_query.tool == "tool1")["material"]
-                });
+        """ 
+        Returns a dictionary of the currently loaded materials 
+        """
+
+        materials = { entry["tool"]: entry["material"] for entry in self.filament_database.all() }
+
+        return materials
 
     def _get_current_filaments(self):
         """ 
         Returns a list of the currently loaded filaments [{tool, material, amount}]
         """
-        return [{ "tool": entry["tool"], "materialProfileName": entry["material"]["name"], "amount": entry["amount"] } for entry in self.filament_database.all()]
+        filaments = [{ "tool": entry["tool"], 
+                      "materialProfileName": entry["material"]["name"], 
+                      "amount": entry["amount"] } 
 
-
-
-   
+                     for entry in self.filament_database.all()]
+        
+        return sorted(filaments, key=lambda f: f["tool"])
 
     def _execute_printer_script(self, script_name, context = None):
         """
@@ -2203,14 +2258,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Executing script {0}".format(full_script_name))
         self._printer.script(full_script_name, context, must_be_set = False)
 
-    def _head_in_maintenance_position(self):
+    def _head_in_swap_position(self):
         """
-        Decides when to update UI when head is in maintenance position
+        Decides when to update UI when head is in swap position
         """
         if self.powerbutton_handler:
             self._disconnect_and_powerdown() #UI is updated after power down
         else:
-            self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION) #Update UI straight away
+            self._send_client_message(ClientMessages.HEAD_IN_SWAP_POSITION) #Update UI straight away
 
     def _disconnect_and_powerdown(self):
          """
@@ -2228,14 +2283,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.powerbutton_handler:
             self.powerbutton_handler.disableAuxPower()
             self._logger.debug("Auxiliary power down for maintenance")
-            self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
+            self._send_client_message(ClientMessages.HEAD_IN_SWAP_POSITION)
 
     def _power_up_after_maintenance(self):
         """
         Powers up printer after maintenance
         """
         if self.powerbutton_handler:
-            self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
+            self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP)
             # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
             self.powerbutton_handler.enableAuxPower()
             self._logger.debug("Auxiliary power up after maintenance")
@@ -2883,9 +2938,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Fired when a M400 (wait for all movements) completes. Useful for maintenance procedures
         """
-        if self.wait_for_maintenance_position:
-            self.wait_for_maintenance_position = False
-            self._head_in_maintenance_position()
+        if self.wait_for_swap_position:
+            self.wait_for_swap_position = False
+            self._head_in_swap_position()
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if "FIRMWARE_NAME:" in line:

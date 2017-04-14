@@ -13,6 +13,9 @@ $(function ()  {
         self.filamentLoadProgress = ko.observable(0);
         self.forPurge = ko.observable(false);
 
+        // Let's create an alias for the tools array, we're gonna use it a lot from here
+        self.tools = self.temperatureState.tools; 
+
         self.isProfileLocked = ko.observable(false);
 
         self.preselectedTemperatureProfile = ko.observable(undefined); // Used for locked profile selection (paused filament swap)
@@ -34,8 +37,6 @@ $(function ()  {
         });
 
         self.materialProfiles = ko.observableArray([]);
-
-        self.filaments = ko.observableArray([]);
 
         self.filamentsMapping = {
             key: function (data) {
@@ -59,26 +60,12 @@ $(function ()  {
 
                 return model;
             }
-        }
-
-        // updateFilaments keeps a temporary copy of filaments, to allow the user to override the material and amount
-        self.updateFilaments = ko.observableArray([]);
+        };
 
         self.filamentLoading = ko.observable(false);
         self.filamentInProgress = ko.observable(false);
 
         self.isExtruding = ko.observable(false);
-
-        self.getFilamentUpdateButtonContents = function (tool)
-        {
-            switch (tool)
-            {
-                case "tool0":
-                    return '<i class="fa fa-refresh"></i>' + gettext('Update right');
-                case "tool1":
-                    return '<i class="fa fa-refresh"></i>' + gettext('Update left');
-            }
-        }
 
         self.getSwapFilamentButtonContents = function (tool) {
             switch (tool) {
@@ -124,17 +111,17 @@ $(function ()  {
         };
 
         self.getFilamentMaterial = function (tool) {
-            return self.getFilament(tool).material();
+            return self.materialProfiles().find(function (profile) { return profile.name == self.getFilament(tool).materialProfileName(); });
         }
 
         self.getFilament = function (tool) {
             tool = tool || self.tool();
 
-            return self.filaments().find(function (x) { return x.tool() === tool })
+            return self.tools().find(function (x) { return x.key() === tool }).filament;
         }
 
         self.disableRemove = function (data) {
-            return _.some(self.filaments(), function (filament) { return filament.materialProfileName() == data.name });
+            return _.some(self.tools(), function (tool) { return tool.filament.materialProfileName() == data.name });
         }
 
         self.materialButtonText = function(data) {
@@ -289,7 +276,9 @@ $(function ()  {
                 .done(self.requestData);
         }
 
-        self.updateFilament = function (tool, amount, materialProfileName) {
+        self.updateFilament = function (toolObj) {
+            var amount = toolObj.filament.amount();
+            var materialProfileName = toolObj.filament.materialProfileName();
             var profile = self.materialProfiles().find(function (profile) { return profile.name == materialProfileName });
 
             if (profile == undefined) {
@@ -304,7 +293,7 @@ $(function ()  {
                 amount = 0;
             }
 
-            sendToApi("filament/" + tool, {
+            sendToApi("filament/" + toolObj.key(), {
                 amount: amount,
                 materialProfileName: materialProfileName
             }).done(function () {
@@ -314,10 +303,6 @@ $(function ()  {
                 },
                     "success"
                 );
-
-                var filament = self.getFilament(tool);
-                filament.amount(amount);
-                filament.materialProfileName(materialProfileName);
 
             }).fail(function () {
                 $.notify({
@@ -331,15 +316,36 @@ $(function ()  {
 
         }
 
-        self.startExtruding = function ()  {
-            sendToApi("filament/" + self.tool() + "/extrude/start",
+        self.startHeating = function (tool) {
+            tool = tool || self.tool();
+
+            if (self.getFilamentMaterial(tool) == "None")
+                return;
+
+            sendToApi("filament/" + tool + "/heat/start");
+        }
+
+        self.finishHeating = function (tool) {
+            tool = tool || self.tool();
+            
+            sendToApi("filament/" + tool + "/heat/finish");
+        }
+
+        self.startExtruding = function (tool) {
+            tool = tool || self.tool();
+
+            if (self.getFilamentMaterial(tool) == "None")
+                return;
+
+            sendToApi("filament/" + tool + "/extrude/start",
                 {
                     direction: 1
                 });
         }
 
-        self.finishExtruding = function ()  {
-            sendToApi("filament/" + self.tool() + "/extrude/finish");
+        self.finishExtruding = function (tool) {
+            tool = tool || self.tool();
+            sendToApi("filament/" + tool + "/extrude/finish");
         }
 
         // Handle plugin messages
@@ -454,8 +460,15 @@ $(function ()  {
 
 
         self.fromResponse = function (data) {
-            ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.filaments);
-            ko.mapping.fromJS(data.filaments, self.filamentsMapping, self.updateFilaments);
+            if (data.filaments) {
+                var tools = self.tools();
+
+                for (i = 0; i < tools.length; i++) {
+                    //tools[i].filament(ko.mapping.fromJS(data.filaments[i], self.filamentsMapping)); // Back-end provides a sorted list, so we may use indices here
+                    tools[i].filament.materialProfileName(data.filaments[i].materialProfileName);
+                    tools[i].filament.amount(data.filaments[i].amount);
+                }
+            }
         }
 
         self.requestData = function ()  {
@@ -469,8 +482,8 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
       FilamentViewModel,
-      ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel"],
-      ["#filament_status", "#filament_flyout", "#filament_override_flyout", "#materials_settings_flyout_content"]
+      ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel"],
+      ["#filament_status", "#filament_flyout", "#materials_settings_flyout_content"]
     ]);
 
 });

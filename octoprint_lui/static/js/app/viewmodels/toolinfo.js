@@ -1,12 +1,12 @@
 $(function () {
-    function TemperatureViewModel(parameters) {
+    function ToolInfoViewModel(parameters) {
         var self = this;
 
         self.loginState = parameters[0];
         self.settingsViewModel = parameters[1];
 
         self._createToolEntry = function () {
-            return {
+            var entry = {
                 name: ko.observable(),
                 key: ko.observable(),
                 actual: ko.observable(0),
@@ -16,9 +16,24 @@ $(function () {
                 newOffset: ko.observable(),
                 progress: ko.observable(0),
                 status: ko.observable(),
+                filament: {
+                    materialProfileName: ko.observable(),
+                    amount: ko.observable()
+                },
                 css_class: ko.observable()
             }
-        }
+
+            entry.filament.amountMeter = ko.pureComputed({
+                read: function () {
+                    return Math.round(entry.filament.amount() / 1000);
+                },
+                write: function (value) {
+                    entry.filament.amount(value * 1000);
+                }
+            });
+
+            return entry;
+        };
 
         self.tools = ko.observableArray([]);
         self.hasBed = ko.observable(true);
@@ -244,7 +259,7 @@ $(function () {
     }
 
     OCTOPRINT_VIEWMODELS.push([
-        TemperatureViewModel,
+        ToolInfoViewModel,
         ["loginStateViewModel", "settingsViewModel"],
         ["#temp"]
     ]);

@@ -159,15 +159,15 @@
           <div class="Table-item">{{ _('Filament') }}</div>
         </div>
         <div class="Table-row">
-          <!-- ko foreach: filaments.slice(0).reverse() -->
+          <!-- ko foreach: tools.slice(0).reverse() -->
           <div class="Table-item" style="flex-wrap: wrap">
-            <div data-bind="text: materialProfileName" style="flex-basis: 50%"></div>
-            <div data-bind="text: $root.getAmountString(amount())" style="flex-basis: 50%; text-align: right"></div>
+            <div data-bind="text: filament.materialProfileName" style="flex-basis: 50%"></div>
+            <div data-bind="text: $root.getAmountString(filament.amount())" style="flex-basis: 50%; text-align: right"></div>
             {% if local_addr %}
             <ul class="button-area" data-bind="visible: (!$root.printerState.isPrinting() || $root.printerState.isPaused()) && !$root.printerState.waitingForCancel()">
-              <li class="button secondary-button" data-bind="touchClick: function() { $root.showFilamentChangeFlyout(tool()) }">
+              <li class="button secondary-button" data-bind="touchClick: function() { $root.showFilamentChangeFlyout(key()) }">
                 <a href="#">
-                  <span data-bind="html: $root.getSwapFilamentButtonContents(tool())"></span>
+                  <span data-bind="html: $root.getSwapFilamentButtonContents(key())"></span>
                 </a>
               </li>
             </ul>

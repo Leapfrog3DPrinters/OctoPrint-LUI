@@ -15,6 +15,7 @@
   var FILAMENT_ROLL_LENGTH = {{ printer_profile["filamentRollLength"]|default(320) }};
   var REQUIRE_OVERSCROLL = {%  if printer_profile["requireOverscroll"] -%} true; {% else %} false; {%- endif %}
   var RESERVED_USERNAMES = {{ reserved_usernames }};
+  var EXTRUDER_HOT_THRESHOLD = 50; // The temperature after which an extruder is considered hot (so it shouldn't be touched)
 
   var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
   var SOCKJS_DEBUG = DEBUG_LUI;
@@ -27,6 +28,6 @@
   var CONFIG_LOGFILESPERPAGE = 8;
   var CONFIG_USERSPERPAGE = 5;
   var CONFIG_ACCESS_CONTROL = true;
-  
+
   var LPFRG_MODEL = "{{ model }}"
 </script>

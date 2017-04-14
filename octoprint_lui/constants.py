@@ -30,8 +30,8 @@ class ClientMessages(object):
     CALIBRATION_FINISHED = "calibration_completed"
     CALIBRATION_FAILED = "calibration_failed"
     
-    HEAD_IN_MAINTENANCE_POSITION = "head_in_maintenance_position"
-    POWERING_UP_AFTER_MAINTENANCE = "powering_up_after_maintenance"
+    HEAD_IN_SWAP_POSITION = "head_in_swap_position"
+    POWERING_UP_AFTER_SWAP = "powering_up_after_swap"
 
     MEDIA_FOLDER_UPDATED = "media_folder_updated"
     MEDIA_FILE_COPY_PROGRESS = "media_file_copy_progress"

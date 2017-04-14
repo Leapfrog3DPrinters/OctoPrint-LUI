@@ -648,7 +648,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "toolInfoViewModel", "settingsViewModel"],
         ["#print", "#info_flyout"]
     ]);
 });
