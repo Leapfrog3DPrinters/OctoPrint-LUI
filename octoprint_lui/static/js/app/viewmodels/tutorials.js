@@ -7,9 +7,9 @@ $(function () {
         self.loginState = parameters[2];
         self.filament = parameters[3];
 
-        self.startFirstPrintTutorial = function () {
+        self.startTutorial = function (tutorialName) {
             self.flyout.closeFlyout();
-            self.introView.startIntro("firstPrint");
+            self.introView.startIntro(tutorialName);
         };
     }
 

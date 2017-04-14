@@ -20,7 +20,7 @@
 }
 
 .introjs-tooltip {
-  min-width: 200px !important;
+  padding-top: 3px;
 }
 
 .tooltip_hidden {
@@ -56,7 +56,6 @@
   text-decoration: none;
   text-shadow: none;
   line-height: normal;
-  font-size: 18px;
   color: #333;
   white-space: nowrap;
   cursor: pointer;

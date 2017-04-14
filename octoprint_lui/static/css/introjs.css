@@ -186,8 +186,7 @@ tr.introjs-showElement > th {
   visibility: visible;
   padding: 10px;
   background-color: white;
-  min-width: 200px;
-  max-width: 300px;
+  width: 11em;
   border-radius: 3px;
   box-shadow: 0 1px 10px rgba(0,0,0,.4);
   -webkit-transition: opacity 0.1s ease-out;
@@ -216,7 +215,6 @@ tr.introjs-showElement > th {
   margin: 0;
   text-decoration: none;
   text-shadow: 1px 1px 0 #fff;
-  font: 11px/normal sans-serif;
   color: #333;
   white-space: nowrap;
   cursor: pointer;
@@ -354,6 +352,7 @@ tr.introjs-showElement > th {
   width: 0%;
   height: 100%;
   font-size: 10px;
+  color: #000000;
   line-height: 10px;
   text-align: center;
   background-color: #abcd3f;

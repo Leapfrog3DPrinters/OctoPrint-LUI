@@ -12,7 +12,7 @@ $(function ()  {
             steps: [
                 {
                     element: 'none',
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
                     " steps you have to take to start printing your creations.<br>" +
                     "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
@@ -23,7 +23,7 @@ $(function ()  {
                 {
                     //2
                     element: document.querySelector('#swap-left'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">In order to print stuff, we first have to " +
                     "load some filament in the printer. Click <i class=\"fa fa-refresh\"></i> <b> Swap Left</b> " +
                     "to load the filament in the left and main extruder.</div>",
@@ -32,7 +32,7 @@ $(function ()  {
                 {
                     //3
                     element: document.querySelector('#load_filament'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
                     "that you are loading. This way the printer knows what it's using.</div>",
                     position: 'bottom',
@@ -41,7 +41,7 @@ $(function ()  {
                 {
                     //4
                     element: document.querySelector('#filament_loading'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">The left extruder is now being loaded. When something goes wrong you can press " +
                     "Abort to cancel the action.</div>",
                     position: 'bottom'
@@ -49,7 +49,7 @@ $(function ()  {
                 {
                     //5
                     element: document.querySelector('#finished_filament'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">We are now done loading the left filament. If your not satisfied with the " +
                     "amount that came out of the nozzle you can press <b>Extrude More</b>. If you are ready for " +
                     "the next step press <b>Done</b>.</div>"
@@ -57,7 +57,7 @@ $(function ()  {
                 {
                     //6
                     element: document.querySelector('#swap-right'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">In order to print stuff, we first have to " +
                     "load some filament in the printer. Click <i class=\"fa fa-refresh\"></i> <b> Swap Right</b> " +
                     "to load the filament in the right and main extruder.</div>",
@@ -66,7 +66,7 @@ $(function ()  {
                 {
                     //7
                     element: document.querySelector('#load_filament'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
                     "that you are loading. This way the printer knows what it's using.</div>",
                     position: 'bottom',
@@ -75,7 +75,7 @@ $(function ()  {
                 {
                     //8
                     element: document.querySelector('#filament_loading'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">The right extruder is being loaded. When something goes wrong you can press " +
                     "Abort to cancel the action.</div>",
                     position: 'bottom'
@@ -83,7 +83,7 @@ $(function ()  {
                 {
                     //9
                     element: document.querySelector('#finished_filament'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">We are now done loading the right filament. If your not satisfied with the " +
                     "amount that came out of the nozzle you can press <b>Extrude More</b>. If you are ready for " +
                     "the next step press <b>Done</b>.</div>"
@@ -91,7 +91,7 @@ $(function ()  {
                 {
                     //10
                     element: 'none',
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Now that we have loaded the filament we have to calibrate the printer to make sure that the bed and" +
                     " the extruders are aligned</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                     "class=\"introjs-button\" data-bind=\"click: function (){ nextButton(11) }\">Next</a></div></div>"
@@ -99,28 +99,28 @@ $(function ()  {
                 {
                     //11
                     element: document.querySelector('#maintenance'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">To get to the maintenance menu, click on <i class=\"fa fa-wrench\"></i><b> Maintenance</b>.</div>",
                     position: 'bottom'
                 },
                 {
                     //12
                     element: document.querySelector('#bed_calibrate'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">To calibrate the bed, click on <b>Calibrate bed</b>.</div>",
                     position: 'top'
                 },
                 {
                     //13
                     element: document.querySelector('#continue_calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Check if the printbed is empty, when it is click on <b>Continue calibration</b>.</div>",
                     position: 'top'
                 },
                 {
                     //14
                     element: document.querySelector('#bed_calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">When you have calibrated the bed, press <b>Close</b>.</div>",
                     position: 'top',
                     tooltipClass: 'tooltip_hidden'
@@ -128,77 +128,77 @@ $(function ()  {
                 {
                     //15
                     element: document.querySelector('#extruder_calibrate'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">To align the extruders, press <b>Calibrate extruders</b>.</div>",
                     position: 'bottom'
                 },
                 {
                     //16
                     element: document.querySelector('#start_extruder_calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">To the extruder calibration, press <b>Start calibration</b>.</div>",
                     position: 'bottom'
                 },
                 {
                     //17
                     element: document.querySelector('#printing-extruder-calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Printing large calibration.</div>",
                     position: 'bottom'
                 },
                 {
                     //18
                     element: document.querySelector('#large-calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Select the best aligned line, press Next</div>",
                     position: 'bottom'
                 },
                 {
                     //19
                     element: document.querySelector('#printing-extruder-calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Printing small calibration</div>",
                     position: 'bottom'
                 },
                 {
                     //20
                     element: document.querySelector('#small-calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Select the best aligned line x, press Next</div>",
                     position: 'bottom'
                 },
                 {
                     //21
                     element: document.querySelector('#y-small-calibration'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Select the best aligned line y, press Next</div>",
                     position: 'bottom'
                 },
                 {
                     //22
                     element: document.querySelector('#job_button'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Now that the printer is calibrated, we can select our print job for the printer. To" +
                     " select a print job, click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.</div>"
                 },
                 {
                     //23
                     element: document.querySelector('#local_button'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Now we can select a GCODE file that's saved on the printer. " +
                     "There is a sample print you can try out.</div>"
                 },
                 {
                     //24
                     element: document.querySelector("#print_files"),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Select the file and press on the <i class=\"fa fa-play\">" +
                     "</i> button next to it</div>"
                 },
                 {
                     //25
                     element: document.querySelector('#start_print'),
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">For the first print we will keep it simple and print in normal" +
                     " mode. So when you're ready, press <b>Start Print</b> or if you don't want to print" +
                     " anything press <b>Cancel</b>.</div>",
@@ -207,7 +207,7 @@ $(function ()  {
                 {
                     //26
                     element: 'none',
-                    intro: "<div class=\"step-header\">Getting Started</div>" +
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Good Job!<br>The printer is now printing the first print. " +
                     "Watch how the object magically appears before you.<br>" +
                     "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +

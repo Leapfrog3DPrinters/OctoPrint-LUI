@@ -6,7 +6,7 @@
 			</div>
 		</div>
         <div class="tutorial_topic">
-          <ul class="topic_main" data-bind="click: function () { startFirstPrintTutorial() }, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() ||  filament.leftFilament() != 'None' ||  filament.rightFilament() != 'None'}">
+          <ul class="topic_main" data-bind="click: function () { startTutorial('firstPrint') }, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() ||  filament.leftFilament() != 'None' ||  filament.rightFilament() != 'None'}">
           <li class="topic_dash">
             <a href="">
               <i id="language_icon" class="fa fa-graduation-cap"></i>
