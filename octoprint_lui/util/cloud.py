@@ -41,9 +41,7 @@ class CloudService(object):
         pass
     def download_file(self, path, target_path, progress_callback = None):
         pass
-    def get_logout_url(self, redirect_uri):
-        pass
-    def handle_logout_response(self, request):
+    def logout(self):
         pass
 
 class DropboxCloudService(CloudService):
@@ -174,10 +172,7 @@ class DropboxCloudService(CloudService):
                     f.write(chunk)
                     f.flush()
 
-    def get_logout_url(self, redirect_uri):
-        return redirect_uri
-
-    def handle_logout_response(self, request):
+    def logout(self):
         if self._access_token:
             self._get_client().auth_token_revoke()
             self._logger.debug("Dropbox auth token revoked")
@@ -333,10 +328,7 @@ class GoogleDriveCloudService(CloudService):
                 if progress_callback and callable(progress_callback):
                     progress_callback(status.progress())
 
-    def get_logout_url(self, redirect_uri):
-        return redirect_uri
-
-    def handle_logout_response(self, request):
+    def logout(self):
         if self._credentials and not self._credentials.access_token_expired:
             try:
                 self._credentials.revoke(self._http)
@@ -420,10 +412,7 @@ class OnedriveCloudService(CloudService):
             self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
             return False
 
-    def get_logout_url(self, redirect_uri):
-        return redirect_uri
-
-    def handle_logout_response(self, request):
+    def logout(self):
         self._get_client().auth_provider.delete_session()
         self._logger.info("OneDrive disconnected")
 
@@ -490,11 +479,8 @@ class CloudConnect():
     def handle_auth_response(self, service, request):
         return self.get_service(service).handle_auth_response(request)
 
-    def get_logout_url(self, service, redirect_uri):
-        return self.get_service(service).get_logout_url(redirect_uri)
-
-    def handle_logout_response(self, service, request):
-        return self.get_service(service).handle_logout_response(request)
+    def logout(self, service):
+        return self.get_service(service).logout()
 
 
 class CloudStorage(LocalFileStorage):

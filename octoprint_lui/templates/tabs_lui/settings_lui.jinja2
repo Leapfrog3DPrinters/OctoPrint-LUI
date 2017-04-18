@@ -193,6 +193,7 @@
         </ul>
       </div><!-- /Languanges -->
       <!-- Cloud -->
+      {% if cloud_enabled %} 
       <div class="settings_topic">
         <ul class="topic_main" data-bind="click: function () {showSettingsTopic('cloud')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
           <li class="topic_dash">
@@ -211,7 +212,8 @@
             </a>
           </li>
         </ul>
-      </div><!-- /Languanges -->
+      </div><!-- /Cloud -->
+      {% endif %}
       {% if not local_addr %}
       <!-- Logs -->
       <div class="settings_topic" data-bind="touchClick: function () {showSettingsTopic('logs')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || printerState.isPrinting() || printerState.isPaused()}">

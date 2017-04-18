@@ -32,6 +32,7 @@
                 </li>
               </ul>
             </div>
+            {% if cloud_enabled %}
             <div class="button-area">
               <ul>
                 <li class="button load-button" data-bind="click: function () { browseOrigin('cloud') }, css: {  'secondary-button': currentOrigin() == 'cloud' }">
@@ -43,6 +44,7 @@
                 </li>
               </ul>
             </div>
+            {% endif %}
             {%- endif %}
             {% if not local_addr or debug_lui  %}
             <div class="button-area">

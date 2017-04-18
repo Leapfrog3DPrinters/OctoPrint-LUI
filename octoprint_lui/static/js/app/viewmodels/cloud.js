@@ -33,33 +33,28 @@ $(function () {
         }
 
         self.loginService = function (service) {
-            getFromApi('cloud/' + service + '/login').done(function (data) {
-                var loginWindow = window.open(data.auth_url, "_blank");
-                // Can't work with events here because we don't have control over the child's HTML
-                var timer = setInterval(checkChild, 500);
 
-                function checkChild() {
-                    if (!loginWindow || loginWindow.closed) {
-                        self.requestData();
-                        clearInterval(timer);
-                    }
+            var loginUrl = self.getServiceInfo(service).loginUrl();
+            var loginWindow = window.open(loginUrl, "_blank");
+            
+            // Can't work with events here because we don't have control over the child's HTML
+            var timer = setInterval(checkChild, 500);
+
+            function checkChild() {
+                if (!loginWindow || loginWindow.closed) {
+                    self.requestData();
+                    clearInterval(timer);
                 }
-            });
+            }
+        }
+        
+        self.logoutService = function (service) {
+            sendToApi('cloud/' + service + '/logout').done(self.requestData);
         }
 
-        self.logoutService = function (service) {
-            getFromApi('cloud/' + service + '/logout').done(function (data) {
-                var logoutWindow = window.open(data.logout_url, "_blank");
-                // Can't work with events here because we don't have control over the child's HTML
-                var timer = setInterval(checkChild, 500);
-
-                function checkChild() {
-                    if (!logoutWindow || logoutWindow.closed) {
-                        self.requestData();
-                        clearInterval(timer);
-                    }
-                }
-            });
+        self.getServiceInfo = function (service)
+        {
+            return _.find(self.serviceInfo(), function (serviceInfo) { return serviceInfo.name() == service });
         }
 
         self.requestData = function () {
@@ -104,10 +99,10 @@ $(function () {
         }
     }
 
-    OCTOPRINT_VIEWMODELS.push([
-      CloudViewModel,
-      ["loginStateViewModel", "flyoutViewModel", "networkmanagerViewModel"],
-      ['#cloud_settings_flyout_content']
-    ]);
+        OCTOPRINT_VIEWMODELS.push([
+          CloudViewModel,
+          ["loginStateViewModel", "flyoutViewModel", "networkmanagerViewModel"],
+          ['#cloud_settings_flyout_content']
+        ]);
 
 });
