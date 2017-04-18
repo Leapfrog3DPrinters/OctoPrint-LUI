@@ -17,8 +17,8 @@ $(function ()  {
         self.tools = self.toolInfo.tools;
 
         // IsExtruding is now stored in toolInfo.tools. This helper lets you know if there's any of these tools extruding 
-        self.isAnyExtruding = ko.pureComputed(function () {
-            return _.some(self.tools(), function (tool) { return tool.filament.isExtruding() });
+        self.isAnyExtrudingOrRetracting = ko.pureComputed(function () {
+            return _.some(self.tools(), function (tool) { return tool.filament.isExtruding() || tool.filament.isRetracting(); });
         });
 
         self.isProfileLocked = ko.observable(false);
@@ -351,6 +351,23 @@ $(function ()  {
             sendToApi("filament/" + tool + "/extrude/finish");
         }
 
+        self.startRetracting = function (tool) {
+            tool = tool || self.tool();
+
+            if (self.getFilamentMaterial(tool) == "None")
+                return;
+
+            sendToApi("filament/" + tool + "/extrude/start",
+                {
+                    direction: -1
+                });
+        }
+
+        self.finishRetracting = function (tool) {
+            tool = tool || self.tool();
+            sendToApi("filament/" + tool + "/extrude/finish");
+        }
+
         // Handle plugin messages
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
@@ -388,14 +405,22 @@ $(function ()  {
                 case "filament_extruding":
                     var filament = self.getFilament(messageData["tool"]);
 
-                    if (filament)
-                        filament.isExtruding(true);
+                    if (filament) {
+                        if (messageData["direction"] == 1)
+                            filament.isExtruding(true);
+                        else if (messageData["direction"] == -1)
+                            filament.isRetracting(true);
+                    }
                     break;
                 case "filament_extruding_finished":
                     var filament = self.getFilament(messageData["tool"]);
 
-                    if (filament)
-                        filament.isExtruding(false);
+                    if (filament) {
+                        if (messageData["direction"] == 1)
+                            filament.isExtruding(false);
+                        else if (messageData["direction"] == -1)
+                            filament.isRetracting(false);
+                    }
                     break;
                 case "filament_unloading":
                 // Show unloading 

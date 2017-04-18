@@ -19,7 +19,8 @@ $(function () {
                 filament: {
                     materialProfileName: ko.observable(),
                     amount: ko.observable(),
-                    isExtruding: ko.observable(false)
+                    isExtruding: ko.observable(false),
+                    isRetracting: ko.observable(false)
                 }
             }
 

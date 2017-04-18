@@ -129,14 +129,14 @@
     <div class="Table-row fd_swap_process_step" id="fd_finished_filament" >
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="touchClick: function () { filament.startExtruding() }, css: { disabled: filament.isAnyExtruding()}">
+          <li class="button" data-bind="touchClick: function () { filament.startExtruding() }, css: { disabled: filament.isAnyExtrudingOrRetracting()}">
             <a href="#">
               <span>
                 <i class="fa fa-arrow-down"></i>{{ _('Load extra filament') }}
               </span>
             </a>
           </li>
-          <li class="button failed-button" data-bind="touchClick: function () { filament.finishExtruding() }, css: { disabled: !filament.isAnyExtruding()}">
+          <li class="button failed-button" data-bind="touchClick: function () { filament.finishExtruding() }, css: { disabled: !filament.isAnyExtrudingOrRetracting()}">
             <a href="#">
               <span>
                 <i class="fa fa-close"></i>{{ _('Stop loading') }}

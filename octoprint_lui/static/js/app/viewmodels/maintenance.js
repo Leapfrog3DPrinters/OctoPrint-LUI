@@ -16,24 +16,6 @@ $(function () {
 
         self.isHeadMaintenanceFlyoutOpen = false;
 
-        self.getPurgeButtonContents = function (tool) {
-            switch (tool) {
-                case 'tool0':
-                    return '<i class="fa fa-arrow-down"></i>' + gettext('Purge right');
-                case 'tool1':
-                    return '<i class="fa fa-arrow-down"></i>' + gettext('Purge left');
-            }
-        };
-
-        self.getFilamentUpdateButtonContents = function (tool) {
-            switch (tool) {
-                case "tool0":
-                    return '<i class="fa fa-refresh"></i>' + gettext('Update right');
-                case "tool1":
-                    return '<i class="fa fa-refresh"></i>' + gettext('Update left');
-            }
-        }
-
         self.showHeadMaintenance = function () {
 
             var text = gettext("You are about to move the printer to the head maintenance position.");

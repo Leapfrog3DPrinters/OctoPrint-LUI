@@ -661,6 +661,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return markdown.markdown(md)
 
     # Begin API
+    # TODO: These API functions need input validation and security (admin/non-admin, local/remote mostly, they are protected by API key)
 
 	## Cloud API
     @BlueprintPlugin.route("/cloud", methods=["GET"], strict_slashes=False)
@@ -2598,7 +2599,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 self.load_amount_stop = self.current_printer_profile["filament"]["loadAmountStop"]
 
-            load_filament_partial = partial(self._load_filament_repeater, tool=tool, initial=load_initial, change=load_change)
+            load_filament_partial = partial(self._load_filament_repeater, tool=tool, direction=1, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     load_filament_partial,
                                                     run_first=True,
@@ -2612,7 +2613,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def unload_filament(self, tool):
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
-            ## This is xeed load function, TODO: Bolt! function and switch
+
             self.load_amount = 0
             self.set_extrusion_mode("relative")
             self.unload_change = None
@@ -2629,7 +2630,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["G1 E10 F300"])
 
             # Start unloading
-            unload_filament_partial = partial(self._load_filament_repeater, tool=tool, initial=unload_initial, change=unload_change) ## TEST TODO
+            unload_filament_partial = partial(self._load_filament_repeater, tool=tool, direction=-1, initial=unload_initial, change=unload_change)
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     unload_filament_partial,
                                                     run_first=True,
@@ -2645,23 +2646,32 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
 
-            #This method can also be used for the Bolt!
+            # Make sure the active tool is correct (we can't rely on filament_change_tool, because it may be called for purging as well)
+            self._printer.change_tool(tool)
+
+            # Determine loading parameters for continuous extrude
             self.load_amount = 0
             self.load_amount_stop = self.current_printer_profile["filament"]["contLoadAmountStop"]
             load_cont_initial = dict(amount=2.5 * direction, speed=240)
             self.set_extrusion_mode("relative")
-            load_cont_partial = partial(self._load_filament_repeater, tool=tool, initial=load_cont_initial)
-            load_cont_finished_partial = partial(self._load_filament_cont_finished, tool=tool)
+
+            # Prepare repeatedtimer function calls
+            load_cont_partial = partial(self._load_filament_repeater, tool=tool, direction=direction, initial=load_cont_initial)
+            load_cont_finished_partial = partial(self._load_filament_cont_finished, tool=tool, direction=direction)
+
+            # Start extrusion
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     load_cont_partial,
                                                     run_first=True,
                                                     condition=self._load_filament_running,
                                                     on_finish=load_cont_finished_partial)
             self.load_filament_timer.start()
-            self._send_client_message(ClientMessages.FILAMENT_EXTRUDING, { "tool": tool })
+
+            # Notify client
+            self._send_client_message(ClientMessages.FILAMENT_EXTRUDING, { "tool": tool, "direction": direction })
 
 
-    def _load_filament_repeater(self, tool, initial, change=None):
+    def _load_filament_repeater(self, tool, direction, initial, change=None):
         load_extrusion_amount = initial['amount']
         load_extrusion_speed = initial['speed']
         # Swap to the change condition
@@ -2679,7 +2689,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         progress = int((self.load_amount / self.load_amount_stop) * 100)
         # Send message every other percent to keep data stream to minimum
         if progress % 2:
-            self._send_client_message(ClientMessages.FILAMENT_LOAD_PROGRESS, { "progress" : progress, "tool": tool })
+            self._send_client_message(ClientMessages.FILAMENT_LOAD_PROGRESS, { "progress" : progress, "tool": tool, "direction": direction })
 
     def _load_filament_running(self):
         return self.load_amount <= self.load_amount_stop
@@ -2717,11 +2727,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_extrusion_mode()
         self.load_filament_timer = None
 
-    def _load_filament_cont_finished(self, tool):
+    def _load_filament_cont_finished(self, tool, direction):
         self._logger.debug("_load_filament_cont_finished")
         self.restore_extrusion_mode()
         self.load_filament_timer = None
-        self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_FINISHED, { "tool": tool })
+        self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_FINISHED, { "tool": tool, "direction": direction })
 
     def _load_filament_cancelled(self):
         # A load or unload action has been cancelled, turn off the heating
