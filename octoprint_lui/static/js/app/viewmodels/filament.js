@@ -302,7 +302,7 @@ $(function ()  {
             }).done(function () {
                 $.notify({
                     title: gettext("Filament information updated"),
-                    text: _.sprintf(gettext('New material: "%(material)s". New amount: "%(amount)s"'), { material: materialProfileName, amount: self.getAmountString(amount) })
+                    text: _.sprintf(gettext('New material: %(material)s. New amount: %(amount)s'), { material: materialProfileName, amount: self.getAmountString(amount) })
                 },
                     "success"
                 );

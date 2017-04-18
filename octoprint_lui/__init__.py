@@ -2731,6 +2731,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("_load_filament_cont_finished")
         self.restore_extrusion_mode()
         self.load_filament_timer = None
+
         self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_FINISHED, { "tool": tool, "direction": direction })
 
     def _load_filament_cancelled(self):
