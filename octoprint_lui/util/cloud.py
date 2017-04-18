@@ -1,7 +1,6 @@
 from __future__ import division
 from octoprint.filemanager import get_file_type, valid_file_type
 from octoprint.filemanager.storage import StorageInterface, LocalFileStorage
-from octoprint_lui.util.onedrivestatushttpprovider import OnedriveStatusHttpProvider
 from flask.ext.login import current_user
 
 # OneDrive
