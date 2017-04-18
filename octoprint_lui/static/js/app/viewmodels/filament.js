@@ -6,7 +6,7 @@ $(function ()  {
         self.settings = parameters[1];
         self.flyout = parameters[2];
         self.printerState = parameters[3];
-        self.temperatureState = parameters[4];
+        self.toolInfo = parameters[4];
 
         self.loadedFilamentAmount = ko.observable();
         self.tool = ko.observable(undefined);
@@ -14,7 +14,12 @@ $(function ()  {
         self.forPurge = ko.observable(false);
 
         // Let's create an alias for the tools array, we're gonna use it a lot from here
-        self.tools = self.temperatureState.tools; 
+        self.tools = self.toolInfo.tools;
+
+        // IsExtruding is now stored in toolInfo.tools. This helper lets you know if there's any of these tools extruding 
+        self.isAnyExtruding = ko.pureComputed(function () {
+            return _.some(self.tools(), function (tool) { return tool.filament.isExtruding() });
+        });
 
         self.isProfileLocked = ko.observable(false);
 
@@ -64,8 +69,6 @@ $(function ()  {
 
         self.filamentLoading = ko.observable(false);
         self.filamentInProgress = ko.observable(false);
-
-        self.isExtruding = ko.observable(false);
 
         self.getSwapFilamentButtonContents = function (tool) {
             switch (tool) {
@@ -117,7 +120,7 @@ $(function ()  {
         self.getFilament = function (tool) {
             tool = tool || self.tool();
 
-            return self.tools().find(function (x) { return x.key() === tool }).filament;
+            return self.toolInfo.getToolByKey(tool).filament;
         }
 
         self.disableRemove = function (data) {
@@ -383,10 +386,16 @@ $(function ()  {
                     break;
 
                 case "filament_extruding":
-                    self.isExtruding(true);
+                    var filament = self.getFilament(messageData["tool"]);
+
+                    if (filament)
+                        filament.isExtruding(true);
                     break;
                 case "filament_extruding_finished":
-                    self.isExtruding(false);
+                    var filament = self.getFilament(messageData["tool"]);
+
+                    if (filament)
+                        filament.isExtruding(false);
                     break;
                 case "filament_unloading":
                 // Show unloading 

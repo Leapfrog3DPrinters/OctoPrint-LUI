@@ -18,10 +18,22 @@ $(function () {
                 status: ko.observable(),
                 filament: {
                     materialProfileName: ko.observable(),
-                    amount: ko.observable()
-                },
-                css_class: ko.observable()
+                    amount: ko.observable(),
+                    isExtruding: ko.observable(false)
+                }
             }
+
+            entry.displayStatus = ko.pureComputed({
+                read: function () {
+                    return self.getToolStatusString(entry.status());
+                }
+            });
+
+            entry.cssClass = ko.pureComputed({
+                read: function () {
+                    return self.getToolCssClass(entry.status());
+                }
+            });
 
             entry.filament.amountMeter = ko.pureComputed({
                 read: function () {
@@ -152,16 +164,14 @@ $(function () {
             for (var i = 0; i < tools.length; i++) {
 
                 if (tool_status.hasOwnProperty("tool" + i)) {
-                    tools[i]["status"](self.getToolStatusString(tool_status["tool" + i]));
-                    tools[i]["css_class"](self.getToolCssClass(tool_status["tool" + i]));
+                    tools[i]["status"](tool_status["tool" + i]);
                     isHeating = isHeating || tool_status["tool" + i] == "HEATING";
                     isStabilizing = isStabilizing || tool_status["tool" + i] == "STABILIZING";
                 }
             }
 
             if (tool_status.hasOwnProperty("bed")) {
-                self.bedTemp["status"](self.getToolStatusString(tool_status["bed"]));
-                self.bedTemp["css_class"](self.getToolCssClass(tool_status["bed"]));
+                self.bedTemp["status"](tool_status["bed"]);
                 isHeating = isHeating || tool_status["bed"] == "HEATING";
                 isStabilizing = isStabilizing || tool_status["bed"] == "STABILIZING";
             }
@@ -169,6 +179,15 @@ $(function () {
             self.isHeating(isHeating);
             self.isStabilizing(isStabilizing);
         };
+
+        self.getToolByKey = function(key)
+        {
+            return self.tools().find(function (x) { return x.key() === key });
+        }
+
+        self.getToolByNumber = function (num) {
+            return self.tools().find(function (x) { return x.key() === "tool" + num });
+        }
 
         self.getToolName = function(key) {
             switch (key){

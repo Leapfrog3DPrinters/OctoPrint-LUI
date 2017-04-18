@@ -4,7 +4,7 @@ $(function ()  {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
-        self.temperatureState = parameters[2];
+        self.toolInfo = parameters[2];
         self.settings = parameters[3];
 
         self.stateString = ko.observable(undefined);
@@ -353,7 +353,7 @@ $(function ()  {
         self.pause = function () {
 
             if (self.isPaused()) {
-                var tools = self.temperatureState.tools();
+                var tools = self.toolInfo.tools();
                 var loaded = self.loadedFilaments();
                 var needed = self.requiredFilaments();
                 

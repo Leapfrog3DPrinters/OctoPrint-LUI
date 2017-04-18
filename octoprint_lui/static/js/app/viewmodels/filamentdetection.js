@@ -6,7 +6,7 @@ $(function ()  {
         self.settings = parameters[1];
         self.flyout = parameters[2];
         self.printerState = parameters[3];
-        self.temperatureState = parameters[4];
+        self.toolInfo = parameters[4];
         self.filament = parameters[5];
 
         self.temperatureSafetyTimerValue = ko.observable(undefined);

@@ -1007,7 +1007,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.powerbutton_handler:
             self._power_up_after_maintenance()
         else:
-            self._printer.home(['x','y','z'])
+            self._auto_home_after_maintenance()
 
         return make_response(jsonify(), 200)
 
@@ -1127,6 +1127,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Stops heating of the given tool
         """
+        # Stop purging if it is doing that at the moment
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
 
         self.heat_to_temperature(tool, 0)
 
@@ -2302,12 +2305,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _auto_home_after_maintenance(self):
         """
-        Homes printer after maintenance 
+        Homes printer after maintenance and brings it back to the filament load position.
         """
         self.is_homed = False #Reset is_homed, so LUI waits for a G28 complete, and then sends UI update
         self._printer.home(['x','y','z'])
-
-    
+        self.move_to_filament_load_position()
 
     def _select_cloud_file(self, path):
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
@@ -2596,7 +2598,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 self.load_amount_stop = self.current_printer_profile["filament"]["loadAmountStop"]
 
-            load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
+            load_filament_partial = partial(self._load_filament_repeater, tool=tool, initial=load_initial, change=load_change)
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     load_filament_partial,
                                                     run_first=True,
@@ -2627,7 +2629,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["G1 E10 F300"])
 
             # Start unloading
-            unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
+            unload_filament_partial = partial(self._load_filament_repeater, tool=tool, initial=unload_initial, change=unload_change) ## TEST TODO
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     unload_filament_partial,
                                                     run_first=True,
@@ -2648,17 +2650,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_amount_stop = self.current_printer_profile["filament"]["contLoadAmountStop"]
             load_cont_initial = dict(amount=2.5 * direction, speed=240)
             self.set_extrusion_mode("relative")
-            load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
+            load_cont_partial = partial(self._load_filament_repeater, tool=tool, initial=load_cont_initial)
+            load_cont_finished_partial = partial(self._load_filament_cont_finished, tool=tool)
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     load_cont_partial,
                                                     run_first=True,
                                                     condition=self._load_filament_running,
-                                                    on_finish=self._load_filament_cont_finished)
+                                                    on_finish=load_cont_finished_partial)
             self.load_filament_timer.start()
-            self._send_client_message(ClientMessages.FILAMENT_EXTRUDING)
+            self._send_client_message(ClientMessages.FILAMENT_EXTRUDING, { "tool": tool })
 
 
-    def _load_filament_repeater(self, initial, change=None):
+    def _load_filament_repeater(self, tool, initial, change=None):
         load_extrusion_amount = initial['amount']
         load_extrusion_speed = initial['speed']
         # Swap to the change condition
@@ -2676,7 +2679,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         progress = int((self.load_amount / self.load_amount_stop) * 100)
         # Send message every other percent to keep data stream to minimum
         if progress % 2:
-            self._send_client_message(ClientMessages.FILAMENT_LOAD_PROGRESS, { "progress" : progress })
+            self._send_client_message(ClientMessages.FILAMENT_LOAD_PROGRESS, { "progress" : progress, "tool": tool })
 
     def _load_filament_running(self):
         return self.load_amount <= self.load_amount_stop
@@ -2714,11 +2717,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_extrusion_mode()
         self.load_filament_timer = None
 
-    def _load_filament_cont_finished(self):
+    def _load_filament_cont_finished(self, tool):
         self._logger.debug("_load_filament_cont_finished")
         self.restore_extrusion_mode()
         self.load_filament_timer = None
-        self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_FINISHED)
+        self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_FINISHED, { "tool": tool })
 
     def _load_filament_cancelled(self):
         # A load or unload action has been cancelled, turn off the heating
@@ -3178,7 +3181,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         context = { "currentZ": self._printer._currentZ,
                     "stepperTimeout": self.current_printer_profile["filament"]["stepperTimeout"] if "stepperTimeout" in self.current_printer_profile["filament"] else None,
-                    "filamentChangeTool": self._get_tool_num(self.filament_change_tool)
+                    "filamentChangeTool": self._get_tool_num(self.filament_change_tool) if self.filament_change_tool else 0
                     }
 
         self._execute_printer_script("filament_load_position", context)

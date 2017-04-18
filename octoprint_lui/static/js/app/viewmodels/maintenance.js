@@ -138,7 +138,7 @@ $(function () {
             self.movingToHeadSwapPositionInfo = self.flyout.showInfo(gettext("Maintenance position"), gettext("The printhead is moving towards the maintenance position."), true);
         };
 
-        self.completeHeadSwap = function ()
+        self.finishHeadSwap = function ()
         {
             if (self.movingToHeadSwapPositionInfo !== undefined) {
                 self.flyout.closeInfo(self.movingToHeadSwapPositionInfo);
@@ -146,27 +146,6 @@ $(function () {
                 self.movingToHeadSwapPositionInfo = undefined;
             }
 
-        };
-
-        self.beginPurgeWizard = function (tool)
-        {
-            if (self.filament.getFilamentMaterial(tool) == "None")
-                return;
-
-            var text = gettext("You are about to move the printer to the filament load position.");
-            var question = gettext("Do want to continue?");
-            var title = gettext("Purge nozzle");
-            var dialog = { 'title': title, 'text': text, 'question': question };
-
-            self.flyout.showConfirmationFlyout(dialog)
-                .done(function ()  {
-                    self.filament.showFilamentChangeFlyout(tool, true);
-                });
-        };
-
-        self.setFilamentAmount = function () {
-            self.filament.requestData();
-            self.flyout.showFlyout('filament_override')
         };
 
         self.logFiles = function ()
@@ -202,7 +181,7 @@ $(function () {
             switch (messageType) {
 
                 case "head_in_swap_position":
-                    self.completeHeadSwap();
+                    self.finishHeadSwap();
                     break;
                 case "powering_up_after_swap":
                     var title = gettext("Reconnecting to printer");
