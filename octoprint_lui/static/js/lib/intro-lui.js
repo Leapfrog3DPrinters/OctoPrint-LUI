@@ -370,7 +370,7 @@
    */
   function _exitIntro(targetElement) {
     //remove overlay layers from the page
-    var overlayLayers = targetElement.querySelectorAll('.introjs-overlay');
+    var overlayLayers = document.querySelectorAll('.introjs-overlay');
 
     if (overlayLayers && overlayLayers.length > 0) {
       for (var i = overlayLayers.length - 1; i >= 0; i--) {

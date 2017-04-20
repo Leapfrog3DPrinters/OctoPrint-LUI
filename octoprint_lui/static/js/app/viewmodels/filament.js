@@ -520,6 +520,22 @@ $(function ()  {
                 self.loadFilament(false);
             }
         }
+
+        self.abortFilament = function () {
+            //IntroJS
+            if (self.introView.firstRun) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh()
+                }, 300);
+                tool = self.tool();
+                if (tool == 'tool1') {
+                    self.introView.introInstance.goToStep(2);
+                }
+                else {
+                    self.introView.introInstance.goToStep(6);
+                }
+            }
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

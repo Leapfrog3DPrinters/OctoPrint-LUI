@@ -305,7 +305,7 @@
       </div>
       <ul class="button-area">
         <li id='abort_filament' class="button failed-button">
-          <a href="#abort" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#abort" data-bind="click: function () { flyout.closeFlyout(); abortFilament() }">
             <span data-bind="">{{ _('Abort') }}</span>
           </a>
         </li>

@@ -3,7 +3,6 @@ $(function ()  {
         var self = this;
 
         self.firstRun = false;
-        self.nameOfTutorial = undefined;
 
         self.viewmodel = undefined;
         self.flyout = parameters[0];
@@ -254,20 +253,19 @@ $(function ()  {
             }
         });
 
-        self.introInstance.oncomplete(function(){
+        self.introInstance.oncomplete(function(targetElement){
             self.firstRun = false;
             console.log('oncomplete: ' + self.firstRun);
         });
 
-        self.introInstance.onexit(function () {
-            self.firstRun = false;
+        self.introInstance.onexit(function (targetElement) {
             console.log('onexit: ' + self.firstRun);
         });
 
         self.startIntro = function (introName) {
             self.firstRun = true;
             switch (introName){
-                case "firstPrint": self.introInstance.start(); self.nameOfTutorial = introName;
+                case "firstPrint": self.introInstance.start();
                     break;
             }
         };
