@@ -273,7 +273,7 @@ $(function () {
         },
         update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
             setTimeout(function () {
-                if (element.nodeName == "#comment") {
+                if (element && element.nodeName == "#comment") {
                     // foreach is bound to a virtual element
                     $(element.parentElement).slimScroll({scrollBy: 0});
                 } else {

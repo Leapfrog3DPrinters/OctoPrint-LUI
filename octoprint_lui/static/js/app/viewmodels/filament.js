@@ -161,8 +161,7 @@ $(function ()  {
                 self.loadFilament('purge');
             }
 
-
-            self.flyout.showFlyout('filament', true)
+            return self.flyout.showFlyout('filament', true)
             .always(function ()  {
                 // If this closes we need to reset stuff
                 self.filamentLoadProgress(0);
@@ -173,28 +172,25 @@ $(function ()  {
             .fail(self.cancelChangeFilament);
         };
 
-        self.lockTemperatureProfile = function(paused_materials)
-            {
-                //    If it's a paused filament swap, lock the filament material to the one used when starting the print
-
+        self.lockTemperatureProfile = function (paused_materials) {
+            // If it's a paused filament swap, lock the filament material to the one used when starting the print
             var tool = self.tool();
 
             if (paused_materials.hasOwnProperty(tool)) {
-                var profile = paused_materials[tool];
-
-                if (profile.hasOwnProperty("name") && profile["name"] != "None") {
-                    self.preselectedTemperatureProfile(profile);
+                if (paused_materials[tool] != "None") {
+                    var material = self.materialProfiles().find(function (profile) { return profile.name == paused_materials[tool] });
+                    self.preselectedTemperatureProfile(material);
                     self.isProfileLocked(true);
+                }
             }
-            }
-            }
+        };
 
-                // Below functions swap views for both filament swap and filament detection swap
+        // Below functions swap views for both filament swap and filament detection swap
         self.showUnload = function ()  {
             $('.swap_process_step,.fd_swap_process_step').removeClass('active');
             $('#unload_filament,#fd_unload_filament').addClass('active');
             $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
-            };
+        };
 
         self.showLoad = function ()  {
             $('#swap-info,#fd-swap-info').removeClass('active');
@@ -238,17 +234,12 @@ $(function ()  {
             var loadFor = loadFor || "swap";
             var materialProfileName = undefined;
 
-            if (loadFor == "filament-detection" && fd_slider.noUiSlider.get()) {
-                amount = fd_slider.noUiSlider.get() * 1000;
-            }
-            else if (loadFor == "filament-detection-purge" || loadFor == "purge") {
+            if (loadFor == "purge")
                 amount = 0;
-            }
-            else if (slider.noUiSlider.get()) {
+            else if (slider.noUiSlider.get())
                 amount = slider.noUiSlider.get() * 1000;
-            } else {
+            else
                 amount = 0;
-            }
 
             if (loadFor == "swap")
             {
@@ -377,15 +368,52 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
-                case "filament_change_in_progress":
+                case "filament_change_started":
                     self.filamentInProgress(true);
 
-                    if (messageData !== null && messageData.hasOwnProperty('paused_materials'))
+                    if (messageData && messageData.hasOwnProperty('paused_materials'))
                         self.lockTemperatureProfile(messageData['paused_materials'])
                     
                     break;
-                case "skip_unload":
+                case "filament_change_cancelled":
+                    self.filamentInProgress(false);
+                    self.filamentLoading(false);
+                    self.filamentLoadProgress(0);
+
+                    if (!self.forPurge()) {
+                        $.notify({
+                            title: gettext("Filament loaded aborted!"),
+                            text: _.sprintf(gettext('Please re-run load filament procedure'), {})
+                        },
+                                        "warning"
+                                    );
+                    }
+                    self.requestData();
+                    break;
+                case "filament_load_progress":
+                    // Used for both loading and unloading
+                    self.filamentInProgress(true);
+                    self.filamentLoadProgress(messageData.progress);
+                    break;
+                case "filament_unload_started":
+                    self.filamentLoadingText(gettext("Unloading filament..."));
+                    break;
+                case "filament_unload_finished":
                     self.showLoad();
+                    break;
+                case "filament_load_started":
+                    self.filamentLoadingText(gettext("Loading filament..."));
+                    break;
+                case "filament_load_finished":
+                    self.filamentInProgress(false);
+                    self.filamentLoading(false);
+                    self.showFinished();
+                    self.hideToolLoading();
+                    self.filamentLoadProgress(0);
+                    if (!messageData.profile) {
+                        self.flyout.closeFlyoutAccept();
+                    }
+                    self.requestData();
                     break;
                 case "tool_heating":
                     self.filamentInProgress(true);
@@ -393,16 +421,7 @@ $(function ()  {
                     self.filamentLoadProgress(0);
                     self.onToolHeating();
                     break;
-                case "filament_loading":
-                // Show loading info
-                    self.filamentLoadingText(gettext("Loading filament..."));
-                    break;
-                case "filament_load_progress":
-                    self.filamentInProgress(true);
-                    self.filamentLoadProgress(messageData.progress);
-                    break;
-
-                case "filament_extruding":
+                case "filament_extruding_started":
                     var filament = self.getFilament(messageData["tool"]);
 
                     if (filament) {
@@ -421,43 +440,6 @@ $(function ()  {
                         else if (messageData["direction"] == -1)
                             filament.isRetracting(false);
                     }
-                    break;
-                case "filament_unloading":
-                // Show unloading 
-                    self.filamentLoadingText(gettext("Unloading filament..."));
-                    break;
-                case "filament_finished":
-                    self.filamentInProgress(false);
-                    self.filamentLoading(false);
-                    self.showFinished();
-                    self.hideToolLoading();
-                    self.filamentLoadProgress(0);
-                    if (!messageData.profile) {
-                        self.flyout.closeFlyoutAccept();
-                    }
-                    // Out for now TODO
-                    // $.notify({
-                    //     title: gettext("Filament loaded success!"),
-                    //     text: _.sprintf(gettext('Filament with profile .. and amount .. loaded'), {})},
-                    //     "success"
-                    // )
-                    self.requestData();
-                    break;
-                case "filament_cancelled":
-                    self.filamentInProgress(false);
-                    self.filamentLoading(false);
-                    self.filamentLoadProgress(0);
-
-                    if (!self.forPurge()) {
-                        $.notify({
-                            title: gettext("Filament loaded aborted!"),
-                            text: _.sprintf(gettext('Please re-run load filament procedure'), {})
-                        },
-                                        "warning"
-                                    );
-                        }
-                    self.requestData();
-                // Do cancel action
                     break;
                 case "update_filament_amount":
                     var amounts = messageData.filament;
@@ -480,9 +462,6 @@ $(function ()  {
         }
 
         self.onBeforeBinding = function () {
-            // This is a bit hackish, but we're gonna make a link from printerstate to our current filaments
-            self.printerState.loadedFilaments = ko.pureComputed(function () { return self.filaments(); });
-
             self.requestData();
             self.tool("tool0");
             self.copyMaterialProfiles();
@@ -498,7 +477,7 @@ $(function ()  {
                 var tools = self.tools();
 
                 for (i = 0; i < tools.length; i++) {
-                    //tools[i].filament(ko.mapping.fromJS(data.filaments[i], self.filamentsMapping)); // Back-end provides a sorted list, so we may use indices here
+                    // Back-end provides a sorted list, so we may use indices here
                     tools[i].filament.materialProfileName(data.filaments[i].materialProfileName);
                     tools[i].filament.amount(data.filaments[i].amount);
                 }

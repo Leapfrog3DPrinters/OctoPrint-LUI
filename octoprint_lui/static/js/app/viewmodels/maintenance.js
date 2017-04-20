@@ -70,7 +70,7 @@ $(function () {
 
         self.afterCleanBed = function ()
         {
-            sendToApi("maintenance/bed/finish");
+            sendToApi("maintenance/bed/clean/finish");
         };
 
         self.calibrateExtruders = function ()  {

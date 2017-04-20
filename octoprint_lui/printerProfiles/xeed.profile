@@ -58,6 +58,9 @@ filament:
     amount: 2.5
     speed: 300
   loadAmountStop: 2100
+  contLoad:
+    amount: 2.5
+    speed: 300
   contLoadAmountStop: 100
   unloadInitial:
     amount: -2.5

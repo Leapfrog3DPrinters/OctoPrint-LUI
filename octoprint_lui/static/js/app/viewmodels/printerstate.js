@@ -36,9 +36,6 @@ $(function ()  {
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
 
-        // These are updated from the filament viewmodel
-        self.loadedFilaments = undefined;
-
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
         self.autoShutdownTimer = ko.observable(0);
@@ -354,7 +351,6 @@ $(function ()  {
 
             if (self.isPaused()) {
                 var tools = self.toolInfo.tools();
-                var loaded = self.loadedFilaments();
                 var needed = self.requiredFilaments();
                 
                 var message = undefined;
@@ -363,14 +359,8 @@ $(function ()  {
                 if (self.printMode() != "normal")
                 {
                     // Check if all extruders are loaded with filament
-                    
-                    for (var i = 0; i < tools.length; i++)
-                    {
-                        // Look in the loaded filaments for the current tool and check if it has 'None' loaded
-                        if (_.some(loaded, function(filament) { return filament.tool() == tools[i].key && filament.materialProfileName() == "None" }))
-                            anyEmpty = true;
-                    }
-
+                    anyEmpty = _.some(tools, function(tool) { return tool.filament.materialProfileName() == "None" });
+  
                     if(anyEmpty)
                         message = gettext("Please load filament in both the left and right extruder before you resume your print.")
                 }
@@ -380,8 +370,10 @@ $(function ()  {
 
                     for (var i = 0; i < needed.length; i++)
                     {
+                        var tool = self.toolInfo.getToolByKey(needed[i].name);
+                        
                         // Look in the loaded filaments for the current tool and check if it has 'None' loaded
-                        if (_.some(loaded, function(filament) { return filament.tool() == needed[i].name && filament.materialProfileName() == "None" }))
+                        if (tool.filament.materialProfileName() == "None")
                             anyEmpty = true;
                     }
 
