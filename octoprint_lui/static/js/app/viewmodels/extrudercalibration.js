@@ -76,13 +76,20 @@ $(function ()  {
             if(self.introView.firstRun) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 500);
+                }, 750);
                 self.introView.introInstance.goToStep(17);
             }
         };
 
         self.prepareSmallExtruderCalibration = function ()  {
             self.largeCalibrationCompleted(true);
+            //IntroJS
+            if(self.introView.firstRun) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(19);
+            }
         };
 
         self.startSmallExtruderCalibration = function ()  {
@@ -98,8 +105,8 @@ $(function ()  {
             if(self.introView.firstRun) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 300);
-                self.introView.introInstance.goToStep(19);
+                }, 750);
+                self.introView.introInstance.goToStep(20);
             }
         };
 
@@ -111,12 +118,23 @@ $(function ()  {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 300);
-                self.introView.introInstance.goToStep(21);
+                self.introView.introInstance.goToStep(22);
             }
         }
 
         self.onCalibrationPrintCompleted = function (calibration_type) {
             self.isPrintingCalibration(false);
+            if(self.introView.firstRun) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                if(calibration_type == 'bed_width_large') {
+                    self.introView.introInstance.goToStep(18);
+                }
+                else{
+                    self.introView.introInstance.goToStep(21);
+                }
+            }
         }
 
         self.onCalibrationPrintFailed = function (calibration_type) {
@@ -157,10 +175,11 @@ $(function ()  {
                 }).always(function ()  { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
             //IntroJS
             if(self.introView.firstRun) {
+                self.flyout.closeFlyout();
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 300);
-                self.introView.introInstance.goToStep(22);
+                self.introView.introInstance.goToStep(23);
             }
         };
 

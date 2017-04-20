@@ -1,5 +1,5 @@
 <!--TODO: Wrap in only for Bolt-->
-<div class="bolt-bed-width-calibration-step" data-bind="visible: !calibrationProcessStarted()">
+<div id="start-large-extruder-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: !calibrationProcessStarted()">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -88,7 +88,7 @@
     </div>
   </div>
 </div>
-<div class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && largeCalibrationCompleted() && !smallCalibrationPrepared()">
+<div id="start-small-extruder-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && largeCalibrationCompleted() && !smallCalibrationPrepared()">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -113,7 +113,7 @@
     </div>
   </div>
 </div>
-<div class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && smallCalibrationPrepared() && !smallXCalibrationCompleted()">
+<div id="x-small-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && smallCalibrationPrepared() && !smallXCalibrationCompleted()">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">

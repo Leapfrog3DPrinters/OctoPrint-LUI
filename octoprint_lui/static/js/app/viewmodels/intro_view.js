@@ -3,6 +3,7 @@ $(function ()  {
         var self = this;
 
         self.firstRun = false;
+        self.nameOfTutorial = undefined;
 
         self.viewmodel = undefined;
         self.flyout = parameters[0];
@@ -16,7 +17,7 @@ $(function ()  {
                     "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
                     " steps you have to take to start printing your creations.<br>" +
                     "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
-                    "class=\"introjs-button\" data-bind=\"click: function (){ nextButton(2) }\">Begin</a>" +
+                    "class=\"introjs-button\" data-bind=\"click: function (){ goToStepButton(2) }\">Begin</a>" +
                     "<a id=\"cancelButton\" role=\"button\" class=\"introjs-button\"" +
                     "data-bind=\"click: function (){ doneButton() }\">Cancel</a></div></div>"
                 },
@@ -68,7 +69,7 @@ $(function ()  {
                     element: document.querySelector('#load_filament'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
-                    "that you are loading. This way the printer knows what it's using.</div>",
+                    "that you are loading. This way the printer knows what kind of filament you want to load.</div>",
                     position: 'bottom',
                     tooltipClass: "tooltip_hidden"
                 },
@@ -94,7 +95,7 @@ $(function ()  {
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Now that we have loaded the filament we have to calibrate the printer to make sure that the bed and" +
                     " the extruders are aligned</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
-                    "class=\"introjs-button\" data-bind=\"click: function (){ nextButton(11) }\">Next</a></div></div>"
+                    "class=\"introjs-button\" data-bind=\"click: function (){ goToStepButton(11) }\">Next</a></div></div>"
                 },
                 {
                     //11
@@ -134,7 +135,7 @@ $(function ()  {
                 },
                 {
                     //16
-                    element: document.querySelector('#start_extruder_calibration'),
+                    element: document.querySelector('#start-large-extruder-calibration'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">To the extruder calibration, press <b>Start calibration</b>.</div>",
                     position: 'bottom'
@@ -155,48 +156,56 @@ $(function ()  {
                 },
                 {
                     //19
+                    element: document.querySelector('#start-small-extruder-calibration'),
+                    intro: "<div class=\"step-header\">Your First Print</div>" +
+                    "<div class=\"step-text\">Start small calibration</div>",
+                    position: 'bottom'
+                },
+                {
+                    //20
                     element: document.querySelector('#printing-extruder-calibration'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Printing small calibration</div>",
                     position: 'bottom'
                 },
                 {
-                    //20
-                    element: document.querySelector('#small-calibration'),
+                    //21
+                    element: document.querySelector('#x-small-calibration'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Select the best aligned line x, press Next</div>",
                     position: 'bottom'
                 },
                 {
-                    //21
+                    //22
                     element: document.querySelector('#y-small-calibration'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Select the best aligned line y, press Next</div>",
                     position: 'bottom'
                 },
                 {
-                    //22
+                    //23
                     element: document.querySelector('#job_button'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
-                    "<div class=\"step-text\">Now that the printer is calibrated, we can select our print job for the printer. To" +
-                    " select a print job, click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.</div>"
+                    "<div class=\"step-text\">Good Job, The printer is now calibrated and ready to print. Now we will select " +
+                    "the demo print job (the GCODE file) for the printer. To select the print job, " +
+                    "click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.</div>"
                 },
                 {
-                    //23
+                    //24
                     element: document.querySelector('#local_button'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Now we can select a GCODE file that's saved on the printer. " +
                     "There is a sample print you can try out.</div>"
                 },
                 {
-                    //24
+                    //25
                     element: document.querySelector("#print_files"),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Select the file and press on the <i class=\"fa fa-play\">" +
                     "</i> button next to it</div>"
                 },
                 {
-                    //25
+                    //26
                     element: document.querySelector('#start_print'),
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">For the first print we will keep it simple and print in normal" +
@@ -205,7 +214,7 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //26
+                    //27
                     element: 'none',
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\">Good Job!<br>The printer is now printing the first print. " +
@@ -224,22 +233,24 @@ $(function ()  {
 
         });
 
-        self.introInstance.onbeforechange(function(targetElement) {
+        self.introInstance.onbeforechange(function() {
             switch (self.currentStep()){
                 case 1: self.introInstance.refresh(); $('#print_icon').click();
                     break;
                 case 11: self.introInstance.refresh(); $('#settings_icon').click();
                     break;
+                case 23: self.introInstance.refresh(); $('#print_icon').click();
+                    break;
             }
         });
 
-        self.introInstance.onafterchange(function (targetElement) {
-            if(self.currentStep() == 1 || self.currentStep() == 10 || self.currentStep() == 19) {
+        self.introInstance.onafterchange(function () {
+            if(self.currentStep() == 1 || self.currentStep() == 10 || self.currentStep() == 27) {
                 var element = document.getElementById('introjs-container');
                 ko.cleanNode(element);
                 setTimeout(function () {
                     ko.applyBindings(self, element);
-                }, 1000);
+                }, 750);
             }
         });
 
@@ -256,12 +267,12 @@ $(function ()  {
         self.startIntro = function (introName) {
             self.firstRun = true;
             switch (introName){
-                case "firstPrint": self.introInstance.start();
+                case "firstPrint": self.introInstance.start(); self.nameOfTutorial = introName;
                     break;
             }
         };
 
-        self.nextButton = function (step) {
+        self.goToStepButton = function (step) {
             self.introInstance.goToStep(step);
         };
 

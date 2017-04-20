@@ -64,6 +64,7 @@ $(function () {
         }
 
         self.calibrateExtruders = function ()  {
+            self.flyout.deactivateFlyout('#maintenance_settings_flyout');
             self.flyout.showFlyout('extrudercalibration', true);
             //IntroJS
             if(self.introView.firstRun){
@@ -76,6 +77,7 @@ $(function () {
 
         self.calibrateBed = function()
         {
+            self.flyout.deactivateFlyout('#maintenance_settings_flyout');
             self.flyout.showFlyout('bedcalibration', true);
             //IntroJS
             if(self.introView.firstRun){
@@ -151,7 +153,7 @@ $(function () {
             var title = gettext("Purge nozzle");
             var dialog = { 'title': title, 'text': text, 'question': question };
 
-            self.flyout.showConfirmationFlyout(dialog)
+            self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function ()  {
                     self.filament.showFilamentChangeFlyout(tool, true);
                 });
@@ -159,6 +161,7 @@ $(function () {
 
         self.setFilamentAmount = function () {
             self.filament.requestData();
+            self.flyout.deactivateFlyout('#maintenance_settings_flyout');
             self.flyout.showFlyout('filament_override')
         };
 

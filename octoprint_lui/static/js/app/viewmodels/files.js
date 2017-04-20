@@ -168,7 +168,7 @@ $(function ()  {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 500);
-                self.introView.introInstance.goToStep(12);
+                self.introView.introInstance.goToStep(25);
             }else{
                 self.browseLocal();
             }
@@ -644,7 +644,7 @@ $(function ()  {
         };
 
         self.startPrint = function () {
-            self.introView.introInstance.goToStep(15);
+            self.introView.introInstance.goToStep(27);
             var mode = self.printerState.printMode();
             var file = self.selectedFile();
 
@@ -1377,8 +1377,8 @@ $(function ()  {
                             self.isIntroFile(false);
                             setTimeout(function () {
                                 self.introView.introInstance.refresh();
-                            }, 300);
-                            self.introView.introInstance.goToStep(14);
+                            }, 500);
+                            self.introView.introInstance.goToStep(26);
                         }
                         break;
                 }

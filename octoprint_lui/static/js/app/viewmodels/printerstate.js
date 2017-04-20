@@ -375,7 +375,7 @@ $(function ()  {
         self.gotoFileSelect = function ()  {
             changeTabTo("files");
             if (self.introView.firstRun) {
-                self.introView.introInstance.goToStep(12);
+                self.introView.introInstance.goToStep(24);
             }
         };
 

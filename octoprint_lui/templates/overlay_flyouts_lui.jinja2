@@ -305,7 +305,7 @@
       </div>
       <ul class="button-area">
         <li id='abort_filament' class="button failed-button">
-          <a href="#abort" data-bind="click: function () { flyout.closeFlyout(); introView.introInstance.goToStep(1)}">
+          <a href="#abort" data-bind="click: function () { flyout.closeFlyout() }">
             <span data-bind="">{{ _('Abort') }}</span>
           </a>
         </li>
@@ -377,7 +377,7 @@
       </div>
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#save" data-bind="click: function () { abort() }">
+          <a href="#save" data-bind="click: function () { abort(); flyout.activateFlyout('#maintenance_settings_flyout') }">
             <span>{{ _('Abort') }}</span>
           </a>
         </li>
@@ -395,12 +395,12 @@
       </div>
       <ul class="button-area">
         <li class="button failed-button" data-bind="visible: mayAbort">
-          <a href="#save" data-bind="click: function () { abort() }, disabled: mayAbort">
+          <a href="#save" data-bind="click: function () { abort(); flyout.activateFlyout('#maintenance_settings_flyout')}, disabled: mayAbort">
             <span>{{ _('Abort') }}</span>
           </a>
         </li>
         <li class="button" data-bind="visible: mayAccept">
-          <a href="#save" data-bind="click: function () { accept() }, disabled: mayAccept">
+          <a href="#save" data-bind="click: function () { accept(); flyout.activateFlyout('#maintenance_settings_flyout')}, disabled: mayAccept">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -533,7 +533,7 @@
     </div>
     <ul class="button-area">
       <li class="button">
-        <a href="#save" data-bind="click: function ()  { flyout.closeFlyoutAccept() }">
+        <a href="#save" data-bind="click: function ()  { flyout.closeFlyoutAccept(); flyout.activateFlyout('#maintenance_settings_flyout') }">
           <span>{{ _('Close') }}</span>
         </a>
       </li>
