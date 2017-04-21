@@ -206,6 +206,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
 
+		#~~ check if first start
+        self.first_start = self._settings.get_boolean(["first_start"])
+
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
         self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
@@ -727,7 +730,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "action_filament": True,
             "debug_lui": False,
             "changelog_version": "",
-            "had_first_run": ""
+            "had_first_run": "",
+			"first_start": False
         }
 
     def find_assets(self, rel_path, file_ext):
@@ -866,7 +870,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "local_addr": from_localhost,
             "debug_lui": self.debug,
             "model": self.model,
-            "printer_profile": self.current_printer_profile
+            "printer_profile": self.current_printer_profile,
+            "first_start": self.first_start
         }
 
         args.update(render_kwargs)
@@ -1035,6 +1040,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Allows to trigger something in the back-end. Wired to the logo on the front-end. Should be removed prior to publishing
         """
         self._printer.commands(['!!DEBUG:mintemp_error0']); # Let's the virtual printer send a MINTEMP message which brings the printer in error state
+
+    @octoprint.plugin.BlueprintPlugin.route('/printer/had_first_start', methods=["POST"])
+    def had_first_start(self):
+		if not self.first_start:
+			self._settings.set(["first_start"], True)
+			self._settings.save()
+		return make_response(jsonify(), 200)
 
     def _on_api_command_changelog_seen(self, *args, **kwargs):
         self._logger.info("changelog_seen")

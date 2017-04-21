@@ -268,7 +268,7 @@ $(function ()  {
         self.startIntro = function (introName) {
             self.firstRun = true;
             switch (introName){
-                case "firstPrint": self.introInstance.start();
+                case "firstPrint": self.introInstance.start(); self._sendApi('printer/had_first_start');
                     break;
             }
         };
@@ -285,6 +285,12 @@ $(function ()  {
         self.currentStep = function () {
             return self.introInstance._currentStep+1;
         };
+
+        self._sendApi = function (urlSuffix, data) {
+            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
+            return OctoPrint.postJson(url, data);
+        };
+
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS

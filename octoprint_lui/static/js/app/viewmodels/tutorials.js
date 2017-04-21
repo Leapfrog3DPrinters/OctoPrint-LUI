@@ -16,9 +16,6 @@ $(function () {
             $(".tutorial-info").toggleClass('hide');
         };
 
-        self.getTutorialFiles = function () {
-
-        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

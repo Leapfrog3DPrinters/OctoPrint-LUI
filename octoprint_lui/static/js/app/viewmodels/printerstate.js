@@ -433,6 +433,9 @@ $(function ()  {
 
         self.beginHoming = function ()  {
             self._sendApi({ command: "begin_homing" });
+            if(!FIRST_START){
+                self.introView.startIntro('firstPrint');
+            }
         };
 
         self.beginMaintenance = function ()
