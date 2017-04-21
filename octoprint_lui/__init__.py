@@ -47,19 +47,18 @@ from octoprint.plugin import BlueprintPlugin
 from octoprint_lui.constants import *
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
-                octoprint.plugin.TemplatePlugin,
-                octoprint.plugin.AssetPlugin,
                 BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
-                octoprint.printer.PrinterCallback):
+                octoprint.printer.PrinterCallback,
+                octoprint.plugin.ShutdownPlugin
+                ):
 
     # Initializers
 
     def __init__(self):
 
         ##~ Global
-        self.from_localhost = False
         self.debug = False
         self.auto_shutdown = False
 
@@ -97,9 +96,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_action = False
 
         self.load_amount = 0
+        self.load_amount_stop = 0
         self.load_filament_timer = None
-        self.load_extrusion_amount = 0
-        self.load_extrusion_speed = 0
         self.filament_change_in_progress = False
 
         self.paused_temperatures = None
@@ -127,7 +125,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Temperature status
         self.tool_status_stabilizing = False
 
-        self.old_temperature_data = None
         self.current_temperature_data = None
         self.temperature_window = [-6, 10] # Below, Above target temp
 
@@ -444,6 +441,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
 
     # End initializers
+
+    # Shutdown
+
+    def on_shutdown(self):
+        """
+        Called when OctoPrint shuts down. Ensures the filament is updated with the latest information in memory.
+        """
+        self._save_filament_to_db()
+
+    # End shutdown
 
     # First run
 
@@ -2059,7 +2066,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def find_assets(self, rel_path, file_ext):
         result = []
-        base_path = os.path.join(self.get_asset_folder(), rel_path)
+        base_path = os.path.join(self._basefolder, "static", rel_path)
 
         for filename in os.listdir(base_path):
             complete_path = os.path.join(base_path, filename)
@@ -2070,7 +2077,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def find_minified(self, js_list):
         result = []
-        base_path = self.get_asset_folder()
 
         for path in js_list:
             if path.startswith('plugin/lui/'):
@@ -2078,7 +2084,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 strippped_path = path[:-3]
 
-            full_path = os.path.join(base_path, strippped_path + '.min.js')
+            full_path = os.path.join(self._basefolder, strippped_path + '.min.js')
             new_path = path[:-3] + '.min.js'
 
             if os.path.exists(full_path):
@@ -2099,7 +2105,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/jquery/jquery.iframe-transport.js',
                     'plugin/lui/js/lib/jquery/jquery.fileupload-9.14.2.js',
                     'plugin/lui/js/lib/jquery/jquery.slimscroll-1.3.8.js',
-                    'plugin/lui/js/lib/jquery/jquery.keyboard-1.26.14.js',
+                    'plugin/lui/js/lib/jquery/jquery.keyboard-1.26.19.js',
                     'plugin/lui/js/lib/jquery/jquery.overscroll-1.7.7.js'
                     ]
 
@@ -3202,9 +3208,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         We use this call to update the tool status with the function check_tool_status()
         """
 
-        if self.current_temperature_data == None:
-            self.current_temperature_data = data
-        self.old_temperature_data = deepcopy(self.current_temperature_data)
         self.current_temperature_data = data
         self.check_tool_status()
 

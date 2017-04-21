@@ -9,8 +9,6 @@ $(function () {
         self.filament = parameters[4];
         self.navigation = parameters[5];
 
-        
-
         self.poweringUpInfo = null;
         self.movingToHeadSwapPositionInfo = null;
 
@@ -145,6 +143,7 @@ $(function () {
 
         self.onAfterBinding = function()
         {
+            //TODO: Don't do this once onAfterBinding, but subscribe to changes in the tools() observable
             var tools = self.toolInfo.tools();
             for (i = 0; i < tools.length; i++)
             {
