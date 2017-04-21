@@ -11,6 +11,7 @@ $(function ()  {
         self.introInstance.setOptions({
             steps: [
                 {
+                    //1
                     element: 'none',
                     intro: "<div class=\"step-header\">Your First Print</div>" +
                     "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
@@ -232,6 +233,7 @@ $(function ()  {
 
         });
 
+        //IntroJS Callback Functions
         self.introInstance.onbeforechange(function() {
             switch (self.currentStep()){
                 case 1: self.introInstance.refresh(); $('#print_icon').click();
@@ -262,6 +264,7 @@ $(function ()  {
             console.log('onexit: ' + self.firstRun);
         });
 
+        //Own functions
         self.startIntro = function (introName) {
             self.firstRun = true;
             switch (introName){

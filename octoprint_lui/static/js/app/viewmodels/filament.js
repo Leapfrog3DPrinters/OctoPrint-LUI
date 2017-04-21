@@ -210,7 +210,7 @@ $(function ()  {
             //IntroJS
             if(self.introView.firstRun) {
                 setTimeout(function () {
-                        self.introView.introInstance.refresh()
+                    self.introView.introInstance.refresh()
                 }, 300);
                 tool = self.tool();
                 if(tool == 'tool1'){
@@ -400,11 +400,22 @@ $(function ()  {
                     //IntroJS
                     if (self.introView.firstRun) {
                         tool = self.tool();
+                        profile = self.selectedTemperatureProfile();
                         if (tool == 'tool1') {
-                            self.introView.introInstance.goToStep(5);
+                            if(profile.name == 'None') {
+                                self.introView.introInstance.goToStep(2);
+                            }
+                            else {
+                                self.introView.introInstance.goToStep(5);
+                            }
                         }
                         else {
-                            self.introView.introInstance.goToStep(9);
+                            if(profile.name == 'None'){
+                                self.introView.introInstance.goToStep(6);
+                            }
+                            else {
+                                self.introView.introInstance.goToStep(9);
+                            }
                         }
                     }
                     self.filamentLoadProgress(0);

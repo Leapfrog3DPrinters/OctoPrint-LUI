@@ -11,6 +11,14 @@ $(function () {
             self.flyout.closeFlyout();
             self.introView.startIntro(tutorialName);
         };
+
+        self.toggleTutorialInfo = function () {
+            $(".tutorial-info").toggleClass('hide');
+        };
+
+        self.getTutorialFiles = function () {
+
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

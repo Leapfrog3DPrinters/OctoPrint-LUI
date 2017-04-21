@@ -1092,6 +1092,7 @@
       this._introAfterChangeCallback.call(this, targetElement.element);
     }
 
+    //TODO Remove
     console.log('showStep: ' + (this._currentStep + 1));
   }
 

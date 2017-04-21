@@ -861,17 +861,48 @@ a.disabled {
   flex: 1;
   color: #434A54; }
 
+.tutorial_name {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0px;
+}
+
+.tutorial-start {
+  display: flex;
+  flex: 0 0 55px;
+  text-align: right;
+}
+
+.tutorial_main {
+  display: flex;
+  flex: 1;
+  min-height: 55px;
+  border: 2px solid #ffffff; }
+
 .tutorial_topic i {
   flex: 1;
   text-align: center; }
 
-.tutorail_topic span {
+.tutorial_topic span {
   flex: 1 1 auto;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
   min-width: 0px; }
 
+.tutorial-add-info {
+  display: flex;
+  flex: 0 0 55px;
+  text-align: right; }
+
+.tutorial-info {
+  background-color: #f2f2f2;
+  display: flex;
+  min-width: 0px;
+  font-size: 0.89em;
+  flex-wrap: nowrap;
+  word-wrap: normal;
+}
+
+.tutorial-info.hide {
+    display: none; }
 
 /*
   Settings tab
