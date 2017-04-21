@@ -268,16 +268,22 @@ $(function ()  {
         self.startIntro = function (introName) {
             self.firstRun = true;
             switch (introName){
-                case "firstPrint": self.introInstance.start(); self._sendApi('printer/had_first_start');
+                case "firstPrint": self.introInstance.start();
                     break;
             }
         };
 
         self.goToStepButton = function (step) {
+            if(self.currentStep() == 1){
+                self._sendApi('printer/had_first_start');
+            }
             self.introInstance.goToStep(step);
         };
 
         self.doneButton = function () {
+            if(self.currentStep() == 1){
+                self._sendApi('printer/had_first_start');
+            }
             self.firstRun = false;
             self.introInstance.exit();
         };
