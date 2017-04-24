@@ -134,3 +134,11 @@
   background: #fdfdfd none;
   text-decoration: none;
 }
+
+.exit-button {
+  margin-left: 35%;
+}
+
+.exit-button i {
+  color: black;
+}

@@ -113,7 +113,7 @@
             floatingElementQuery = document.createElement('div');
             floatingElementQuery.className = 'introjsFloatingElement';
 
-            document.getElementById("introjs-container").appendChild(floatingElementQuery);
+            document.body.appendChild(floatingElementQuery);
           }
 
           currentItem.element  = floatingElementQuery;
@@ -370,7 +370,7 @@
    */
   function _exitIntro(targetElement) {
     //remove overlay layers from the page
-    var overlayLayers = document.querySelectorAll('.introjs-overlay');
+    var overlayLayers = targetElement.parentElement.querySelectorAll('.introjs-overlay');
 
     if (overlayLayers && overlayLayers.length > 0) {
       for (var i = overlayLayers.length - 1; i >= 0; i--) {
@@ -1473,7 +1473,7 @@
     }
 
     // adding the hints wrapper
-    document.getElementById("introjs-container").appendChild(hintsWrapper);
+    document.body.appendChild(hintsWrapper);
 
     // call the callback function (if any)
     if (typeof (this._hintsAddedCallback) !== 'undefined') {
@@ -1675,7 +1675,7 @@
         throw new Error('There is no element with given selector.');
       }
     } else {
-      return new IntroJs(document.getElementById("introjs-container"));
+      return new IntroJs(document.body);
     }
   };
 

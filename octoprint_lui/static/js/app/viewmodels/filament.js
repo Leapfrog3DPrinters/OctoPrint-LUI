@@ -176,7 +176,7 @@ $(function ()  {
             $('#load_filament,#fd_load_filament').addClass('active');
             self.filamentLoading(false);
             //IntroJS
-            if (self.introView.firstRun) {
+            if (self.introView.isTutorialStarted) {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
@@ -208,7 +208,7 @@ $(function ()  {
         self.finishedLoading = function ()  {
             // We are finished close the flyout
             //IntroJS
-            if(self.introView.firstRun) {
+            if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh()
                 }, 300);
@@ -398,7 +398,7 @@ $(function ()  {
                     self.showFinished();
                     self.hideToolLoading();
                     //IntroJS
-                    if (self.introView.firstRun) {
+                    if (self.introView.isTutorialStarted) {
                         tool = self.tool();
                         profile = self.selectedTemperatureProfile();
                         if (tool == 'tool1') {
@@ -514,7 +514,7 @@ $(function ()  {
 
         self.showLoading = function () {
             //IntroJS
-            if (self.introView.firstRun) {
+            if (self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh()
                 }, 300);
@@ -533,8 +533,9 @@ $(function ()  {
         }
 
         self.abortFilament = function () {
+            self.flyout.closeFlyout();
             //IntroJS
-            if (self.introView.firstRun) {
+            if (self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh()
                 }, 300);

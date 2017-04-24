@@ -664,7 +664,7 @@ $(function () {
                     callViewModels(self.allViewModels, "onSettingsHidden");
                 });
             //IntroJS
-            if(self.introView.firstRun){
+            if(self.introView.isTutorialStarted){
                 if(topic === 'maintenance'){
                     setTimeout(function(){
                         self.introView.introInstance.refresh();

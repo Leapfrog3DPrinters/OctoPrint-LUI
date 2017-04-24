@@ -67,7 +67,7 @@ $(function () {
             self.flyout.deactivateFlyout('#maintenance_settings_flyout');
             self.flyout.showFlyout('extrudercalibration', true);
             //IntroJS
-            if(self.introView.firstRun){
+            if(self.introView.isTutorialStarted){
                 setTimeout(function(){
                     self.introView.introInstance.refresh();
                 }, 300);
@@ -80,7 +80,7 @@ $(function () {
             self.flyout.deactivateFlyout('#maintenance_settings_flyout');
             self.flyout.showFlyout('bedcalibration', true);
             //IntroJS
-            if(self.introView.firstRun){
+            if(self.introView.isTutorialStarted){
                 setTimeout(function(){
                     self.introView.introInstance.refresh();
                 }, 300);

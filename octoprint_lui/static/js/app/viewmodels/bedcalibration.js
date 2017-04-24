@@ -56,7 +56,7 @@ $(function ()  {
                     self.restoreFromCalibrationPosition();
                 self.flyout.closeFlyoutAccept();
                 //IntroJS
-                if(self.introView.firstRun) {
+                if(self.introView.isTutorialStarted) {
                     setTimeout(function () {
                         self.introView.introInstance.refresh();
                     }, 300);
@@ -72,7 +72,7 @@ $(function ()  {
             self.mayAbort(false);
             self.mayAccept(true);
             //IntroJS
-            if(self.introView.firstRun){
+            if(self.introView.isTutorialStarted){
                 setTimeout(function(){
                     self.introView.introInstance.refresh();
                 }, 300);

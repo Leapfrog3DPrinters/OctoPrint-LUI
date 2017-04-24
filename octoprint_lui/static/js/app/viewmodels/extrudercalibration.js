@@ -73,10 +73,10 @@ $(function ()  {
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_large" });
             });
             //IntroJS
-            if(self.introView.firstRun) {
+            if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 750);
+                }, 300);
                 self.introView.introInstance.goToStep(17);
             }
         };
@@ -84,10 +84,10 @@ $(function ()  {
         self.prepareSmallExtruderCalibration = function ()  {
             self.largeCalibrationCompleted(true);
             //IntroJS
-            if(self.introView.firstRun) {
+            if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 300);
+                }, 1000);
                 self.introView.introInstance.goToStep(19);
             }
         };
@@ -102,10 +102,10 @@ $(function ()  {
                 self._sendApi({ command: "start_calibration", calibration_type: "bed_width_small" });
             });
             //IntroJS
-            if(self.introView.firstRun) {
+            if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 750);
+                }, 300);
                 self.introView.introInstance.goToStep(20);
             }
         };
@@ -114,7 +114,7 @@ $(function ()  {
         {
             self.smallXCalibrationCompleted(true);
             //IntroJS
-            if(self.introView.firstRun) {
+            if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 300);
@@ -124,7 +124,7 @@ $(function ()  {
 
         self.onCalibrationPrintCompleted = function (calibration_type) {
             self.isPrintingCalibration(false);
-            if(self.introView.firstRun) {
+            if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 300);
@@ -174,11 +174,11 @@ $(function ()  {
                     $.notify({ title: gettext('Calibration failed'), text: gettext('An error has occured while storing the calibration settings. Please try again.') }, "error");
                 }).always(function ()  { self.restoreState(); self._sendApi({ command: "unselect_file" }); });
             //IntroJS
-            if(self.introView.firstRun) {
+            if(self.introView.isTutorialStarted) {
                 self.flyout.closeFlyout();
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 300);
+                }, 500);
                 self.introView.introInstance.goToStep(23);
             }
         };

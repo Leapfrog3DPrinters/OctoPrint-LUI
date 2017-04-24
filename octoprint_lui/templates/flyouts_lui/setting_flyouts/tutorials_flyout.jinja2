@@ -7,7 +7,7 @@
         </div>
         <div class="tutorial_topic">
             <ul class="tutorial_main"
-                data-bind="css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() ||  filament.leftFilament() != 'None' ||  filament.rightFilament() != 'None'}">
+                data-bind="css: { disabled: printerState.isPaused() || printerState.isPrinting() }">
                 <li class="tutorial_name">
                     <a href="#topic">
                         <span>{{ _('Your First Print') }}</span>

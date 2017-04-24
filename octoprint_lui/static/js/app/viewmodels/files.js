@@ -163,7 +163,7 @@ $(function ()  {
         };
 
         self.showLocalStep = function () {
-            if (self.introView.firstRun) {
+            if (self.introView.isTutorialStarted) {
                 self.isIntroFile(true);
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
@@ -1373,7 +1373,7 @@ $(function ()  {
 
                     case "demo_selected":
                         self.printAndChangeTab();
-                        if (self.introView.firstRun){
+                        if (self.introView.isTutorialStarted){
                             self.isIntroFile(false);
                             setTimeout(function () {
                                 self.introView.introInstance.refresh();
