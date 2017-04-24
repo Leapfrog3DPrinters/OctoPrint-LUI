@@ -13,7 +13,7 @@
         </span>
       </div>
       <div class="Table-item" data-bind="visible: wifiIp" style="flex-basis: 40px; max-width: 40px;">
-        <a href="#" data-bind="touchClick: function() { editConnectionDetails(status.wifi.uuid()); }">
+        <a href="#" data-bind="touchClick: function() { editConnectionDetails('wifi', status.wifi.uuid()); }">
           <i class="fa fa-pencil"></i>
         </a>
       </div>
@@ -76,8 +76,8 @@
       <div class="Table-item Table-item-right">
         <span data-bind="text: ethernetIp"></span>
       </div>
-      <div class="Table-item" data-bind="visible: wifiIp" style="flex-basis: 40px; max-width: 40px;">
-        <a href="#" data-bind="touchClick: function() { editConnectionDetails(status.ethernet.uuid()); }">
+      <div class="Table-item" data-bind="visible: ethernetIp" style="flex-basis: 40px; max-width: 40px;">
+        <a href="#" data-bind="touchClick: function() { editConnectionDetails('ethernet', status.ethernet.uuid()); }">
           <i class="fa fa-pencil"></i>
         </a>
       </div>
