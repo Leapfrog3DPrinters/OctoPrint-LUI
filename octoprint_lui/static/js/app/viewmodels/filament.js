@@ -214,7 +214,12 @@ $(function ()  {
                 }, 300);
                 tool = self.tool();
                 if(tool == 'tool1'){
-                    self.introView.introInstance.goToStep(6);
+                    if(self.rightFilament == 'None') {
+                        self.introView.introInstance.goToStep(6);
+                    }
+                    else{
+                        self.introView.introInstance.goToStep(10);
+                    }
                 }
                 else {
                     self.introView.introInstance.goToStep(10);
