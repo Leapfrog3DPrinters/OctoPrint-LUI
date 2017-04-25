@@ -20,7 +20,7 @@
                 <label for="wifi-enabled"></label>
               </div>
             </div>
-            <div class="Table-item Table-item-right">
+            <div class="Table-item Table-item-right" style="flex-basis: 120px;">
               <span data-bind="text: wifiIp"></span>
             </div>
             <div class="Table-item" data-bind="visible: working" style="flex-basis: 40px; max-width: 40px;">
@@ -196,7 +196,7 @@
               {{ _('MAC address:') }}
             </div>
             <div class="Table-item">
-              <span data-bind="text: connectionDetails.macAddress" />
+              <span data-bind="text: status[connectionDetails.targetInterface()].macAddress()" />
             </div>
           </div>
           <div class="Table-row">
