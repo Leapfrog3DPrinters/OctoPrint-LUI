@@ -3,7 +3,7 @@ $(function ()  {
         var self = this;
 
         self.loginState = parameters[0];
-        self.system = parameters[1];
+        self.system = parameters[1]; //TODO: Remove dependency
         self.flyout = parameters[2];
         self.files = parameters[3];
         self.settings = parameters[4];
@@ -11,6 +11,7 @@ $(function ()  {
         self.flashArduino = parameters[6];
         self.networkManager = parameters[7];
         self.userSettings = parameters[8];
+        self.navigation = parameters[9];
 
         self.initialCheck = false;
         self.updateinfo = ko.observableArray([]);
@@ -122,12 +123,12 @@ $(function ()  {
                 })
                 .fail(function ()  { })
                 .always(function ()  {
-                    self.files.browseLocal(); // Reset file list to local gcodes
+                    self.files.browseOrigin("local"); // Reset file list to local gcodes
                 });
         };
 
         self.update = function (plugin) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "update";
+            var endpoint = "software/update";
 
             var text, question, title, name = "";
             if (_.isObject(plugin)) {
@@ -148,7 +149,7 @@ $(function ()  {
             var dialog = { 'title': title, 'text': text, 'question': question };
             self.flyout.showConfirmationFlyout(dialog)
                 .done(function () {
-                    OctoPrint.postJson(url, {"plugin":name})
+                    sendToApi(endpoint, { "plugin": name })
                         .done(function () {
                             self.showUpdateWarning();
                          }).fail(function () {
@@ -165,8 +166,8 @@ $(function ()  {
         self.firmwareUpdate = function()
         {
             self.firmwareUpdating(true);
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
-            OctoPrint.postJson(url)
+            var endpoint = "firmware/update";
+            sendToApi(endpoint)
                 .done(function () {
                     self.firmwareUpdateAvailable(false);
                 }).fail(function () {
@@ -214,18 +215,17 @@ $(function ()  {
         self.showUpdateFlyout = function()
         {
             // Show the update flyout blocking and with high priority
-            self.settings.showSettingsTopic('update', true, true); 
+            self.navigation.showSettingsTopic('update', true, true); 
         }
 
         self.showWirelessFlyout = function()
         {
             // Show the wireless flyout blocking and with high priority
-            self.settings.showSettingsTopic('wireless', true, true);
+            self.navigation.showSettingsTopic('wireless', true, true);
         }
 
         self.showLoginFlyout = function()
         {
-            self.userSettings.show();
             self.flyout.showFlyout('login', true, true);
         }
 
@@ -259,6 +259,9 @@ $(function ()  {
                 self.currentLuiVersion(lui_update.version());
 
             self.modelName(data.machine_info.machine_type);
+
+            if(data.status == "cache")
+                self.updateDoneOrError();
         };
 
         self.fromChangelogResponse = function (data, from_startup)
@@ -332,38 +335,31 @@ $(function ()  {
 
         self.requestData = function (force) {
             var force = force || false;
-            var url = OctoPrint.getBlueprintUrl("lui") + "update";
-            OctoPrint.getWithQuery(url, {force: force})
-                .done(function(response){
-                    self.fromResponse(response);
-                });
+            //TODO: Refactor force to endpoint
+            getFromApi("software", { force: force }).done(self.fromResponse);
         };
 
-        self.requestChangelogData = function (from_startup, refesh)
-        {
+        self.requestChangelogData = function (from_startup, refesh) {
+            var endpoint = "software/changelog";
+
             if (refesh)
-                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog/refresh";
-            else
-                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog";
+                endpoint = endpoint + "/refresh";
 
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromChangelogResponse(response, from_startup);
-                });
-        }
+            getFromApi(endpoint).done(function (response) {
+                self.fromChangelogResponse(response, from_startup);
+            });
+        };
 
-        self.requestFirmwareData = function ()
-        {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware";
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromFirmwareResponse(response);
-                });
-        }
+        self.requestFirmwareData = function () {
+            getFromApi("firmware").done(self.fromFirmwareResponse);
+        };
 
         self.requestFirmwareUpdateData = function (silent) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update/" + (silent ? 'silent' : '');
-            OctoPrint.get(url, { silent: silent });
+            var endpoint = "firmware/update";
+            if (silent)
+                endpoint = endpoint + "/silent";
+
+            getFromApi(endpoint);
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -377,7 +373,7 @@ $(function ()  {
 
                 self.flyout.showConfirmationFlyout(dialog)
                     .done(function ()  {
-                        self.settings.showSettingsTopic('update');
+                        self.navigation.showSettingsTopic('update');
                         self.flashArduino.onLocalFileSelected(file);
                     });
             }
@@ -442,7 +438,7 @@ $(function ()  {
 
         self.onFlashingBegin = function()
         {
-            self._sendApi({ command: 'notify_intended_disconnect' });
+            sendToApi("printer/notify_intended_disconnect");
         }
 
         self.showChangelogFlyout = function (updateContents) {
@@ -454,7 +450,7 @@ $(function ()  {
             // Show it on top of other flyouts (high priority)
             self.flyout.showFlyout('changelog', true, true)
                 .always(function () {
-                        self._sendApi({ command: "changelog_seen" });
+                    sendToApi("software/changelog/seen");
                 });
         }
 
@@ -467,11 +463,6 @@ $(function ()  {
             self.firmwareRefreshing(false);
             $('#firmware_update_spinner').removeClass('fa-spin');
         }
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
@@ -500,11 +491,6 @@ $(function ()  {
                 case "auto_firmware_update_finished":
                     self.hideFirmwareUpdateWarning(true);
                     self.firmwareUpdateAvailable(false); // The update succeeded so there shouldn't be any updates available
-                    break;
-                case "firmware_update_found":
-                    if(DEBUG_LUI) {
-                        self.onFirmwareUpdateFound(messageData.file);
-                    }
                     break;
                 case "machine_info_updated":
                     //This is fired whenever an M115 update has taken place. Useful after a firmware flash.
@@ -586,7 +572,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
-      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "gcodeFilesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel", "userSettingsViewModel"],
+      ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "filesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel", "userSettingsViewModel", "navigationViewModel"],
       ['#update', '#update_icon', '#firmware_update_required', '#changelog_flyout']
     ]);
 

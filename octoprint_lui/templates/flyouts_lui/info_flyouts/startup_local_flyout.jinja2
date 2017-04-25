@@ -1,4 +1,4 @@
-<div id="startup_step_prompt" class="startup_step" data-bind="css: { active: !isHomed() && !isHoming() && isOperational() }">
+<div id="startup_step_prompt" class="startup_step" data-bind="css: { active: !printerState.isHomed() && !printerState.isHoming() && printerState.isOperational() }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -19,7 +19,7 @@
       <div class="Table-item">
         <ul class="button-area">
           <li class="button ok-button">
-            <a href="#" data-bind="touchClick: function () { beginHoming() }, css: { disabled: isHomingRequested }">
+            <a href="#" data-bind="touchClick: function () { printerState.beginHoming() }, css: { disabled: printerState.isHomingRequested }">
               <span>
                 <i class="fa fa-home"></i>{{ _('Begin homing') }}
               </span>
@@ -44,7 +44,7 @@
 
   </div>
 </div>
-<div id="startup_step_busy_homing" class="startup_step" data-bind="css: { active: isHoming() }">
+<div id="startup_step_busy_homing" class="startup_step" data-bind="css: { active: printerState.isHoming() }">
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">

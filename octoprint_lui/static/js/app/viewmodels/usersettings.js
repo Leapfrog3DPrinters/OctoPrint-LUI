@@ -5,7 +5,7 @@ $(function () {
         self.loginState = parameters[0];
         self.users = parameters[1];
         self.flyout = parameters[2];
-        self.system = parameters[3];
+        self.navigation = parameters[3];
         self.settings = parameters[4];
 
         self.userSettingsDialog = undefined;
@@ -49,7 +49,8 @@ $(function () {
             return self.access_password() != self.access_repeatedPassword();
         });
 
-        self.show = function(user) {
+        self.onUserSettingsShown = function()
+        {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             if (user == undefined) {
@@ -57,7 +58,7 @@ $(function () {
             }
 
             self.currentUser(user);
-        };
+        }
 
         self.save = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
@@ -105,7 +106,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         UserSettingsViewModel,
-        ["loginStateViewModel", "usersViewModel", "flyoutViewModel", "systemViewModel", "settingsViewModel" ],
+        ["loginStateViewModel", "usersViewModel", "flyoutViewModel", "navigationViewModel", "settingsViewModel"],
         ["#login_flyout"]
     ]);
 });

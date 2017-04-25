@@ -215,7 +215,7 @@ $(function ()  {
 
             self.flyout.showConfirmationFlyout(dialog, true)
             .done(function ()  {
-                return self._sendApi({ command: 'delete_all_timelapses' })
+                return sendToApi("timelapse/delete_all")
                     .done(function ()  {
 
                         $.notify({
@@ -240,17 +240,15 @@ $(function ()  {
         self.copyToUsb = function (filename) {
             self.isCopying(true);
 
-            self._sendApi({
-                command: "copy_timelapse_to_usb",
-                filename: filename
-            }).done(function ()  {
-                self.setProgressBar(0);
-                $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
-            }).fail(function ()  {
-                $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
-            }).always(function ()  {
-                self.isCopying(false);
-            });
+            sendToApi('usb/save/timelapse/' + filename)
+                .done(function () {
+                    self.setProgressBar(0);
+                    $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
+                }).fail(function ()  {
+                    $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
+                }).always(function ()  {
+                    self.isCopying(false);
+                });
         }
 
         self.removeUnrendered = function (name) {
@@ -306,18 +304,15 @@ $(function ()  {
 
             var text;
             if (!payload.postroll_duration) {
-                text = _.sprintf(gettext("Now capturing timelapse post roll, this will take only a moment..."), format);
+                text = gettext("Now capturing timelapse post roll, this will take only a moment...");
             } else {
-                var format = {
-                    time: moment().add(payload.postroll_duration, "s").format("LT")
-                };
 
                 if (payload.postroll_duration > 60) {
-                    format.duration = _.sprintf(gettext("%(minutes)d min"), { minutes: payload.postroll_duration / 60 });
-                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s (so until %(time)s)..."), format);
+                    duration = _.sprintf(gettext("%(minutes)d min"), { minutes: payload.postroll_duration / 60 });
+                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s"), duration);
                 } else {
-                    format.duration = _.sprintf(gettext("%(seconds)d sec"), { seconds: payload.postroll_duration });
-                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s..."), format);
+                    duration = _.sprintf(gettext("%(seconds)d sec"), { seconds: payload.postroll_duration });
+                    text = _.sprintf(gettext("Now capturing timelapse post roll, this will take approximately %(duration)s..."), duration);
                 }
             }
 
@@ -350,16 +345,6 @@ $(function ()  {
                 "success");
 
             self.requestData();
-        };
-
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, { data: data });
-        };
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
         };
 
         self.setProgressBar = function (percentage) {
@@ -395,7 +380,7 @@ $(function ()  {
 
     ADDITIONAL_VIEWMODELS.push([
         WebcamViewModel,
-        ["flyoutViewModel", "loginStateViewModel", "printerStateViewModel", "settingsViewModel", "gcodeFilesViewModel"],
+        ["flyoutViewModel", "loginStateViewModel", "printerStateViewModel", "settingsViewModel", "filesViewModel"],
         ["#webcam_settings_flyout_content", "#info_livestream"]
     ]);
 });

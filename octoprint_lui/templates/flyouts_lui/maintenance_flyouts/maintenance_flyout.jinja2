@@ -5,9 +5,9 @@
   <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
-        <li class="button" data-bind="touchClick: function () { headMaintenancePosition() }">
+        <li class="button" data-bind="touchClick: function () { showHeadMaintenance() }">
           <a href="#">
-            <span>{{ _('Head maintenance position') }}</span>
+            <span>{{ _('Head maintenance') }}</span>
           </a>
         </li>
       </ul>
@@ -19,17 +19,6 @@
         <li class="button" data-bind="touchClick: function () { cleanBedPosition() }">
           <a href="#">
             <span>{{ _('Clean bed position') }}</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <div class="Table-row">
-    <div class="Table-item">
-      <ul class="button-area">
-        <li class="button" data-bind="touchClick: function () { setFilamentAmount() } ">
-          <a href="#">
-            <span>{{ _('Set filament amount') }}</span>
           </a>
         </li>
       </ul>
@@ -54,28 +43,6 @@
         <li class="button" data-bind="touchClick: function () { calibrateBed() }">
           <a href="#">
             <span>{{ _('Calibrate bed') }}</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <div class="Table-row">
-    <div class="Table-item">
-      <ul class="button-area">
-        <li class="button">
-          <a href="#" data-bind="touchClick: function () { beginPurgeWizard('tool1'); }, css: {disabled: filament.leftFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() } ">
-            <span>
-              <i class="fa fa-arrow-down"></i>{{ _('Purge left') }}</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-    <div class="Table-item">
-      <ul class="button-area">
-        <li class="button">
-          <a href="#" data-bind="touchClick: function () { beginPurgeWizard('tool0'); }, css: {disabled: filament.rightFilament() == 'None' || printerState.isPrinting || !printerState.isOperational() || !loginState.loggedIn() }">
-            <span>
-              <i class="fa fa-arrow-down"></i>{{ _('Purge right') }}</span>
           </a>
         </li>
       </ul>
