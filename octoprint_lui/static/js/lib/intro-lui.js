@@ -113,7 +113,7 @@
             floatingElementQuery = document.createElement('div');
             floatingElementQuery.className = 'introjsFloatingElement';
 
-            document.body.appendChild(floatingElementQuery);
+            $('#introjs-container').after(floatingElementQuery);
           }
 
           currentItem.element  = floatingElementQuery;
@@ -1210,7 +1210,7 @@
       }
     }
 
-    targetElm.appendChild(overlayLayer);
+    $('#introjs-container').after(overlayLayer);
 
     overlayLayer.onclick = function() {
       if (self._options.exitOnOverlayClick != true) {

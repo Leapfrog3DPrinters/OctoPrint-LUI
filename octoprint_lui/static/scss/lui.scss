@@ -516,15 +516,14 @@ input[type=radio] {
   max-width: 500px;
   overflow-y: auto;
   position: fixed;
-  right: 0;
+  right: -100%;
   top: 0;
-  transform: translate3d(100%, 0, 0);
   width: 80%;
-  @include transition(transform);
+  @include transition(right);
   display: flex;
   flex-direction: column;
   &.active {
-    transform: translate3d(0, 0, 0);
+    right: 0px;
   }
   z-index: 1;
   & a {

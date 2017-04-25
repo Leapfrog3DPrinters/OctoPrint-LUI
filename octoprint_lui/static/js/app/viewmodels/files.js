@@ -644,7 +644,6 @@ $(function ()  {
         };
 
         self.startPrint = function () {
-            self.introView.introInstance.goToStep(27);
             var mode = self.printerState.printMode();
             var file = self.selectedFile();
 
@@ -659,6 +658,7 @@ $(function ()  {
             }
             // do print stuff
             // close flyout.
+            self.introView.introInstance.goToStep(27);
         };
 
         self.isDualPrint = ko.computed(function(){
@@ -909,6 +909,7 @@ $(function ()  {
 
         self.printerState.printMode.subscribeChanged(function(newValue, oldValue){
             if ((newValue == "sync" || newValue == "mirror") && (oldValue == "normal")) {
+                self.introView.introInstance.exit();
                 self.showSyncMirrorWarning();
             }
         });
@@ -1377,7 +1378,7 @@ $(function ()  {
                             self.isIntroFile(false);
                             setTimeout(function () {
                                 self.introView.introInstance.refresh();
-                            }, 500);
+                            }, 300);
                             self.introView.introInstance.goToStep(26);
                         }
                         break;

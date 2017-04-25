@@ -76,7 +76,7 @@ $(function ()  {
             if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 300);
+                }, 1000);
                 self.introView.introInstance.goToStep(17);
             }
         };
@@ -105,7 +105,7 @@ $(function ()  {
             if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 300);
+                }, 1000);
                 self.introView.introInstance.goToStep(20);
             }
         };
