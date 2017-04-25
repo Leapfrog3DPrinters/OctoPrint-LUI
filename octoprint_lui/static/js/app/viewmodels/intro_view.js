@@ -252,7 +252,7 @@ $(function ()  {
             exitOnOverLayClick: false,
             showBullets: false,
             showButtons: false,
-            keyboardNavigation: true
+            keyboardNavigation: false
 
         });
 

@@ -537,7 +537,7 @@ $(function ()  {
             //IntroJS
             if (self.introView.isTutorialStarted) {
                 setTimeout(function () {
-                    self.introView.introInstance.refresh()
+                    self.introView.introInstance.refresh();
                 }, 300);
                 tool = self.tool();
                 if (tool == 'tool1') {
