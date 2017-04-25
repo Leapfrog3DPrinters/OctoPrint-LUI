@@ -1,3 +1,4 @@
+*.sln
 *.pyc
 *.swp
 .idea
@@ -12,6 +13,7 @@ dist
 *.pyproj
 /octoprint_lui/.vs/config/applicationhost.config
 /octoprint_lui/.vs/octoprint_lui/v14/.suo
+/octoprint_lui/.vs/octoprint_lui/v15/.suo
 /octoprint_lui/octoprint_lui.pyproj.user
 /octoprint_lui/octoprint_lui.sln
 /octoprint_lui/compilerconfig.json
@@ -19,3 +21,9 @@ dist
 /octoprint_lui/bin
 /octoprint_lui/obj
 /octoprint_lui/static/js/jsconfig.json
+/octoprint_lui/.vs/octoprint_lui/v15/.suo
+/octoprint_lui/.vs/octoprint_lui/v15/.suo
+*.suo
+/octoprint_lui/Backup/octoprint_lui.sln
+/octoprint_lui/.vs/octoprint_lui/v15/.suo
+/octoprint_lui/Backup/octoprint_lui.sln

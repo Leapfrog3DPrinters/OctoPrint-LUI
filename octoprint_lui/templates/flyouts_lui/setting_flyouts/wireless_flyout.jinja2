@@ -14,7 +14,7 @@
       </div>
     </div>
     <!-- ko foreach: listHelper.paginatedItems -->
-    <div class="Table-row clickable" data-bind="click: function () { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
+    <div class="Table-row clickable" data-bind="touchClick: function () { $parent.configureWifi($data); }, css: {disabled: !$root.loginState.isUser() || $root.working() || $root.error() || $root.getEntryId($data) == $root.statusCurrentWifi()}">
       <div class="Table-item Table-item-grow-8 text_wrap" data-bind="text: ssid"></div>
       <div class="Table-item">
         <i class="fa" data-bind="css: $root.isActive($data)"></i>
@@ -30,25 +30,25 @@
     <div class="pagination pagination-mini pagination-centered"  data-bind="visible: listHelper.allSize() > 5">
       <ul>
         <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
-          <a href="javascript:void(0)" data-bind="click: function () { listHelper.prevPage() }">«</a>
+          <a href="javascript:void(0)" data-bind="touchClick: function () { listHelper.prevPage() }">«</a>
         </li>
       </ul>
       <ul data-bind="foreach: listHelper.pages">
         <li data-bind="css: { active: $data.number === $root.listHelper.currentPage(), disabled: $data.number === -1 }">
-          <a href="javascript:void(0)" data-bind="text: $data.text, click: function () { $root.listHelper.changePage($data.number); }"></a>
+          <a href="javascript:void(0)" data-bind="text: $data.text, touchClick: function () { $root.listHelper.changePage($data.number); }"></a>
         </li>
       </ul>
       <ul>
         <li data-bind="css: {disabled: listHelper.currentPage() === listHelper.lastPage()}">
-          <a href="javascript:void(0)" data-bind="click: function () { listHelper.nextPage() }">»</a>
+          <a href="javascript:void(0)" data-bind="touchClick: function () { listHelper.nextPage() }">»</a>
         </li>
       </ul>
     </div>
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () {sendWifiRefresh(true)}, css: {disabled: working() || error() }">
-            <a href="">
+          <li class="button" data-bind="touchClick: function () {sendWifiRefresh(true)}, css: {disabled: working() || error() }">
+            <a href="#">
               <span>{{ _('Rescan') }}</span>
             </a>
           </li>
@@ -56,8 +56,8 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () {sendWifiDisconnect()}, css: {disabled: working() || !status.connection.wifi()}">
-            <a href="">
+          <li class="button" data-bind="touchClick: function () {sendWifiDisconnect()}, css: {disabled: working() || !status.connection.wifi()}">
+            <a href="#">
               <span>{{ _('Disconnect') }}</span>
             </a>
           </li>
@@ -92,7 +92,7 @@
         {{ _('SSID:') }}
       </div>
       <div class="Table-item">
-        <input type="text" placeholder="Leapfrog" data-bind="value: editorWifiSsid"></input>
+        <input type="text" placeholder="Leapfrog" data-bind="value: editorWifiSsid" />
       </div>
     </div>
     <div class="Table-row">
@@ -100,14 +100,14 @@
         {{ _('Password:') }}
       </div>
       <div class="Table-item">
-        <input type="text" data-bind="value: editorWifiPassphrase1"></input>
+        <input type="text" data-bind="value: editorWifiPassphrase1" />
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button secondary-button" data-bind="click: function () { cancelWifiConfiguration() }">
-            <a href="">
+          <li class="button secondary-button" data-bind="touchClick: function () { cancelWifiConfiguration() }">
+            <a href="#">
               <span>{{ _('Back') }}</span>
             </a>
           </li>
@@ -115,8 +115,8 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () { confirmWifiConfiguration() }, css: {disabled: working() || !editorWifiPassphrase1() || editorWifiPassphrase1() == '' }">
-            <a href="">
+          <li class="button" data-bind="touchClick: function () { confirmWifiConfiguration() }, css: {disabled: working() || !editorWifiPassphrase1() || editorWifiPassphrase1() == '' }">
+            <a href="#">
               <span>{{ _('Connect') }}</span>
             </a>
           </li>

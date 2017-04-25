@@ -32,16 +32,16 @@ volume:
   origin: lowerleft
   width: 330.0
 boundaries:
-  minX: 0
-  maxX: 373
-  minY: -35
-  maxY: 320
+  minX: -37.0
+  maxX: 330.0
+  minY: -33.0
+  maxY: 322.0
   minZ: -1.0
-  maxZ: 205
+  maxZ: 205.0
 requireOverscroll: false
 hasPowerButton: true
 filamentRollLength: 320
-default_stepper_timeout: 60
+defaultStepperTimeout: 60
 autoBedCalibration: false
 extruderCalibration: true
 modelSizeDetection: true
@@ -52,34 +52,37 @@ dualX: true
 materialMinTemp: 150
 materialMaxTemp: 360
 filament:
-  stepper_timeout: 300
-  load_initial:
+  stepperTimeout: 300
+  loadInitial:
     amount: 2.5
     speed: 240
-  load_amount_stop: 200
-  cont_load_amount_stop: 100    
-  unload_initial:
+  loadAmountStop: 200
+  contLoad:
+    amount: 2.5
+    speed: 240
+  contLoadAmountStop: 100
+  unloadInitial:
     amount: -2.5
     speed: 300
-  unload_amount_stop: 150
+  unloadAmountStop: 150
 manualBedCalibrationPositions:
-  - tool: tool1
-    X: 70
+  top_left:
+    tool: tool1
+    X: 33
     Y: 250
     mode: 'fullcontrol'
-  - tool: tool0
-    X: 305
+  top_right:
+    tool: tool0
+    X: 268
     Y: 250
     mode: 'fullcontrol'
-  - tool: tool1
-    X: 70
+  bottom_left:
+    tool: tool1
+    X: 33
     Y: 70
     mode: 'fullcontrol'
-  - tool: tool0
-    X: 305
+  bottom_right:
+    tool: tool0
+    X: 268
     Y: 70
     mode: 'fullcontrol'
-  - tool: tool1
-    X: 175
-    Y: 160
-    mode: 'mirror'

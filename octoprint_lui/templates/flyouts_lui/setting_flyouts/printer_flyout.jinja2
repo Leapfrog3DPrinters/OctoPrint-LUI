@@ -24,7 +24,7 @@
             </div>
         </div>
     </div>
-    {# {% if printer_profile["modelSizeDetection"] or debug_lui %}
+    {# {% if printer_profile["modelSizeDetection"] %}
     <div class="Table-row">
         <div class="Table-item">
           {{ _('Check print dimensions') }}
@@ -37,28 +37,28 @@
         </div>
     </div>
   {% endif %} #}
-  {% if printer_profile["doorSafety"] or debug_lui %}
+  {% if printer_profile["doorSafety"] %}
   <div class="Table-row">
         <div class="Table-item">
             {{ _('Door safety feature') }}
         </div>
         <div class="Table-item">
             <div class="check_toggle">
-                <input type="checkbox" data-bind="checked: settings.plugins.lui.action_door" id="settings-action_door" />
-                <label for="settings-action_door"></label>
+                <input type="checkbox" data-bind="checked: settings.plugins.lui.actionDoor" id="settings-actionDoor" />
+                <label for="settings-actionDoor"></label>
             </div>
         </div>
     </div>
   {% endif %}
-  {% if printer_profile["filamentDetection"] or debug_lui %}
+  {% if printer_profile["filamentDetection"] %}
   <div class="Table-row">
         <div class="Table-item">
             {{ _('Filament detection') }}
         </div>
         <div class="Table-item">
             <div class="check_toggle">
-                <input type="checkbox" data-bind="checked: settings.plugins.lui.action_filament" id="settings-action_filament" />
-                <label for="settings-action_filament"></label>
+                <input type="checkbox" data-bind="checked: settings.plugins.lui.action_filament" id="settings-actionFilament" />
+                <label for="settings-actionFilament"></label>
             </div>
         </div>
     </div>

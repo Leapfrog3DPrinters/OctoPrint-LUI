@@ -19,10 +19,10 @@
 			            </span>
 			          </li>
 			          <li>
-			            <a href="" data-bind="click: function () { $root.listHelper.changeSorting('name'); }">{{ _('Name') }}</a>
+			            <a href="#" data-bind="touchClick: function () { $root.listHelper.changeSorting('name'); }">{{ _('Name') }}</a>
 			          </li>
 			          <li>
-			            <a href="" data-bind="click: function () { $root.listHelper.changeSorting('modification'); }">{{ _('Changed date') }}</a>
+			            <a href="#" data-bind="touchClick: function () { $root.listHelper.changeSorting('modification'); }">{{ _('Changed date') }}</a>
 			          </li>
 			        </ul>
 			      </li>
@@ -34,11 +34,11 @@
 		<div class="Table-row clickable" data-bind=" css: {disabled: !$root.loginState.isUser()">
 		  <div class="Table-item Table-item-grow-8 text_wrap" data-bind="text: name"></div>
 		  <div class="Table-item">
-		  	<a href="#" class="fa fa-trash" data-bind="click: function() { if ($root.loginState.isUser()) { $parent.removeFile($data.name); } else { return; } }, css: {disabled: !$root.loginState.isUser()}, visible: name != 'octoprint.log'"></a>
+		  	<a href="#" class="fa fa-trash" data-bind="touchClick: function() { if ($root.loginState.isUser()) { $parent.removeFile($data.name); } else { return; } }, css: {disabled: !$root.loginState.isUser()}, visible: name != 'octoprint.log'"></a>
 		  </div>
 		  {% if local_addr %}
 			  <div class="Table-item">
-			  	<a class="fa fa-usb" data-bind="click: function() { $parent.copyLogToUsb(name) } "></a>
+			  	<a class="fa fa-usb" data-bind="touchClick: function() { $parent.copyLogToUsb(name) } "></a>
 			  </div>
 		  {% else %}
 		  <div class="Table-item">
@@ -50,17 +50,17 @@
 		<div class="pagination pagination-mini pagination-centered"  data-bind="visible: listHelper.allSize() > 5">
 		  <ul>
 		    <li data-bind="css: {disabled: listHelper.currentPage() === 0}">
-		      <a href="javascript:void(0)" data-bind="click: function () { listHelper.prevPage() }">«</a>
+		      <a href="javascript:void(0)" data-bind="touchClick: function () { listHelper.prevPage() }">«</a>
 		    </li>
 		  </ul>
 		  <ul data-bind="foreach: listHelper.pages">
 		    <li data-bind="css: { active: $data.number === $root.listHelper.currentPage(), disabled: $data.number === -1 }">
-		      <a href="javascript:void(0)" data-bind="text: $data.text, click: function () { $root.listHelper.changePage($data.number); }"></a>
+		      <a href="javascript:void(0)" data-bind="text: $data.text, touchClick: function () { $root.listHelper.changePage($data.number); }"></a>
 		    </li>
 		  </ul>
 		  <ul>
 		    <li data-bind="css: {disabled: listHelper.currentPage() === listHelper.lastPage()}">
-		      <a href="javascript:void(0)" data-bind="click: function () { listHelper.nextPage() }">»</a>
+		      <a href="javascript:void(0)" data-bind="touchClick: function () { listHelper.nextPage() }">»</a>
 		    </li>
 		  </ul>
 		</div>

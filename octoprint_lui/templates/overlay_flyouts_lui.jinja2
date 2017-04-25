@@ -10,7 +10,7 @@
   <aside id="printer_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Printer') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="printer_settings_flyout_content" class="flyout_content">
@@ -19,12 +19,12 @@
 
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#cancel" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Cancel')}}</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <a href="#save" data-bind="touchClick: function () { flyout.closeFlyoutAccept() }">
             <span>{{ _('Save') }}</span>
           </a>
         </li>
@@ -34,7 +34,7 @@
   <aside id="materials_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Materials') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -44,12 +44,12 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#cancel" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Cancel') }}</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: function () { saveTemperatureProfiles() }">
+          <a href="#save" data-bind="touchClick: function () { saveTemperatureProfiles() }">
             <span>{{ _('Save') }}</span>
           </a>
         </li>
@@ -59,7 +59,7 @@
   <aside id="wireless_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Wireless') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
 
@@ -70,7 +70,7 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -80,16 +80,17 @@
   <aside id="users_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Users') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
+      <!-- ko allowBindings: false -->
       <div id="users_settings_flyout_content" class="flyout_content">
         {% include "flyouts_lui/setting_flyouts/users_flyout.jinja2" %}
       </div>
-
+      <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -99,22 +100,22 @@
   <aside id="advanced_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Advanced') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
-      <div id="advanced_settings_flyout_content" class="flyout_content">
-        {% include "flyouts_lui/setting_flyouts/advanced_flyout.jinja2" %}
+      <div id="connection_settings_flyout_content" class="flyout_content">
+        {% include "flyouts_lui/setting_flyouts/connection_flyout.jinja2" %}
       </div>
       <!-- /ko -->
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#cancel" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Cancel') }}</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <a href="#save" data-bind="touchClick: function () { flyout.closeFlyoutAccept() }">
             <span>{{ _('Save') }}</span>
           </a>
         </li>
@@ -124,7 +125,7 @@
   <aside id="update_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Update') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -134,7 +135,7 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -144,17 +145,17 @@
   <aside id="logs_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Logs') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
       <div id="logs_settings_flyout_content" class="flyout_content">
-        {% include "flyouts_lui/setting_flyouts/logs_flyout.jinja2" %}
+        {% include "flyouts_lui/maintenance_flyouts/logs_flyout.jinja2" %}
       </div>
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -164,17 +165,17 @@
   <aside id="maintenance_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Maintenance') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
       <div id="maintenance_settings_flyout_content" class="flyout_content">
-        {% include "flyouts_lui/setting_flyouts/maintenance_flyout.jinja2" %}
+        {% include "flyouts_lui/maintenance_flyouts/maintenance_flyout.jinja2" %}
       </div>
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -184,7 +185,7 @@
   <aside id="webcam_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Webcam') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -192,12 +193,12 @@
         {% include "flyouts_lui/setting_flyouts/webcam_flyout.jinja2" %}
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#cancel" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Cancel') }}</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: function () { save() }">
+          <a href="#save" data-bind="touchClick: function () { save() }">
             <span>{{ _('Save') }}</span>
           </a>
         </li>
@@ -209,19 +210,19 @@
   <aside id="languages_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Languages') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="languages_settings_flyout_content" class="flyout_content">
         {% include "flyouts_lui/setting_flyouts/languages_flyout.jinja2" %}
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#cancel" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Cancel') }}</span>
           </a>
         </li>
         <li class="button">
-          <a href="#save" data-bind="click: function () { saveLanguage() }">
+          <a href="#save" data-bind="touchClick: function () { saveLanguage() }">
             <span>{{ _('Save') }}</span>
           </a>
         </li>
@@ -229,10 +230,33 @@
       </div>
     </div>
   </aside>
+  <aside id="cloud_settings_flyout" class="flyout">
+    <div class="flyout-header">
+      <h4>{{ _('Cloud') }}</h4>
+      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }">
+        <i class="fa fa-times"></i>
+      </span>
+    </div>
+    <div class="flyout-body">
+      <!-- ko allowBindings: false -->
+      <div id="cloud_settings_flyout_content" class="flyout_content">
+        {% include "flyouts_lui/setting_flyouts/cloud_flyout.jinja2" %}
+      </div>
+      <!-- /ko -->
+      <ul class="button-area">
+        <li class="button" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#">
+            <span>{{ _('Close') }}</span>
+          </a>
+        </li>
+      </ul>
+     
+    </div>
+  </aside>
   <aside id="tutorials_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Tutorials') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
         <!-- ko allowBindings: false -->
@@ -240,7 +264,7 @@
         {% include "flyouts_lui/setting_flyouts/tutorials_flyout.jinja2" %}
       <ul class="button-area">
         <li class="button secondary-button">
-          <a href="#cancel" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#cancel" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span>{{ _('Cancel') }}</span>
           </a>
         </li>
@@ -253,7 +277,7 @@
   <aside id="login_flyout" class="flyout">
     <div class="flyout-header">
     <h4>{{ _('System') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="login_flyout_content">
@@ -264,7 +288,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button secondary-button">
-                <a href="#save" data-bind="click: function () { flyout.closeFlyout() }">
+                <a href="#save" data-bind="touchClick: function () { flyout.closeFlyout() }">
                   <span>{{ _('Back') }}</span>
                 </a>
               </li>
@@ -274,6 +298,7 @@
       </div>
     </div>
   </aside>
+  {% if printer_profile["filamentDetection"] %}
   <aside id="filament_detection_flyout" class="flyout">
     <div class="flyout-header bg-yellow">
       <h4>
@@ -286,17 +311,18 @@
       </div>
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#save" data-bind="click: function () { cancelFilamentDetection() } ">
+          <a href="#save" data-bind="touchClick: function () { cancelFilamentDetection() } ">
             <span data-bind="">{{ _('Cancel Print') }}</span>
           </a>
         </li>
       </ul>
     </div>
   </aside>
+  {% endif %}
   <aside id="filament_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Filament') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
         <div id="filament_loading">
@@ -305,7 +331,7 @@
       </div>
       <ul class="button-area">
         <li id='abort_filament' class="button failed-button">
-          <a href="#abort" data-bind="click: function () { abortFilament() }">
+          <a href="#abort" data-bind="touchClick: function () { abortFilament() }">
             <span data-bind="">{{ _('Abort') }}</span>
           </a>
         </li>
@@ -316,7 +342,7 @@
   <aside id="firmware_file_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Firmware files') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="firmware_file_flyout_content">
@@ -324,7 +350,7 @@
       </div>
       <ul class="button-area">
         <li class="button">
-          <a href="#save" data-bind="click: function () { flyout.closeFlyout() }">
+          <a href="#save" data-bind="touchClick: function () { flyout.closeFlyout() }">
             <span data-bind="">{{ _('Close') }}</span>
           </a>
         </li>
@@ -334,7 +360,7 @@
   <aside id="info_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Info') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="info_flyout_content">
@@ -342,7 +368,7 @@
       </div>
       <ul class="button-area">
         <li class="button">
-          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <a href="#save" data-bind="touchClick: function () { flyout.closeFlyoutAccept() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -352,15 +378,15 @@
   <aside id="zoffset_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Z-offset Wizard') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <div id="zoffset_flyout_content">
-        {% include "flyouts_lui/setting_flyouts/zoffset_flyout.jinja2" %}
+        {% include "flyouts_lui/maintenance_flyouts/zoffset_flyout.jinja2" %}
       </div>
       <ul class="button-area">
         <li class="button">
-          <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+          <a href="#save" data-bind="touchClick: function () { flyout.closeFlyoutAccept() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -373,11 +399,11 @@
     </div>
     <div class="flyout-body">
       <div id="extrudercalibration_flyout_content">
-        {% include "flyouts_lui/setting_flyouts/extrudercalibration_flyout.jinja2" %}
+        {% include "flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2" %}
       </div>
       <ul class="button-area">
         <li class="button failed-button">
-          <a href="#save" data-bind="click: function () { abort(); flyout.activateFlyout('#maintenance_settings_flyout') }">
+          <a href="#save" data-bind="touchClick: function () { abort() }">
             <span>{{ _('Abort') }}</span>
           </a>
         </li>
@@ -391,16 +417,16 @@
     <div class="flyout-body">
         <div id="bed_calibration">
       <div id="bedcalibration_flyout_content">
-        {% include "flyouts_lui/setting_flyouts/bedcalibration_flyout.jinja2" %}
+        {% include "flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2" %}
       </div>
       <ul class="button-area">
         <li class="button failed-button" data-bind="visible: mayAbort">
-          <a href="#save" data-bind="click: function () { abort(); flyout.activateFlyout('#maintenance_settings_flyout')}, disabled: mayAbort">
+          <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
             <span>{{ _('Abort') }}</span>
           </a>
         </li>
         <li class="button" data-bind="visible: mayAccept">
-          <a href="#save" data-bind="click: function () { accept(); flyout.activateFlyout('#maintenance_settings_flyout')}, disabled: mayAccept">
+          <a href="#save" data-bind="touchClick: function () { accept() }, disabled: mayAccept">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
@@ -411,7 +437,7 @@
   <aside id="mode_select_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Start print') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }">
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }">
         <i class="fa fa-times"></i>
       </span>
     </div>
@@ -443,103 +469,38 @@
     </div>
     <div class="flyout-body">
       <div id="printer_error_flyout_content">
-        {% include "flyouts_lui/info_flyouts/printer_error_flyout.jinja2" %}
+        {% if local_addr %}
+        {% include "flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2" %}
+        {% else %}
+        {% include "flyouts_lui/info_flyouts/printer_error_remote_flyout.jinja2" %}
+        {% endif %}
       </div>
       <div class="printer_error_flyout_footer">
-        <div style="margin-bottom: 15px;" data-bind="style: {visibility: isConnecting() ? 'visible' : 'hidden' }">
+        <div style="margin-bottom: 15px;" data-bind="style: {visibility: printerState.isConnecting() ? 'visible' : 'hidden' }">
           <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i> Connecting...
         </div>
-
+        {% if local_addr %}
         <ul class="button-area">
           <li class="button ok-button">
-            <a href="#" data-bind="click: restorePrinterConnection">
+            <a href="#" data-bind="click: printerState.restorePrinterConnection">
               <span>
                 <i class="fa fa-wrench"></i>{{ _('Restore') }}
               </span>
             </a>
           </li>
           <li class="button failed-button">
-            <a href="#" data-bind="click: function () { system.systemShutdown() }">
+            <a href="#" data-bind="touchClick: function () { requestSystemShutdown() }">
               <span>
                 <i class="fa fa-power-off"></i>{{ _('Shutdown printer') }}
               </span>
             </a>
           </li>
         </ul>
+        {% endif %}
       </div>
     </div>
   </aside>
-<aside id="filament_override_flyout" class="flyout">
-  <div class="flyout-header">
-    <h4>{{ _('Filament material and amount') }}</h4>
-  </div>
-  <div class="flyout-body">
-    <div class="Table">
-      <div class="Table-header Table-row">
-        <div class="Table-item">{{ _('Filament settings') }}</div>
-      </div>
-      <div class="Table-row">
-        <div class="Table-item">
-          <select class="select-material" data-bind="options:
-                      materialProfiles,
-                      optionsText: 'name',
-                      value: updateLeftTemperatureProfile,
-                      optionsCaption: '{{ _('Choose material') }}'">
-          </select>
-        </div>
-        <div class="Table-item">
-          <select class="select-material" data-bind="options:
-                      materialProfiles,
-                      optionsText: 'name',
-                      value: updateRightTemperatureProfile,
-                      optionsCaption: '{{ _('Choose material') }}'">
-          </select>
-        </div>
-      </div>
-      <div class="Table-row">
-        <div class="Table-item" style="flex-basis: 25px;">{{ _('Amount') }}</div>
-        <div class="Table-item">
-          <input type="number" data-bind="value: updateLeftAmount"/>
-      </div>
-        <div class="Table-item" style="flex-basis: 25px;">{{ _('Amount') }}</div>
-        <div class="Table-item">
-          <input type="number" data-bind="value: updateRightAmount"/>
-      </div>
-      </div>
-      <div class="Table-row">
-        <div class="Table-item">
-          <ul class="button-area">
-            <li class="button">
-              <a href="#" data-bind="click: function () {updateFilament('tool1', updateLeftAmount())}">
-                <span>
-                  <i class="fa fa-refresh"></i>{{ _('Update left') }}
-                </span>
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div class="Table-item">
-          <ul class="button-area">
-            <li class="button">
-              <a href="#" data-bind="click: function () {updateFilament('tool0', updateRightAmount())}">
-                <span>
-                  <i class="fa fa-refresh"></i>{{ _('Update right') }}
-                </span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <ul class="button-area">
-      <li class="button">
-        <a href="#save" data-bind="click: function ()  { flyout.closeFlyoutAccept(); flyout.activateFlyout('#maintenance_settings_flyout') }">
-          <span>{{ _('Close') }}</span>
-        </a>
-      </li>
-    </ul>
-  </div>
-</aside>
+{% include "flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2" %}
 <aside id="confirmation_flyout" class="flyout">
   <div class="flyout-header">
     <h4>{{ _('Confirmation') }}</h4>
@@ -566,7 +527,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button failed-button">
-                <a href="#cancel" data-bind="click: function () { confirmationDeferred.reject() }">
+                <a href="#cancel" data-bind="touchClick: function () { confirmationDeferred.reject() }">
                   <span data-bind="text: confirmation_cancel_text"></span>
                 </a>
               </li>
@@ -575,7 +536,7 @@
           <div class="Table-item">
             <ul class="button-area">
               <li class="button ok-button">
-                <a href="#confirm" data-bind="click: function () { confirmationDeferred.resolve() }">
+                <a href="#confirm" data-bind="touchClick: function () { confirmationDeferred.resolve() }">
                   <span data-bind="text: confirmation_ok_text"></span>
                 </a>
               </li>
@@ -618,7 +579,7 @@
     </div>
     <ul class="button-area">
       <li class="button">
-        <a href="#save" data-bind="click: function () { flyout.closeFlyoutAccept() }">
+        <a href="#save" data-bind="touchClick: function () { flyout.closeFlyoutAccept() }">
           <span>{{ _('Ok') }}</span>
         </a>
       </li>
@@ -698,7 +659,7 @@
               <div class="Table-item">
                 <ul class="button-area">
                   <li class="button ok-button">
-                    <a href="#save" data-bind="click: function () { callback(); $root.closeWarning($data) }">
+                    <a href="#save" data-bind="touchClick: function () { callback(); $root.closeWarning($data) }">
                       <span>{{ _('Ok') }}</span>
                     </a>
                   </li>
@@ -740,7 +701,7 @@
               <div class="Table-item">
                 <ul class="button-area">
                   <li class="button ok-button">
-                    <a href="#save" data-bind="click: function () { callback(); $root.closeInfo($data) }">
+                    <a href="#save" data-bind="touchClick: function () { callback(); $root.closeInfo($data) }">
                       <span>{{ _('Ok') }}</span>
                     </a>
                   </li>

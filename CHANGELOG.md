@@ -3,8 +3,16 @@
 Change log for OctoPrint-LUI. 
 
 ## 1.1.0
+- When updating software, firmware is automatically updated when necessary
+- Coordinate system is updated to match actual print area better
+- Added ability to swap filament when the print is paused
+- Improved user experience when pausing or cancelling print
+- Improved livestream performance. Older browsers are no longer supported
+- Timelapses are now ordered by date
+- Log files may be downloaded when the printer is unresponsive
 - Startup time improved by bundling javascript and CSS files
 - Updated all javascript libraries to the most recent versions
+- Fixed: auto shutdown is no longer initiated after calibration
 
 ## 1.0.8
 - Improved update procedure to reduce chance of corrupted installations

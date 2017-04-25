@@ -37,7 +37,6 @@ $(function ()  {
 
         self.onBedcalibrationFlyoutShown = function ()  {
             self.resetState();
-            self.requestData();
         }
 
         self.abort = function()
@@ -67,7 +66,7 @@ $(function ()  {
 
         self.startManualBedCalibration = function()
         {
-            self._sendApi({ "command": "prepare_for_calibration_position" });
+            sendToApi("maintenance/bed/calibrate/start");
             self.showManualBedCalibration(true);
             self.mayAbort(false);
             self.mayAccept(true);
@@ -93,11 +92,11 @@ $(function ()  {
 
         self.moveToCorner = function(cornerNum)
         {
-            self._sendApi({ "command": "move_to_calibration_position", "corner_num": cornerNum });
+            sendToApi("maintenance/bed/calibrate/move_to_position/" + cornerNum);
         }
 
-        self.restoreFromCalibrationPosition = function (cornerNum) {
-            self._sendApi({ "command": "restore_from_calibration_position"});
+        self.restoreFromCalibrationPosition = function () {
+            sendToApi("maintenance/bed/calibrate/finish");
         }
 
         $('.bed-canvas-item').click(function ()  {
@@ -107,31 +106,9 @@ $(function ()  {
             self.moveToCorner($(this).data('corner'));
         });
 
-        self.requestData = function ()  {
-
-        }
-
-        self.fromResponse = function (response) {
-
-        }
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, data);
-        };
-
-        self.onAfterBinding = function ()  {
-
-        }
-
-        self.updateAutoBedCalibrationProgress = function(max_correction_value)
+        self.updateAutoBedCalibrationProgress = function(maxCorrectionValue)
         {
-            var progress = Math.max(0, 5 - max_correction_value) / 5;
+            var progress = Math.max(0, 5 - maxCorrectionValue) / 5;
 
             var gaugeColor = self.gaugeColorStart;
 
@@ -160,7 +137,7 @@ $(function ()  {
 
             switch (messageType) {
                 case "levelbed_progress":
-                    self.updateAutoBedCalibrationProgress(messageData.max_correction_value);
+                    self.updateAutoBedCalibrationProgress(messageData.maxCorrectionValue);
                     break;
                 case "levelbed_complete":
                     self.updateAutoBedCalibrationProgress(0); // 0 = 100%

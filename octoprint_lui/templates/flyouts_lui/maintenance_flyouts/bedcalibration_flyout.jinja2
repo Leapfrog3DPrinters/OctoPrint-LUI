@@ -13,9 +13,9 @@
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <ul id="continue_calibration" class="button-area">
-          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, click: function () { startManualBedCalibration()}">
-            <a href="">
+        <ul class="button-area">
+          <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startManualBedCalibration()}">
+            <a href="#">
               <span>{{ _('Continue calibration') }}</span>
             </a>
           </li>
@@ -40,10 +40,10 @@
     <div class="Table-row">
       <div class="Table-item">
         <div class="bed-canvas">
-          <div class="bed-canvas-item top left" data-corner="0"></div>
-          <div class="bed-canvas-item top right" data-corner="1"></div>
-          <div class="bed-canvas-item bottom left" data-corner="2"></div>
-          <div class="bed-canvas-item bottom right" data-corner="3"></div>
+          <div class="bed-canvas-item top left" data-corner="top_left"></div>
+          <div class="bed-canvas-item top right" data-corner="top_right"></div>
+          <div class="bed-canvas-item bottom left" data-corner="bottom_left"></div>
+          <div class="bed-canvas-item bottom right" data-corner="bottom_right"></div>
         </div>
       </div>
     </div>
@@ -65,8 +65,8 @@
     <div class="Table-row">
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () { startAutoBedCalibration() }">
-            <a href="">
+          <li class="button" data-bind="touchClick: function () { startAutoBedCalibration() }">
+            <a href="#">
               <span>{{ _('Level bed') }}</span>
             </a>
           </li>
@@ -74,8 +74,8 @@
       </div>
       <div class="Table-item">
         <ul class="button-area">
-          <li class="button" data-bind="click: function () { startZoffset() } ">
-            <a href="">
+          <li class="button" data-bind="touchClick: function () { startZoffset() } ">
+            <a href="#">
               <span>{{ _('Z-offset wizard') }}</span>
             </a>
           </li>

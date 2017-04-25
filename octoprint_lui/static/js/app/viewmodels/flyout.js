@@ -84,10 +84,11 @@ $(function () {
 
         var template_flyout = '#' + flyout + '_flyout';
         var blocking = blocking || false;
+        var high_priority = high_priority || false;
 
         var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
 
-
+        
         if (!flyout_ref)
         {
             // If we can't find a reference to the flyout, create a new one
@@ -191,13 +192,16 @@ $(function () {
         }
 
         var deferred = flyout_ref.deferred;
-
+        
         if (deferred != undefined)
         {
             deferred.reject();
             if (self.flyouts().length > 0)
             {
-                var last_flyout = _.last(self.flyouts());
+                var last_flyout = _.findLast(self.flyouts(), "high_priority");
+                if (!last_flyout)
+                    last_flyout = _.last(self.flyouts());
+
                 self.currentFlyoutTemplate = last_flyout.template;
                 self.blocking = last_flyout.blocking;
             }
@@ -233,14 +237,17 @@ $(function () {
         }
 
         var deferred = flyout_ref.deferred;
-
+        
         if (deferred != undefined)
         {
             deferred.resolve();
 
             if (self.flyouts().length > 0)
             {
-                var last_flyout = _.last(self.flyouts());
+                var last_flyout = _.findLast(self.flyouts(), "high_priority");
+                if (!last_flyout)
+                    last_flyout = _.last(self.flyouts());
+
                 self.currentFlyoutTemplate = last_flyout.template;
                 self.blocking = last_flyout.blocking;
             }
@@ -256,9 +263,9 @@ $(function () {
         $(template_flyout).addClass('active');
 
         if (high_priority) // Z-index them on top of other flyouts, but below warnings and confirmations
-            $(template_flyout).css("z-index", 50 + self.flyouts().length);
+            $(template_flyout).css("z-index", 50 + _.sumBy(self.flyouts(),  function (v) { return v.high_priority ? 1 : 0 }));
         else
-            $(template_flyout).css("z-index", self.flyouts().length);
+            $(template_flyout).css("z-index", _.sumBy(self.flyouts(), function (v) { return v.high_priority ? 0 : 1; }));
 
         self.setOverlay();
     }

@@ -4,8 +4,6 @@ $(function () {
 
         self.loginState = parameters[0];
 
-        self.reservedUsernames = [];
-
         // initialize list helper
         self.listHelper = new ItemListHelper(
             "users",
@@ -26,7 +24,7 @@ $(function () {
             CONFIG_USERSPERPAGE
         );
 
-        self.emptyUser = {name: "", admin: false, active: false};
+        self.emptyUser = {name: "", admin: false, active: true};
 
         self.currentUser = ko.observable(self.emptyUser);
 
@@ -35,23 +33,22 @@ $(function () {
         self.editorRepeatedPassword = ko.observable(undefined);
         self.editorApikey = ko.observable(undefined);
         self.editorAdmin = ko.observable(undefined);
-        self.editorActive = ko.observable(undefined);
 
         self.addUserDialog = undefined;
+        self.addUserDialogVisible = ko.observable(false);
         self.editUserDialog = undefined;
-        self.userList = undefined;
+        self.editUserDialogVisible = ko.observable(false);
         self.changePasswordDialog = undefined;
+        self.changePasswordDialogVisible = ko.observable(false);
 
         self.currentUser.subscribe(function(newValue) {
             if (newValue === undefined) {
                 self.editorUsername(undefined);
                 self.editorAdmin(undefined);
-                self.editorActive(undefined);
                 self.editorApikey(undefined);
             } else {
                 self.editorUsername(newValue.name);
                 self.editorAdmin(newValue.admin);
-                self.editorActive(newValue.active);
                 self.editorApikey(newValue.apikey);
             }
             self.editorPassword(undefined);
@@ -72,15 +69,7 @@ $(function () {
 
         self.requestData = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
-
-            OctoPrint.simpleApiGet('lui', {
-                success: function(data)
-                {
-                    self.reservedUsernames = data.reserved_usernames;
-
-                    OctoPrint.users.list().done(self.fromResponse);
-                }
-            });
+            OctoPrint.users.list().done(self.fromResponse);
         };
 
         self.fromResponse = function(response) {
@@ -88,7 +77,7 @@ $(function () {
             self.listHelper.updateItems(response.users.filter(function(user) 
             {
                 //Only return users not in the reserved username list
-                return self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() } ) === undefined
+                return RESERVED_USERNAMES.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() }) === undefined
             }));
         };
 
@@ -96,18 +85,14 @@ $(function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(undefined);
-            self.editorActive(false);
-            self.userList.removeClass("disabled");
-            self.addUserDialog.addClass("hide");
+            self.addUserDialogVisible(false);
         };
 
         self.showAddUserDialog = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(undefined);
-            self.editorActive(true);
-            self.userList.addClass("disabled");
-            self.addUserDialog.removeClass("hide");
+            self.addUserDialogVisible(true);
         };
 
         self.confirmAddUser = function () {
@@ -117,15 +102,14 @@ $(function () {
                 name: self.editorUsername(),
                 password: self.editorPassword(),
                 admin: self.editorAdmin(),
-                active: self.editorActive()
+                active: true
             };
 
             self.addUser(user)
                 .done(function () {
                     // close dialog
                     self.currentUser(undefined);
-                    self.userList.removeClass("disabled");
-                    self.addUserDialog.toggleClass("hide");
+                    self.addUserDialogVisible(false);
                 });
         };
 
@@ -133,22 +117,21 @@ $(function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(user);
-            self.userList.addClass("disabled");
-            self.editUserDialog.removeClass("hide");
+            self.showEditUserDialogVisible(true);
         };
 
         self.confirmEditUser = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             var user = self.currentUser();
-            user.active = self.editorActive();
+            user.active = true;
             user.admin = self.editorAdmin();
 
             self.updateUser(user)
                 .done(function () {
                     // close dialog
                     self.currentUser(undefined);
-                    self.editUserDialog.removeClass("hide");
+                    self.showEditUserDialogVisible(false);
                 });
         };
 
@@ -156,16 +139,14 @@ $(function () {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(undefined);
-            self.userList.removeClass("disabled");
-            self.changePasswordDialog.addClass("hide");
+            self.changePasswordDialogVisible(false);
         };
 
         self.showChangePasswordDialog = function(user) {
             if (!CONFIG_ACCESS_CONTROL) return;
 
             self.currentUser(user);
-            self.userList.addClass("disabled");
-            self.changePasswordDialog.removeClass("hide");
+            self.changePasswordDialogVisible(true);
         };
 
         self.confirmChangePassword = function () {
@@ -180,8 +161,7 @@ $(function () {
                         self.updateUser(user).done(function ()  {
                             // close dialog
                             self.currentUser(undefined);
-                            self.userList.removeClass("disabled");
-                            self.changePasswordDialog.addClass("hide");
+                            self.changePasswordDialogVisible(false);
                         });
 
                     });
@@ -194,8 +174,7 @@ $(function () {
                 self.updateUser(user).done(function ()  {
                     // close dialog
                     self.currentUser(undefined);
-                    self.userList.removeClass("disabled");
-                    self.changePasswordDialog.addClass("hide");
+                    self.changePasswordDialogVisible(false);
                 });
             }
         };
@@ -226,10 +205,6 @@ $(function () {
         //~~ Framework
 
         self.onStartup = function () {
-            self.addUserDialog = $("#settings-usersDialogAddUser");
-            self.editUserDialog = $("#settings-usersDialogEditUser");
-            self.userList = $("#user-list");
-            self.changePasswordDialog = $("#settings-usersDialogChangePassword");
         };
 
         //~~ API calls
@@ -239,7 +214,7 @@ $(function () {
                 throw OctoPrint.InvalidArgumentError("user must be set");
             }
             
-            if (self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() })) {
+            if (RESERVED_USERNAMES.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() })) {
                 // we do not allow to delete any of the reserved users
                 $.notify({
                     title: gettext("Not possible"),
@@ -277,7 +252,7 @@ $(function () {
                 return $.Deferred().reject("You may not delete your own account").promise();
             }
 
-            if (self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() }))
+            if (RESERVED_USERNAMES.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() }))
             {
                 // we do not allow to delete any of the reserved users
                 $.notify({
@@ -332,6 +307,6 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
         UsersViewModel,
         ["loginStateViewModel"],
-        []
+        ["#users_settings_flyout_content"]
     ]);
 });

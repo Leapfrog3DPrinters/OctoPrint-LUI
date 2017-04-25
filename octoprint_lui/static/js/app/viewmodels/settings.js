@@ -3,18 +3,9 @@ $(function () {
         var self = this;
 
         self.loginState = parameters[0];
-        self.users = parameters[1];
-        self.printerProfiles = parameters[2];
-        self.flyout = parameters[3];
-        self.introView = parameters[4];
-
-        self.isErrorOrClosed = ko.observable(undefined);
-        self.isOperational = ko.observable(undefined);
-        self.isPrinting = ko.observable(undefined);
-        self.isPaused = ko.observable(undefined);
-        self.isError = ko.observable(undefined);
-        self.isReady = ko.observable(undefined);
-        self.isLoading = ko.observable(undefined);
+        self.printerProfiles = parameters[1];
+        self.flyout = parameters[2];
+        self.introView = parameters[3];
 
         self.autoShutdown = ko.observable(undefined);
 
@@ -27,105 +18,26 @@ $(function () {
         self.settingsDialog = undefined;
         self.settings_dialog_update_detected = undefined;
 
-        self.api_enabled = ko.observable(undefined);
-        self.api_key = ko.observable(undefined);
-        self.api_allowCrossOrigin = ko.observable(undefined);
-
         self.appearance_name = ko.observable(undefined);
-        self.appearance_color = ko.observable(undefined);
-        self.appearance_colorTransparent = ko.observable();
         self.appearance_defaultLanguage = ko.observable();
-
-        self.printer_defaultExtrusionLength = ko.observable(undefined);
-
-        self.webcam_streamUrl = ko.observable(undefined);
-        self.webcam_snapshotUrl = ko.observable(undefined);
-        self.webcam_ffmpegPath = ko.observable(undefined);
-        self.webcam_bitrate = ko.observable(undefined);
-        self.webcam_ffmpegThreads = ko.observable(undefined);
-        self.webcam_watermark = ko.observable(undefined);
-        self.webcam_flipH = ko.observable(undefined);
-        self.webcam_flipV = ko.observable(undefined);
-        self.webcam_rotate90 = ko.observable(undefined);
-
-        self.feature_gcodeViewer = ko.observable(undefined);
-        self.feature_temperatureGraph = ko.observable(undefined);
-        self.feature_waitForStart = ko.observable(undefined);
-        self.feature_sendChecksum = ko.observable("print");
-        self.feature_sdSupport = ko.observable(undefined);
-        self.feature_sdAlwaysAvailable = ko.observable(undefined);
-        self.feature_swallowOkAfterResend = ko.observable(undefined);
-        self.feature_repetierTargetTemp = ko.observable(undefined);
-        self.feature_disableExternalHeatupDetection = ko.observable(undefined);
-        self.feature_keyboardControl = ko.observable(undefined);
-        self.feature_pollWatched = ko.observable(undefined);
-        self.feature_ignoreIdenticalResends = ko.observable(undefined);
+        
         self.feature_modelSizeDetection = ko.observable(undefined);
 
-        self.serial_port = ko.observable();
-        self.serial_baudrate = ko.observable();
-        self.serial_portOptions = ko.observableArray([]);
-        self.serial_baudrateOptions = ko.observableArray([]);
         self.serial_autoconnect = ko.observable(undefined);
-        self.serial_timeoutConnection = ko.observable(undefined);
-        self.serial_timeoutDetection = ko.observable(undefined);
-        self.serial_timeoutCommunication = ko.observable(undefined);
-        self.serial_timeoutTemperature = ko.observable(undefined);
-        self.serial_timeoutTemperatureTargetSet = ko.observable(undefined);
-        self.serial_timeoutSdStatus = ko.observable(undefined);
         self.serial_log = ko.observable(undefined);
-        self.serial_additionalPorts = ko.observable(undefined);
-        self.serial_additionalBaudrates = ko.observable(undefined);
-        self.serial_longRunningCommands = ko.observable(undefined);
-        self.serial_checksumRequiringCommands = ko.observable(undefined);
-        self.serial_helloCommand = ko.observable(undefined);
-
-        self.folder_uploads = ko.observable(undefined);
-        self.folder_timelapse = ko.observable(undefined);
-        self.folder_timelapseTmp = ko.observable(undefined);
-        self.folder_logs = ko.observable(undefined);
-        self.folder_watched = ko.observable(undefined);
-
-        self.scripts_gcode_beforePrintStarted = ko.observable(undefined);
-        self.scripts_gcode_afterPrintDone = ko.observable(undefined);
-        self.scripts_gcode_afterPrintCancelled = ko.observable(undefined);
-        self.scripts_gcode_afterPrintPaused = ko.observable(undefined);
-        self.scripts_gcode_beforePrintResumed = ko.observable(undefined);
-        self.scripts_gcode_afterPrinterConnected = ko.observable(undefined);
-        self.scripts_gcode_beforePrinterDisconnected = ko.observable(undefined);
 
         self.temperature_profiles = ko.observableArray(undefined);
         self.temperature_cutoff = ko.observable(undefined);
 
-        self.system_actions = ko.observableArray([]);
-
         self.terminalFilters = ko.observableArray([]);
-
-        self.server_commands_systemShutdownCommand = ko.observable(undefined);
-        self.server_commands_systemRestartCommand = ko.observable(undefined);
-        self.server_commands_serverRestartCommand = ko.observable(undefined);
 
         self.server_diskspace_warning = ko.observable();
         self.server_diskspace_critical = ko.observable();
         self.server_diskspace_warning_str = sizeObservable(self.server_diskspace_warning);
         self.server_diskspace_critical_str = sizeObservable(self.server_diskspace_critical);
 
-
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
-
-        //Template observable
-        self.settingsTopic = ko.observable(undefined);
-
-        // Webcam
-        self.webcam_ffmpegPathText = ko.observable();
-        self.webcam_ffmpegPathOk = ko.observable(false);
-        self.webcam_ffmpegPathBroken = ko.observable(false);
-        self.webcam_ffmpegPathReset = function () {
-            self.webcam_ffmpegPathText("");
-            self.webcam_ffmpegPathOk(false);
-            self.webcam_ffmpegPathBroken(false);
-        };
 
         self.addTemperatureProfile = function () {
             self.temperature_profiles.push({name: "New", extruder:0, bed:0});
@@ -213,11 +125,7 @@ $(function () {
 
         self.sendAutoShutdownStatus = function(toggle)
         {
-            var data = {
-                command: "auto_shutdown",
-                toggle: toggle
-            };
-            self._sendApi(data);
+            sendToApi("printer/auto_shutdown/" + toggle ? "on" : "off");
         }
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
@@ -234,100 +142,14 @@ $(function () {
 
         });
 
-        self.testWebcamStreamUrl = function () {
-            if (!self.webcam_streamUrl()) {
-                return;
-            }
-
-            var text = gettext("If you see your webcam stream below, the entered stream URL is ok.");
-            var image = $('<img src="' + self.webcam_streamUrl() + '">');
-            var message = $("<p></p>")
-                .append(text)
-                .append(image);
-            showMessageDialog({
-                title: gettext("Stream test"),
-                message: message
-            });
-        };
-
-        self.testWebcamSnapshotUrl = function(viewModel, event) {
-            if (!self.webcam_snapshotUrl()) {
-                return;
-            }
-
-            var target = $(event.target);
-            target.prepend('<i class="icon-spinner icon-spin"></i> ');
-
-            var errorText = gettext("Could not retrieve snapshot URL, please double check the URL");
-            var errorTitle = gettext("Snapshot test failed");
-
-            OctoPrint.util.testUrl(self.webcam_snapshotUrl(), {method: "GET", response: true})
-                .done(function(response) {
-                    $("i.icon-spinner", target).remove();
-
-                    if (!response.result) {
-                        showMessageDialog({
-                            title: errorTitle,
-                            message: errorText
-                        });
-                        return;
-                    }
-
-                    var content = response.response.content;
-                    var mimeType = "image/jpeg";
-
-                    var headers = response.response.headers;
-                    if (headers && headers["mime-type"]) {
-                        mimeType = headers["mime-type"];
-                    }
-
-                    var text = gettext("If you see your webcam snapshot picture below, the entered snapshot URL is ok.");
-                    showMessageDialog({
-                        title: gettext("Snapshot test"),
-                        message: $('<p>' + text + '</p><p><img src="data:' + mimeType + ';base64,' + content + '" /></p>')
-                    });
-                })
-                .fail(function () {
-                    $("i.icon-spinner", target).remove();
-                    showMessageDialog({
-                        title: errorTitle,
-                        message: errorText
-                    });
-                });
-        };
-
-        self.testWebcamFfmpegPath = function () {
-            if (!self.webcam_ffmpegPath()) {
-                return;
-            }
-
-            OctoPrint.util.testExecutable(self.webcam_ffmpegPath())
-                .done(function(response) {
-                    if (!response.result) {
-                        if (!response.exists) {
-                            self.webcam_ffmpegPathText(gettext("The path doesn't exist"));
-                        } else if (!response.typeok) {
-                            self.webcam_ffmpegPathText(gettext("The path is not a file"));
-                        } else if (!response.access) {
-                            self.webcam_ffmpegPathText(gettext("The path is not an executable"));
-                        }
-                    } else {
-                        self.webcam_ffmpegPathText(gettext("The path is valid"));
-                    }
-                    self.webcam_ffmpegPathOk(response.result);
-                    self.webcam_ffmpegPathBroken(!response.result);
-                });
-        };
-
         self.onSettingsShown = function () {
             self.requestData();
         };
 
-        self.onSettingsHidden = function () {
-            self.webcam_ffmpegPathReset();
-        };
+        self.requestData = function (local) {
 
-        self.requestData = function(local) {
+            console.log("Requesting settings");
+
             // handle old parameter format
             var callback = undefined;
             if (arguments.length == 2 || _.isFunction(local)) {
@@ -371,7 +193,7 @@ $(function () {
 
             // perform the request
             self.receiving(true);
-            return OctoPrint.settings.get()
+            return getFromApi('settings')
                 .done(function(response) {
                     self.fromResponse(response, local);
 
@@ -412,42 +234,7 @@ $(function () {
             }
 
             // some special read functions for various observables
-            var specialMappings = {
-                feature: {
-                    externalHeatupDetection: function () { return !self.feature_disableExternalHeatupDetection()},
-                    alwaysSendChecksum: function () { return self.feature_sendChecksum() == "always"},
-                    neverSendChecksum: function () { return self.feature_sendChecksum() == "never"}
-                },
-                serial: {
-                    additionalPorts : function () { return commentableLinesToArray(self.serial_additionalPorts()) },
-                    additionalBaudrates: function () { return _.map(splitTextToArray(self.serial_additionalBaudrates(), ",", true, function(item) { return !isNaN(parseInt(item)); }), function(item) { return parseInt(item); }) },
-                    longRunningCommands: function () { return splitTextToArray(self.serial_longRunningCommands(), ",", true) },
-                    checksumRequiringCommands: function () { return splitTextToArray(self.serial_checksumRequiringCommands(), ",", true) }
-                },
-                scripts: {
-                    gcode: function () {
-                        // we have a special handler function for the gcode scripts since the
-                        // server will always send us those that have been set already, so we
-                        // can't depend on all keys that we support to be present in the
-                        // original request we iterate through in mapFromObservables to
-                        // generate our response - hence we use our observables instead
-                        //
-                        // Note: If we ever introduce sub categories in the gcode scripts
-                        // here (more _ after the prefix), we'll need to adjust this code
-                        // to be able to cope with that, right now it only strips the prefix
-                        // and uses the rest as key in the result, no recursive translation
-                        // is done!
-                        var result = {};
-                        var prefix = "scripts_gcode_";
-                        var observables = _.filter(_.keys(self), function(key) { return _.startsWith(key, prefix); });
-                        _.each(observables, function(observable) {
-                            var script = observable.substring(prefix.length);
-                            result[script] = self[observable]();
-                        });
-                        return result;
-                    }
-                }
-            };
+            var specialMappings = {};
 
             var mapFromObservables = function(data, mapping, keyPrefix) {
                 var flag = false;
@@ -511,7 +298,7 @@ $(function () {
             if (self.settings === undefined) {
                 self.settings = ko.mapping.fromJS(serverChangedData);
             } else {
-                ko.mapping.fromJS(serverChangedData, self.settings);
+                ko.mapping.fromJS(serverChangedData, {}, self.settings);
             }
 
             // some special apply functions for various observables
@@ -524,21 +311,16 @@ $(function () {
                         }
                     }
                 },
-                feature: {
-                    externalHeatupDetection: function(value) { self.feature_disableExternalHeatupDetection(!value) },
-                    alwaysSendChecksum: function(value) { if (value) { self.feature_sendChecksum("always")}},
-                    neverSendChecksum: function(value) { if (value) { self.feature_sendChecksum("never")}}
-                },
-                serial: {
-                    additionalPorts : function(value) { self.serial_additionalPorts(value.join("\n"))},
-                    additionalBaudrates: function(value) { self.serial_additionalBaudrates(value.join(", "))},
-                    longRunningCommands: function(value) { self.serial_longRunningCommands(value.join(", "))},
-                    checksumRequiringCommands: function(value) { self.serial_checksumRequiringCommands(value.join(", "))}
-                },
                 terminalFilters: function(value) { self.terminalFilters($.extend(true, [], value)) },
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
-                }
+                },
+                plugins: 
+                    {
+                        lui: {
+                            autoShutdown: function (value) { self.autoShutdown(value); }
+                        }
+                    }
             };
 
             var mapToObservables = function(data, mapping, local, keyPrefix) {
@@ -595,7 +377,6 @@ $(function () {
                     self.receiving(true);
                     self.sending(false);
                     try {
-                        self.fromResponse(data);
                         if (options.success) options.success(data, status, xhr);
                     } finally {
                         self.receiving(false);
@@ -652,27 +433,7 @@ $(function () {
             // }
         };
 
-        self.showSettingsTopic = function (topic, blocking) {
-            self.settingsTopic(capitalize(topic));
-            callViewModels(self.allViewModels, "onSettingsShown");
-            callViewModels(self.allViewModels, "on" + self.settingsTopic()+ "SettingsShown");
-            self.flyout.showFlyout(topic + '_settings', blocking)
-                .done(function ()  {
-                    self.saveData();
-                })
-                .always(function ()  {
-                    callViewModels(self.allViewModels, "onSettingsHidden");
-                });
-            //IntroJS
-            if(self.introView.isTutorialStarted){
-                if(topic === 'maintenance'){
-                    setTimeout(function(){
-                        self.introView.introInstance.refresh();
-                    }, 300);
-                    self.introView.introInstance.goToStep(12);
-                }
-            }
-        };
+        
 
         // Sending custom commands to the printer, needed for level bed for example.
         // format is: sendCustomCommand({type:'command',command:'M106 S255'})
@@ -715,31 +476,6 @@ $(function () {
             self.flyout.showFlyout('zoffset');
 
         };
-
-        self.fromCurrentData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self.fromHistoryData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self._processStateData = function (data) {
-            self.isErrorOrClosed(data.flags.closedOrError);
-            self.isOperational(data.flags.operational);
-            self.isPaused(data.flags.paused);
-            self.isPrinting(data.flags.printing);
-            self.isError(data.flags.error);
-            self.isReady(data.flags.ready);
-            self.isLoading(data.flags.loading);
-        };
-
-        // Api send functions
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
 
         // Translations code
 
@@ -795,7 +531,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
-        ["loginStateViewModel", "usersViewModel", "printerProfilesViewModel", "flyoutViewModel", "introViewModel"],
-        ["#settings", "#settings_flyouts"]
+        ["loginStateViewModel", "printerProfilesViewModel", "flyoutViewModel", "introViewModel"],
+        ["#settings_flyouts"]
     ]);
 });

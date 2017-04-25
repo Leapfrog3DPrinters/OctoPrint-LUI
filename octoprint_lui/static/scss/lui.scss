@@ -707,7 +707,7 @@ input[type=radio] {
     display: flex;
     min-width: 0;
   }
-  // .Table-row-item
+  // .Table-item
   &-item {
     display: flex;
     flex-direction: row;
@@ -1275,7 +1275,7 @@ select {
 }
 
 .file_search {
-  flex-basis: 60%;
+  flex: 1 1;
   padding-left: 0.5em;
 }
 
@@ -1298,11 +1298,20 @@ select {
     }
 }
 
-.file_sort{
-  flex-basis: 5%;
-  margin-left:auto;
+.file_sort {
+  text-align: center;
   & a {
     color: $main-color;
+    padding: 0 8px;
+  }
+}
+
+.file_refresh {
+  text-align: center;
+  & a {
+    color: $main-color;
+    padding: 0 8px;
+    
   }
 }
 
@@ -1356,10 +1365,6 @@ select {
   min-height: 50px;
   border-bottom: 1px solid $third-color;
   flex-direction: column;
-  flex: 0 1 auto;
-}
-
-.file_footer {
   flex: 0 1 auto;
 }
 
@@ -1502,6 +1507,12 @@ select {
     #terminal-output {
       min-height: 150px;
       margin-bottom: 5px;
+      width: 100%;
+    }
+
+    #terminal-command
+        {
+        width: 100%;
     }
 
     margin-bottom: 30px;
@@ -1592,9 +1603,19 @@ pre code {
 }
 
 /* Startup */
+#startup_flyout .flyout-body
+{
+     align-items: stretch;
+}
+#startup_flyout_content
+{
+    display: flex;
+    flex-direction: column;
+}
 .startup_step
 {
     display: none;
+    flex: 1 1 auto;
   width: 100%;
   &.active {
     display: inline-block;
@@ -1709,7 +1730,7 @@ ul.width-calibrator
   {
     text-align: center;
     float: left;
-    width: 29px;
+    width: 19px;
     height: 100px;
     list-style-type: none;
     background: linear-gradient(to right, rgba(255,255,255,0) 40%, $main-color 40%, $main-color 60%, rgba(255,255,255,0) 60%);
@@ -1723,7 +1744,7 @@ ul.width-calibrator
     }
     i {
       top: 110px;
-
+      white-space: nowrap;
       position: relative;
       text-decoration: none;
       font-style: normal;
