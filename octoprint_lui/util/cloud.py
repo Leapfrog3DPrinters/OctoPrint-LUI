@@ -27,11 +27,11 @@ ONEDRIVE = "onedrive"
 GOOGLE_DRIVE = "google_drive"
 DROPBOX = "dropbox"
 
-AVAILABLE_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
+INSTALLED_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
 
 
 class CloudService(object):
-    def __init__(self, settings, data_folder):
+    def __init__(self, secrets, data_folder):
         self._logger = logging.getLogger(__name__)
     def get_auth_url(self, redirect_uri):
         pass
@@ -45,13 +45,13 @@ class CloudService(object):
         pass
 
 class DropboxCloudService(CloudService):
-    def __init__(self, settings, data_folder):
-        super(DropboxCloudService, self).__init__(settings, data_folder)
-        self._settings = settings
+    def __init__(self, secrets, data_folder):
+        super(DropboxCloudService, self).__init__(secrets, data_folder)
+        self._secrets = secrets
         self._csrf = {}
         self._client = None
-        self._client_secret = self._settings.get(['cloud', DROPBOX, 'client_secret']);
-        self._client_id = self._settings.get(['cloud', DROPBOX, 'client_id']);
+        self._client_secret = self._secrets.get('client_secret');
+        self._client_id = self._secrets.get('client_id');
         self._redirect_uri = None
         self._access_token = None
         self._id_tracker = {}
@@ -183,13 +183,13 @@ class DropboxCloudService(CloudService):
 
 
 class GoogleDriveCloudService(CloudService):
-    def __init__(self, settings, data_folder):
-        super(GoogleDriveCloudService, self).__init__(settings, data_folder)
-        self._settings = settings
+    def __init__(self, secrets, data_folder):
+        super(GoogleDriveCloudService, self).__init__(secrets, data_folder)
+        self._secrets = secrets
         self._http = httplib2.Http()
         self._client = None
-        self._client_secret = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_secret']);
-        self._client_id = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_id']);
+        self._client_secret = self._secrets.get('client_secret');
+        self._client_id = self._secrets.get('client_id');
         self._redirect_uri = None
         self._credentials = None
         self._id_tracker = {}
@@ -341,14 +341,14 @@ class GoogleDriveCloudService(CloudService):
 
 
 class OnedriveCloudService(CloudService):
-    def __init__(self, settings, data_folder):
-        super(OnedriveCloudService, self).__init__(settings, data_folder)
-        self._settings = settings
+    def __init__(self, secrets, data_folder):
+        super(OnedriveCloudService, self).__init__(secrets, data_folder)
+        self._secrets = secrets
         self._client = None
         self._redirect_uri = None
 
-        self._client_secret = self._settings.get(['cloud', ONEDRIVE, 'client_secret']);
-        self._client_id = self._settings.get(['cloud', ONEDRIVE, 'client_id']);
+        self._client_secret = self._secrets.get('client_secret');
+        self._client_id = self._secrets.get('client_id');
 
         self._api_base_url = 'https://api.onedrive.com/v1.0/'
         self._scopes = ['wl.signin', 'wl.offline_access', 'onedrive.readonly']
@@ -448,27 +448,59 @@ class OnedriveCloudService(CloudService):
         return response
 
 class CloudConnect():
-    def __init__(self, settings, data_folder):
-        self._settings = settings
+    def __init__(self, data_folder):
         self._data_folder = data_folder
+        self._cloud_secrets = []
+        self._logger = logging.getLogger(__name__)
+
         self.services = {}
+        
+        self._read_secrets()
+        self._init_all_services()
     
     ## Private methods
 
+    def _read_secrets(self):
+        secrets_data = self._read_secrets_file()
+
+        if secrets_data and "cloud" in secrets_data:
+            self._cloud_secrets = secrets_data["cloud"]
+
+    def _read_secrets_file(self):
+        cloud_file = os.path.join(self._data_folder, "cloud.yaml")
+        if os.path.isfile(cloud_file):
+            import yaml
+            try:
+                with open(cloud_file) as f:
+                    data = yaml.safe_load(f)
+                return data
+            except:
+                self._logger.exception("Could not read cloud settings")
+        else:
+            self._logger.warning("Cloud settings not found")
+
+    def _init_all_services(self):
+        for service in INSTALLED_SERVICES:
+            service_obj = self._service_factory(service)
+
+            if service_obj:
+                self.services[service] = service_obj
+
     def _service_factory(self, service):
-        if service == ONEDRIVE:
-            return OnedriveCloudService(self._settings, self._data_folder)
-        elif service == GOOGLE_DRIVE:
-            return GoogleDriveCloudService(self._settings, self._data_folder)
-        elif service == DROPBOX:
-            return DropboxCloudService(self._settings, self._data_folder)
+        if service == ONEDRIVE and ONEDRIVE in self._cloud_secrets:
+            return OnedriveCloudService(self._cloud_secrets[ONEDRIVE], self._data_folder)
+        elif service == GOOGLE_DRIVE and GOOGLE_DRIVE in self._cloud_secrets:
+            return GoogleDriveCloudService(self._cloud_secrets[GOOGLE_DRIVE], self._data_folder)
+        elif service == DROPBOX and DROPBOX in self._cloud_secrets:
+            return DropboxCloudService(self._cloud_secrets[DROPBOX], self._data_folder)
     ## Public methods
 
     def get_service(self, service):
-        if not service in self.services:
-            self.services[service] = self._service_factory(service)
+        if service in self.services:
+            return self.services[service]
 
-        return self.services[service]
+    def get_available_services(self):
+        return self.services.keys()
 
     def is_logged_in(self, service):
         return self.get_service(service).is_logged_in()
@@ -498,7 +530,7 @@ class CloudStorage(LocalFileStorage):
                         "is_connected": self._cloud_connect.get_service(service).is_logged_in(),
 		                "type": "folder",
                         "origin": "cloud"
-                    } for service in AVAILABLE_SERVICES]
+                    } for service in self._cloud_connect.get_available_services()]
         else:
             service = self._get_service_from_path(path)
             return self._cloud_connect.get_service(service).list_files(path, filter)

@@ -19,7 +19,7 @@ from collections import OrderedDict
 from pipes import quote
 from functools import partial
 from copy import deepcopy
-from flask import jsonify, make_response, render_template, request, redirect
+from flask import jsonify, make_response, render_template, request, redirect, send_from_directory
 
 from distutils.version import StrictVersion
 from distutils.dir_util import copy_tree
@@ -237,10 +237,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.cloud_storage = None
         
         self.api_exceptions = [ "plugin.lui.webcamstream", 
-                                "plugin.lui.connect_to_cloud_service", 
+                                "plugin.lui.externaljs",
                                 "plugin.lui.connect_to_cloud_service_finished",
                                 "plugin.lui.logout_cloud_service",
-                                "plugin.lui.logout_cloud_service_finished"
                                ]
 
     def initialize(self):
@@ -312,12 +311,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._init_cloud()
 
     def _init_cloud(self):
-        self.cloud_enabled = self._settings.get_boolean(["cloud", "enabled"])
+        self.cloud_enabled = self._settings.get_boolean(["cloud_enabled"])
 
         if self.cloud_enabled:
-            self.cloud_connect = CloudConnect(self._settings, self.get_plugin_data_folder())
-            self.cloud_storage = CloudStorage(self.cloud_connect)
-            self._file_manager.add_storage("cloud", self.cloud_storage)
+            self.cloud_connect = CloudConnect(self.get_plugin_data_folder())
+            available_services = self.cloud_connect.get_available_services()
+
+            if len(available_services) > 0:
+                self.cloud_storage = CloudStorage(self.cloud_connect)
+                self._file_manager.add_storage("cloud", self.cloud_storage)
+            else:
+                # Disable cloud if there are no available services
+                self.cloud_enabled = False
 
     def _set_model(self):
         """Sets the model and platform variables"""
@@ -678,7 +683,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         } 
         """
         info_obj = []
-        for service in cloud.AVAILABLE_SERVICES:
+        for service in self.cloud_connect.get_available_services():
             info_obj.append({ 
                 "name": service,
                 "friendlyName": service, #TODO: Use babel to get friendlyname
@@ -700,12 +705,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
 
-    @BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["GET"])
-    def logout_cloud_service_finished(self, service):
+    @BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["POST"])
+    def logout_cloud_service(self, service):
         """
         Revokes the client credentials
         """
-        self.cloud_connect.logout(service, request)
+        self.cloud_connect.logout(service)
         return make_response(jsonify(), 200)
 
 	## Software API
@@ -2041,6 +2046,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def webcamstream(self):
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
+
+    @BlueprintPlugin.route("/externaljs", methods=["GET"])
+    def externaljs(self):
+        return send_from_directory(os.path.join(self._basefolder, "static", "js"), "external.js")
 
     def get_ui_additional_key_data_for_cache(self):
         from_localhost = self._is_request_from_localhost(request)
