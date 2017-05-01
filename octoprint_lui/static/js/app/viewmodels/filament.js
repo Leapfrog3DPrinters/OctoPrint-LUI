@@ -17,7 +17,7 @@ $(function ()  {
         // Let's create an alias for the tools array, we're gonna use it a lot from here
         self.tools = self.toolInfo.tools;
 
-        // IsExtruding is now stored in toolInfo.tools. This helper lets you know if there's any of these tools extruding 
+        // IsExtruding is now stored in toolInfo.tools. This helper lets you know if there's any of these tools extruding
         self.isAnyExtrudingOrRetracting = ko.pureComputed(function () {
             return _.some(self.tools(), function (tool) { return tool.filament.isExtruding() || tool.filament.isRetracting(); });
         });
@@ -204,7 +204,7 @@ $(function ()  {
                     setTimeout(function () {
                         self.introView.introInstance.refresh()
                     }, 300);
-                    if(tool == "tool1") {
+                    if(self.tool() == "tool1") {
                         self.introView.introInstance.goToStep(3);
                     }
                     else{
@@ -261,6 +261,19 @@ $(function ()  {
         }
 
         self.loadFilament = function (loadFor) {
+
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh()
+                }, 300);
+                if(self.tool() == 'tool1') {
+                    self.introView.introInstance.goToStep(4);
+                }
+                else{
+                    self.introView.introInstance.goToStep(8);
+                }
+            }
 
             var loadFor = loadFor || "swap";
             var materialProfileName = undefined;
@@ -352,7 +365,7 @@ $(function ()  {
 
         self.finishHeating = function (tool) {
             tool = tool || self.tool();
-            
+
             sendToApi("filament/" + tool + "/heat/finish");
         }
 
@@ -404,7 +417,7 @@ $(function ()  {
 
                     if (messageData && messageData.hasOwnProperty('paused_materials'))
                         self.lockTemperatureProfile(messageData['paused_materials'])
-                    
+
                     break;
                 case "filament_change_cancelled":
                     self.filamentInProgress(false);
@@ -500,7 +513,7 @@ $(function ()  {
                     break;
 
             }
-        }
+        };
 
 
         self.copyMaterialProfiles = function ()  {
@@ -517,11 +530,11 @@ $(function ()  {
             self.requestData();
             self.tool("tool0");
             self.copyMaterialProfiles();
-        }
+        };
 
         self.onEventSettingsUpdated = function ()  {
             self.copyMaterialProfiles();
-        }
+        };
 
 
         self.fromResponse = function (data) {
@@ -534,7 +547,7 @@ $(function ()  {
                     tools[i].filament.amount(data.filaments[i].amount);
                 }
             }
-        }
+        };
 
         self.requestData = function ()  {
             getFromApi("filament").done(self.fromResponse);
@@ -542,26 +555,7 @@ $(function ()  {
 
         self.onMaterialsSettingsShown = function () {
             self.requestData();
-        }
-        self.showLoading = function () {
-            //IntroJS
-            if (self.introView.isTutorialStarted) {
-                setTimeout(function () {
-                    self.introView.introInstance.refresh()
-                }, 300);
-                tool = self.tool();
-                if(tool == 'tool1') {
-                    self.introView.introInstance.goToStep(4);
-                }
-                else{
-                    self.introView.introInstance.goToStep(8);
-                }
-                self.loadFilament(false);
-            }
-            else{
-                self.loadFilament(false);
-            }
-        }
+        };
 
         self.abortFilament = function () {
             self.flyout.closeFlyout();
@@ -578,6 +572,10 @@ $(function ()  {
                     self.introView.introInstance.goToStep(6);
                 }
             }
+        };
+
+        self.onFilamentIntroExit = function () {
+            self.abortFilament();
         }
     }
 

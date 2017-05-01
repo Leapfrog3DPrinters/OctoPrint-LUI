@@ -34,7 +34,7 @@
             </div>
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="click: function () { browseOrigin('cloud') }, css: {  'secondary-button': currentOrigin() == 'cloud' }">
+                <li class="button load-button" data-bind="touchClick: function () { browseOrigin('cloud') }, css: {  'secondary-button': currentOrigin() == 'cloud' }">
                   <a href="#browse_cloud">
                     <span>
                       <i class="fa fa-cloud"></i>{{ _('Cloud') }}
@@ -115,7 +115,7 @@
             </ul>
           </div>
           <div class="file_refresh">
-            <a href="#" data-bind="click: refreshCurrentFolder">
+            <a href="#" data-bind="touchClick: refreshCurrentFolder">
               <i class="fa fa-refresh"></i>
             </a>
           </div>
@@ -177,7 +177,7 @@
               </li>
             </ul>
           </div>
-          <div id="print_files" class="file_entry" data-bind="visible: isIntroFile(), css: {'file_selected': isIntroFile()}, click: function () {}">
+          <div id="print_files" class="file_entry" data-bind="visible: isIntroFile(), css: {'file_selected': isIntroFile()}, touchClick: function () {}">
             <ul class="file_main">
               <li class="file_name">
                 <a href="#file_name">
@@ -185,7 +185,7 @@
                 </a>
               </li>
               <li class="file_print" data-bind="visible: isIntroFile()">
-                <a href="#" data-bind="click: function () { selectDemoFile() }" title="{{ _('Print') }}">
+                <a href="#" data-bind="touchClick: function () { selectDemoFile() }" title="{{ _('Print') }}">
                   <i class="fa fa-play"></i>
                 </a>
               </li>
@@ -207,7 +207,7 @@
           <!-- /ko -->
           <!-- ko if: currentOrigin() == 'cloud' && (!currentPath() || currentPath() == '/') -->
           <div class="file_entry">
-            <div data-bind="click: showCloudSettings">
+            <div data-bind="touchClick: showCloudSettings">
               <ul class="file_main">
                 <li class="file_status file_neutral">
                   <a href="#file_status">
@@ -241,7 +241,7 @@
               </li>
               <li class="file_print" data-bind="visible: $root.listHelper.isSelected($data)">
                   <a href="#" data-bind="css: {disabled: !$root.isLoadActionPossible()}, touchClick: function () { $root.printAndChangeTab(); }" title="{{ _('Print') }}">
-                    <i class="fa fa-play"></i> 
+                    <i class="fa fa-play"></i>
                   </a>
               </li>
               <li class="file_status">
@@ -272,36 +272,36 @@
                     <span data-bind="text: formatFilament(value)"></span>
                     <br/>
                 </div>
-                
+
                 <strong>{{ _("Est. Print Time:") }}</strong>
                 <br />
                 <span data-bind="text: formatFuzzyPrintTime(gcodeAnalysis().estimatedPrintTime)"></span>
-                <br />                
+                <br />
                 <!-- /ko -->
                 <!-- ko if: !gcodeAnalysis() -->
                 <strong>{{ _("Analyzing job") }}</strong> <i class='fa fa-spinner fa-pulse'></i>
                 <br />
                 <!-- /ko -->
-                
+
                 <!-- ko if: prints() -->
-                
+
                 <!-- ko if: prints().last-->
                 <strong>{{ _("Last printed:") }}</strong><br/>
                 <span data-bind="text: formatTimeAgo(prints().last.date)"></span><br />
                 <!-- /ko -->
-                
+
                 <!-- ko if: prints().last.lastPrintTime-->
                 <strong>{{ _("Last print duration:") }}</strong><br/>
                 <span data-bind="text: formatDuration(prints().last.lastPrintTime)"></span>
                 <!-- /ko -->
-                
+
                 <!-- /ko -->
               </div>
               <div class="file_add_info_buttons">
                 <ul class="button-area">
                   {% if local_addr %}
                   <li class="button">
-                    <a href="#" data-bind="click: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
+                    <a href="#" data-bind="touchClick: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
                       <span>{{ _('Copy to USB') }}</span>
                     </a>
                   </li>
@@ -349,7 +349,7 @@
               <li class="file_load">
                 <ul class="button-area">
                   <li class="button secondary-button load-button">
-                    <a href="#" data-bind="click: function () { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
+                    <a href="#" data-bind="touchClick: function () { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
                       <span>
                         <i class="fa fa-upload"></i>{{ _('Load') }}
                       </span>
@@ -379,7 +379,7 @@
             </ul>
           </script>
           <script type="text/html" id="files_template_cloud_folder">
-            <div data-bind="click: $root.changeFolder">
+            <div data-bind="touchClick: $root.changeFolder">
               <ul class="file_main">
                 <li class="file_status file_neutral">
                   <a href="#file_status">
@@ -395,7 +395,7 @@
             </div>
           </script>
           <script type="text/html" id="files_template_cloud_root_folder">
-            <div data-bind="click: $root.changeFolder, css: { disabled: !is_connected }">
+            <div data-bind="touchClick: $root.changeFolder, css: { disabled: !is_connected }">
               <ul class="file_main">
                 <li class="file_status file_neutral">
                   <a href="#file_status">
@@ -411,7 +411,7 @@
             </div>
           </script>
           <script type="text/html" id="files_template_folder">
-            <div data-bind="click: $root.changeFolder">
+            <div data-bind="touchClick: $root.changeFolder">
               <ul class="file_main">
                 <li class="file_status file_neutral">
                   <a href="#file_status">

@@ -39,7 +39,7 @@ $(function () {
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function () {
                     self.moveToHeadSwapPosition();
-                }); 
+                });
         };
 
         self.cleanBedPosition = function ()  {
@@ -73,8 +73,7 @@ $(function () {
         };
 
         self.calibrateExtruders = function ()  {
-            self.flyout.deactivateFlyout('#maintenance_settings_flyout');
-            self.flyout.showFlyout('extrudercalibration', true);
+            self.flyout.showFlyout('extrudercalibration', true, true);
             //IntroJS
             if(self.introView.isTutorialStarted){
                 setTimeout(function(){
@@ -86,8 +85,7 @@ $(function () {
 
         self.calibrateBed = function()
         {
-            self.flyout.deactivateFlyout('#maintenance_settings_flyout');
-            self.flyout.showFlyout('bedcalibration', true);
+            self.flyout.showFlyout('bedcalibration', true, true);
             //IntroJS
             if(self.introView.isTutorialStarted){
                 setTimeout(function(){
@@ -192,6 +190,16 @@ $(function () {
                     }
                     break;
             }
+        }
+
+        self.onMaintenanceSettingsShown = function () {
+            //IntroJS
+                if(self.introView.isTutorialStarted){
+                    setTimeout(function(){
+                        self.introView.introInstance.refresh();
+                    }, 300);
+                    self.introView.introInstance.goToStep(12);
+                }
         }
     }
     ADDITIONAL_VIEWMODELS.push([

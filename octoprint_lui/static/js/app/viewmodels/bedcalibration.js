@@ -33,16 +33,22 @@ $(function ()  {
             self.mayAbort(true);
             self.mayAccept(false);
             $('.bed-canvas-item').removeClass('active');
-        }
+        };
 
         self.onBedcalibrationFlyoutShown = function ()  {
             self.resetState();
-        }
+        };
 
         self.abort = function()
         {
             self.flyout.closeFlyout();
-        }
+            if(self.introView.isTutorialStarted){
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(12);
+            }
+        };
 
         self.accept = function()
         {
@@ -148,6 +154,11 @@ $(function ()  {
                     break;
             }
         }
+
+        self.onBedIntroExit = function () {
+            self.abort();
+        }
+
 
     }
     // This is how our plugin registers itself with the application, by adding some configuration

@@ -5,7 +5,6 @@ $(function () {
         self.loginState = parameters[0];
         self.printerProfiles = parameters[1];
         self.flyout = parameters[2];
-        self.introView = parameters[3];
 
         self.autoShutdown = ko.observable(undefined);
 
@@ -20,7 +19,7 @@ $(function () {
 
         self.appearance_name = ko.observable(undefined);
         self.appearance_defaultLanguage = ko.observable();
-        
+
         self.feature_modelSizeDetection = ko.observable(undefined);
 
         self.serial_autoconnect = ko.observable(undefined);
@@ -315,7 +314,7 @@ $(function () {
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
                 },
-                plugins: 
+                plugins:
                     {
                         lui: {
                             autoShutdown: function (value) { self.autoShutdown(value); }
@@ -433,7 +432,7 @@ $(function () {
             // }
         };
 
-        
+
 
         // Sending custom commands to the printer, needed for level bed for example.
         // format is: sendCustomCommand({type:'command',command:'M106 S255'})
@@ -531,7 +530,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         SettingsViewModel,
-        ["loginStateViewModel", "printerProfilesViewModel", "flyoutViewModel", "introViewModel"],
+        ["loginStateViewModel", "printerProfilesViewModel", "flyoutViewModel"],
         ["#settings_flyouts"]
     ]);
 });

@@ -77,7 +77,7 @@ $(function ()  {
             if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 1000);
+                }, 750);
                 self.introView.introInstance.goToStep(17);
             }
         };
@@ -88,7 +88,7 @@ $(function ()  {
             if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 300);
+                }, 1000);
                 self.introView.introInstance.goToStep(19);
             }
         };
@@ -190,7 +190,6 @@ $(function ()  {
                 }).always(function ()  { self.restoreState(); sendToApi("files/unselect"); });
             //IntroJS
             if(self.introView.isTutorialStarted) {
-                self.flyout.closeFlyout();
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 1000);
@@ -283,6 +282,10 @@ $(function ()  {
             }
         }
 
+        self.onExtruderExitIntro = function () {
+            self.abort();
+        }
+
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
@@ -293,7 +296,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel", "introViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#extrudercalibration_flyout"]

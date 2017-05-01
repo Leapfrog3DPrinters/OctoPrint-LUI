@@ -7,6 +7,7 @@ $(function () {
         self.printerState = parameters[2];
         self.settings = parameters[3];
         self.system = parameters[4];
+        self.introView = parameters[5];
 
         self.allViewModels = [];
 
@@ -32,9 +33,9 @@ $(function () {
         {
             if(confirm)
             {
-                self.flyout.showConfirmationFlyout({ 
-                    'title': gettext('Restart system service'), 
-                    'text': gettext('You are about to restart the background printer services.'), 
+                self.flyout.showConfirmationFlyout({
+                    'title': gettext('Restart system service'),
+                    'text': gettext('You are about to restart the background printer services.'),
                     'question': gettext('Do you want to continue?')
                 }).done(self.system.systemServiceRestart);
             }
@@ -124,7 +125,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "settingsViewModel", "systemViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "settingsViewModel", "systemViewModel", "introViewModel"],
         ["#header", "#settings", "#auto_shutdown_flyout", "#printer_error_flyout", "#startup_flyout"]
     ]);
 });

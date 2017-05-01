@@ -92,7 +92,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.default_material_name = "None"
 
         self.regexExtruder = re.compile("(^|[^A-Za-z][Ee])(-?[0-9]*\.?[0-9]+)")
-        
+
         self.filament_action = False
 
         self.load_amount = 0
@@ -129,7 +129,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.temperature_window = [-6, 10] # Below, Above target temp
 
         # If we're in the window, but the temperature delta is greater than this value, consider the status to be 'stabilizing'
-        self.instable_temperature_delta = 3 
+        self.instable_temperature_delta = 3
 
         self.heating_callback_mutex = threading.RLock()
         self.heating_callbacks = list()
@@ -229,8 +229,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.cloud_connect = None
         self.cloud_storage = None
 
-        self.api_exceptions = [ "plugin.lui.webcamstream", 
-                                "plugin.lui.connect_to_cloud_service", 
+        self.api_exceptions = [ "plugin.lui.webcamstream",
+                                "plugin.lui.connect_to_cloud_service",
                                 "plugin.lui.connect_to_cloud_service_finished",
                                 "plugin.lui.logout_cloud_service",
                                 "plugin.lui.logout_cloud_service_finished"
@@ -427,7 +427,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ Reads the printer profile and any machine specific configurations """
         self.current_printer_profile = self._printer._printerProfileManager.get_current_or_default()
         self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"] if "manualBedCalibrationPositions" in self.current_printer_profile else None
-        
+
         # With the profile in place, set defaults for tool-related properties
 
         num_extruders = self.current_printer_profile.get('extruder', {}).get('count', 1)
@@ -819,7 +819,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         info_obj = []
         for service in cloud.AVAILABLE_SERVICES:
-            info_obj.append({ 
+            info_obj.append({
                 "name": service,
                 "friendlyName": service, #TODO: Use babel to get friendlyname
                 "loggedIn": self.cloud_connect.is_logged_in(service)
@@ -833,7 +833,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         auth_url = self.cloud_connect.get_auth_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/login/finished'.format(service))
         return make_response(jsonify({'auth_url' : auth_url }))
-         
+
     @BlueprintPlugin.route("/cloud/<string:service>/login/finished", methods=["GET"])
     def connect_to_cloud_service_finished(self, service):
         """
@@ -923,7 +923,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Records that the changelog has been seen by the user, so it won't appear on startup again
         """
-        
+
         self._logger.debug("changelog_seen")
         self._settings.set(["changelog_version"], self._plugin_manager.get_plugin_info('lui').version)
         self.show_changelog = False
@@ -1227,9 +1227,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         data = request.json
         amount = data.get("amount", 0)
         material_name = data.get("materialProfileName")
-        
+
         material = self._get_material_from_name(material_name)
-        
+
         if not material or material["name"] == self.default_material_name:
             self.tools[tool]["filament_amount"] = 0
             self.tools[tool]["filament_material_name"] = self.default_material_name
@@ -1252,16 +1252,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         material = self._get_material_from_name(self.tools[tool]["filament_material_name"])
 
         if not material:
-            return make_response(jsonify({ "message": "Material not found."}), 400) 
+            return make_response(jsonify({ "message": "Material not found."}), 400)
 
         if material["name"] == self.default_material_name:
-            return make_response(jsonify({ "message": "Cannot preheat if no material is loaded."}), 400) 
+            return make_response(jsonify({ "message": "Cannot preheat if no material is loaded."}), 400)
 
         # Start heating to the temperature
         temp = int(material['extruder'])
         self.heat_to_temperature(tool, temp)
 
-        return make_response(jsonify(), 200) 
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/heat/finish", methods=["POST"])
     def heat_filament_finish(self, tool):
@@ -1274,7 +1274,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.heat_to_temperature(tool, 0)
 
-        return make_response(jsonify(), 200) 
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/start", methods=["POST"])
     def change_filament_start(self, tool):
@@ -1359,7 +1359,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Heat up to new profile temperature and load filament
         if loadFor == "purge":
             self.loading_for_purging = True
-            amount = self.tools.get(tool, {}).get("filament_amount", 0) 
+            amount = self.tools.get(tool, {}).get("filament_amount", 0)
         else:
             self.loading_for_purging = False
 
@@ -1482,7 +1482,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Sends a M605 command to the printer to initiate the given print mode and starts the currently selected job afterwards.
         """
-        
+
         self._set_print_mode(PrintModes.get_from_string(mode))
         self._printer.start_print()
 
@@ -1519,7 +1519,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def homing_start(self):
         """
         Begins the homing procedure, required on startup of the printer
-        """ 
+        """
         self._printer.commands('G28')
         self._send_client_message(ClientMessages.IS_HOMING)
         return make_response(jsonify(), 200)
@@ -1578,6 +1578,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._on_filament_detection_during_print(self._printer._comm)
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/printer/had_first_start", methods=["POST"])
+    def had_first_start(self):
+        if not self._settings.get_boolean(["first_start"]):
+			self._settings.set(["first_start"], True)
+			self._settings.save()
+        return make_response(jsonify(), 200)
+
     ## Files API
 
     @BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)
@@ -1585,7 +1592,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_files(self, origin, path = None):
         """
         A wrapper around OctoPrint's get_files. Also returns file lists for origins usb and cloud.
-        """ 
+        """
         if origin == "cloud":
             files = self.cloud_storage.list_files(path, filter=self.browser_filter, recursive=False)
             return jsonify(files=files)
@@ -1627,7 +1634,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return jsonify(files=files)
         else:
             # Return original OctoPrint API response
-            
+
             if path and octoprint.filemanager.valid_file_type(path, type="machinecode"):
                 # File
                 return octoprint.server.api.files.readGcodeFile(origin, path)
@@ -2064,7 +2071,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "changelog_version": "",
             "had_first_run": "",
             "force_first_run": False,
-            "debug_bundling" : False
+            "debug_bundling" : False,
 			"first_start": False
         }
 
@@ -2207,7 +2214,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "debug_lui": self.debug,
             "model": self.model,
             "printer_profile": self.current_printer_profile,
-            "reserved_usernames": self.reserved_usernames
+            "reserved_usernames": self.reserved_usernames,
             "first_start": self.first_start
         }
 
@@ -2256,7 +2263,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_preemptive_caching_enabled(self):
         return True
 
-    
+
 
     def _firmware_update_required(self):
 
@@ -2299,8 +2306,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if cancel_print:
             self._printer.cancel_print()
 
-    
-    
+
+
 
     def _preheat_for_calibration(self):
         target_bed_temp = 0
@@ -2346,7 +2353,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _copy_demo_file(self, demo_src_filename):
         demo_src_path = None
-        demo_dst_filename = "FirstPrint.gcode"
+        demo_dst_filename = "Bolt-PLA.gcode"
         demo_dst_path = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, demo_dst_filename)
         demo_src_path = os.path.join(self._basefolder, "gcodes", demo_src_filename)
 
@@ -2387,7 +2394,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.calibration_type = None
             self._restore_timelapse()
 
-    
+
 
     def _get_current_materials(self):
         """ 
@@ -2403,12 +2410,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Returns a list of the currently loaded filaments [{tool, material, amount}]
         """
 
-        filaments = [{ "tool": tool, 
-                      "materialProfileName": info["filament_material_name"], 
-                      "amount": info["filament_amount"] } 
+        filaments = [{ "tool": tool,
+                      "materialProfileName": info["filament_material_name"],
+                      "amount": info["filament_amount"] }
 
                      for tool, info in self.tools.iteritems() if tool != "bed"]
-        
+
         return sorted(filaments, key=lambda f: f["tool"])
 
     def _execute_printer_script(self, script_name, context = None):
@@ -2498,7 +2505,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if futurePath == currentPath and futureFilename == currentFilename and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
-        
+
         futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
 
         def download_progress(progress):
@@ -2652,7 +2659,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _copy_log_to_usb(self, filename):
         if not self.is_media_mounted:
             return make_response(jsonify(error="Could not access the media folder"), 400)
-        
+
         logs_folder = self._settings.global_get_basefolder("logs")
         src_path = os.path.join(logs_folder, filename)
 
@@ -2730,7 +2737,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         finally:
             is_copying = False
 
-        return make_response(jsonify(), 200)     
+        return make_response(jsonify(), 200)
 
     # Filament change helpers
 
@@ -2942,7 +2949,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     # Filament persistance helpers
 
     def _update_filament_from_db(self):
-        
+
         for tool in self.tools:
             data = self.filament_database.get(self._filament_query.tool == tool)
             if data:
@@ -2959,9 +2966,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             for tool in self.tools:
                 if tool != "bed":
                     self._save_filament_to_db_for_tool(tool)
-            
+
     def _save_filament_to_db_for_tool(self, tool):
-        
+
         amount = self.tools.get(tool, {}).get("filament_amount", 0)
         material_name = self.tools.get(tool, {}).get("filament_material_name", self.default_material_name)
 
@@ -3239,7 +3246,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.requesting_temperature_after_mintemp:
             self.requesting_temperature_after_mintemp = False
             self._mintemp_temperature_received()
-    
+
     def _single_prop_dict(self, dic, prop):
         """
         For a given dictionary dic, returns the value of sub-property prop as value for all keys in dic.
@@ -3430,10 +3437,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Gets the material profile for a given material name. Returns None if it is not found.
         """
         self._logger.debug("Looking for material {0}".format(material_profile_name))
-        
+
         if material_profile_name == self.default_material_name:
             return None
-        
+
         profiles = self._settings.global_get(["temperature", "profiles"])
         for profile in profiles:
             if profile['name'] == material_profile_name:

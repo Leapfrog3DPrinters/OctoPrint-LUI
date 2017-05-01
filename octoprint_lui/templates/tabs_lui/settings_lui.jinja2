@@ -23,7 +23,7 @@
       </div><!-- Printer -->
       {% if local_addr %}
       <!-- Maintenance -->
-      <div class="settings_topic">
+      <div id="maintenance" class="settings_topic">
         <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('maintenance')}, css: { disabled: !printerState.isOperational() || printerState.isPaused() || printerState.isPrinting() } ">
           <li class="topic_dash">
             <a href="#">
@@ -194,7 +194,7 @@
       </div><!-- /Languanges -->
       <!-- Cloud -->
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('cloud')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('cloud')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
           <li class="topic_dash">
             <a href="">
               <i id="cloud_icon" class="fa fa-cloud"></i>
@@ -236,7 +236,7 @@
       {% endif %}
       <!-- Tutorials -->
       <div class="settings_topic">
-          <ul class="topic_main" data-bind="click: function () {showSettingsTopic('tutorials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || isPaused()|| isPrinting()}">
+          <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('tutorials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || printerState.isPaused()|| printerState.isPrinting()}">
           <li class="topic_dash">
             <a href="">
               <i id="language_icon" class="fa fa-graduation-cap"></i>

@@ -142,3 +142,7 @@
 .exit-button i {
   color: black;
 }
+
+.introjs-overlay {
+  opacity: 0.5;
+}

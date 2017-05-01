@@ -13,6 +13,7 @@ $(function ()  {
         self.navigation = parameters[8];
         self.introView = parameters[9];
 
+        self.isIntroFile = ko.observable(false);
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
         self.currentOrigin = ko.observable("local");
@@ -169,7 +170,7 @@ $(function ()  {
             .always(function () {
                 self.isLoadingFileList(false);
             });
-           
+
         }
 
         self.showLocalStep = function () {
@@ -203,7 +204,7 @@ $(function ()  {
         self.loadFiles = function (origin, filter, path) {
             filter = filter || "";
             path = path || "";
-            
+
             return getFromApi("files/" + origin + "/" + path);
         }
 
@@ -362,7 +363,7 @@ $(function ()  {
 
             self.allItems(files);
             self.currentPath("");
-            
+
 
             if (!switchToPath) {
                 self.listHelper.updateItems(files);
@@ -386,7 +387,7 @@ $(function ()  {
         };
 
         self.changeFolder = function (data) {
-            
+
             if (!data.children) {
                 self.loadChildrenAndBrowse(data);
             }
@@ -401,7 +402,7 @@ $(function ()  {
         {
             if (self.isLoadingFileList())
                 return;
-            
+
             self.isLoadingFileList(true);
             self.loadFiles(folder.origin, "", folder.path).done(preProcessList).then(function (children) {
                 folder.children = children.files;
@@ -686,15 +687,15 @@ $(function ()  {
                 }
 
                 var neededFilaments = analysis['filament'];
-               
+
                 var mode = self.printerState.printMode();
                 var lengthThreshold = 100;
-                
+
                 if (mode == "normal") {
                     sufficient = _.every(neededFilaments, function (tool, key) {
                         return (tool['length'] - lengthThreshold) < self.filament.getFilament(key).amount();
                     });
-                    
+
                 } else if (mode == "sync" || mode == "mirror") {
                     var maxLength = 0.0;
                     _.each(neededFilaments, function (x) { maxLength = Math.max(maxLength, x.length); });
@@ -1221,7 +1222,7 @@ $(function ()  {
             });
         }
         self.onEventMetadataAnalysisFinished = function (payload) {
-            
+
             var file = self.getFileByFilename(payload.path);
 
             if(file)

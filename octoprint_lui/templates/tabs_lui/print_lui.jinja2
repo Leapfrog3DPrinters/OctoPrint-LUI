@@ -164,7 +164,7 @@
             <div data-bind="text: filament.materialProfileName" style="flex-basis: 50%"></div>
             <div data-bind="text: $root.getAmountString(filament.amount())" style="flex-basis: 50%; text-align: right"></div>
             {% if local_addr %}
-            <ul class="button-area" data-bind="visible: (!$root.printerState.isPrinting() || $root.printerState.isPaused()) && !$root.printerState.waitingForCancel()">
+            <ul class="button-area" data-bind="visible: (!$root.printerState.isPrinting() || $root.printerState.isPaused()) && !$root.printerState.waitingForCancel(), attr: { id: key() }">
               <li class="button secondary-button" data-bind="touchClick: function() { $root.showFilamentChangeFlyout(key()) }">
                 <a href="#">
                   <span data-bind="html: $root.getSwapFilamentButtonContents(key())"></span>

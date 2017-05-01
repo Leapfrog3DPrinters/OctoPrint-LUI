@@ -3,15 +3,27 @@ $(function ()  {
         var self = this;
 
         self.isTutorialStarted = false;
+        self.isFirstStep = false;
 
-        self.viewmodel = undefined;
         self.flyout = parameters[0];
+        self.toolInfo = parameters[1];
+
+        self.allViewModels = undefined;
 
         self.introInstance = introJs('#introjs-container');
         self.introInstance.setOptions({
-            steps: [
+            showStepNumbers: false,
+            showProgress: true,
+            scrollToElement: false,
+            exitOnOverLayClick: false,
+            showBullets: false,
+            showButtons: false,
+            keyboardNavigation: true
+        });
+
+        self.firstPrintSteps = [
                 {
-                    //1
+                    //1 +
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
@@ -22,8 +34,8 @@ $(function ()  {
                     "data-bind=\"click: function (){ cancelButton() }\">Cancel</a></div></div>"
                 },
                 {
-                    //2
-                    element: document.querySelector('#swap-left'),
+                    //2 +
+                    element: '#tool1',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">There is not filament loaded in the left extruder. We will have to " +
@@ -32,8 +44,8 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //3
-                    element: document.querySelector('#load_filament'),
+                    //3 +
+                    element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
@@ -42,8 +54,8 @@ $(function ()  {
                     tooltipClass: "tooltip_hidden"
                 },
                 {
-                    //4
-                    element: document.querySelector('#filament_loading'),
+                    //4 +
+                    element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">The left extruder is now being loaded. When something goes wrong you can press " +
@@ -51,8 +63,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //5
-                    element: document.querySelector('#finished_filament'),
+                    //5 +
+                    element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">We are now done loading the left filament. If your not satisfied with the " +
@@ -60,8 +72,8 @@ $(function ()  {
                     "the next step press <b>Done</b>.</div>"
                 },
                 {
-                    //6
-                    element: document.querySelector('#swap-right'),
+                    //6 +
+                    element: '#tool0',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">There is not filament loaded in the right extruder. We will have to " +
@@ -70,8 +82,8 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //7
-                    element: document.querySelector('#load_filament'),
+                    //7 +
+                    element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
@@ -80,8 +92,8 @@ $(function ()  {
                     tooltipClass: "tooltip_hidden"
                 },
                 {
-                    //8
-                    element: document.querySelector('#filament_loading'),
+                    //8 +
+                    element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">The right extruder is being loaded. When something goes wrong you can press " +
@@ -89,8 +101,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //9
-                    element: document.querySelector('#finished_filament'),
+                    //9 +
+                    element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">We are now done loading the right filament. If your not satisfied with the " +
@@ -98,7 +110,7 @@ $(function ()  {
                     "the next step press <b>Done</b>.</div>"
                 },
                 {
-                    //10
+                    //10 +
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">There is filament in both the extruders. Now we can calibrate the printer to make sure that the bed and" +
@@ -107,31 +119,31 @@ $(function ()  {
                 },
                 {
                     //11
-                    element: document.querySelector('#maintenance'),
+                    element: '#maintenance',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">To get to the maintenance menu, click on <i class=\"fa fa-wrench\"></i><b> Maintenance</b>.</div>",
                     position: 'bottom'
                 },
                 {
-                    //12
-                    element: document.querySelector('#bed_calibrate'),
+                    //12 +
+                    element: '#bed_calibrate',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">To calibrate the bed, click on <b>Calibrate bed</b>.</div>",
                     position: 'top'
                 },
                 {
-                    //13
-                    element: document.querySelector('#continue_calibration'),
+                    //13 +
+                    element: $('#bedcalibration_flyout_content').find('.ok-button')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Check if the printbed is empty, when it is click on <b>Continue calibration</b>.</div>",
                     position: 'top'
                 },
                 {
-                    //14
-                    element: document.querySelector('#bed_calibration'),
+                    //14 +
+                    element: '#bed_calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">When you have calibrated the bed, press <b>Close</b>.</div>",
@@ -139,8 +151,8 @@ $(function ()  {
                     tooltipClass: 'tooltip_hidden'
                 },
                 {
-                    //15
-                    element: document.querySelector('#extruder_calibrate'),
+                    //15 +
+                    element: $('#maintenance_control').find('.button:contains(\'Calibrate extruders\')')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">To align the extruders, press <b>Calibrate extruders</b>.</div>",
@@ -148,63 +160,63 @@ $(function ()  {
                 },
                 {
                     //16
-                    element: document.querySelector('#start-large-extruder-calibration'),
+                    element: '#start-large-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">To the extruder calibration, press <b>Start calibration</b>.</div>",
                     position: 'bottom'
                 },
                 {
-                    //17
-                    element: document.querySelector('#printing-extruder-calibration'),
+                    //17 +
+                    element: '#printing-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Printing large calibration.</div>",
                     position: 'bottom'
                 },
                 {
-                    //18
-                    element: document.querySelector('#large-calibration'),
+                    //18 +
+                    element: '#large-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Select the best aligned line, press Next</div>",
                     position: 'bottom'
                 },
                 {
-                    //19
-                    element: document.querySelector('#start-small-extruder-calibration'),
+                    //19 +
+                    element: '#start-small-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Start small calibration</div>",
                     position: 'bottom'
                 },
                 {
-                    //20
-                    element: document.querySelector('#printing-extruder-calibration'),
+                    //20 +
+                    element: '#printing-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Printing small calibration</div>",
                     position: 'bottom'
                 },
                 {
-                    //21
-                    element: document.querySelector('#x-small-calibration'),
+                    //21 +
+                    element: '#x-small-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Select the best aligned line x, press Next</div>",
                     position: 'bottom'
                 },
                 {
-                    //22
-                    element: document.querySelector('#y-small-calibration'),
+                    //22 +
+                    element: '#y-small-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Select the best aligned line y, press Next</div>",
                     position: 'bottom'
                 },
                 {
-                    //23
-                    element: document.querySelector('#job_button'),
+                    //23 +
+                    element: $('.print_status').find('.button-area')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Good Job, The printer is now calibrated and ready to print. Now we will select " +
@@ -213,7 +225,7 @@ $(function ()  {
                 },
                 {
                     //24
-                    element: document.querySelector('#local_button'),
+                    element: $('.browse_modes').find('.button-area:contains(\'Printer\')')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Now we can select a GCODE file that's saved on the printer. " +
@@ -221,7 +233,7 @@ $(function ()  {
                 },
                 {
                     //25
-                    element: document.querySelector("#print_files"),
+                    element: '#print_files',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Select the file and press on the <i class=\"fa fa-play\">" +
@@ -229,7 +241,7 @@ $(function ()  {
                 },
                 {
                     //26
-                    element: document.querySelector('#mode_select'),
+                    element: '#mode_select',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Select one of the print modes. When you're ready, press <b>Start Print</b> or if you don't want to print" +
@@ -245,27 +257,24 @@ $(function ()  {
                     "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
                     "data-bind=\"click: function(){ doneButton() }\">Done</a></div></div>"
                 }
-            ],
-            showStepNumbers: false,
-            showProgress: true,
-            scrollToElement: false,
-            exitOnOverLayClick: false,
-            showBullets: false,
-            showButtons: false,
-            keyboardNavigation: false
-
-        });
+            ];
 
         //IntroJS Callback Functions
         self.introInstance.onbeforechange(function() {
             switch (self.currentStep()){
-                case 1: self.introInstance.refresh(); $('#print_icon').click();
+                case 1: self.introInstance.refresh();
+                        $('#print_icon').mousedown();
+                        self.isFirstStep = true;
                     break;
-                case 11: self.introInstance.refresh(); $('#settings_icon').click();
+                case 11: self.introInstance.refresh();
+                         $('#settings_icon').mousedown();
                     break;
-                case 23: self.introInstance.refresh(); $('#print_icon').click();
+                case 23: self.introInstance.refresh();
+                         $('#print_icon').mousedown();
                     break;
             }
+            //TODO Remove
+            console.log('onbeforechange');
         });
 
         self.introInstance.onafterchange(function () {
@@ -274,13 +283,26 @@ $(function ()  {
             setTimeout(function () {
                 ko.applyBindings(self, element);
             }, 750);
+            switch (self.currentStep()){
+                case 17: setTimeout(function (){$('.introjs-tooltip').css({top:'204px'});
+                                                $('.introjs-helperLayer').css({height:'194px'})}, 750);
+                    break;
+                case 20: setTimeout(function (){$('.introjs-tooltip').css({top:'204px'});
+                                                $('.introjs-helperLayer').css({height:'194px'})}, 750);
+                    break;
+            }
+            //TODO Remove
+            console.log('onafterchange');
         });
 
         //Own functions
         self.startIntro = function (introName) {
+            //Starts the intro
             self.isTutorialStarted = true;
             switch (introName){
-                case "firstPrint": self.introInstance.start();
+                case "firstPrint":
+                    self.introInstance.addSteps(self.firstPrintSteps);
+                    self.introInstance.start();
                     break;
             }
         };
@@ -290,13 +312,15 @@ $(function ()  {
         };
 
         self.beginButton = function () {
+            //Check if filament is loaded and skips steps when not needed.
             if(self.currentStep() == 1){
-                self._sendApi('printer/had_first_start');
+                sendToApi('printer/had_first_start');
+                self.isFirstStep = false;
             }
-            if(document.querySelector('#left-filament').textContent != "None" && document.querySelector('#right-filament').textContent != "None"){
+            if(self.toolInfo.tools()[0].filament.materialProfileName() != 'None' && self.toolInfo.tools()[1].filament.materialProfileName() != 'None'){
                 self.introInstance.goToStep(10);
             }
-            else if (document.querySelector('#left-filament').textContent != "None" && document.querySelector('#right-filament').textContent == "None"){
+            else if (self.toolInfo.tools()[1].filament.materialProfileName() != 'None' && self.toolInfo.tools()[0].filament.materialProfileName() == 'None'){
                 self.introInstance.goToStep(6);
             }
             else {
@@ -305,35 +329,67 @@ $(function ()  {
         };
 
         self.cancelButton = function () {
-            if(self.currentStep() == 1){
-                self._sendApi('printer/had_first_start');
+            //Cancels the intro, sends to backend that intro has run.
+            if(self.currentStep() == 1 && self.isFirstStep == true){
+                sendToApi('printer/had_first_start');
+                self.isFirstStep = false;
             }
             self.isTutorialStarted = false;
             self.introInstance.exit();
-            console.log('cancel: ' + self.isTutorialStarted);
         };
 
         self.doneButton = function () {
+            //Stops intro
             self.isTutorialStarted = false;
-            self.introInstance.exit()
-            console.log('done: ' + self.isTutorialStarted);
+            self.introInstance.exit();
         };
 
         self.exitButton = function () {
+            var viewModel = undefined;
+            var step = self.currentStep();
+
             self.isTutorialStarted = false;
+
+            switch (true) {
+                //Extruder Calibration Exit
+                case (step > 16 && step < 23):
+                    callViewModels(self.allViewModels, 'onExtruderIntroExit');
+                    setTimeout(function () {
+                        self.flyout.closeFlyout();
+                    }, 300);
+                    $('#print_icon').mousedown();
+                    break;
+                //Swap Filament Exit
+                case (step > 2 && step < 6 || step > 6 && step < 10):
+                    callViewModels(self.allViewModels, 'onFilamentIntroExit');
+                    break;
+                //Bed Calibration Exit
+                case (step == 13 || step == 14 ):
+                    callViewModels(self.allViewModels, 'onBedIntroExit');
+                    break;
+                // Maintenance Flyout Exit
+                case (step == 12 || step == 15):
+                    console.log(self.flyout.flyouts());
+                    self.flyout.closeFlyout();
+                    $('#print_icon').mousedown();
+                    break;
+                // For other steps
+                default : $('#print_icon').mousedown();
+                    break;
+            }
+            console.log("Exit on step: " + self.currentStep() + " and isTutorialStarted set to " + self.isTutorialStarted);
             self.introInstance.exit();
-            console.log('exit: ' + self.isTutorialStarted);
+            console.log(self.flyout.flyouts());
+            console.log(self.flyout.isFlyoutOpen("maintenance_settings"));
         };
 
         self.currentStep = function () {
             return self.introInstance._currentStep+1;
         };
 
-        self._sendApi = function (urlSuffix, data) {
-            url = OctoPrint.getBlueprintUrl('lui') + urlSuffix;
-            return OctoPrint.postJson(url, data);
+        self.onAllBound = function(allViewModels) {
+            self.allViewModels = allViewModels;
         };
-
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
@@ -344,7 +400,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        [ "flyoutViewModel" ],
+        [ "flyoutViewModel", "toolInfoViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         [ ]
