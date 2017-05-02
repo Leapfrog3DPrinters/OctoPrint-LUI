@@ -1585,6 +1585,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 			self._settings.save()
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/printer/select_demo", methods=["POST"])
+    def select_demo(self):
+		abs_path = self._copy_demo_file("Bolt-PLA.gcode")
+		if abs_path:
+			self._printer.select_file(abs_path, False, False)
+		self._send_client_message("demo_selected")
+		return make_response(jsonify(), 200)
+
     ## Files API
 
     @BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)

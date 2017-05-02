@@ -73,7 +73,7 @@ $(function () {
         };
 
         self.calibrateExtruders = function ()  {
-            self.flyout.showFlyout('extrudercalibration', true, true);
+            self.flyout.showFlyout('extrudercalibration', true);
             //IntroJS
             if(self.introView.isTutorialStarted){
                 setTimeout(function(){
@@ -85,7 +85,7 @@ $(function () {
 
         self.calibrateBed = function()
         {
-            self.flyout.showFlyout('bedcalibration', true, true);
+            self.flyout.showFlyout('bedcalibration', true);
             //IntroJS
             if(self.introView.isTutorialStarted){
                 setTimeout(function(){

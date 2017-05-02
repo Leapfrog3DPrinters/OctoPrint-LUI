@@ -118,7 +118,7 @@ $(function ()  {
                     "class=\"introjs-button\" data-bind=\"click: function (){ goToStepButton(11) }\">Next</a></div></div>"
                 },
                 {
-                    //11
+                    //11 +
                     element: '#maintenance',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -159,7 +159,7 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //16
+                    //16 +
                     element: '#start-large-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -224,7 +224,7 @@ $(function ()  {
                     "click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.</div>"
                 },
                 {
-                    //24
+                    //24 +
                     element: $('.browse_modes').find('.button-area:contains(\'Printer\')')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -232,7 +232,7 @@ $(function ()  {
                     "There is a sample print you can try out.</div>"
                 },
                 {
-                    //25
+                    //25 +
                     element: '#print_files',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -240,7 +240,7 @@ $(function ()  {
                     "</i> button next to it</div>"
                 },
                 {
-                    //26
+                    //26 +
                     element: '#mode_select',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -249,7 +249,7 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //27
+                    //27 +
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Good Job!<br>The printer is now printing the first print. " +
@@ -353,11 +353,9 @@ $(function ()  {
             switch (true) {
                 //Extruder Calibration Exit
                 case (step > 16 && step < 23):
-                    callViewModels(self.allViewModels, 'onExtruderIntroExit');
-                    setTimeout(function () {
-                        self.flyout.closeFlyout();
-                    }, 300);
-                    $('#print_icon').mousedown();
+                    console.log(self.flyout.flyouts());
+                    callViewModels(self.allViewModels, 'onExtruderCalibrationIntroExit');
+                    self.flyout.closeFlyout();
                     break;
                 //Swap Filament Exit
                 case (step > 2 && step < 6 || step > 6 && step < 10):
@@ -365,14 +363,19 @@ $(function ()  {
                     break;
                 //Bed Calibration Exit
                 case (step == 13 || step == 14 ):
-                    callViewModels(self.allViewModels, 'onBedIntroExit');
+                    callViewModels(self.allViewModels, 'onBedCalibrationIntroExit');
+                    self.flyout.closeFlyout();
                     break;
                 // Maintenance Flyout Exit
                 case (step == 12 || step == 15):
-                    console.log(self.flyout.flyouts());
                     self.flyout.closeFlyout();
                     $('#print_icon').mousedown();
                     break;
+                // Print Flyout Exit
+                case (step == 26):
+                    sendToApi("printer/immediate_cancel");
+                    break;
+
                 // For other steps
                 default : $('#print_icon').mousedown();
                     break;

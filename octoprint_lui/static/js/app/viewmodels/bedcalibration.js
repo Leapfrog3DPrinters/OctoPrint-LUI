@@ -155,7 +155,7 @@ $(function ()  {
             }
         }
 
-        self.onBedIntroExit = function () {
+        self.onBedCalibrationIntroExit = function () {
             self.abort();
         }
 

@@ -171,17 +171,12 @@ $(function ()  {
                 self.isLoadingFileList(false);
             });
 
-        }
-
-        self.showLocalStep = function () {
-            if (self.introView.isTutorialStarted) {
+            if (origin = "local" && self.introView.isTutorialStarted) {
                 self.isIntroFile(true);
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 500);
                 self.introView.introInstance.goToStep(25);
-            }else{
-                self.browseLocal();
             }
         };
 
@@ -1334,7 +1329,7 @@ $(function ()  {
         };
 
         self.selectDemoFile = function () {
-            self._sendApi({command: "select_demo"});
+            sendToApi("printer/select_demo");
         };
     }
 

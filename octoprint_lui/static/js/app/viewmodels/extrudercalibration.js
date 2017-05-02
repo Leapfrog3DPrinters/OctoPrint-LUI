@@ -190,6 +190,7 @@ $(function ()  {
                 }).always(function ()  { self.restoreState(); sendToApi("files/unselect"); });
             //IntroJS
             if(self.introView.isTutorialStarted) {
+                self.flyout.closeFlyout();
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 1000);
@@ -282,7 +283,7 @@ $(function ()  {
             }
         }
 
-        self.onExtruderExitIntro = function () {
+        self.onExtruderCalibrationIntroExit = function () {
             self.abort();
         }
 
