@@ -273,8 +273,6 @@ $(function ()  {
                          $('#print_icon').mousedown();
                     break;
             }
-            //TODO Remove
-            console.log('onbeforechange');
         });
 
         self.introInstance.onafterchange(function () {
@@ -291,8 +289,6 @@ $(function ()  {
                                                 $('.introjs-helperLayer').css({height:'194px'})}, 750);
                     break;
             }
-            //TODO Remove
-            console.log('onafterchange');
         });
 
         //Own functions
@@ -317,10 +313,10 @@ $(function ()  {
                 sendToApi('printer/had_first_start');
                 self.isFirstStep = false;
             }
-            if(self.toolInfo.tools()[0].filament.materialProfileName() != 'None' && self.toolInfo.tools()[1].filament.materialProfileName() != 'None'){
+            if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName() != 'None' && self.toolInfo.getToolByKey('tool1').filament.materialProfileName() != 'None'){
                 self.introInstance.goToStep(10);
             }
-            else if (self.toolInfo.tools()[1].filament.materialProfileName() != 'None' && self.toolInfo.tools()[0].filament.materialProfileName() == 'None'){
+            else if (self.toolInfo.getToolByKey('tool1').filament.materialProfileName() != 'None' && self.toolInfo.getToolByKey('tool0').filament.materialProfileName() == 'None'){
                 self.introInstance.goToStep(6);
             }
             else {
@@ -339,7 +335,7 @@ $(function ()  {
         };
 
         self.doneButton = function () {
-            //Stops intro
+            //Stops intro and resets flag
             self.isTutorialStarted = false;
             self.introInstance.exit();
         };
@@ -353,7 +349,6 @@ $(function ()  {
             switch (true) {
                 //Extruder Calibration Exit
                 case (step > 16 && step < 23):
-                    console.log(self.flyout.flyouts());
                     callViewModels(self.allViewModels, 'onExtruderCalibrationIntroExit');
                     self.flyout.closeFlyout();
                     break;
@@ -375,7 +370,6 @@ $(function ()  {
                 case (step == 26):
                     sendToApi("printer/immediate_cancel");
                     break;
-
                 // For other steps
                 default : $('#print_icon').mousedown();
                     break;

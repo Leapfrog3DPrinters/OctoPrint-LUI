@@ -236,9 +236,8 @@ $(function ()  {
                 setTimeout(function () {
                     self.introView.introInstance.refresh()
                 }, 300);
-                tool = self.tool();
-                if(tool == 'tool1'){
-                    if(self.rightFilament == 'None') {
+                if(self.tool() == 'tool1'){
+                    if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName()== 'None') {
                         self.introView.introInstance.goToStep(6);
                     }
                     else{

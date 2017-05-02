@@ -234,6 +234,7 @@
         </ul>
       </div><!-- /Logs -->
       {% endif %}
+      {% if local_addr %}
       <!-- Tutorials -->
       <div class="settings_topic">
           <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('tutorials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || printerState.isPaused()|| printerState.isPrinting()}">
@@ -254,6 +255,7 @@
           </li>
         </ul>
       </div><!-- /Tutorials -->
+    {% endif %}
     </div>
     <!-- /Topics -->
   </div>
