@@ -56,7 +56,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def __init__(self):
 
         ##~ Global
-        self.from_localhost = False
         self.debug = False
         self.auto_shutdown = False
 
@@ -683,12 +682,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         } 
         """
         info_obj = []
+
+
         for service in self.cloud_connect.get_available_services():
+            redirect_uri = 'http://localhost:5000/plugin/lui/cloud/{0}/login'.format(service)
+
             info_obj.append({ 
                 "name": service,
                 "friendlyName": service, #TODO: Use babel to get friendlyname
                 "loggedIn": self.cloud_connect.is_logged_in(service),
-                "loginUrl": self.cloud_connect.get_auth_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/login'.format(service))
+                "loginUrl": self.cloud_connect.get_auth_url(service, redirect_uri)
                 });
         return make_response(jsonify(services=info_obj))          
     
