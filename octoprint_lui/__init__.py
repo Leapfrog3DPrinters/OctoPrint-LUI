@@ -132,7 +132,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.instable_temperature_delta = 3 
 
         self.heating_callback_mutex = threading.RLock()
-        self.heating_callbacks = list()
+        self.heating_callbacks = {}
 
         self.print_mode = PrintModes.NORMAL
 
@@ -1436,7 +1436,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # and clear all callbacks added to the heating.
         else:
             with self.heating_callback_mutex:
-                del self.heating_callbacks[:]
+                del self.heating_callbacks[tool]
             self._restore_after_load_filament(tool)
             self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELLED)
 
@@ -3272,10 +3272,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         if new_status == ToolStatuses.READY:
             with self.heating_callback_mutex:
-                for callback in self.heating_callbacks:
-                    try: callback(tool)
-                    except: self._logger.exception("Something went horribly wrong on reaching the target temperature")
-                del self.heating_callbacks[:]
+                if tool in self.heating_callbacks:
+                    self.heating_callbacks[tool](tool)
+                    del self.heating_callbacks[tool]
 
     def heat_to_temperature(self, tool, temp, callback = None):
         """
@@ -3288,15 +3287,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.debug("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
-        if (self.current_temperature_data[tool]['target'] == temp) and (self.tools[tool]["status"] == ToolStatuses.READY):
+        if self.current_temperature_data[tool]['target'] == temp and self.tools[tool]["status"] == ToolStatuses.READY:
             if callback:
                 callback(tool)
             self._send_client_message(ClientMessages.TOOL_HEATING)
             return
 
-        if callback:
+        if callback and callable(callback):
             with self.heating_callback_mutex:
-                self.heating_callbacks.append(callback)
+                self.heating_callbacks[tool] = callback
 
         self._printer.set_temperature(tool, temp)
         self._send_client_message(ClientMessages.TOOL_HEATING)
