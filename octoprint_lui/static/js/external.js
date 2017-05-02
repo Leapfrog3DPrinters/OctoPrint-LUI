@@ -8,6 +8,10 @@
 var keyboardScriptUrl = "//localhost/plugin/lui/static/js/lib/jquery/jquery.keyboard-1.26.14.min.js";
 var jqueryScriptUrl = "//localhost/plugin/lui/static/js/lib/jquery/jquery-3.1.1.min.js";
 
+var extCss = [
+    "//localhost/plugin/lui/static/css/keyboard-lui.css"
+];
+
 var body = document.getElementsByTagName('body')[0];
 
 function loadScript(scriptUrl, onLoaded)
@@ -100,15 +104,20 @@ function onJqueryLoaded() {
 
 // Begin loading scripts
 if (typeof ($) == "undefined") {
-    loadScript(jqueryScriptUrl, onJqueryLoaded);
+    if (typeof (jQuery) == "undefined") {
+        // We really don't have jQuery, load it
+        loadScript(jqueryScriptUrl, onJqueryLoaded);
+    }
+    else {
+        // jQuery was hidden. Map it to $ (as the keyboard plugin uses that syntax)
+        $ = jQuery;
+        onJqueryLoaded();
+    }
 }
 else {
+    // jQuery was loaded already
     onJqueryLoaded();
 }
-
-var extCss = [
-    "//localhost/plugin/lui/static/css/keyboard-lui.css"
-];
 
 for (j in extCss) {
     var cssElem = document.createElement("link");
