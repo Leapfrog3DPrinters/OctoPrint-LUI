@@ -45,6 +45,9 @@ $(function () {
     {
         self.warnings.remove(warningVm);
         self.setOverlay();
+        if(warningVm.warning_title == gettext("Sync or Mirror print")){
+            callViewModels(self.allViewModels, "onSyncOrMirrorWarningClose");
+        }
     };
 
     self.closeLastWarning = function()
@@ -88,7 +91,7 @@ $(function () {
 
         var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
 
-        
+
         if (!flyout_ref)
         {
             // If we can't find a reference to the flyout, create a new one
@@ -192,7 +195,7 @@ $(function () {
         }
 
         var deferred = flyout_ref.deferred;
-        
+
         if (deferred != undefined)
         {
             deferred.reject();
@@ -237,7 +240,7 @@ $(function () {
         }
 
         var deferred = flyout_ref.deferred;
-        
+
         if (deferred != undefined)
         {
             deferred.resolve();

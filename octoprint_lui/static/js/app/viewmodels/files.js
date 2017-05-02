@@ -620,7 +620,12 @@ $(function ()  {
             }
             // do print stuff
             // close flyout.
-            self.introView.introInstance.goToStep(27);
+            if(self.introView.isTutorialStarted){
+                 setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 500);
+                 self.introView.introInstance.goToStep(27);
+            }
         };
 
         self.isDualPrint = ko.computed(function(){

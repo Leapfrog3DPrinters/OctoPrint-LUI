@@ -11,17 +11,8 @@ $(function ()  {
         self.allViewModels = undefined;
 
         self.introInstance = introJs('#introjs-container');
-        self.introInstance.setOptions({
-            showStepNumbers: false,
-            showProgress: true,
-            scrollToElement: false,
-            exitOnOverLayClick: false,
-            showBullets: false,
-            showButtons: false,
-            keyboardNavigation: true
-        });
 
-        self.firstPrintSteps = [
+        var firstPrintSteps = [
                 {
                     //1 +
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
@@ -297,7 +288,16 @@ $(function ()  {
             self.isTutorialStarted = true;
             switch (introName){
                 case "firstPrint":
-                    self.introInstance.addSteps(self.firstPrintSteps);
+                    self.introInstance.setOptions({
+                        steps: firstPrintSteps,
+                        showStepNumbers: false,
+                        showProgress: true,
+                        scrollToElement: false,
+                        exitOnOverLayClick: false,
+                        showBullets: false,
+                        showButtons: false,
+                        keyboardNavigation: true
+                    });
                     self.introInstance.start();
                     break;
             }
@@ -341,7 +341,6 @@ $(function ()  {
         };
 
         self.exitButton = function () {
-            var viewModel = undefined;
             var step = self.currentStep();
 
             self.isTutorialStarted = false;
@@ -374,10 +373,7 @@ $(function ()  {
                 default : $('#print_icon').mousedown();
                     break;
             }
-            console.log("Exit on step: " + self.currentStep() + " and isTutorialStarted set to " + self.isTutorialStarted);
             self.introInstance.exit();
-            console.log(self.flyout.flyouts());
-            console.log(self.flyout.isFlyoutOpen("maintenance_settings"));
         };
 
         self.currentStep = function () {
@@ -387,6 +383,10 @@ $(function ()  {
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
         };
+
+        self.onSyncOrMirrorWarningClose = function () {
+            self.introInstance.goToStep(26);
+        }
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
