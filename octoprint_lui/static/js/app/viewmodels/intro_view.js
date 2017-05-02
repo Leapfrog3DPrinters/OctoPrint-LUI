@@ -385,6 +385,7 @@ $(function ()  {
         };
 
         self.onSyncOrMirrorWarningClose = function () {
+            self.introInstance.start();
             self.introInstance.goToStep(26);
         }
     }
