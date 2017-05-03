@@ -76,9 +76,11 @@ $(function () {
             self.flyout.showFlyout('extrudercalibration', true);
             //IntroJS
             if(self.introView.isTutorialStarted){
-                setTimeout(function(){
-                    self.introView.introInstance.refresh();
-                }, 300);
+                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
+                $('#extrudercalibration_flyout').one("transitionend", function () {
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                });
+
                 self.introView.introInstance.goToStep(16);
             }
         }
@@ -88,9 +90,11 @@ $(function () {
             self.flyout.showFlyout('bedcalibration', true);
             //IntroJS
             if(self.introView.isTutorialStarted){
-                setTimeout(function(){
-                    self.introView.introInstance.refresh();
-                }, 300);
+                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
+                $('#bedcalibration_flyout').one("transitionend", function () {
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                });
+
                 self.introView.introInstance.goToStep(13);
             }
         };
@@ -194,10 +198,12 @@ $(function () {
 
         self.onMaintenanceSettingsShown = function () {
             //IntroJS
-                if(self.introView.isTutorialStarted){
-                    setTimeout(function(){
-                        self.introView.introInstance.refresh();
-                    }, 300);
+            if (self.introView.isTutorialStarted) {
+                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
+                $('#maintenance_settings_flyout').one("transitionend", function () {
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                });
+
                     self.introView.introInstance.goToStep(12);
                 }
         }

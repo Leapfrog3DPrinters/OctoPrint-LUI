@@ -328,8 +328,7 @@ input[type=radio] {
   margin-right: 20px; }
 
 #ethernet_connectivity {
-  margin-left: auto;
-}
+  margin-left: auto; }
 
 .wifi-status {
   width: 1.2em;
@@ -346,6 +345,8 @@ input[type=radio] {
   flex-shrink: 1; }
 
 .tab {
+  position: relative;
+  /* We need an explicit relative position for introjs positioning when scrolling */
   display: none;
   flex: 1 0 auto;
   height: 200px;
@@ -393,19 +394,20 @@ input[type=radio] {
   max-width: 500px;
   overflow-y: auto;
   position: fixed;
-  right: -100%;
+  transform: translate3d(100%, 0, 0);
+  right: 0;
   top: 0;
   width: 80%;
-  -webkit-transition: right 0.2s ease-in-out;
-  -moz-transition: right 0.2s ease-in-out;
-  -ms-transition: right 0.2s ease-in-out;
-  -o-transition: right 0.2s ease-in-out;
-  transition: right 0.2s ease-in-out;
+  -webkit-transition: transform 0.2s ease-in-out;
+  -moz-transition: transform 0.2s ease-in-out;
+  -ms-transition: transform 0.2s ease-in-out;
+  -o-transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
   z-index: 1; }
   .flyout.active {
-    right: 0px; }
+    transform: translate3d(0, 0, 0); }
   .flyout a {
     color: #434A54; }
 
@@ -445,17 +447,6 @@ input[type=radio] {
   font-weight: 700;
   padding-left: 30px; }
 
-.ok-button.disabled {
-  pointer-events: none;
-  background-color: #ddebb1;
-  border: 1px solid #ddebb1;
-  opacity: 1; }
-
-a.disabled {
-  pointer-events: none;
-  color: #8e9298 !important;
-  opacity: 1; }
-
 .disabled {
   pointer-events: none;
   opacity: 0.4; }
@@ -464,16 +455,16 @@ a.disabled {
   display: none !important; }
 
 #offline_flyout {
-  z-index: 154; }
+  z-index: 100; }
 
 #confirmation_flyout {
-  z-index: 153; }
+  z-index: 99; }
 
 .warning_flyout {
-  z-index: 152; }
+  z-index: 97; }
 
 .info_flyout {
-  z-index: 151; }
+  z-index: 96; }
 
 /*
   Circles
@@ -623,24 +614,23 @@ a.disabled {
 .Table-item-grow-10 {
   flex-grow: 10; }
 
-.fa {
-  position: inherit; }
-
-.badge {
-  font-size: .25em;
-  font-family: Agenda-Medium;
-  font-weight: 700;
-  display: block;
-  position: absolute;
-  top: -1.5em;
-  right: -2.2em;
-  width: 2em;
-  height: 2em;
-  line-height: 2.2em;
-  border-radius: 50%;
-  text-align: center;
-  color: #fff;
-  background: #be0000; }
+#update_icon {
+  position: relative; }
+  #update_icon .badge {
+    font-size: .6em;
+    font-family: Agenda-Medium;
+    font-weight: 700;
+    display: block;
+    position: absolute;
+    top: -3px;
+    right: -8px;
+    width: 15px;
+    height: 15px;
+    line-height: 14px;
+    border-radius: 50%;
+    text-align: center;
+    color: #fff;
+    background: #be0000; }
 
 /*
  Pagination (multiple pages)
@@ -843,68 +833,6 @@ a.disabled {
   line-height: 1.3; }
 
 /*
-  Tutorial tab
- */
-
-.tutorial_topic {
-  display: flex;
-  min-height: 50px;
-  border-bottom: 1px solid #ff9734;
-  flex-direction: column;
-  flex: 0 1 auto; }
-
-.tutorial_topic a {
-  align-items: center;
-  display: flex;
-  padding: 0px 20px;
-  min-width: 0px;
-  flex: 1;
-  color: #434A54; }
-
-.tutorial_name {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0px;
-}
-
-.tutorial-start {
-  display: flex;
-  flex: 0 0 55px;
-  text-align: right;
-}
-
-.tutorial_main {
-  display: flex;
-  flex: 1;
-  min-height: 55px;
-  border: 2px solid #ffffff; }
-
-.tutorial_topic i {
-  flex: 1;
-  text-align: center; }
-
-.tutorial_topic span {
-  flex: 1 1 auto;
-  min-width: 0px; }
-
-.tutorial-add-info {
-  display: flex;
-  flex: 0 0 55px;
-  text-align: right; }
-
-.tutorial-info {
-  background-color: #f2f2f2;
-  display: flex;
-  min-width: 0px;
-  font-size: 0.89em;
-  flex-wrap: nowrap;
-  word-wrap: normal;
-}
-
-.tutorial-info.hide {
-    display: none; }
-
-/*
   Settings tab
 */
 .settings_topic {
@@ -990,6 +918,64 @@ select {
   display: none; }
   #maintenance_filament.active, #maintenance_control.active {
     display: flex; }
+
+/*
+  Tutorial Flyout
+ */
+.tutorial_topic {
+  display: flex;
+  min-height: 50px;
+  border-bottom: 1px solid #ff9734;
+  flex-direction: column;
+  flex: 0 1 auto; }
+
+.tutorial_topic a {
+  align-items: center;
+  display: flex;
+  padding: 0px 20px;
+  min-width: 0px;
+  flex: 1;
+  color: #434A54; }
+
+.tutorial_name {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0px; }
+
+.tutorial-start {
+  display: flex;
+  flex: 0 0 55px;
+  text-align: right; }
+
+.tutorial_main {
+  display: flex;
+  flex: 1;
+  min-height: 55px;
+  border: 2px solid #ffffff; }
+
+.tutorial_topic i {
+  flex: 1;
+  text-align: center; }
+
+.tutorial_topic span {
+  flex: 1 1 auto;
+  min-width: 0px; }
+
+.tutorial-add-info {
+  display: flex;
+  flex: 0 0 55px;
+  text-align: right; }
+
+.tutorial-info {
+  background-color: #f2f2f2;
+  display: flex;
+  min-width: 0px;
+  font-size: 0.89em;
+  flex-wrap: nowrap;
+  word-wrap: normal; }
+
+.tutorial-info.hide {
+  display: none; }
 
 /*
   Print Tab

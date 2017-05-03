@@ -458,6 +458,7 @@ input[type=radio] {
 }
 
 .tab {
+  position: relative; /* We need an explicit relative position for introjs positioning when scrolling */
   display: none;
   flex: 1 0 auto;
   height:200px;
@@ -516,14 +517,15 @@ input[type=radio] {
   max-width: 500px;
   overflow-y: auto;
   position: fixed;
-  right: -100%;
+  transform: translate3d(100%, 0, 0);
+  right: 0;
   top: 0;
   width: 80%;
-  @include transition(right);
+  @include transition(transform);
   display: flex;
   flex-direction: column;
   &.active {
-    right: 0px;
+    transform: translate3d(0, 0, 0); 
   }
   z-index: 1;
   & a {
@@ -765,26 +767,29 @@ input[type=radio] {
 }
 
 // Add badge to font awesome
-.fa {
-  position: inherit;
+
+#update_icon
+{
+    position: relative;
+
+    .badge {
+      font-size: .6em;
+      font-family: Agenda-Medium;
+      font-weight: 700;
+      display: block;
+      position: absolute;
+      top: -3px;
+      right: -8px;
+      width: 15px;
+      height: 15px;
+      line-height: 14px;
+      border-radius: 50%;
+      text-align: center;
+      color: #fff;
+      background: rgba(190, 0, 0, 1);
+    }
 }
 
-.badge {
-  font-size: .25em;
-  font-family: Agenda-Medium;
-  font-weight: 700;
-  display: block;
-  position: absolute;
-  top: -1.5em;
-  right: -2.2em;
-  width: 2em;
-  height: 2em;
-  line-height: 2.2em;
-  border-radius: 50%;
-  text-align: center;
-  color: #fff;
-  background: rgba(190, 0, 0, 1);
-}
 
 /*
  Pagination (multiple pages)

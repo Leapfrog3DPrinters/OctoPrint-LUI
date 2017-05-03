@@ -292,7 +292,7 @@ $(function ()  {
                         steps: firstPrintSteps,
                         showStepNumbers: false,
                         showProgress: true,
-                        scrollToElement: false,
+                        scrollToElement: true,
                         exitOnOverLayClick: false,
                         showBullets: false,
                         showButtons: false,

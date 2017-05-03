@@ -154,9 +154,10 @@
           <li class="topic_dash">
             <a href="#">
               <!-- ko allowBindings: false -->
-              <i id="update_icon" class="fa fa-refresh">
+              <div id="update_icon">
+                <i class="fa fa-refresh"></i>
                 <span data-bind="text: update_needed() + firmwareUpdateAvailable() == 0 ? '' : update_needed() + firmwareUpdateAvailable(), css: {badge: update_needed() + firmwareUpdateAvailable()}"></span>
-              </i>
+              </div>
               <!-- /ko -->
             </a>
           </li>
