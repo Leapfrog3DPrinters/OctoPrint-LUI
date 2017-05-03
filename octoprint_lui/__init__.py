@@ -231,6 +231,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_M999_on_reconnect = False
 
         ##~ Cloud
+        self.cloud_login_url = "http://cloud.lpfrg.com/login/"
         self.cloud_enabled = False
         self.cloud_connect = None
         self.cloud_storage = None
@@ -685,14 +686,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         for service in self.cloud_connect.get_available_services():
-            redirect_uri = 'http://localhost:5000/plugin/lui/cloud/{0}/login'.format(service)
+            redirect_uri = '{base_url}/plugin/lui/cloud/{service}/login'.format(base_url=flask.request.url_root, service=service)
+            login_url = '{cloud_login_url}?request_from=lui&service={service}&redirect_uri={redirect_uri}'.format(cloud_login_url=self.cloud_login_url, service=service, redirect_uri=redirect_uri)
 
             info_obj.append({ 
                 "name": service,
                 "friendlyName": service, #TODO: Use babel to get friendlyname
                 "loggedIn": self.cloud_connect.is_logged_in(service),
-                "loginUrl": self.cloud_connect.get_auth_url(service, redirect_uri)
+                "loginUrl": login_url
                 });
+
         return make_response(jsonify(services=info_obj))          
     
     @BlueprintPlugin.route("/cloud/<string:service>/login", methods=["GET"])
@@ -707,6 +710,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
+    @BlueprintPlugin.route("/cloud/<string:service>/login", methods=["POST"])
+    def authorize_cloud_service(self, service):
+        """
+        Manually authorizes a cloud service by providing an authorization code  (that's not an access code!)
+        """
+
+        auth_code = request.json.get("authCode","")
+
+        auth_result = self.cloud_connect.handle_manual_auth_response(service, auth_code)
+
+        if not auth_result:
+            self._send_client_message(ClientMessages.CLOUD_LOGIN_FAILED, { "service": service })
+            return make_response(jsonify(), 400)
+        else:
+            return make_response(jsonify(), 200)
+        
 
     @BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["POST"])
     def logout_cloud_service(self, service):

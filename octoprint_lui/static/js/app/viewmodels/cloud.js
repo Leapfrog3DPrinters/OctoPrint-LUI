@@ -8,6 +8,17 @@ $(function () {
 
         self.serviceInfo = ko.observableArray();
 
+        self.serviceInfoMapping = {
+            create: function (options) {
+                var item = ko.mapping.fromJS(options.data);
+
+                item.authCode = ko.observable();
+                item.showAuthCodeForm = ko.observable(false);
+
+                return item;
+            }
+        };
+
         self._onServiceInfoUpdated = [];
 
         self.isOnline = ko.pureComputed(function()
@@ -34,18 +45,31 @@ $(function () {
 
         self.loginService = function (service) {
 
-            var loginUrl = self.getServiceInfo(service).loginUrl();
-            var loginWindow = window.open(loginUrl, "_blank");
-            
-            // Can't work with events here because we don't have control over the child's HTML
-            var timer = setInterval(checkChild, 500);
+            // If we're local, present the user with a manual auth code entry
 
-            function checkChild() {
-                if (!loginWindow || loginWindow.closed) {
-                    self.requestData();
-                    clearInterval(timer);
+            if (IS_LOCAL) {
+                self.getServiceInfo(service).showAuthCodeForm(true);
+            }
+            else {
+                var loginUrl = self.getServiceInfo(service).loginUrl();
+                var loginWindow = window.open(loginUrl, "_blank");
+
+                // Can't work with events here because we don't have control over the child's HTML
+                var timer = setInterval(checkChild, 500);
+
+                function checkChild() {
+                    if (!loginWindow || loginWindow.closed) {
+                        self.requestData();
+                        clearInterval(timer);
+                    }
                 }
             }
+        }
+
+        self.authorizeService = function (service)
+        {
+            var authCode = self.getServiceInfo(service).authCode();
+            sendToApi('cloud/' + service + '/login', { "authCode": authCode }).done(self.requestData);
         }
         
         self.logoutService = function (service) {
@@ -59,7 +83,7 @@ $(function () {
 
         self.requestData = function () {
             getFromApi('cloud').done(function (response) {
-                ko.mapping.fromJS(response.services, {}, self.serviceInfo);
+                ko.mapping.fromJS(response.services, self.serviceInfoMapping, self.serviceInfo);
 
                 _.forEach(self._onServiceInfoUpdated, function (func) { func(); });
             });

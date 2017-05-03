@@ -37,6 +37,8 @@ class CloudService(object):
         pass
     def handle_auth_response(self, request):
         pass
+    def handle_manual_auth_response(self, auth_code):
+        pass
     def list_files(self, path=None, filter=None):
         pass
     def download_file(self, path, target_path, progress_callback = None):
@@ -190,12 +192,13 @@ class GoogleDriveCloudService(CloudService):
         self._client = None
         self._client_secret = self._secrets.get('client_secret');
         self._client_id = self._secrets.get('client_id');
-        self._redirect_uri = None
+        self._redirect_uri = "http://cloud.lpfrg.com/login/"
         self._credentials = None
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, GOOGLE_DRIVE + "_credentials.pickle")
         self._load_credentials()
         self._refresh_credentials()
+        self._flow = self._flow_factory()
         
     ## Private methods
     def _get_client(self):
@@ -259,7 +262,6 @@ class GoogleDriveCloudService(CloudService):
 
     def get_auth_url(self, redirect_uri):
         self._redirect_uri = redirect_uri
-        self._flow = self._flow_factory()
 
         return self._flow.step1_get_authorize_url()
 
@@ -271,6 +273,17 @@ class GoogleDriveCloudService(CloudService):
         access_token = request.values.get("code")
         try:
             self._credentials = self._flow.step2_exchange(access_token)
+            self._http = self._credentials.authorize(self._http)
+            self._save_credentials()
+            self._logger.info("Google Drive authenticated")
+            return True
+        except Exception as e:
+            self._logger.exception("Google Drive authentication failed: {0}".format(e.message))
+            return False
+
+    def handle_manual_auth_response(self, auth_code):
+        try:
+            self._credentials = self._flow.step2_exchange(auth_code)
             self._http = self._credentials.authorize(self._http)
             self._save_credentials()
             self._logger.info("Google Drive authenticated")
@@ -510,6 +523,9 @@ class CloudConnect():
 
     def handle_auth_response(self, service, request):
         return self.get_service(service).handle_auth_response(request)
+
+    def handle_manual_auth_response(self, service, auth_code):
+        return self.get_service(service).handle_manual_auth_response(auth_code)
 
     def logout(self, service):
         return self.get_service(service).logout()

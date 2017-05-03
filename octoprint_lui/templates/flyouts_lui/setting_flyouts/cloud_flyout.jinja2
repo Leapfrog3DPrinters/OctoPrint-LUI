@@ -26,7 +26,7 @@
             {{ _('Use the buttons below to connect or disconnect cloud services. Make sure your printer is connected to the internet before you continue.') }}
           </div>
         </div>
-        <!-- ko foreach: serviceInfo -->
+        <!-- ko keyboardForeach: serviceInfo.slice(0) -->
         <div class="Table-row" data-bind="css: { disabled: !$root.isOnline() }">
           <!-- We can't use Table-item here due to chromium bug -->
           <div style="flex: 1 1; margin: auto 0">
@@ -43,6 +43,21 @@
               <li class="button failed-button" data-bind="click: function() { $root.logoutService(name()) }, visible: loggedIn()">
                 <a href="">
                   <span>{{ _('Disconnect') }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="Table-row" data-bind="visible: showAuthCodeForm">
+          <div class="Table-item Table-item-grow-4">
+            <strong>Authorization code:</strong>
+            <input type="text" data-bind="value: authCode" />
+          </div>
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button ok-button" data-bind="click: function() { $root.authorizeService(name()) }, visible: !loggedIn()">
+                <a href="">
+                  <span>{{ _('Authorize') }}</span>
                 </a>
               </li>
             </ul>
