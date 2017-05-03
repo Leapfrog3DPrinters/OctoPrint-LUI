@@ -1320,7 +1320,7 @@ $(function ()  {
                             self.isIntroFile(false);
                             setTimeout(function () {
                                 self.introView.introInstance.refresh();
-                            }, 300);
+                            }, 500);
                             self.introView.introInstance.goToStep(26);
                         }
                         break;

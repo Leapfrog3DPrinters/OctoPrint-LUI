@@ -75,10 +75,12 @@ $(function ()  {
             });
             //IntroJS
             if(self.introView.isTutorialStarted) {
-                setTimeout(function () {
-                    self.introView.introInstance.refresh();
-                }, 750);
-                self.introView.introInstance.goToStep(17);
+                var checkIfPrinting = setInterval(function () {
+                        if(self.printerState.isPrinting()){
+                            clearInterval(checkIfPrinting);
+                            self.introView.introInstance.goToStep(17);
+                        }
+                    }, 100);
             }
         };
 
@@ -104,10 +106,12 @@ $(function ()  {
             });
             //IntroJS
             if(self.introView.isTutorialStarted) {
-                setTimeout(function () {
-                    self.introView.introInstance.refresh();
-                }, 1000);
-                self.introView.introInstance.goToStep(20);
+                var checkIfPrinting = setInterval(function () {
+                        if(self.printerState.isPrinting()){
+                            clearInterval(checkIfPrinting);
+                            self.introView.introInstance.goToStep(20);
+                        }
+                    }, 100);
             }
         };
 

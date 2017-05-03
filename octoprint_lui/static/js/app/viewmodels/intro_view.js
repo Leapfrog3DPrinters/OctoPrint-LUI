@@ -273,11 +273,9 @@ $(function ()  {
                 ko.applyBindings(self, element);
             }, 750);
             switch (self.currentStep()){
-                case 17: setTimeout(function (){$('.introjs-tooltip').css({top:'204px'});
-                                                $('.introjs-helperLayer').css({height:'194px'})}, 750);
+                case 17: setTimeout(function () {self.introInstance.refresh()}, 500);
                     break;
-                case 20: setTimeout(function (){$('.introjs-tooltip').css({top:'204px'});
-                                                $('.introjs-helperLayer').css({height:'194px'})}, 750);
+                case 20: setTimeout(function () {self.introInstance.refresh()}, 500);
                     break;
             }
         });
@@ -387,7 +385,7 @@ $(function ()  {
         self.onSyncOrMirrorWarningClose = function () {
             self.introInstance.start();
             self.introInstance.goToStep(26);
-        }
+        };
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
