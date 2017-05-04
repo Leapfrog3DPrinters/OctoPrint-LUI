@@ -78,7 +78,7 @@ $(function ()  {
                 var checkIfPrinting = setInterval(function () {
                         if(self.printerState.isPrinting()){
                             clearInterval(checkIfPrinting);
-                            self.introView.introInstance.goToStep(17);
+                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("printingLargeCalibration"));
                         }
                     }, 100);
             }
@@ -91,7 +91,7 @@ $(function ()  {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 1000);
-                self.introView.introInstance.goToStep(19);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startSmallCalibration"));
             }
         };
 
@@ -109,7 +109,7 @@ $(function ()  {
                 var checkIfPrinting = setInterval(function () {
                         if(self.printerState.isPrinting()){
                             clearInterval(checkIfPrinting);
-                            self.introView.introInstance.goToStep(20);
+                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("printingSmallCalibration"));
                         }
                     }, 100);
             }
@@ -123,7 +123,7 @@ $(function ()  {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 300);
-                self.introView.introInstance.goToStep(22);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectYSmall"));
             }
         }
 
@@ -134,10 +134,10 @@ $(function ()  {
                     self.introView.introInstance.refresh();
                 }, 300);
                 if(calibration_type == 'bed_width_large') {
-                    self.introView.introInstance.goToStep(18);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("largeCalibrationDone"));
                 }
                 else{
-                    self.introView.introInstance.goToStep(21);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectXSmall"));
                 }
             }
         }
@@ -198,7 +198,7 @@ $(function ()  {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 1000);
-                self.introView.introInstance.goToStep(23);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintJob"));
             }
         };
 

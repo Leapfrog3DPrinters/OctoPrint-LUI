@@ -205,10 +205,10 @@ $(function ()  {
                         self.introView.introInstance.refresh()
                     }, 300);
                     if(self.tool() == "tool1") {
-                        self.introView.introInstance.goToStep(3);
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentSelect"));
                     }
                     else{
-                        self.introView.introInstance.goToStep(7);
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentSelect"));
                     }
             }
         };
@@ -238,14 +238,14 @@ $(function ()  {
                 }, 300);
                 if(self.tool() == 'tool1'){
                     if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName()== 'None') {
-                        self.introView.introInstance.goToStep(6);
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
                     }
                     else{
-                        self.introView.introInstance.goToStep(10);
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("bothToolsLoaded"));
                     }
                 }
                 else {
-                    self.introView.introInstance.goToStep(10);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("bothToolsLoaded"));
                 }
             }
             self.flyout.closeFlyoutAccept();
@@ -267,10 +267,10 @@ $(function ()  {
                     self.introView.introInstance.refresh()
                 }, 300);
                 if(self.tool() == 'tool1') {
-                    self.introView.introInstance.goToStep(4);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
                 }
                 else{
-                    self.introView.introInstance.goToStep(8);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
                 }
             }
 
@@ -458,18 +458,18 @@ $(function ()  {
                         profile = self.selectedTemperatureProfile();
                         if (tool == 'tool1') {
                             if(profile.name == 'None') {
-                                self.introView.introInstance.goToStep(2);
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolNoFilament"));
                             }
                             else {
-                                self.introView.introInstance.goToStep(5);
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentDone"));
                             }
                         }
                         else {
                             if(profile.name == 'None'){
-                                self.introView.introInstance.goToStep(6);
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
                             }
                             else {
-                                self.introView.introInstance.goToStep(9);
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentDone"));
                             }
                         }
                     }
@@ -565,10 +565,10 @@ $(function ()  {
                 }, 300);
                 tool = self.tool();
                 if (tool == 'tool1') {
-                    self.introView.introInstance.goToStep(2);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolNoFilament"));
                 }
                 else {
-                    self.introView.introInstance.goToStep(6);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
                 }
             }
         };

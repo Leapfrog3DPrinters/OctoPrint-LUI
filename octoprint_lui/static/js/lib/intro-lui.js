@@ -151,6 +151,7 @@
         if (step > 0) {
           introItems[step - 1] = {
             element: currentElement,
+            stepName: currentElement.getAttribute('data-stepName'),
             intro: currentElement.getAttribute('data-intro'),
             step: parseInt(currentElement.getAttribute('data-step'), 10),
             tooltipClass: currentElement.getAttribute('data-tooltipClass'),
@@ -178,6 +179,7 @@
 
           introItems[nextStep] = {
             element: currentElement,
+            stepName: currentElement.getAttribute('data-stepName'),
             intro: currentElement.getAttribute('data-intro'),
             step: nextStep + 1,
             tooltipClass: currentElement.getAttribute('data-tooltipClass'),

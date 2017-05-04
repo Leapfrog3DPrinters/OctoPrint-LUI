@@ -45,6 +45,7 @@ $(function () {
     {
         self.warnings.remove(warningVm);
         self.setOverlay();
+        //IntroJS
         if(warningVm.warning_title == gettext("Sync or Mirror print")){
             callViewModels(self.allViewModels, "onSyncOrMirrorWarningClose");
         }

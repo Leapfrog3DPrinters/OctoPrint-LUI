@@ -173,10 +173,13 @@ $(function ()  {
 
             if (origin = "local" && self.introView.isTutorialStarted) {
                 self.isIntroFile(true);
-                setTimeout(function () {
-                    self.introView.introInstance.refresh();
-                }, 500);
-                self.introView.introInstance.goToStep(25);
+                var checkIfFileVisible = setInterval(function () {
+                    if($('#print_files').is(":visible")) {
+                        self.introView.introInstance.refresh();
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectFile"));
+                    }
+                    clearInterval(checkIfFileVisible);
+                }, 100);
             }
         };
 
@@ -621,10 +624,10 @@ $(function ()  {
             // do print stuff
             // close flyout.
             if(self.introView.isTutorialStarted){
-                 setTimeout(function () {
+                setTimeout(function () {
                     self.introView.introInstance.refresh();
-                }, 500);
-                 self.introView.introInstance.goToStep(27);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("tutorialDone"));
+                }, 200);
             }
         };
 
@@ -877,6 +880,7 @@ $(function ()  {
 
         self.printerState.printMode.subscribeChanged(function(newValue, oldValue){
             if ((newValue == "sync" || newValue == "mirror") && (oldValue == "normal")) {
+                //IntroJS
                 self.introView.introInstance.exit();
                 self.showSyncMirrorWarning();
             }
@@ -1316,12 +1320,13 @@ $(function ()  {
 
                     case "demo_selected":
                         self.printAndChangeTab();
+                        //IntroJS
                         if (self.introView.isTutorialStarted){
                             self.isIntroFile(false);
                             setTimeout(function () {
                                 self.introView.introInstance.refresh();
                             }, 500);
-                            self.introView.introInstance.goToStep(26);
+                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
                         }
                         break;
                 }
@@ -1329,6 +1334,7 @@ $(function ()  {
         };
 
         self.checkIntroCancel = function () {
+            //IntroJS
             self.introView.introInstance.exit();
             self.flyout.closeFlyout();
         };

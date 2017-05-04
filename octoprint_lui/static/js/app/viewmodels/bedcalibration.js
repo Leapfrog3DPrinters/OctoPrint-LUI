@@ -46,7 +46,7 @@ $(function ()  {
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
                 }, 300);
-                self.introView.introInstance.goToStep(12);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
             }
         };
 
@@ -65,7 +65,7 @@ $(function ()  {
                     setTimeout(function () {
                         self.introView.introInstance.refresh();
                     }, 300);
-                    self.introView.introInstance.goToStep(15);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateExtruders"));
                 }
             }
         }
@@ -81,7 +81,7 @@ $(function ()  {
                 setTimeout(function(){
                     self.introView.introInstance.refresh();
                 }, 300);
-                self.introView.introInstance.goToStep(14);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("calibrateBed"));
             }
         }
 

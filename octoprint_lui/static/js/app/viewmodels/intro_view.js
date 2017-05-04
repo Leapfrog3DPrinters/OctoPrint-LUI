@@ -14,7 +14,8 @@ $(function ()  {
 
         var firstPrintSteps = [
                 {
-                    //1 +
+                    //1
+                    stepName: "helloStep",
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
@@ -25,7 +26,8 @@ $(function ()  {
                     "data-bind=\"click: function (){ cancelButton() }\">Cancel</a></div></div>"
                 },
                 {
-                    //2 +
+                    //2
+                    stepName: "leftToolNoFilament",
                     element: '#tool1',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -35,7 +37,8 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //3 +
+                    //3
+                    stepName: "leftToolFilamentSelect",
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -45,7 +48,8 @@ $(function ()  {
                     tooltipClass: "tooltip_hidden"
                 },
                 {
-                    //4 +
+                    //4
+                    stepName: "leftToolFilamentLoading",
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -54,7 +58,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //5 +
+                    //5
+                    stepName: "leftToolFilamentDone",
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -63,7 +68,8 @@ $(function ()  {
                     "the next step press <b>Done</b>.</div>"
                 },
                 {
-                    //6 +
+                    //6
+                    stepName: "rightToolNoFilament",
                     element: '#tool0',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -73,7 +79,8 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //7 +
+                    //7
+                    stepName: "rightToolFilamentSelect",
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -83,7 +90,8 @@ $(function ()  {
                     tooltipClass: "tooltip_hidden"
                 },
                 {
-                    //8 +
+                    //8
+                    stepName: "rightToolFilamentLoading",
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -92,7 +100,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //9 +
+                    //9
+                    stepName: "rightToolFilamentDone",
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -101,7 +110,8 @@ $(function ()  {
                     "the next step press <b>Done</b>.</div>"
                 },
                 {
-                    //10 +
+                    //10
+                    stepName: "bothToolsLoaded",
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">There is filament in both the extruders. Now we can calibrate the printer to make sure that the bed and" +
@@ -110,6 +120,7 @@ $(function ()  {
                 },
                 {
                     //11 +
+                    stepName: "goToMaintenance",
                     element: '#maintenance',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -117,7 +128,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //12 +
+                    //12
+                    stepName: "goToCalibrateBed",
                     element: '#bed_calibrate',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -125,7 +137,8 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //13 +
+                    //13
+                    stepName: "continueCalibration",
                     element: $('#bedcalibration_flyout_content').find('.ok-button')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -133,7 +146,8 @@ $(function ()  {
                     position: 'top'
                 },
                 {
-                    //14 +
+                    //14
+                    stepName: "calibrateBed",
                     element: '#bed_calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -142,7 +156,8 @@ $(function ()  {
                     tooltipClass: 'tooltip_hidden'
                 },
                 {
-                    //15 +
+                    //15
+                    stepName: "goToCalibrateExtruders",
                     element: $('#maintenance_control').find('.button:contains(\'Calibrate extruders\')')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -150,7 +165,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //16 +
+                    //16
+                    stepName: "startLargeCalibration",
                     element: '#start-large-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -158,7 +174,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //17 +
+                    //17
+                    stepName: "printingLargeCalibration",
                     element: '#printing-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -166,7 +183,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //18 +
+                    //18
+                    stepName: "largeCalibrationDone",
                     element: '#large-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -174,7 +192,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //19 +
+                    //19
+                    stepName: "startSmallCalibration",
                     element: '#start-small-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -182,7 +201,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //20 +
+                    //20
+                    stepName: "printingSmallCalibration",
                     element: '#printing-extruder-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -190,7 +210,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //21 +
+                    //21
+                    stepName: "selectXSmall",
                     element: '#x-small-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -198,7 +219,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //22 +
+                    //22
+                    stepName: "selectYSmall",
                     element: '#y-small-calibration',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -206,7 +228,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //23 +
+                    //23
+                    stepName: "selectPrintJob",
                     element: $('.print_status').find('.button-area')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -215,7 +238,8 @@ $(function ()  {
                     "click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.</div>"
                 },
                 {
-                    //24 +
+                    //24
+                    stepName: "browseLocal",
                     element: $('.browse_modes').find('.button-area:contains(\'Printer\')')[0],
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -223,7 +247,8 @@ $(function ()  {
                     "There is a sample print you can try out.</div>"
                 },
                 {
-                    //25 +
+                    //25
+                    stepName: "selectFile",
                     element: '#print_files',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -231,7 +256,8 @@ $(function ()  {
                     "</i> button next to it</div>"
                 },
                 {
-                    //26 +
+                    //26
+                    stepName: "selectPrintMode",
                     element: '#mode_select',
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -240,7 +266,8 @@ $(function ()  {
                     position: 'bottom'
                 },
                 {
-                    //27 +
+                    //27
+                    stepName: "tutorialDone",
                     intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">Good Job!<br>The printer is now printing the first print. " +
@@ -264,11 +291,12 @@ $(function ()  {
                          $('#print_icon').mousedown();
                     break;
             }
+            var element = document.getElementById('introjs-container');
+            ko.cleanNode(element);
         });
 
         self.introInstance.onafterchange(function () {
             var element = document.getElementById('introjs-container');
-            ko.cleanNode(element);
             setTimeout(function () {
                 ko.applyBindings(self, element);
             }, 750);
@@ -294,7 +322,7 @@ $(function ()  {
                         exitOnOverLayClick: false,
                         showBullets: false,
                         showButtons: false,
-                        keyboardNavigation: true
+                        keyboardNavigation: false
                     });
                     self.introInstance.start();
                     break;
@@ -376,6 +404,10 @@ $(function ()  {
 
         self.currentStep = function () {
             return self.introInstance._currentStep+1;
+        };
+
+        self.getStepNumberByName = function (stepName) {
+            return self.introInstance._introItems.find(x => x.stepName.toUpperCase() === stepName.toUpperCase()).step;
         };
 
         self.onAllBound = function(allViewModels) {

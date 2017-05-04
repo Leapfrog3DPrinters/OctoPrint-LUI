@@ -430,7 +430,7 @@ $(function ()  {
         self.gotoFileSelect = function ()  {
             changeTabTo("files");
             if (self.introView.isTutorialStarted) {
-                self.introView.introInstance.goToStep(24);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("browseLocal"));
             }
         };
 

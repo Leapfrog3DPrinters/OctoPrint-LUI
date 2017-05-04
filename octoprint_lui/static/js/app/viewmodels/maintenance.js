@@ -81,7 +81,7 @@ $(function () {
                     setTimeout(function () { self.introView.introInstance.refresh() }, 200);
                 });
 
-                self.introView.introInstance.goToStep(16);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startLargeCalibration"));
             }
         }
 
@@ -95,7 +95,7 @@ $(function () {
                     setTimeout(function () { self.introView.introInstance.refresh() }, 200);
                 });
 
-                self.introView.introInstance.goToStep(13);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("continueCalibration"));
             }
         };
 
@@ -204,7 +204,7 @@ $(function () {
                     setTimeout(function () { self.introView.introInstance.refresh() }, 200);
                 });
 
-                    self.introView.introInstance.goToStep(12);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
                 }
         }
     }

@@ -7,7 +7,6 @@ $(function () {
         self.printerState = parameters[2];
         self.settings = parameters[3];
         self.system = parameters[4];
-        self.introView = parameters[5];
 
         self.allViewModels = [];
 
@@ -125,7 +124,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "settingsViewModel", "systemViewModel", "introViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "settingsViewModel", "systemViewModel"],
         ["#header", "#settings", "#auto_shutdown_flyout", "#printer_error_flyout", "#startup_flyout"]
     ]);
 });
