@@ -23,15 +23,6 @@ $(function ()  {
 
         self.isProfileLocked = ko.observable(false);
 
-        self.preselectedTemperatureProfile = ko.observable(undefined); // Used for locked profile selection (paused filament swap)
-        self.preselectedTemperatureProfileName = ko.pureComputed(function () {
-            var profile = self.preselectedTemperatureProfile();
-            if (profile)
-                return profile.name;
-            else
-                return "None";
-        });
-
         self.selectedTemperatureProfile = ko.observable(undefined); // Used for free profile selection
         self.selectedTemperatureProfileName = ko.pureComputed(function () {
             var profile = self.selectedTemperatureProfile();
@@ -39,6 +30,21 @@ $(function ()  {
                 return profile.name;
             else
                 return "None";
+        });
+
+        self.newFilamentAmount = ko.observable(0);
+        self.newFilamentAmountMeter = ko.pureComputed({
+            read: function () {
+                    return self.newFilamentAmount() / 1000;
+                },
+            write: function (value) {
+                self.newFilamentAmount(value * 1000);
+            }
+        });
+
+        self.newFilamentAmountPercent = ko.pureComputed(function()
+        {
+            return (self.newFilamentAmount() / (FILAMENT_ROLL_LENGTH*1000) * 100).toFixed() + '%';
         });
 
         self.materialProfiles = ko.observableArray([]);
@@ -78,6 +84,14 @@ $(function ()  {
                     return '<i class="fa fa-refresh"></i>' + gettext('Swap left');
             }
 
+        }
+
+        self.getLoadButtonContents = function()
+        {
+            if (self.selectedTemperatureProfileName() == 'None')
+                return '<i class="fa fa-check"></i>' + gettext('Done');
+            else
+                return gettext('Load');
         }
 
         self.toolText = ko.pureComputed(function () {
@@ -133,7 +147,7 @@ $(function ()  {
             } else {
                 return gettext("Delete");
             }
-            };
+        };
 
         // Views
         // ------------------
@@ -150,7 +164,7 @@ $(function ()  {
             if (!forPurge) {
                 self.filamentActionText(gettext("Swap"));
                 self.showUnload();
-                slider.noUiSlider.set(FILAMENT_ROLL_LENGTH)
+                self.newFilamentAmount(FILAMENT_ROLL_LENGTH * 1000);
 
                 $('#swap-load-unload').addClass('active');
                 $('#swap-info').removeClass('active');
@@ -179,41 +193,46 @@ $(function ()  {
             if (paused_materials.hasOwnProperty(tool)) {
                 if (paused_materials[tool] != "None") {
                     var material = self.materialProfiles().find(function (profile) { return profile.name == paused_materials[tool] });
-                    self.preselectedTemperatureProfile(material);
+                    self.selectedTemperatureProfile(material);
                     self.isProfileLocked(true);
                 }
             }
         };
 
+        self.editFilamentAmount = function()
+        {
+            $('#newFilamentAmountEditor').focus();
+        }
+
         // Below functions swap views for both filament swap and filament detection swap
         self.showUnload = function ()  {
-            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
-            $('#unload_filament,#fd_unload_filament').addClass('active');
-            $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
+            $('.swap_process_step').removeClass('active');
+            $('#unload_filament').addClass('active');
+            $('#unload_cmd').removeClass('disabled');
         };
 
         self.showLoad = function ()  {
-            $('#swap-info,#fd-swap-info').removeClass('active');
-            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
-            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
-            $('#load_filament,#fd_load_filament').addClass('active');
+            $('#swap-info').removeClass('active');
+            $('#swap-load-unload').addClass('active');
+            $('.swap_process_step').removeClass('active');
+            $('#load_filament').addClass('active');
             self.filamentLoading(false);
             };
 
         self.showFinished = function ()  {
-            $('#swap-info,#fd-swap-info').removeClass('active')
-            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
-            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
-            $('#finished_filament,#fd_finished_filament').addClass('active');
+            $('#swap-info').removeClass('active')
+            $('#swap-load-unload').addClass('active');
+            $('.swap_process_step').removeClass('active');
+            $('#finished_filament').addClass('active');
             };
 
         self.onToolHeating = function ()  {
-            $('#swap-info,#fd-swap-info').addClass('active')
-            $('#swap-load-unload,#fd-swap-load-unload').removeClass('active');
+            $('#swap-info').addClass('active')
+            $('#swap-load-unload').removeClass('active');
             }
 
         self.hideToolLoading = function ()  {
-            $('#tool_loading,#fd_tool_loading').removeClass('active');
+            $('#tool_loading').removeClass('active');
             }
 
         self.finishedLoading = function ()  {
@@ -233,22 +252,14 @@ $(function ()  {
 
             var loadFor = loadFor || "swap";
             var materialProfileName = undefined;
+            var amount = 0;
 
-            if (loadFor == "purge")
-                amount = 0;
-            else if (slider.noUiSlider.get())
-                amount = slider.noUiSlider.get() * 1000;
-            else
-                amount = 0;
+            if (loadFor != "purge")
+                amount = self.newFilamentAmount();
 
             if (loadFor == "swap")
             {
-                var profile = undefined;
-
-                if (self.isProfileLocked())
-                    profile = self.preselectedTemperatureProfile();
-                else
-                    profile = self.selectedTemperatureProfile()
+                var profile = self.selectedTemperatureProfile()
 
                 materialProfileName = profile.name;
             }
@@ -285,9 +296,10 @@ $(function ()  {
 
             if (materialProfileName == "None") {
                 amount = 0;
+                toolObj.filament.amount(0);
             }
 
-            sendToApi("filament/" + toolObj.key(), {
+            return sendToApi("filament/" + toolObj.key(), {
                 amount: amount,
                 materialProfileName: materialProfileName
             }).done(function () {
@@ -383,12 +395,25 @@ $(function ()  {
                     if (!self.forPurge()) {
                         $.notify({
                             title: gettext("Filament loaded aborted!"),
-                            text: _.sprintf(gettext('Please re-run load filament procedure'), {})
-                        },
-                                        "warning"
-                                    );
+                            text: gettext('Please re-run load filament procedure')
+                        }, "warning");
                     }
                     self.requestData();
+                    break;
+                case "filament_change_finished":
+                    if (!self.forPurge()) {
+                        var material = messageData["filament"]["material"];
+                        var amount = messageData["filament"]["amount"];
+
+                        if(material != "None")
+                        {
+                            $.notify({
+                                title: gettext("Filament successfully loaded!"),
+                                text: _.sprintf(gettext('Filament with profile %(material)s and amount %(amount)s loaded'), { material: material, amount: self.getAmountString(amount) })
+                            },
+                                "success");
+                        }
+                    }
                     break;
                 case "filament_load_progress":
                     // Used for both loading and unloading
@@ -416,10 +441,11 @@ $(function ()  {
                     self.requestData();
                     break;
                 case "tool_heating":
-                    self.filamentInProgress(true);
-                    self.filamentLoading(true);
-                    self.filamentLoadProgress(0);
-                    self.onToolHeating();
+                    if (self.filamentInProgress()) {
+                        self.filamentLoading(true);
+                        self.filamentLoadProgress(0);
+                        self.onToolHeating();
+                    }
                     break;
                 case "filament_extruding_started":
                     var filament = self.getFilament(messageData["tool"]);

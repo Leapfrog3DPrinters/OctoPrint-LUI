@@ -13,6 +13,7 @@ $(function () {
         self.movingToHeadSwapPositionInfo = null;
 
         self.isHeadMaintenanceFlyoutOpen = false;
+        self.isSavingMaterial = ko.observable(false);
 
         self.showHeadMaintenance = function () {
 
@@ -25,7 +26,7 @@ $(function () {
                 .done(function () {
                     self.isHeadMaintenanceFlyoutOpen = true;
                     self.moveToHeadMaintenancePosition();
-                    self.flyout.showFlyout('head_maintenance').always(self.afterHeadMaintenance);
+                    self.flyout.showFlyout('head_maintenance', true).always(self.afterHeadMaintenance);
                 });
         };
 
@@ -137,8 +138,10 @@ $(function () {
         {
             // This function is bound to the change event of filament material and amount inputs
             // Therefore, we have to check if the controls are actually visible, to confirm the change was the user's own action
-            if (self.isHeadMaintenanceFlyoutOpen)
-                self.filament.updateFilament(this);
+            if (self.isHeadMaintenanceFlyoutOpen && !self.isSavingMaterial()) {
+                self.isSavingMaterial(true);
+                self.filament.updateFilament(this).always(function () { self.isSavingMaterial(false) });
+            }
         }
 
         self.onAfterBinding = function()

@@ -7,7 +7,7 @@
       <div class="Table-header Table-row">
         <div class="Table-item">{{ _('Filament settings') }}</div>
       </div>
-      <div class="Table-row">
+      <div class="Table-row" data-bind="css: { disabled: isSavingMaterial() } ">
         {% if local_addr %}
         <!-- ko keyboardForeach: toolInfo.tools.slice(0).reverse() -->
         {% else %}
@@ -38,7 +38,7 @@
           </div>
           <div class="Table-row">
             <div class="Table-item">
-              <input type="number" data-bind="value: filament.amountMeter, css: { disabled: target() > 0 }"/>
+              <input type="number" data-bind="value: filament.amountMeter, css: { disabled: target() > 0 || filament.materialProfileName() == 'None' }"/>
             </div>
           </div>
 
@@ -68,7 +68,7 @@
                 <span style="width: 0%" data-bind="text: displayStatus, style: { width: progress() + '%'}, css: cssClass"></span>
               </div>
             </div>
-            <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
+            <div class="Table-item" style='flex-basis: 70px; max-width: 70px;'>
               <span data-bind="text: target"></span>
               <span>&deg;C</span>
             </div>
@@ -124,9 +124,10 @@
       </li>
     </ul>
     <ul class="button-area">
-      <li class="button">
+      <li class="button ok-button">
         <a href="#save" data-bind="touchClick: function ()  { flyout.closeFlyoutAccept() }">
-          <span>{{ _('Close') }}</span>
+          <span>
+            <i class="fa fa-check"></i>{{ _('Done') }}</span>
         </a>
       </li>
     </ul>

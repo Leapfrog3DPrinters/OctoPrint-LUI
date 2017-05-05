@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import logging
 import time
+import datetime
 import threading
 import re
 import subprocess
@@ -1127,9 +1128,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     @BlueprintPlugin.route("/maintenance/head/finish", methods=["POST"])
     def maintenance_head_finish(self):
         """
-        Homes the printer
+        Homes the printer and resets the target temperatures
         """
+        for tool in self.tools:
+            self.heat_to_temperature(tool, 0)
+
         self._printer.home(['x', 'y'])
+
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/head/swap/start", methods=["POST"])
@@ -1398,7 +1403,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/finish", methods=["POST"])
     def change_filament_finish(self, tool):
-        # Still don't know if this is the best spot TODO
+        """
+        Finishes the change filament wizard, restores the state (so if paused, resets to paused temperatures, etc)
+        """
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
 
@@ -1411,6 +1418,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._restore_after_load_filament(tool)
         self._logger.debug("Finish change filament called")
+
+        self._send_client_message(ClientMessages.FILAMENT_CHANGE_FINISHED, 
+                                  { 
+                                    "tool": tool, 
+                                    "filament": { 
+                                        "amount": self.tools[tool]["filament_amount"], 
+                                        "material": self.tools[tool]["filament_material_name"]
+                                        }
+                                   })
+
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/cancel", methods=["POST"])
@@ -1436,7 +1453,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # and clear all callbacks added to the heating.
         else:
             with self.heating_callback_mutex:
-                del self.heating_callbacks[tool]
+                if tool in self.heating_callbacks:
+                    del self.heating_callbacks[tool]
             self._restore_after_load_filament(tool)
             self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELLED)
 
@@ -1630,6 +1648,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 return octoprint.server.api.files.readGcodeFile(origin, path)
             else:
                 # Folder
+
+                # Force clearing of the cache 
+                # TODO: Find root cause file cache isn't updated correctly
+                octoprint.server.api.files._clear_file_cache()
+
                 return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
     @BlueprintPlugin.route("/files/<string:target>/<path:filename>", methods=["GET"])
@@ -2231,6 +2254,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
+    ## Begin cache methods
+
+    def get_ui_custom_lastmodified(self):
+        # For some reason, OctoPrint doesn't always fetch the correct lastmodified time from the source files
+        # maybe this has to do with the IDE being used. Therefore, if we're debugging, always assume something's changed.
+        if self.debug:
+            return datetime.datetime.now()
+
     def get_ui_additional_key_data_for_cache(self):
         from_localhost = self._is_request_from_localhost(request)
 
@@ -2248,7 +2279,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_preemptive_caching_enabled(self):
         return True
 
-    
+    ## End cache methods
 
     def _firmware_update_required(self):
 
@@ -3287,7 +3318,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.debug("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
-        if self.current_temperature_data[tool]['target'] == temp and self.tools[tool]["status"] == ToolStatuses.READY:
+        if tool in self.current_temperature_data and self.current_temperature_data[tool]['target'] == temp \
+           and self.tools[tool]["status"] == ToolStatuses.READY:
             if callback:
                 callback(tool)
             self._send_client_message(ClientMessages.TOOL_HEATING)

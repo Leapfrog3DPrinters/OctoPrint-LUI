@@ -2,6 +2,7 @@ class ClientMessages(object):
     
     FILAMENT_CHANGE_STARTED = "filament_change_started"
     FILAMENT_CHANGE_CANCELLED = "filament_change_cancelled"
+    FILAMENT_CHANGE_FINISHED = "filament_change_finished"
     FILAMENT_CHANGE_UNLOAD_STARTED = "filament_unload_started"
     FILAMENT_CHANGE_UNLOAD_FINISHED = "filament_unload_finished"
     FILAMENT_CHANGE_LOAD_STARTED = "filament_load_started"
