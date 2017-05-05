@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import logging
 import time
+import datetime
 import threading
 import re
 import subprocess
@@ -25,6 +26,7 @@ from distutils.version import StrictVersion
 from distutils.dir_util import copy_tree
 
 from tinydb import TinyDB, Query
+from tinydb.operations import delete
 
 import octoprint_lui.util
 
@@ -46,12 +48,14 @@ from octoprint.plugin import BlueprintPlugin
 from octoprint_lui.constants import *
 
 class LUIPlugin(octoprint.plugin.UiPlugin,
-                octoprint.plugin.TemplatePlugin,
-                octoprint.plugin.AssetPlugin,
                 BlueprintPlugin,
                 octoprint.plugin.SettingsPlugin,
                 octoprint.plugin.EventHandlerPlugin,
-                octoprint.printer.PrinterCallback):
+                octoprint.printer.PrinterCallback,
+                octoprint.plugin.ShutdownPlugin
+                ):
+
+    # Initializers
 
     def __init__(self):
 
@@ -59,7 +63,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.debug = False
         self.auto_shutdown = False
 
-        ##~ Model specific variables
+        ##~ Model specific
         self.supported_models = ['bolt', 'xeed', 'xcel']
         self.default_model = 'bolt'
         self.model = None
@@ -75,39 +79,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.systemRestartCommand =  "sudo shutdown -r now"
         self.serverRestartCommand = "sudo service octoprint restart"
 
-        ##~ Filament loading variables
-        self.extrusion_mode = "absolute"
-        self.movement_mode = "absolute"
-        self.last_movement_mode = "absolute"
+        ##~ Filament change
+        self.extrusion_mode = ExtrusionModes.ABSOLUTE
+        self.movement_mode = MovementModes.ABSOLUTE
+        self.last_movement_mode = MovementModes.ABSOLUTE
 
         self.relative_extrusion_trigger = False
-        self.current_print_extrusion_amount = [0.0, 0.0]
-        self.last_print_extrusion_amount = [0.0, 0.0]
-        self.last_send_filament_amount = None
-        self.last_saved_filament_amount = None
         self.loading_for_purging = False
 
         self.last_extrusion = 0
         self.current_extrusion = 0
 
-        self.filament_amount = None
-        self.filament_action = False
-
-        self.default_material = {
-            "bed": 0,
-            "extruder": 0,
-            "name": "None"
-        }
+        self.default_material_name = "None"
 
         self.regexExtruder = re.compile("(^|[^A-Za-z][Ee])(-?[0-9]*\.?[0-9]+)")
+        
+        self.filament_action = False
 
-        self.filament_change_tool = None
-        self.filament_change_profile = None
-        self.filament_change_amount = 0
         self.load_amount = 0
+        self.load_amount_stop = 0
         self.load_filament_timer = None
-        self.load_extrusion_amount = 0
-        self.load_extrusion_speed = 0
         self.filament_change_in_progress = False
 
         self.paused_temperatures = None
@@ -134,27 +125,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Temperature status
         self.tool_status_stabilizing = False
-        self.tool_status = {
-            "tool0": ToolStatuses.IDLE,
-            "tool1": ToolStatuses.IDLE,
-            "bed": ToolStatuses.IDLE
-        }
 
-        self.old_temperature_data = None
         self.current_temperature_data = None
         self.temperature_window = [-6, 10] # Below, Above target temp
 
         # If we're in the window, but the temperature delta is greater than this value, consider the status to be 'stabilizing'
         self.instable_temperature_delta = 3 
 
-        self.ready_timer_default = {'tool0': 10, 'tool1': 10, 'bed': 10}
-        self.ready_timer = {'tool0': 0, 'tool1': 0, 'bed': 0}
-        self.callback_mutex = threading.RLock()
-        self.callbacks = list()
-
-        self.temp_before_filament_detection = { 'tool0' : 0, 'tool1' : 0 }
+        self.heating_callback_mutex = threading.RLock()
+        self.heating_callbacks = {}
 
         self.print_mode = PrintModes.NORMAL
+
+        self.tool_defaults = {
+                "status":  ToolStatuses.IDLE,
+                "filament_amount": 0,
+                "filament_material_name": self.default_material_name,
+                "last_sent_filament_amount": 0,
+                "last_saved_filament_amount": 0,
+                "current_print_extrusion_amount": 0
+                }
+
+        self.tools = {}
+
+        self.filament_delta_send = 10 # The difference in filament before the client is notified
+        self.filament_delta_save = 100 # The difference in filament before the database is updated
 
         ##~ Homing
         self.home_command_sent = False
@@ -169,9 +164,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fw_version_info = None
         self.auto_firmware_update_started = False
         self.fetching_firmware_update = False
-        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.7 MACHINE_TYPE:Bolt Model:Bolt PROTOCOL_VERSION:1.0 \
-      FIRMWARE_NAME:Marlin V1 EXTRUDER_COUNT:2 EXTRUDER_OFFSET_X:0.0 EXTRUDER_OFFSET_Y:0.0 \
-      BED_WIDTH_CORRECTION:0.0"
+        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.7.1 MACHINE_TYPE:Bolt Model:Bolt PROTOCOL_VERSION:1.0 \
+                             FIRMWARE_NAME:Marlin V1 EXTRUDER_COUNT:2 EXTRUDER_OFFSET_X:0.0 EXTRUDER_OFFSET_Y:0.0 \
+                             BED_WIDTH_CORRECTION:0.0"
+        self.is_virtual = False
 
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
@@ -193,13 +189,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.levelbed_command_sent = False
 
         ##~Maintenance
+        self.manual_bed_calibration_positions = None
         self.manual_bed_calibration_tool = None
         self.wait_for_movements_command_sent = False # Generic wait for ok after M400
-        self.wait_for_maintenance_position = False # Wait for ok after M400 before aux powerdown
+        self.wait_for_swap_position = False # Wait for ok after M400 before aux powerdown
         self.powerdown_after_disconnect = False # Wait for disconnected event and power down aux after
         self.connecting_after_maintenance = False #Wait for connected event and notify UI after
 
-        #TODO: make this more pythonic
         self.browser_filter = lambda entry, entry_data: \
                                 ('type' in entry_data and (entry_data["type"]=="folder" or entry_data["type"]=="machinecode")) \
                                  or octoprint.filemanager.valid_file_type(entry, type="machinecode")
@@ -255,10 +251,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.filament_database_path = os.path.join(self.get_plugin_data_folder(), "filament.json")
         self.filament_database = TinyDB(self.filament_database_path)
         self._filament_query = Query()
-        if self.filament_database.all() == []:
-            self._logger.info("No filament database found creating one...")
-            self.filament_database.insert_multiple({'tool':'tool'+ str(i), 'amount':0,
-                                                    'material': self.default_material} for i in range(2))
+
         ##~ TinyDB - firmware
         self.machine_database_path = os.path.join(self.get_plugin_data_folder(), "machine.json")
         self.machine_database = TinyDB(self.machine_database_path)
@@ -286,7 +279,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ USB init
         self._init_usb()
 
-
         ##~ Init firmware update
         self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions.json'
         self.firmware_update_url_setting = self._settings.get(['firmware_update_url'])
@@ -300,7 +292,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_received_hooks.append(self._auto_firmware_update)
 
         ##~ Get filament amount stored in config
-        self.update_filament_amount()
+        self._update_filament_from_db()
 
         # Changelog check
         self.changelog_path = None
@@ -323,6 +315,94 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 # Disable cloud if there are no available services
                 self.cloud_enabled = False
+
+    def _init_usb(self):
+        # Add the LocalFileStorage to allow to browse the drive's files and folders
+
+        try:
+            self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
+            octoprint.server.fileManager.add_storage("usb", self.usb_storage)
+        except:
+            self._logger.exception("Could not add USB storage")
+            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "isMediaMounted": False, "error": True })
+            return
+
+        # Start watching the folder for changes (i.e. mounted/unmouted)
+        from watchdog.observers import Observer
+        observer = Observer()
+
+        event_handler = octoprint_lui.util.CallbackFileSystemWatch(self._on_media_folder_updated)
+        observer.schedule(event_handler, self.media_folder, False)
+        observer.start()
+
+        # Hit the first event in any case
+        self._on_media_folder_updated(None)
+
+    def _init_powerbutton(self):
+        if self.platform == "RPi" and "hasPowerButton" in self.current_printer_profile and self.current_printer_profile["hasPowerButton"]:
+            ## ~ Only initialise if it's not done yet.
+            if not self.powerbutton_handler:
+                from octoprint_lui.util.powerbutton import PowerButtonHandler
+                self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
+        elif self.debug:
+            if not self.powerbutton_handler:
+                from octoprint_lui.util.powerbutton import DummyPowerButtonHandler
+                self.powerbutton_handler = DummyPowerButtonHandler(self._on_powerbutton_press)
+
+    def _init_update(self):
+
+        ##~ Update software init
+        self.last_git_fetch = 0
+        self.update_info = []
+
+        # NOTE: The order of this array is used for functions! Keep it the same!
+        self.update_info = [
+            {
+                'name': "Leapfrog UI",
+                'identifier': 'lui',
+                'version': self._plugin_manager.get_plugin_info('lui').version,
+                'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
+                'update': False,
+                'forced_update': False,
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+            },
+            {
+                'name': 'Network Manager',
+                'identifier': 'networkmanager',
+                'version': self._plugin_manager.get_plugin_info('networkmanager').version,
+                'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
+                'update': False,
+                'forced_update': False,
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+            },
+            {
+                'name': 'Flash Firmware Module',
+                'identifier': 'flasharduino',
+                'version': self._plugin_manager.get_plugin_info('flasharduino').version,
+                'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
+                'update': False,
+                'forced_update': False,
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+            },
+            {
+                'name': 'G-code Render Module',
+                'identifier': 'gcoderender',
+                'version': self._plugin_manager.get_plugin_info('gcoderender').version,
+                'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
+                'update': False,
+                'forced_update': False,
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+            },
+            {
+                'name': 'OctoPrint',
+                'identifier': 'octoprint',
+                'version': VERSION,
+                'path': '{path}OctoPrint'.format(path=self.update_basefolder),
+                'update': False,
+                'forced_update': False,
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+            }
+        ]
 
     def _set_model(self):
         """Sets the model and platform variables"""
@@ -350,6 +430,40 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.platform_info_file = "/boot/lpfrgpi.json"
 
         self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
+
+    def _init_model(self):
+        """ Reads the printer profile and any machine specific configurations """
+        self.current_printer_profile = self._printer._printerProfileManager.get_current_or_default()
+        self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"] if "manualBedCalibrationPositions" in self.current_printer_profile else None
+        
+        # With the profile in place, set defaults for tool-related properties
+
+        num_extruders = self.current_printer_profile.get('extruder', {}).get('count', 1)
+        has_bed = self.current_printer_profile.get('heatedBed', False)
+
+        # Create tool0, tool1 ....
+        tools = ["tool" + str(i) for i in range(num_extruders)]
+
+        # Add bed
+        if has_bed:
+            tools.insert(0, "bed")
+
+        # Override tools dict with default values
+        self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
+
+    # End initializers
+
+    # Shutdown
+
+    def on_shutdown(self):
+        """
+        Called when OctoPrint shuts down. Ensures the filament is updated with the latest information in memory.
+        """
+        self._save_filament_to_db()
+
+    # End shutdown
+
+    # First run
 
     def _first_run(self):
         """Checks if it is the first run of a new version and updates any material if necessary"""
@@ -386,6 +500,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Load printer specific data
             first_run_results.append(self._update_printer_scripts_profiles())
             first_run_results.append(self._configure_local_user())
+            first_run_results.append(self._migrate_filament_db())
 
             if not False in first_run_results:
                 self._settings.set(["had_first_run"], self.plugin_version)
@@ -432,7 +547,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Return success by default
         return True
-
 
     def _disable_ssh(self):
         if self.platform == "RPi" and not self.debug and os.path.exists("/etc/init/ssh.conf"):
@@ -631,12 +745,38 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return True
 
-    def _init_model(self):
-        """ Reads the printer profile and any machine specific configurations """
-        self.current_printer_profile = self._printer._printerProfileManager.get_current_or_default()
-        self.manual_bed_calibration_positions = self.current_printer_profile["manualBedCalibrationPositions"] if "manualBedCalibrationPositions" in self.current_printer_profile else None
+    def _migrate_filament_db(self):
+        """
+        Updates the filament database to match the new format, where material profiles are no longer (redundantly) stored in the db, but in the settings file.
+        For each database record, the "material" property is removed, and the "material_name" property is inserted
+        """
+        migrated = 0
 
-    ##~ Changelog
+        for record in self.filament_database.all():
+            if "material" in record:
+                eid = record.eid
+                material_name = record["material"].get("name", self.default_material_name)
+
+                # Remove old "material" property
+                self.filament_database.update(delete('material'), eids=[eid])
+
+                # Insert new "material_name" property
+                self.filament_database.update({ "material_name" : material_name }, eids=[eid])
+
+                # Store amount 0 for default material "None"
+                if material_name == self.default_material_name:
+                    self.filament_database.update({ "amount" : 0 }, eids=[eid])
+
+                migrated += 1
+
+        self._logger.info("Filament database migration complete, migrated {0} records.".format(migrated))
+
+        return True
+
+    # End first run
+
+    # Changelog
+
     def _update_changelog(self):
         changelog_version = self._settings.get(["changelog_version"])
 
@@ -669,7 +809,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         md = os.linesep.join(self.changelog_contents)
         return markdown.markdown(md)
 
+    # End Changelog
+
     # Begin API
+    # TODO: These API functions need input validation and security (admin/non-admin, local/remote mostly, they are protected by API key)
 
 	## Cloud API
     @BlueprintPlugin.route("/cloud", methods=["GET"], strict_slashes=False)
@@ -929,6 +1072,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._move_to_bed_maintenance_position()
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/maintenance/bed/clean/finish", methods=["POST"])
+    def maintenance_bed_clean_finish(self):
+        """
+        Homes after clean bed position
+        """
+        self._printer.home(['x', 'y'])
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/bed/calibrate/start", methods=["POST"])
     def calibration_bed_start(self):
@@ -985,22 +1135,43 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_movement_mode()
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/maintenance/head/start", methods=["POST"])
+    def maintenance_head_start(self):
+        """
+        Moves to the filament load position
+        """
+        self._execute_printer_script('filament_load_position', { "filamentChangeTool": None, "currentZ": self._printer._currentZ })
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/head/finish", methods=["POST"])
+    def maintenance_head_finish(self):
+        """
+        Homes the printer and resets the target temperatures
+        """
+        for tool in self.tools:
+            self.heat_to_temperature(tool, 0)
+
+        self._printer.home(['x', 'y'])
+
+        return make_response(jsonify(), 200)
+
     @BlueprintPlugin.route("/maintenance/head/swap/start", methods=["POST"])
     def maintenance_swap_head_start(self):
         """
         Moves heads to maintenance position
         """
-        self._execute_printer_script('head_maintenance_position', { "currentZ": self._printer._currentZ })
-        self.wait_for_maintenance_position = True
+        self._execute_printer_script('head_swap_position', { "currentZ": self._printer._currentZ })
+        self.wait_for_swap_position = True
         self._printer.commands(['M400']) #Wait for movements to complete
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/head/swap/finish", methods=["POST"])
-    def maintenance_head_swap_finish(self, *args, **kwargs):
+    def maintenance_head_swap_finish(self):
         if self.powerbutton_handler:
             self._power_up_after_maintenance()
         else:
-            self._printer.home(['x','y','z'])
+            self._auto_home_after_maintenance()
+
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/head/calibrate/start/<string:calibration_type>", methods=["POST"])
@@ -1075,26 +1246,55 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         data = request.json
         amount = data.get("amount", 0)
-        materialProfileName = data.get("materialProfileName")
-
-        # Update the filament amount that is logged in the machine
-        if not materialProfileName or materialProfileName == "None":
-            update_profile = {
-                "amount": 0,
-                "material": self.default_material
-            }
+        material_name = data.get("materialProfileName")
+        
+        material = self._get_material_from_name(material_name)
+        
+        if not material or material["name"] == self.default_material_name:
+            self.tools[tool]["filament_amount"] = 0
+            self.tools[tool]["filament_material_name"] = self.default_material_name
         else:
-            selectedProfile = self._get_profile_from_name(materialProfileName)
-            update_profile = {
-                "amount": amount,
-                "material": selectedProfile
-            }
+            self.tools[tool]["filament_amount"] = amount
+            self.tools[tool]["filament_material_name"] = material["name"]
 
-        self.set_filament_profile(tool, update_profile)
-        self.update_filament_amount()
+        self._save_filament_to_db(tool)
         self.send_client_filament_amount()
 
         return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/filament/<string:tool>/heat/start", methods=["POST"])
+    def heat_filament_start(self, tool):
+        """ 
+        Begins heating of the given tool to the temperature of the currently loaded material
+        """
+
+        # Find the material that is loaded in this tool
+        material = self._get_material_from_name(self.tools[tool]["filament_material_name"])
+
+        if not material:
+            return make_response(jsonify({ "message": "Material not found."}), 400) 
+
+        if material["name"] == self.default_material_name:
+            return make_response(jsonify({ "message": "Cannot preheat if no material is loaded."}), 400) 
+
+        # Start heating to the temperature
+        temp = int(material['extruder'])
+        self.heat_to_temperature(tool, temp)
+
+        return make_response(jsonify(), 200) 
+
+    @BlueprintPlugin.route("/filament/<string:tool>/heat/finish", methods=["POST"])
+    def heat_filament_finish(self, tool):
+        """ 
+        Stops heating of the given tool
+        """
+        # Stop purging if it is doing that at the moment
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
+
+        self.heat_to_temperature(tool, 0)
+
+        return make_response(jsonify(), 200) 
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/start", methods=["POST"])
     def change_filament_start(self, tool):
@@ -1103,26 +1303,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         # Send to the front end that we are currently changing filament.
         if self._printer.is_paused():
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_IN_PROGRESS, { "paused_materials": self.paused_materials })
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_STARTED, { "paused_materials": self.paused_materials })
         else:
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_IN_PROGRESS)
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_STARTED)
 
         # If paused, we need to restore the current parameters after the filament swap
         self.paused_filament_swap = self._printer.is_paused()
 
-        # Set filament change tool and profile
-        self.filament_change_tool = tool
-        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
+        # Set filament change tool
         self._printer.change_tool(tool)
 
-        self.move_to_filament_load_position()
+        # Move to change filament position
+        self.move_to_filament_load_position(tool)
 
         # Check if filament is loaded, if so report to front end.
-        if (self.filament_loaded_profile['material']['name'] == 'None'):
+        self._logger.debug(str(self.tools))
+        material = self._get_material_from_name(self.tools[tool]["filament_material_name"])
+        if not material or material['name'] == self.default_material_name:
             # No filament is loaded in this tool, directly continue to load section
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_SKIP_UNLOAD)
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_UNLOAD_FINISHED)
 
-        self._logger.info("Start change filament called with tool: {tool}, profile: {profile}".format(tool=tool, profile=self.filament_loaded_profile['material']['name']))
+        self._logger.info("Start change filament called with tool: {tool}, material: {material}".format(tool=tool, material=material['name'] if material else self.default_material_name))
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/unload", methods=["POST"])
@@ -1131,11 +1332,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         The first step after starting the filament change procedure:
         preheats and unloads the filament from the extruder
         """
-        # Heat up to old profile temperature and unload filament
-        temp = int(self.filament_loaded_profile['material']['extruder'])
-        self.heat_to_temperature(self.filament_change_tool,
-                                temp,
-                                self.unload_filament)
+        # Determine the material that is currently loaded
+        material = self._get_material_from_name(self.tools[tool]["filament_material_name"])
+
+        if not material or material['name'] == self.default_material_name:
+            self._logger.warning("Tried to unload while no material is loaded.")
+            return make_response(jsonify(message="Tried to unload while no material is loaded."), 400)
+
+        # Heat to material temperature, and afterwards begin unloading
+        self.heat_to_temperature(tool,
+                                material["extruder"],
+                                self._unload_filament)
 
         self._logger.debug("Unload filament called")
         return make_response(jsonify(), 200)
@@ -1146,48 +1353,41 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Preheats and loads the filament into the extruder.
         Request: { loadFor, materialProfileName, amount }
         """
+
         data  = request.json
         loadFor = data.get("loadFor", "swap")
-        materialProfileName = data.get("materialProfileName")
+        material_profile_name = data.get("materialProfileName")
         amount = data.get("amount", 0)
 
-        selectedProfile = None
+        material = None
 
-        if loadFor == "filament-detection" or loadFor == "filament-detection-purge":
-            # Get stored profile when filament detection was hit
-            selectedProfile = self.filament_detection_profile
-            temp = int(self.filament_detection_tool_temperatures[self.filament_change_tool]['target'])
-        elif loadFor == "purge":
+        if loadFor == "purge":
             # Select current profile
-            selectedProfile = self.filament_database.get(self._filament_query.tool == self.filament_change_tool)["material"]
-            temp = int(selectedProfile['extruder'])
+            material_profile_name = self.tools[tool]["filament_material_name"]
+            material = self._get_material_from_name(material_profile_name)
+            temp = int(material['extruder'])
         else:
-            if not materialProfileName or materialProfileName == "None":
+            if not material_profile_name or material_profile_name == self.default_material_name:
                 # The user wants to load a None profile. So we just finish the swap wizard
-                self._send_client_message(ClientMessages.FILAMENT_CHANGE_FINISHED, { "profile": None })
+                self._send_client_message(ClientMessages.FILAMENT_CHANGE_LOAD_FINISHED, { "profile": None })
                 return make_response(jsonify(), 200)
 
             # Find profile from key
-            selectedProfile = self._get_profile_from_name(materialProfileName)
-            temp = int(selectedProfile['extruder'])
+            material = self._get_material_from_name(material_profile_name)
+            temp = material['extruder']
 
         # Heat up to new profile temperature and load filament
-        self.filament_change_profile = selectedProfile
-
-        if loadFor == "filament-detection-purge" or loadFor == "purge":
-            self.filament_amount = self.get_filament_amount()
-            tool_num = int(self.filament_change_tool[len("tool"):])
-            self.filament_change_amount = self.filament_amount[tool_num]
+        if loadFor == "purge":
             self.loading_for_purging = True
+            amount = self.tools.get(tool, {}).get("filament_amount", 0) 
         else:
             self.loading_for_purging = False
-            self.filament_change_amount = amount
 
-        self._logger.debug("Load filament called with profile {profile}, tool {tool}, amount {amount}".format(profile=selectedProfile, tool=self.filament_change_tool, amount=self.filament_change_amount))
+        self._logger.debug("Load filament called with material {material}, tool {tool}, amount {amount}".format(material=material['name'], tool=tool, amount=amount))
 
-        self.heat_to_temperature(self.filament_change_tool,
-                                temp,
-                                self.load_filament)
+        load_filament_partial = partial(self._load_filament, amount=amount, material_name=material["name"])
+
+        self.heat_to_temperature(tool, temp, load_filament_partial)
 
         return make_response(jsonify(), 200)
 
@@ -1206,7 +1406,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif direction >= 0:
             direction = 1
 
-        self.load_filament_cont(tool, direction)
+        self._load_filament_cont(tool, direction)
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/extrude/finish", methods=["POST"])
@@ -1221,7 +1421,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/finish", methods=["POST"])
     def change_filament_finish(self, tool):
-        # Still don't know if this is the best spot TODO
+        """
+        Finishes the change filament wizard, restores the state (so if paused, resets to paused temperatures, etc)
+        """
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
 
@@ -1232,8 +1434,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._execute_printer_script("change_filament_done", context)
 
-        self._restore_after_load_filament()
+        self._restore_after_load_filament(tool)
         self._logger.debug("Finish change filament called")
+
+        self._send_client_message(ClientMessages.FILAMENT_CHANGE_FINISHED, 
+                                  { 
+                                    "tool": tool, 
+                                    "filament": { 
+                                        "amount": self.tools[tool]["filament_amount"], 
+                                        "material": self.tools[tool]["filament_material_name"]
+                                        }
+                                   })
+
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/filament/<string:tool>/change/cancel", methods=["POST"])
@@ -1258,10 +1470,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Other wise we haven't started loading yet, so cancel the heating
         # and clear all callbacks added to the heating.
         else:
-            with self.callback_mutex:
-                del self.callbacks[:]
-            self._restore_after_load_filament()
-            self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELED)
+            with self.heating_callback_mutex:
+                if tool in self.heating_callbacks:
+                    del self.heating_callbacks[tool]
+            self._restore_after_load_filament(tool)
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELLED)
 
         self._logger.debug("Cancel change filament called")
         return make_response(jsonify(), 200)
@@ -1282,17 +1495,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     @BlueprintPlugin.route("/filament/<string:tool>/detection/finish", methods=["POST"])
     def filament_detection_finish(self, tool):
         """
-        Finishes the filament detection wizard, resets target temperaturess
+        Finishes the filament detection wizard, resumes the print
         """
-        if self.filament_detection_tool_temperatures:
-            for tool, data in self.filament_detection_tool_temperatures.items():
-                if tool != 'time':
-                    self._printer.set_temperature(tool, data['target'])
-
-            self._logger.info("Filament detection complete. Restoring temperatures: {temps}".format(temps = self.filament_detection_tool_temperatures))
-            self.filament_detection_tool_temperatures = None
-
-        self.restore_z_after_filament_load()
         self._printer.toggle_pause_print()
         return make_response(jsonify(), 200)
 
@@ -1403,7 +1607,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Allows to trigger something in the back-end. Wired to the logo on the front-end. 
         """
-        self._printer.commands(['!!DEBUG:mintemp_error0']) # Lets the virtual printer send a MINTEMP message which brings the printer in error state
+        #self._printer.commands(['!!DEBUG:mintemp_error0']) # Lets the virtual printer send a MINTEMP message which brings the printer in error state
+        self._on_filament_detection_during_print(self._printer._comm)
         return make_response(jsonify(), 200)
 
     ## Files API
@@ -1461,6 +1666,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 return octoprint.server.api.files.readGcodeFile(origin, path)
             else:
                 # Folder
+
+                # Force clearing of the cache 
+                # TODO: Find root cause file cache isn't updated correctly
+                octoprint.server.api.files._clear_file_cache()
+
                 return octoprint.server.api.files.readGcodeFilesForOrigin(origin)
 
     @BlueprintPlugin.route("/files/<string:target>/<path:filename>", methods=["GET"])
@@ -1573,8 +1783,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif source_type == "log":
             return self._copy_log_to_usb(path)
 
-
     # End API
+
+    # TODO: Organize method definitions below this line
 
     def _notify_firmware_update(self, silent = False):
 
@@ -1788,7 +1999,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # And let's just restart the service also
         return self._perform_service_restart()
 
-
     def _fetch_update_info_list(self, force):
         fetch_thread = threading.Thread(target=self._fetch_worker, args=(self.update_info, force))
         fetch_thread.daemon = False
@@ -1830,7 +2040,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         data = dict(update=self._create_update_frontend(self.update_info), machine_info=self.machine_info)
         self._send_client_message(ClientMessages.UPDATE_FETCH_SUCCESS, data)
         return
-
 
     def _update_needed_version_all(self, update_info):
         for update in update_info:
@@ -1901,7 +2110,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def find_assets(self, rel_path, file_ext):
         result = []
-        base_path = os.path.join(self.get_asset_folder(), rel_path)
+        base_path = os.path.join(self._basefolder, "static", rel_path)
 
         for filename in os.listdir(base_path):
             complete_path = os.path.join(base_path, filename)
@@ -1912,7 +2121,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def find_minified(self, js_list):
         result = []
-        base_path = self.get_asset_folder()
 
         for path in js_list:
             if path.startswith('plugin/lui/'):
@@ -1920,7 +2128,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 strippped_path = path[:-3]
 
-            full_path = os.path.join(base_path, strippped_path + '.min.js')
+            full_path = os.path.join(self._basefolder, strippped_path + '.min.js')
             new_path = path[:-3] + '.min.js'
 
             if os.path.exists(full_path):
@@ -1929,7 +2137,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 result.append(path)
 
         return result
-
 
     def create_custom_bundles(self):
         from flask_assets import Bundle
@@ -1942,7 +2149,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/jquery/jquery.iframe-transport.js',
                     'plugin/lui/js/lib/jquery/jquery.fileupload-9.14.2.js',
                     'plugin/lui/js/lib/jquery/jquery.slimscroll-1.3.8.js',
-                    'plugin/lui/js/lib/jquery/jquery.keyboard-1.26.14.js',
+                    'plugin/lui/js/lib/jquery/jquery.keyboard-1.26.19.js',
                     'plugin/lui/js/lib/jquery/jquery.overscroll-1.7.7.js'
                     ]
 
@@ -2069,6 +2276,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
+    ## Begin cache methods
+
+    def get_ui_custom_lastmodified(self):
+        # For some reason, OctoPrint doesn't always fetch the correct lastmodified time from the source files
+        # maybe this has to do with the IDE being used. Therefore, if we're debugging, always assume something's changed.
+        if self.debug:
+            return datetime.datetime.now()
+
     def get_ui_additional_key_data_for_cache(self):
         from_localhost = self._is_request_from_localhost(request)
 
@@ -2086,7 +2301,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def get_ui_preemptive_caching_enabled(self):
         return True
 
-    
+    ## End cache methods
 
     def _firmware_update_required(self):
 
@@ -2135,13 +2350,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _preheat_for_calibration(self):
         target_bed_temp = 0
 
-        for tool in ["tool0", "tool1"]:
-            extruder = self.filament_database.get(self._filament_query.tool == tool)
-            target_temp = int(extruder["material"]["extruder"])
-            bed_temp = int(extruder["material"]["bed"])
+        for tool in self.tools:
+            if tool == "bed":
+                continue
 
-            if bed_temp > target_bed_temp:
-                target_bed_temp = bed_temp
+            material = self._get_material_from_name(self.tools[tool]["filament_material_name"])
+
+            if not material:
+                self._logger.warning("Trying to preheat, but no material is loaded in {0}".format(tool))
+                continue
+
+            target_temp = int(material["extruder"])
+            target_bed_temp = max(target_bed_temp, int(material["bed"]))
 
             self.heat_to_temperature(tool, target_temp)
 
@@ -2198,22 +2418,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     
 
     def _get_current_materials(self):
-        """ Returns a dictionary of the currently loaded materials """
-        #TODO: Fancy list comprehension stuff
-        return dict({
-            "tool0": self.filament_database.get(self._filament_query.tool == "tool0")["material"],
-            "tool1": self.filament_database.get(self._filament_query.tool == "tool1")["material"]
-                });
+        """ 
+        Returns a dictionary of the currently loaded materials 
+        """
+
+        materials = { tool: info["filament_material_name"] for tool, info in self.tools.iteritems() if tool != "bed" }
+
+        return materials
 
     def _get_current_filaments(self):
         """ 
         Returns a list of the currently loaded filaments [{tool, material, amount}]
         """
-        return [{ "tool": entry["tool"], "materialProfileName": entry["material"]["name"], "amount": entry["amount"] } for entry in self.filament_database.all()]
 
+        filaments = [{ "tool": tool, 
+                      "materialProfileName": info["filament_material_name"], 
+                      "amount": info["filament_amount"] } 
 
-
-   
+                     for tool, info in self.tools.iteritems() if tool != "bed"]
+        
+        return sorted(filaments, key=lambda f: f["tool"])
 
     def _execute_printer_script(self, script_name, context = None):
         """
@@ -2223,14 +2447,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug("Executing script {0}".format(full_script_name))
         self._printer.script(full_script_name, context, must_be_set = False)
 
-    def _head_in_maintenance_position(self):
+    def _head_in_swap_position(self):
         """
-        Decides when to update UI when head is in maintenance position
+        Decides when to update UI when head is in swap position
         """
         if self.powerbutton_handler:
             self._disconnect_and_powerdown() #UI is updated after power down
         else:
-            self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION) #Update UI straight away
+            self._send_client_message(ClientMessages.HEAD_IN_SWAP_POSITION) #Update UI straight away
 
     def _disconnect_and_powerdown(self):
          """
@@ -2248,14 +2472,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.powerbutton_handler:
             self.powerbutton_handler.disableAuxPower()
             self._logger.debug("Auxiliary power down for maintenance")
-            self._send_client_message(ClientMessages.HEAD_IN_MAINTENANCE_POSITION)
+            self._send_client_message(ClientMessages.HEAD_IN_SWAP_POSITION)
 
     def _power_up_after_maintenance(self):
         """
         Powers up printer after maintenance
         """
         if self.powerbutton_handler:
-            self._send_client_message(ClientMessages.POWERING_UP_AFTER_MAINTENANCE)
+            self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP)
             # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
             self.powerbutton_handler.enableAuxPower()
             self._logger.debug("Auxiliary power up after maintenance")
@@ -2267,12 +2491,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _auto_home_after_maintenance(self):
         """
-        Homes printer after maintenance 
+        Homes printer after maintenance and brings it back to the filament load position.
         """
         self.is_homed = False #Reset is_homed, so LUI waits for a G28 complete, and then sends UI update
         self._printer.home(['x','y','z'])
-
-    
+        self.move_to_filament_load_position()
 
     def _select_cloud_file(self, path):
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
@@ -2537,9 +2760,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return make_response(jsonify(), 200)     
 
-    ##~ Load and Unload methods
+    # Filament change helpers
 
-    def load_filament(self, tool):
+    def _load_filament(self, tool, amount, material_name):
+        """
+        Begins to load the filament by running gcodes with small extrusions. 
+
+        tool: The tool to run the loading procedure for
+        amount: The amount of filament to record after the loading has finished
+        material_name: The name of the material to record after the loading has finished
+        """
+
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
             # Always set load_amount to 0
@@ -2561,21 +2792,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 self.load_amount_stop = self.current_printer_profile["filament"]["loadAmountStop"]
 
-            load_filament_partial = partial(self._load_filament_repeater, initial=load_initial, change=load_change)
+            load_filament_repeater_partial = partial(self._load_filament_repeater, tool=tool, direction=1, initial=load_initial, change=load_change)
+            load_filament_before_finished_partial = partial(self._load_filament_before_finished, tool=tool, amount=amount, material_name=material_name)
+            load_filament_cancelled_partial = partial(self._load_filament_cancelled, tool=tool)
             self.load_filament_timer = RepeatedTimer(0.5,
-                                                    load_filament_partial,
+                                                    load_filament_repeater_partial,
                                                     run_first=True,
                                                     condition=self._load_filament_running,
-                                                    on_condition_false=self._load_filament_condition,
-                                                    on_cancelled=self._load_filament_cancelled,
+                                                    on_condition_false=load_filament_before_finished_partial,
+                                                    on_cancelled=load_filament_cancelled_partial,
                                                     on_finish=self._load_filament_finished)
             self.load_filament_timer.start()
-            self._send_client_message(ClientMessages.FILAMENT_LOADING)
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_LOAD_STARTED)
 
-    def unload_filament(self, tool):
+    def _unload_filament(self, tool):
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
-            ## This is xeed load function, TODO: Bolt! function and switch
+
             self.load_amount = 0
             self.set_extrusion_mode("relative")
             self.unload_change = None
@@ -2592,40 +2825,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["G1 E10 F300"])
 
             # Start unloading
-            unload_filament_partial = partial(self._load_filament_repeater, initial=unload_initial, change=unload_change) ## TEST TODO
+            unload_filament_partial = partial(self._load_filament_repeater, tool=tool, direction=-1, initial=unload_initial, change=unload_change)
+            unload_filament_before_finished_partial = partial(self._unload_filament_before_finished, tool=tool)
+            unload_filament_cancelled_partial = partial(self._load_filament_cancelled, tool=tool)
             self.load_filament_timer = RepeatedTimer(0.5,
                                                     unload_filament_partial,
                                                     run_first=True,
                                                     condition=self._load_filament_running,
-                                                    on_condition_false=self._unload_filament_condition,
-                                                    on_cancelled=self._load_filament_cancelled,
+                                                    on_condition_false=unload_filament_before_finished_partial,
+                                                    on_cancelled=unload_filament_cancelled_partial,
                                                     on_finish=self._unload_filament_finished)
             self.load_filament_timer.start()
-            self._send_client_message(ClientMessages.FILAMENT_UNLOADING)
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_UNLOAD_STARTED)
 
-
-    def load_filament_cont(self, tool, direction):
-        ## Only start a timer when there is none running
-        if self.load_filament_timer is None:
-
-            #This method can also be used for the Bolt!
-            self.load_amount = 0
-            self.load_amount_stop = self.current_printer_profile["filament"]["contLoadAmountStop"]
-            load_cont_initial = dict(amount=2.5 * direction, speed=240)
-            self.set_extrusion_mode("relative")
-            load_cont_partial = partial(self._load_filament_repeater, initial=load_cont_initial)
-            self.load_filament_timer = RepeatedTimer(0.5,
-                                                    load_cont_partial,
-                                                    run_first=True,
-                                                    condition=self._load_filament_running,
-                                                    on_finish=self._load_filament_cont_finished)
-            self.load_filament_timer.start()
-            self._send_client_message(ClientMessages.FILAMENT_EXTRUDING)
-
-
-    def _load_filament_repeater(self, initial, change=None):
+    def _load_filament_repeater(self, tool, direction, initial, change=None):
         load_extrusion_amount = initial['amount']
         load_extrusion_speed = initial['speed']
+
         # Swap to the change condition
         if change:
             if (self.load_amount >= change['start']):
@@ -2633,7 +2849,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 load_extrusion_speed = change['speed']
 
         # Set global load_amount
-        self.load_amount += abs(load_extrusion_amount)
+        if self.is_virtual:
+            self.load_amount += abs(30*load_extrusion_amount)
+        else:
+            self.load_amount += abs(load_extrusion_amount)
+
         # Run extrusion command
         self._printer.commands("G1 E%s F%d" % (load_extrusion_amount, load_extrusion_speed))
 
@@ -2641,101 +2861,149 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         progress = int((self.load_amount / self.load_amount_stop) * 100)
         # Send message every other percent to keep data stream to minimum
         if progress % 2:
-            self._send_client_message(ClientMessages.FILAMENT_LOAD_PROGRESS, { "progress" : progress })
+            self._send_client_message(ClientMessages.FILAMENT_CHANGE_LOAD_PROGRESS, { "progress" : progress, "tool": tool, "direction": direction })
 
     def _load_filament_running(self):
         return self.load_amount <= self.load_amount_stop
 
-    def _load_filament_condition(self):
-        self._logger.debug("_load_filament_condition")
+    def _load_filament_before_finished(self, tool, amount, material_name):
 
         # When loading is complete, set new loaded filament
-        new_filament = {
-            "amount":  self.filament_change_amount,
-            "material": self.filament_change_profile
-        }
-        self.set_filament_profile(self.filament_change_tool, new_filament)
-        self.update_filament_amount()
-        self._send_client_message(ClientMessages.FILAMENT_CHANGE_FINISHED, { "profile": new_filament })
+        self.tools[tool]["filament_amount"] = amount
+        self.tools[tool]["filament_material_name"] = material_name
 
-    def _unload_filament_condition(self):
+        # Persist and notify client
+        self._save_filament_to_db(tool)
+        self._send_client_message(ClientMessages.FILAMENT_CHANGE_LOAD_FINISHED, { "tool": tool, "profile": { "amount": amount, "material": material_name } })
+
+    def _unload_filament_before_finished(self, tool):
         # When unloading finished, set standard None filament.
-        temp_filament = {
-            "amount": 0,
-            "material": self.default_material
-        }
-        self.set_filament_profile(self.filament_change_tool, temp_filament)
-        self.update_filament_amount()
-        self._send_client_message(ClientMessages.FILAMENT_CHANGE_SKIP_UNLOAD)
+        self.tools[tool]["filament_amount"] = 0
+        self.tools[tool]["filament_material_name"] = self.default_material_name
+
+        # Persist and notify client
+        self._save_filament_to_db(tool)
+        self._send_client_message(ClientMessages.FILAMENT_CHANGE_UNLOAD_FINISHED)
 
     def _load_filament_finished(self):
         self._logger.debug("_load_filament_finished")
-        # Loading is finished, turn off heaters, reset load timer and back to normal movements
+        # Loading is finished, reset load timer and back to normal movements
         self.restore_extrusion_mode()
         self.load_filament_timer = None
 
     def _unload_filament_finished(self):
-        # Loading is finished, turn off heaters, reset load timer and back to normal movements
+        # Loading is finished, reset load timer and back to normal movements
         self.restore_extrusion_mode()
         self.load_filament_timer = None
 
-    def _load_filament_cont_finished(self):
+    def _load_filament_cont(self, tool, direction):
+        ## Only start a timer when there is none running
+        if self.load_filament_timer is None:
+
+            # Make sure the active tool is correct
+            self._printer.change_tool(tool)
+
+            # Determine loading parameters for continuous extrude
+            self.load_amount = 0
+            self.load_amount_stop = self.current_printer_profile["filament"]["contLoadAmountStop"]
+            amount = self.current_printer_profile["filament"]["contLoad"]["amount"]
+            speed = self.current_printer_profile["filament"]["contLoad"]["speed"]
+            load_cont_initial = dict(amount=amount * direction, speed=speed)
+            self.set_extrusion_mode("relative")
+
+            # Prepare repeatedtimer function calls
+            load_cont_partial = partial(self._load_filament_repeater, tool=tool, direction=direction, initial=load_cont_initial)
+            load_cont_finished_partial = partial(self._load_filament_cont_finished, tool=tool, direction=direction)
+
+            # Start extrusion
+            self.load_filament_timer = RepeatedTimer(0.5,
+                                                    load_cont_partial,
+                                                    run_first=True,
+                                                    condition=self._load_filament_running,
+                                                    on_finish=load_cont_finished_partial)
+            self.load_filament_timer.start()
+
+            # Notify client
+            self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_STARTED, { "tool": tool, "direction": direction })
+
+    def _load_filament_cont_finished(self, tool, direction):
         self._logger.debug("_load_filament_cont_finished")
         self.restore_extrusion_mode()
         self.load_filament_timer = None
-        self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_FINISHED)
 
-    def _load_filament_cancelled(self):
+        self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_FINISHED, { "tool": tool, "direction": direction })
+
+    def _load_filament_cancelled(self, tool):
         # A load or unload action has been cancelled, turn off the heating
         # send cancelled info.
-        self._restore_after_load_filament()
-        self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELED)
+        self._restore_after_load_filament(tool)
+        self._send_client_message(ClientMessages.FILAMENT_CHANGE_CANCELLED)
 
-    def _restore_after_load_filament(self):
+    def _restore_after_load_filament(self, tool):
         target_temp = 0
-        self._logger.debug("Restoring after filament change. Filament change tool: {0}. Paused position: {1}".format(self.filament_change_tool, self.paused_position))
+        self._logger.debug("Restoring after filament change. Filament change tool: {0}. Paused position: {1}".format(tool, self.paused_position))
 
         if self.paused_filament_swap:
             # Restore temperature. Coordinates are restored by beforePrintResumed
-            target_temp = self.paused_temperatures[self.filament_change_tool]["target"]
+            target_temp = self.paused_temperatures[tool]["target"]
 
-        self._printer.set_temperature(self.filament_change_tool, target_temp)
+        # We only "messed" with the filament change tool temperature, so no need to restore the temp of the other tool
+        self._printer.set_temperature(tool, target_temp)
 
-    ##~ Helpers to send client messages
+    # End filament change helpers
+
+    # Client Message helpers
     def _send_client_message(self, message_type, data=None):
 
-        if message_type != "tool_status":
+        if message_type != ClientMessages.TOOL_STATUS:
             self._logger.debug("Sending client message with type: {type}, and data: {data}".format(type=message_type, data=data))
 
         self._plugin_manager.send_plugin_message(self._identifier, dict(type=message_type, data=data))
 
-
     def send_client_filament_amount(self):
-        data = {"extrusion": self.current_print_extrusion_amount, "filament": self.filament_amount}
+        #TODO: Refactor (also client side), so single_prop_dict is no longer necessary
+        data = {"extrusion": self._single_prop_dict(self.tools, "current_print_extrusion_amount"), "filament": self._single_prop_dict(self.tools, "filament_amount")}
         self._send_client_message(ClientMessages.UPDATE_FILAMENT_AMOUNT, data)
 
-    ## ~ Save helpers
-    def set_filament_profile(self, tool, profile):
-        self.filament_database.update(profile, self._filament_query.tool == tool)
+    # End client Message helpers
 
-    def get_filament_amount(self):
-        filament_amount = [self.filament_database.get(self._filament_query.tool == "tool"+str(index))["amount"] for index in range(2)]
-        return filament_amount
+    # Filament persistance helpers
 
-    def save_filament_amount(self):
-        self.set_filament_amount("tool0")
-        self.set_filament_amount("tool1")
+    def _update_filament_from_db(self):
+        
+        for tool in self.tools:
+            data = self.filament_database.get(self._filament_query.tool == tool)
+            if data:
+                self.tools[tool]["filament_amount"] = data.get("amount", 0)
+                self.tools[tool]["filament_material_name"] = data.get("material_name", self.default_material_name)
+            else:
+                self.tools[tool]["filament_amount"] = 0
+                self.tools[tool]["filament_material_name"] = self.default_material_name
 
-    def update_filament_amount(self):
-        self.filament_amount = self.get_filament_amount()
-        self.last_send_filament_amount = deepcopy(self.filament_amount)
-        self.last_saved_filament_amount = deepcopy(self.filament_amount)
+    def _save_filament_to_db(self, tool = None):
+        if tool:
+            self._save_filament_to_db_for_tool(tool)
+        else:
+            for tool in self.tools:
+                if tool != "bed":
+                    self._save_filament_to_db_for_tool(tool)
+            
+    def _save_filament_to_db_for_tool(self, tool):
+        
+        amount = self.tools.get(tool, {}).get("filament_amount", 0)
+        material_name = self.tools.get(tool, {}).get("filament_material_name", self.default_material_name)
 
-    def set_filament_amount(self, tool):
-        tool_num = self._get_tool_num(tool)
-        self.filament_database.update({'amount': self.filament_amount[tool_num]}, self._filament_query.tool == tool)
+        self._logger.debug("Saving filament information to database for {0}. Material: {1}, amount: {2}".format(tool, material_name, amount))
 
-    ## ~ Gcode script hook. Used for Z-offset Xeed
+        if self.filament_database.contains(self._filament_query.tool == tool):
+            self.filament_database.update({'amount': amount, 'material_name': material_name}, self._filament_query.tool == tool)
+        else:
+            self.filament_database.insert({'tool': tool, 'amount': amount, 'material_name': material_name})
+
+    # End filament persistance helpers
+
+    # Hooks
+
     def script_hook(self, comm, script_type, script_name):
         """ Executes a LUI print script based on a given print/printer event """
         if not script_type == "gcode":
@@ -2826,10 +3094,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.movement_mode = "relative"
             self.extrusion_mode = "relative" #TODO: Not entirely correct. If G90 > G91 > G90, extrusion_mode would be incorrectly set to relative
 
-        self._logger.debug("Command: %s" % cmd)
-        #self._logger.info("New movement mode: %s" % self.movement_mode)
-        #self._logger.info("New extrusion mode: %s" % self.extrusion_mode)
-
     def _process_M82_M83(self, cmd):
         ##~ Process M82 and M83 commands. Handle relative extrusion
         if cmd == "M82":
@@ -2839,10 +3103,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.extrusion_mode = "relative"
             self.relative_extrusion_trigger = True
 
-        self._logger.debug("Command: %s" % cmd)
-        #self._logger.info("New movement mode: %s" % self.movement_mode)
-        #self._logger.info("New extrusion mode: %s" % self.extrusion_mode)
-
     def _process_G92(self, cmd):
         ##~ Process a G92 command and handle zero-ing of extrusion distances
         if self.regexExtruder.search(cmd):
@@ -2850,42 +3110,44 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.debug("Extruder zero: %s" % cmd)
 
     def _process_G0_G1(self, cmd, comm_instance):
-        #self._logger.info("Command: %s" % cmd)
 
         ##~ Process a G0/G1 command with extrusion
         extrusion_code = self.regexExtruder.search(cmd)
         if extrusion_code is not None:
-            tool = comm_instance.getCurrentTool()
+            tool = "tool" + str(comm_instance.getCurrentTool())
             current_extrusion = float(extrusion_code.group(2))
+
             # Handle relative vs absolute extrusion
-            if self.extrusion_mode == "relative":
+            if self.extrusion_mode == ExtrusionModes.RELATIVE:
                 extrusion_amount = current_extrusion
             else:
                 extrusion_amount = current_extrusion - self.last_extrusion
+
             # Add extrusion to current printing amount and remove from available filament
-            # Use both tools when in sync or mirror mode.
             if self.print_mode == PrintModes.SYNC or self.print_mode == PrintModes.MIRROR:
-                for i, tool_name in enumerate(self.filament_amount):
-                    self.filament_amount[i] -= extrusion_amount
-                    self.current_print_extrusion_amount[i] += extrusion_amount
-            # Only one tool in normal mode.
+
+                # Use both tools when in sync or mirror mode.
+                for tool in self.tools.keys():
+                    self.tools[tool]["filament_amount"] -= extrusion_amount
+                    self.tools[tool]["current_print_extrusion_amount"] += extrusion_amount
             else:
-                self.current_print_extrusion_amount[tool] += extrusion_amount
-                self.filament_amount[tool] -= extrusion_amount
+
+                # Only one tool in normal mode.
+                self.tools[tool]["filament_amount"] -= extrusion_amount
+                self.tools[tool]["current_print_extrusion_amount"] += extrusion_amount
 
             # Needed for absolute extrusion printing
             self.last_extrusion = current_extrusion
 
-            if (self.last_send_filament_amount[tool] - self.filament_amount[tool] > 10):
+            if abs(self.tools[tool]["last_sent_filament_amount"] - self.tools[tool]["filament_amount"]) > self.filament_delta_send:
                 self.send_client_filament_amount()
-                self.last_send_filament_amount = deepcopy(self.filament_amount)
+                self.tools[tool]["last_sent_filament_amount"] = self.tools[tool]["filament_amount"]
 
-            if (self.last_saved_filament_amount[tool] - self.filament_amount[tool] > 100):
-                self.set_filament_amount("tool"+str(tool))
-                self.last_saved_filament_amount = deepcopy(self.filament_amount)
+            if abs(self.tools[tool]["last_saved_filament_amount"] - self.tools[tool]["filament_amount"]) > self.filament_delta_save:
+                self._save_filament_to_db()
+                self.tools[tool]["last_saved_filament_amount"] = self.tools[tool]["filament_amount"]
 
     def _process_G28(self, cmd):
-        #self._logger.info("Command: %s" % cmd)
         ##~ Only do this check at the start up for now
         ##~ TODO: Find when we want to make the printer not is_homed any more.
         if not self.is_homed:
@@ -2903,9 +3165,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ 
         Fired when a M400 (wait for all movements) completes. Useful for maintenance procedures
         """
-        if self.wait_for_maintenance_position:
-            self.wait_for_maintenance_position = False
-            self._head_in_maintenance_position()
+        if self.wait_for_swap_position:
+            self.wait_for_swap_position = False
+            self._head_in_swap_position()
 
     def gcode_received_hook(self, comm_instance, line, *args, **kwargs):
         if "FIRMWARE_NAME:" in line:
@@ -2960,17 +3222,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message(ClientMessages.FILAMENT_ACTION_DETECTED, { "tool" : tool })
         comm.setPause(True)
 
-        self.filament_detection_profile = self.filament_database.get(self._filament_query.tool == tool)["material"]
-        self.filament_detection_tool_temperatures = deepcopy(self.current_temperature_data)
         self.filament_action = True
-
-        # Copied partly from change filament
-        # Send to the front end that we are currently changing filament.
-        self._send_client_message(ClientMessages.FILAMENT_CHANGE_IN_PROGRESS)
-        # Set filament change tool and profile
-        self.filament_change_tool = tool
-        self.filament_loaded_profile = self.filament_database.get(self._filament_query.tool == tool)
-        self._printer.change_tool(tool)
 
         self.z_before_filament_load = self._printer._currentZ
         self._printer.jog({'z': 10})
@@ -2985,6 +3237,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                                         on_condition_false=self._temperature_safety_condition)
             self.temperature_safety_timer.start()
 
+    # End hooks
+
     def _temperature_safety_tick(self):
         self.temperature_safety_timer_value -= 1
         self._send_client_message(ClientMessages.TEMPERATURE_SAFETY, { "timer": self.temperature_safety_timer_value })
@@ -2996,9 +3250,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         When temperature safety timer expires, heaters are turned off
         """
-        self._printer.set_temperature("tool0", 0)
-        self._printer.set_temperature("tool1", 0)
-        self._printer.set_temperature("bed", 0)
+        for tool in self.tools.keys():
+            self._printer.set_temperature(tool, 0)
 
     def on_printer_add_temperature(self, data):
         """
@@ -3008,15 +3261,24 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         We use this call to update the tool status with the function check_tool_status()
         """
 
-        if self.current_temperature_data == None:
-            self.current_temperature_data = data
-        self.old_temperature_data = deepcopy(self.current_temperature_data)
         self.current_temperature_data = data
         self.check_tool_status()
 
         if self.requesting_temperature_after_mintemp:
             self.requesting_temperature_after_mintemp = False
             self._mintemp_temperature_received()
+    
+    def _single_prop_dict(self, dic, prop):
+        """
+        For a given dictionary dic, returns the value of sub-property prop as value for all keys in dic.
+        
+        Example:
+        dic = { key1: { a: val1, b: val2 }, key2: { a: val3, b: val4 } }
+
+        _single_prop_dict(dic, "a") --> { key1: val1, key2: val3 }
+
+        """
+        return { key: value[prop] for key, value in dic.iteritems() }
 
     def check_tool_status(self):
         """
@@ -3052,21 +3314,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 else:
                     status = ToolStatuses.COOLING
 
-            self.tool_status[tool] = status
+            self.tools[tool]["status"] = status
             self.change_status(tool, status)
 
-        self._send_client_message(ClientMessages.TOOL_STATUS, { "tool_status": self.tool_status })
+        self._send_client_message(ClientMessages.TOOL_STATUS, { "tool_status": self._single_prop_dict(self.tools, "status") })
 
     def change_status(self, tool, new_status):
         """
         Calls callback registered to tool change to status
         """
         if new_status == ToolStatuses.READY:
-            with self.callback_mutex:
-                for callback in self.callbacks:
-                    try: callback(tool)
-                    except: self._logger.exception("Something went horribly wrong on reaching the target temperature")
-                del self.callbacks[:]
+            with self.heating_callback_mutex:
+                if tool in self.heating_callbacks:
+                    self.heating_callbacks[tool](tool)
+                    del self.heating_callbacks[tool]
 
     def heat_to_temperature(self, tool, temp, callback = None):
         """
@@ -3079,15 +3340,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._logger.debug("Heating up {tool} to {temp}".format(tool=tool, temp=temp))
 
-        if (self.current_temperature_data[tool]['target'] == temp) and (self.tool_status[tool] == ToolStatuses.READY):
+        if tool in self.current_temperature_data and self.current_temperature_data[tool]['target'] == temp \
+           and self.tools[tool]["status"] == ToolStatuses.READY:
             if callback:
                 callback(tool)
             self._send_client_message(ClientMessages.TOOL_HEATING)
             return
 
-        if callback:
-            with self.callback_mutex:
-                self.callbacks.append(callback)
+        if callback and callable(callback):
+            with self.heating_callback_mutex:
+                self.heating_callbacks[tool] = callback
 
         self._printer.set_temperature(tool, temp)
         self._send_client_message(ClientMessages.TOOL_HEATING)
@@ -3135,7 +3397,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
        if(self.z_before_filament_load is not None):
             self._printer.commands(["G1 Z%f F1200" % self.z_before_filament_load])
 
-    def move_to_filament_load_position(self):
+    def move_to_filament_load_position(self, tool = None):
         self._logger.debug('move_to_filament_load_position')
         self._set_movement_mode("absolute")
 
@@ -3143,104 +3405,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         context = { "currentZ": self._printer._currentZ,
                     "stepperTimeout": self.current_printer_profile["filament"]["stepperTimeout"] if "stepperTimeout" in self.current_printer_profile["filament"] else None,
-                    "filamentChangeTool": self._get_tool_num(self.filament_change_tool)
+                    "filamentChangeTool": self._get_tool_num(tool) if tool else 0
                     }
 
         self._execute_printer_script("filament_load_position", context)
 
         self.restore_movement_mode()
 
-    def _init_usb(self):
-        # Add the LocalFileStorage to allow to browse the drive's files and folders
-
-        try:
-            self.usb_storage = octoprint_lui.util.UsbFileStorage(self.media_folder)
-            octoprint.server.fileManager.add_storage("usb", self.usb_storage)
-        except:
-            self._logger.exception("Could not add USB storage")
-            self._send_client_message(ClientMessages.MEDIA_FOLDER_UPDATED, { "isMediaMounted": False, "error": True })
-            return
-
-        # Start watching the folder for changes (i.e. mounted/unmouted)
-        from watchdog.observers import Observer
-        observer = Observer()
-
-        event_handler = octoprint_lui.util.CallbackFileSystemWatch(self._on_media_folder_updated)
-        observer.schedule(event_handler, self.media_folder, False)
-        observer.start()
-
-        # Hit the first event in any case
-        self._on_media_folder_updated(None)
-
-    def _init_powerbutton(self):
-        if self.platform == "RPi" and "hasPowerButton" in self.current_printer_profile and self.current_printer_profile["hasPowerButton"]:
-            ## ~ Only initialise if it's not done yet.
-            if not self.powerbutton_handler:
-                from octoprint_lui.util.powerbutton import PowerButtonHandler
-                self.powerbutton_handler = PowerButtonHandler(self._on_powerbutton_press)
-        elif self.debug:
-            if not self.powerbutton_handler:
-                from octoprint_lui.util.powerbutton import DummyPowerButtonHandler
-                self.powerbutton_handler = DummyPowerButtonHandler(self._on_powerbutton_press)
-
     def _on_powerbutton_press(self):
         self._send_client_message(ClientMessages.POWERBUTTON_PRESSED)
-
-    def _init_update(self):
-
-        ##~ Update software init
-        self.last_git_fetch = 0
-        self.update_info = []
-
-        # NOTE: The order of this array is used for functions! Keep it the same!
-        self.update_info = [
-            {
-                'name': "Leapfrog UI",
-                'identifier': 'lui',
-                'version': self._plugin_manager.get_plugin_info('lui').version,
-                'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
-                'update': False,
-                'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
-            },
-            {
-                'name': 'Network Manager',
-                'identifier': 'networkmanager',
-                'version': self._plugin_manager.get_plugin_info('networkmanager').version,
-                'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
-                'update': False,
-                'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
-            },
-            {
-                'name': 'Flash Firmware Module',
-                'identifier': 'flasharduino',
-                'version': self._plugin_manager.get_plugin_info('flasharduino').version,
-                'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
-                'update': False,
-                'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
-            },
-            {
-                'name': 'G-code Render Module',
-                'identifier': 'gcoderender',
-                'version': self._plugin_manager.get_plugin_info('gcoderender').version,
-                'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
-                'update': False,
-                'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
-            },
-            {
-                'name': 'OctoPrint',
-                'identifier': 'octoprint',
-                'version': VERSION,
-                'path': '{path}OctoPrint'.format(path=self.update_basefolder),
-                'update': False,
-                'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
-            }
-        ]
-
 
     def _add_server_commands(self):
         """
@@ -3280,14 +3453,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._settings.save()
 
-    def _get_profile_from_name(self, materialProfileName):
+    def _get_material_from_name(self, material_profile_name):
+        """
+        Gets the material profile for a given material name. Returns None if it is not found.
+        """
+        self._logger.debug("Looking for material {0}".format(material_profile_name))
+        
+        if material_profile_name == self.default_material_name:
+            return None
+        
         profiles = self._settings.global_get(["temperature", "profiles"])
         for profile in profiles:
-            if(profile['name'] == materialProfileName):
-                selectedProfile = profile
-
-        return selectedProfile
-
+            if profile['name'] == material_profile_name:
+                return profile
 
     def _on_media_folder_updated(self, event):
         was_media_mounted = self.is_media_mounted
@@ -3354,9 +3532,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.model = self.default_model
 
             if oldModelName != self.model:
-                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, newModelName))
-                self._init_model()
+                self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
                 self._update_printer_scripts_profiles()
+                self._init_model()
 
             self._call_hooks(self.firmware_info_received_hooks)
             self._send_client_message(ClientMessages.MACHINE_INFO_UPDATED, self.machine_info)
@@ -3367,6 +3545,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if port == "VIRTUAL":
             line = self.virtual_m115
+            self.is_virtual = True
             self._logger.debug("Virtual port detected. Assuming virtual M115 line")
 
         line = line.replace(': ', ':')
@@ -3469,6 +3648,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.print_mode = print_mode
         self._printer.commands(["M605 S{0}".format(print_mode)])
 
+    def _reset_current_print_extrusion_amount(self):
+        for tool in self.tools:
+            self.tools[tool]["current_print_extrusion_amount"] = 0.0
+
     ##~ OctoPrint EventHandler Plugin
     def on_event(self, event, payload, *args, **kwargs):
         was_calibration = self.calibration_type
@@ -3476,9 +3659,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._on_calibration_event(event)
 
         if (event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
-            self.last_print_extrusion_amount = self.current_print_extrusion_amount
-            self.current_print_extrusion_amount = [0.0, 0.0]
-            self.save_filament_amount()
+            self._reset_current_print_extrusion_amount()
+            self._save_filament_to_db()
             # TODO: Move commands below to gcode script
             self._set_print_mode(PrintModes.NORMAL)
 
@@ -3518,7 +3700,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._auto_shutdown_start()
 
         if (event == Events.PRINT_STARTED):
-            self.current_print_extrusion_amount = [0.0, 0.0]
+            self._reset_current_print_extrusion_amount()
 
         if(event == Events.PRINT_STARTED or event == Events.PRINT_RESUMED):
             self.filament_action = False

@@ -665,30 +665,35 @@ $(function ()  {
         });
 
         self.enoughFilament = ko.computed(function () {
-            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
+            var sufficient = false;
+
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local") {
                 var analysis = self.selectedFile()["gcodeAnalysis"]();
                 if (!analysis) {
                     return true;
                 }
-                var printFilament = analysis['filament'];
-                var loadedFilament = self.filament.filaments();
+
+                var neededFilaments = analysis['filament'];
+               
                 var mode = self.printerState.printMode();
                 var lengthThreshold = 100;
-
+                
                 if (mode == "normal") {
-                    var normalmode = _.every(printFilament, function(tool, key){
-                        var toolNum = key.slice(-1);
-                        return (tool['length'] - lengthThreshold) < loadedFilament[toolNum].amount();
+                    sufficient = _.every(neededFilaments, function (tool, key) {
+                        return (tool['length'] - lengthThreshold) < self.filament.getFilament(key).amount();
                     });
-                    return normalmode;
+                    
                 } else if (mode == "sync" || mode == "mirror") {
                     var maxLength = 0.0;
-                    _.each(printFilament, function(x){ maxLength < x.length ? maxLength = x.length : maxLength = maxLength});
-                    var mirrorsyncmode = _.every(loadedFilament, function(filament) { 
-                        return filament.amount() >= maxLength});
-                    return mirrorsyncmode;
+                    _.each(neededFilaments, function (x) { maxLength = Math.max(maxLength, x.length); });
+
+                    sufficient = _.every(self.filament.tools(), function (tool) {
+                        return tool.filament.amount() >= maxLength;
+                    });
                 }
             }
+
+            return sufficient;
         });
 
         self.evaluatePrintDimensions = function (data, mode, notify) {

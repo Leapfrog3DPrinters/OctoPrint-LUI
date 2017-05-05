@@ -5,33 +5,41 @@ $(function () {
         self.flyout = parameters[0];
         self.printerState = parameters[1];
         self.settings = parameters[2];
-        self.temperatures = parameters[3];
+        self.toolInfo = parameters[3];
         self.filament = parameters[4];
         self.navigation = parameters[5];
 
         self.poweringUpInfo = null;
-        self.movingToMaintenancePositionInfo = null;
+        self.movingToHeadSwapPositionInfo = null;
 
-        self.getPurgeButtonContents = function (tool) {
-            switch (tool) {
-                case 'tool0':
-                    return '<i class="fa fa-arrow-down"></i>' + gettext('Purge right');
-                case 'tool1':
-                    return '<i class="fa fa-arrow-down"></i>' + gettext('Purge left');
-            }
-        };
+        self.isHeadMaintenanceFlyoutOpen = false;
+        self.isSavingMaterial = ko.observable(false);
 
-        self.headMaintenancePosition = function () {
+        self.showHeadMaintenance = function () {
 
-            var text = gettext("You are about to move the printer to the maintenance position. This will turn off the power of the printer temporarily, shutting down the LED lights with it. ");
+            var text = gettext("You are about to move the printer to the head maintenance position.");
             var question = gettext("Do you want to continue?");
             var title = gettext("Maintenance position");
             var dialog = {'title': title, 'text': text, 'question' : question};
 
             self.flyout.showConfirmationFlyout(dialog, true)
-                .done(function ()  {
+                .done(function () {
+                    self.isHeadMaintenanceFlyoutOpen = true;
                     self.moveToHeadMaintenancePosition();
+                    self.flyout.showFlyout('head_maintenance', true).always(self.afterHeadMaintenance);
                 });
+        };
+
+        self.headSwapPosition = function () {
+            var text = gettext("You are about to move the printer to the hot end swap position. This will turn off the power of the printer temporarily, shutting down the LED lights with it.");
+            var question = gettext("Do you want to continue?");
+            var title = gettext("Hot end swap position");
+            var dialog = { 'title': title, 'text': text, 'question': question };
+
+            self.flyout.showConfirmationFlyout(dialog, true)
+                .done(function () {
+                    self.moveToHeadSwapPosition();
+                }); 
         };
 
         self.cleanBedPosition = function ()  {
@@ -45,17 +53,23 @@ $(function () {
                 .done(function(){
                     self.moveToCleanBedPosition();
 
-                    self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with cleaning the bed. This will home the printer.'), false, self.afterMaintenance);
+                    self.flyout.showInfo(gettext('Maintenance position'),
+                        gettext('Press OK when you are done with cleaning the bed. This will home the printer.'), false, self.afterCleanBed);
                 });
         };
 
         self.afterHeadMaintenance = function () {
+            sendToApi("maintenance/head/finish");
+            self.isHeadMaintenanceFlyoutOpen = false;
+        };
+
+        self.afterHeadSwap = function () {
             sendToApi("maintenance/head/swap/finish");
         };
 
-        self.afterMaintenance = function()
+        self.afterCleanBed = function ()
         {
-            OctoPrint.printer.home(['x', 'y']);
+            sendToApi("maintenance/bed/clean/finish");
         };
 
         self.calibrateExtruders = function ()  {
@@ -67,22 +81,24 @@ $(function () {
             self.flyout.showFlyout('bedcalibration', true);
         };
 
-        self.sendHomeCommand = function (axis) {
-            OctoPrint.printer.home(axis);
-        };
-
         self.moveToCleanBedPosition = function () {
             sendToApi("maintenance/bed/clean/start").done(function ()  {
                 $.notify({ title: gettext("Clean bed"), text: gettext("The printer is moving towards the clean bed position.") }, "success");
             });
         };
 
-        self.moveToHeadMaintenancePosition = function (skipHeatCheck) {
-            //TODO: Include temperature check
-            var tools = self.temperatures.tools();
+        self.moveToHeadMaintenancePosition = function()
+        {
+            sendToApi("maintenance/head/start").done(function () {
+                $.notify({ title: gettext("Head maintenance"), text: gettext("The printhead is moving towards the maintenance position.") }, "success");
+            });
+        }
+
+        self.moveToHeadSwapPosition = function (skipHeatCheck) {
+            var tools = self.toolInfo.tools();
 
             if (!skipHeatCheck &&
-                (tools[0]["actual"]() >= 50 || tools[1]["actual"]() >= 50))
+                (tools[0]["actual"]() >= EXTRUDER_HOT_THRESHOLD || tools[1]["actual"]() >= EXTRUDER_HOT_THRESHOLD))
             {
                 var text = gettext("One of the print heads has not cooled down yet. Print head maintenance may cause serious injury. It is adviced to wait for the print heads to cool down.");
                 var question = gettext("Are you sure you want to continue?");
@@ -91,7 +107,7 @@ $(function () {
 
                 self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function () {
-                    self.moveToHeadMaintenancePosition(true); // Retry, but skip heat check
+                    self.moveToHeadSwapPosition(true); // Retry, but skip heat check
                 });
 
                 return;
@@ -100,38 +116,17 @@ $(function () {
             // From here only executed if temperatures are < 50, or heat check is ignored
             sendToApi("maintenance/head/swap/start");
 
-            self.movingToMaintenancePositionInfo = self.flyout.showInfo(gettext("Maintenance position"), gettext("The printhead is moving towards the maintenance position."), true);
+            self.movingToHeadSwapPositionInfo = self.flyout.showInfo(gettext("Maintenance position"), gettext("The printhead is moving towards the maintenance position."), true);
         };
 
-        self.completeHeadMaintenance = function()
+        self.finishHeadSwap = function ()
         {
-            if (self.movingToMaintenancePositionInfo !== undefined) {
-                self.flyout.closeInfo(self.movingToMaintenancePositionInfo);
-                self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterHeadMaintenance);
-                self.movingToMaintenancePositionInfo = undefined;
+            if (self.movingToHeadSwapPositionInfo !== undefined) {
+                self.flyout.closeInfo(self.movingToHeadSwapPositionInfo);
+                self.flyout.showInfo(gettext('Maintenance position'), gettext('Press OK when you are done with the print head maintenance. This will home the printer.'), false, self.afterHeadSwap);
+                self.movingToHeadSwapPositionInfo = undefined;
             }
 
-        };
-
-        self.beginPurgeWizard = function (tool)
-        {
-            if (self.filament.getFilamentMaterial(tool) == "None")
-                return;
-
-            var text = gettext("You are about to move the printer to the filament load position.");
-            var question = gettext("Do want to continue?");
-            var title = gettext("Purge nozzle");
-            var dialog = { 'title': title, 'text': text, 'question': question };
-
-            self.flyout.showConfirmationFlyout(dialog)
-                .done(function ()  {
-                    self.filament.showFilamentChangeFlyout(tool, true);
-                });
-        };
-
-        self.setFilamentAmount = function () {
-            self.filament.requestData();
-            self.flyout.showFlyout('filament_override')
         };
 
         self.logFiles = function ()
@@ -139,11 +134,26 @@ $(function () {
             self.navigation.showSettingsTopic('logs');
         };
 
-        self.onSettingsShown = function () {
-            $('#maintenance_control').addClass('active');
-            $('#maintenance_filament').removeClass('active');
+        self.onFilamentChanged = function(value)
+        {
+            // This function is bound to the change event of filament material and amount inputs
+            // Therefore, we have to check if the controls are actually visible, to confirm the change was the user's own action
+            if (self.isHeadMaintenanceFlyoutOpen && !self.isSavingMaterial()) {
+                self.isSavingMaterial(true);
+                self.filament.updateFilament(this).always(function () { self.isSavingMaterial(false) });
+            }
+        }
 
-        };
+        self.onAfterBinding = function()
+        {
+            //TODO: Don't do this once onAfterBinding, but subscribe to changes in the tools() observable
+            var tools = self.toolInfo.tools();
+            for (i = 0; i < tools.length; i++)
+            {
+                tools[i].filament.amountMeter.subscribe(self.onFilamentChanged.bind(tools[i]));
+                tools[i].filament.materialProfileName.subscribe(self.onFilamentChanged.bind(tools[i]));
+            }
+        }
 
         // Handle plugin messages
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -154,10 +164,10 @@ $(function () {
             var messageType = data['type'];
             switch (messageType) {
 
-                case "head_in_maintenance_position":
-                    self.completeHeadMaintenance();
+                case "head_in_swap_position":
+                    self.finishHeadSwap();
                     break;
-                case "powering_up_after_maintenance":
+                case "powering_up_after_swap":
                     var title = gettext("Reconnecting to printer");
                     var message = gettext("Please wait while the printer is being reconnected. Note that the printer will home automatically.");
                     self.poweringUpInfo = self.flyout.showInfo(title, message, true);
@@ -172,7 +182,7 @@ $(function () {
     }
     ADDITIONAL_VIEWMODELS.push([
         MaintenanceViewModel,
-        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "temperatureViewModel", "filamentViewModel", "navigationViewModel"],
-        ["#maintenance_settings_flyout_content"]
+        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "toolInfoViewModel", "filamentViewModel", "navigationViewModel"],
+        ["#maintenance_settings_flyout_content", "#head_maintenance_flyout"]
     ]);
 });

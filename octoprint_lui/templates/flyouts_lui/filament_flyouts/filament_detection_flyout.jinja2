@@ -1,5 +1,4 @@
 <div id="filament_depleted" class="fd_step">
-
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -24,7 +23,7 @@
             <span>{{ _('Yes') }}</span>
           </li>
           <li class="button  secondary-button">
-            <a href="#" data-bind="touchClick: function () { startSwapFilamentWizard() }">
+            <a href="#" data-bind="touchClick: function () { startSwapFilamentWizard() }, css: { disabled: !printerState.isPaused() }">
 
               <span>
                 <i class="fa fa-refresh"></i>{{ _('Swap filament') }}
@@ -39,7 +38,7 @@
             <span>{{ _('No') }}</span>
           </li>
           <li class="button secondary-button">
-            <a href="#" data-bind="click:  function () { startPurgeWizard() }">
+            <a href="#" data-bind="click:  function () { startPurgeWizard() }, css: { disabled: !printerState.isPaused() }">
               <span>
                 <i class="fa fa-arrow-down"></i>{{ _('Purge filament') }}
               </span>
@@ -61,127 +60,7 @@
 
   </div>
 </div>
-<div id="fd_filament_swap_wizard" class="fd_step">
-  <div class="Table">
-    <div class="Table-row Table-header">
-      <div class="Table-item">
-        <div>
-          {{ _('Swapping filament: ') }}<span data-bind="text: filament.toolText"></span>
-        </div>
-      </div>
-    </div>
-    <div class="Table-row">
-      <div class="Table-item">
-        <div>
-          {{ _('Material: ') }}<span data-bind="text: filament.currentMaterial"></span>
-        </div>
-      </div>
-    </div>
-    <div class="Table-row " id="fd-swap-info">
-      <div class="Table-item">
-        {{ _('Heating up to swap filament and (un)loading.') }}
-      </div>
-    </div>
-    <div class="Table-row active" id="fd-swap-load-unload">
-      <div class="Table-item">
-        <div id="swap_process" data-bind="css: { disabled: !printerState.isOperational() }">
-          <div class="fd_swap_process_step" id="fd_unload_filament">
-            <div class="explain">
-              {{ _('Please press unload to release the filament from the extruder. The spool that you are unloading has <span data-bind="text: filament.loadedFilamentAmount" class="bold"></span> left.') }}
-            </div>
-            <ul class="button-area">
-              <li class="button ok-button" id="fd_unload_cmd" data-bind="touchClick: function () { filament.unloadFilament() }, css: { disabled: !loginState.loggedIn() || filament.filamentLoading()}">
-                <a href="#">
-                  <span>
-                    <i class="fa fa-arrow-up"></i>{{ _('Unload') }}
-                  </span>
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div class="fd_swap_process_step" id="fd_load_filament">
-            {{ _('Select how much filament is on the new spool:') }}
-            <div id="fd_slider_wrapper">
-              <div id="fd_slider" class="noUi-extended"></div>
-            </div>
-            <div class="Table">
-              <div class="Table-row">
-                <div class="Table-item">
-                  <input id="fd-input-format" />
-                </div>
-                <div class="Table-item">
-                  <span id="fd_filament_percent"></span>
-                </div>
-              </div>
-            </div>
-            <div class="explain">{{ _('Insert the filament in the filament drawer past both wheels.') }}</div>
-            <ul class="button-area">
-              <li class="button ok-button" id="fd_unload_cmd" data-bind="touchClick: function () { filament.loadFilament('filament-detection'); }, css: { disabled: !filament.selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filament.filamentLoading()}">
-                <a href="#">
-                  <span>{{ _('Load') }}</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="Table-row fd_swap_process_step" id="fd_finished_filament" >
-      <div class="Table-item">
-        <ul class="button-area">
-          <li class="button" data-bind="touchClick: function () { filament.startExtruding() }, css: { disabled: filament.isExtruding()}">
-            <a href="#">
-              <span>
-                <i class="fa fa-arrow-down"></i>{{ _('Load extra filament') }}
-              </span>
-            </a>
-          </li>
-          <li class="button failed-button" data-bind="touchClick: function () { filament.finishExtruding() }, css: { disabled: !filament.isExtruding()}">
-            <a href="#">
-              <span>
-                <i class="fa fa-close"></i>{{ _('Stop loading') }}
-              </span>
-            </a>
-          </li>
-        </ul>
-      </div>
-      <div class="Table-item">
-        <ul class="button-area">
-          <li class="button ok-button" data-bind="touchClick: function () { showFilamentDetectionWizardComplete() }, css: { disabled: !loginState.loggedIn()}">
-            <a href="#">
-              <span>
-                <i class="fa fa-check"></i>{{ _('Done') }}
-              </span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <!-- ko if: filament.filamentLoading -->
-    <div class="Table-row Table-header">
-      <div class="Table-item">{{ _('Status') }}</div>
-    </div>
-    <div id="fd_tool_heating" class = "Table-row">
-    <div class="Table-item Table-item-grow-3">
-        <div class="progress progress-large">
-            <span style="width: 100%" data-bind="text: temperatureState.tools()[toolNum()].status, css: temperatureState.tools()[toolNum()].css_class, style: { width: temperatureState.tools()[toolNum()].progress + '%' }"></span>
-        </div>
-    </div>
-    </div>
-    <div id="fd_tool_loading" class="Table-row">
-      <div class="Table-item">
-        <div class="progress progress-large">
-          <span data-bind="style: { width: filament.filamentLoadProgress() + '%'}, text: filament.filamentLoadingText"></span>
-          <span class="bg-none" data-bind="style: {width: '100%'}"></span>
-        </div>
-      </div>
-    </div>
-    <!-- /ko -->
-  </div>
-  <!-- / Table -->
-</div>
 <div id="filament_detection_wizard_complete" class="fd_step">
-
   <div class="Table">
     <div class="Table-row Table-header">
       <div class="Table-item">
@@ -205,14 +84,14 @@
             </a>
           </li>
           <li class="button  secondary-button">
-            <a href="#" data-bind="touchClick: function () { startSwapFilamentWizard() }">
+            <a href="#" data-bind="touchClick: function () { startSwapFilamentWizard() }, css: { disabled: !printerState.isPaused() }">
               <span>
                 <i class="fa fa-refresh"></i>{{ _('Swap filament') }}
               </span>
             </a>
           </li>
           <li class="button secondary-button">
-            <a href="#" data-bind="touchClick: function () { startPurgeWizard() }">
+            <a href="#" data-bind="touchClick: function () { startPurgeWizard() }, css: { disabled: !printerState.isPaused() }">
               <span>
                 <i class="fa fa-arrow-down"></i>{{ _('Purge filament') }}
               </span>

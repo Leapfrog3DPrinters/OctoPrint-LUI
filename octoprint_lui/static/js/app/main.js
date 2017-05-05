@@ -273,7 +273,7 @@ $(function () {
         },
         update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
             setTimeout(function () {
-                if (element.nodeName == "#comment") {
+                if (element && element.nodeName == "#comment") {
                     // foreach is bound to a virtual element
                     $(element.parentElement).slimScroll({scrollBy: 0});
                 } else {
@@ -309,6 +309,58 @@ $(function () {
                 })            
             } else {
                 ko.bindingHandlers.click.init(element, valueAccessor, allBindings, viewModel, bindingContext);
+            }
+        }
+    }
+
+    ko.bindingHandlers.noUiSlider = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var params = valueAccessor();
+
+            element.isUpdatingBinding = false;
+            
+            var initValue = ko.unwrap(params.value());
+
+            noUiSlider.create(element, {
+                start: [ initValue ],
+                step: 1,
+                behaviour: 'tap',
+                connect: 'lower',
+                range: {
+                    'min': 0,
+                    'max': FILAMENT_ROLL_LENGTH
+                },
+                format: {
+                    to: function (value) {
+                        return value.toFixed(0);
+                    },
+                    from: function (value) {
+                        return value;
+                    }
+                }
+            });
+
+            element.noUiSlider.on('slide', function (values, handle) {
+
+                window.setTimeout(
+                    function () {
+                        element.isUpdatingBinding = true;
+                        var value = values[handle];
+                        params.value(value);
+                        element.isUpdatingBinding = false;
+                    }, 0);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            if (element.isUpdatingBinding)
+                return;
+
+            var slider = element.noUiSlider;
+
+            if (slider) {
+                var params = ko.unwrap(valueAccessor());
+                var newValue = ko.unwrap(params.value());
+                slider.set(newValue);
             }
         }
     }
@@ -659,48 +711,6 @@ $(function () {
 
         $("input[type='number']").keyboard(keyboardLayouts.number);
 
-        $("#input-format").keyboard({
-            layout: 'custom',
-            customLayout: {
-                normal: [
-                    '7 8 9 {clear}',
-                    '4 5 6 {cancel}',
-                    '1 2 3 {accept}',
-                    '. 0 {sp:3.1}',
-                ]
-            },
-            usePreview: true,
-            display: {
-                'accept': 'Accept:Accept',
-                'clear': 'Clear:Clear'
-            },
-            accepted: function (event, keyboard, el) {
-                slider.noUiSlider.set(keyboard.$preview.val());
-            }
-        });
-
-        if (FILAMENT_DETECTION) {
-            $("#fd-input-format").keyboard({
-                layout: 'custom',
-                customLayout: {
-                    normal: [
-                        '7 8 9 {clear}',
-                        '4 5 6 {cancel}',
-                        '1 2 3 {accept}',
-                        '. 0 {sp:3.1}',
-                    ]
-                },
-                usePreview: true,
-                display: {
-                    'accept': 'Accept:Accept',
-                    'clear': 'Clear:Clear'
-                },
-                accepted: function (event, keyboard, el) {
-                    fdSlider.noUiSlider.set(keyboard.$preview.val());
-                }
-            });
-        }
-
         ko.bindingHandlers.keyboardForeach = {
             init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                 return ko.bindingHandlers.foreach.init(element, valueAccessor, allBindings, viewModel, bindingContext);
@@ -716,77 +726,5 @@ $(function () {
         };
         ko.virtualElements.allowedBindings.keyboardForeach = true;
 
-    }
-
-    var slider = document.getElementById('slider');
-    
-
-    noUiSlider.create(slider, {
-        start: FILAMENT_ROLL_LENGTH,
-        step: 1,
-        behaviour: 'tap',
-        connect: 'lower',
-        range: {
-            'min': 0,
-            'max': FILAMENT_ROLL_LENGTH
-        },
-        format: {
-          to: function ( value ) {
-            return value.toFixed(0);
-          },
-          from: function ( value ) {
-            return value;
-          }
-        }
-    });
-
-    var inputFormat = document.getElementById('input-format');
-    var filament_percent = document.getElementById('filament_percent');
-
-    slider.noUiSlider.on('update', function (values, handle) {
-        inputFormat.value = values[handle];
-        new_filament_amount.innerText = values[handle];
-        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
-        filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
-        new_filament_percent.innerText = percent + "%";
-    });
-
-    inputFormat.addEventListener('change', function () {
-        slider.noUiSlider.set(this.value);
-    });
-
-    if (FILAMENT_DETECTION) {
-        var fdSlider = document.getElementById('fd_slider');
-        noUiSlider.create(fdSlider, {
-            start: FILAMENT_ROLL_LENGTH,
-            step: 1,
-            behaviour: 'tap',
-            connect: 'lower',
-            range: {
-                'min': 0,
-                'max': FILAMENT_ROLL_LENGTH
-            },
-            format: {
-                to: function (value) {
-                    return value.toFixed(0);
-                },
-                from: function (value) {
-                    return value;
-                }
-            }
-        });
-
-        var fdInputFormat = document.getElementById('fd-input-format');
-        var fd_filament_percent = document.getElementById('fd_filament_percent');
-
-        fdSlider.noUiSlider.on('update', function (values, handle) {
-            fdInputFormat.value = values[handle];
-            percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
-            fd_filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
-        });
-
-        fdInputFormat.addEventListener('change', function () {
-            fdSlider.noUiSlider.set(this.value);
-        });
     }
 });

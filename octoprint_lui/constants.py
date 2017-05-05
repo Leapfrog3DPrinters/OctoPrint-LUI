@@ -1,13 +1,16 @@
 class ClientMessages(object):
     
-    FILAMENT_CHANGE_IN_PROGRESS = "filament_change_in_progress"
-    FILAMENT_CHANGE_SKIP_UNLOAD = "skip_unload"
-    FILAMENT_CHANGE_FINISHED = "filament_finished"
-    FILAMENT_CHANGE_CANCELED = "filament_cancelled"
-    FILAMENT_LOADING = "filament_loading"
-    FILAMENT_LOAD_PROGRESS = "filament_load_progress"
-    FILAMENT_UNLOADING = "filament_unloading"
-    FILAMENT_EXTRUDING = "filament_extruding"
+    FILAMENT_CHANGE_STARTED = "filament_change_started"
+    FILAMENT_CHANGE_CANCELLED = "filament_change_cancelled"
+    FILAMENT_CHANGE_FINISHED = "filament_change_finished"
+    FILAMENT_CHANGE_UNLOAD_STARTED = "filament_unload_started"
+    FILAMENT_CHANGE_UNLOAD_FINISHED = "filament_unload_finished"
+    FILAMENT_CHANGE_LOAD_STARTED = "filament_load_started"
+    FILAMENT_CHANGE_LOAD_PROGRESS = "filament_load_progress"
+    FILAMENT_CHANGE_LOAD_FINISHED = "filament_load_finished"
+
+    
+    FILAMENT_EXTRUDING_STARTED = "filament_extruding_started"
     FILAMENT_EXTRUDING_FINISHED = "filament_extruding_finished"
 
     FILAMENT_ACTION_DETECTED = "filament_action_detected"
@@ -30,8 +33,8 @@ class ClientMessages(object):
     CALIBRATION_FINISHED = "calibration_completed"
     CALIBRATION_FAILED = "calibration_failed"
     
-    HEAD_IN_MAINTENANCE_POSITION = "head_in_maintenance_position"
-    POWERING_UP_AFTER_MAINTENANCE = "powering_up_after_maintenance"
+    HEAD_IN_SWAP_POSITION = "head_in_swap_position"
+    POWERING_UP_AFTER_SWAP = "powering_up_after_swap"
 
     MEDIA_FOLDER_UPDATED = "media_folder_updated"
     MEDIA_FILE_COPY_PROGRESS = "media_file_copy_progress"
@@ -115,3 +118,11 @@ class PrintModes(object):
             return 'mirror'
         else:
             return 'normal'
+
+class ExtrusionModes(object):
+    ABSOLUTE = "absolute"
+    RELATIVE = "relative"
+
+class MovementModes(object):
+    ABSOLUTE = "absolute"
+    RELATIVE = "relative"

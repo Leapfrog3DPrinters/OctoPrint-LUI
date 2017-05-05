@@ -11,11 +11,11 @@
         {{ _('Make sure the print bed is empty and calibrated. Also ensure both extruders are loaded with differently colored filament. Apply a print adhesive to the bed and press Start calibration.') }}
       </div>
     </div>
-    <!-- ko foreach: filament.filaments().slice(0).reverse() -->
-    <div class="Table-row" data-bind="visible: materialProfileName() == 'None'">
+    <!-- ko foreach: temperatures.tools.slice(0).reverse() -->
+    <div class="Table-row" data-bind="visible: filament.materialProfileName() == 'None'">
       <div class="Table-item">
         <span>
-          <i class="fa fa-exclamation-triangle"></i>{{ _(' Please load filament in the ') }}<span data-bind="text: $root.getToolName(tool())"></span>{{ _(' extruder before you continue.') }}
+          <i class="fa fa-exclamation-triangle"></i>{{ _(' Please load filament in the ') }}<span data-bind="text: $root.getToolName(key())"></span>{{ _(' extruder before you continue.') }}
         </span>
       </div>
     </div>
@@ -269,7 +269,7 @@
         <div class="Table-item">{{ _('Status') }}</div>
         <div class="Table-item Table-item-grow-4">
           <div class="progress progress-striped progress-animate">
-            <span class="bg-main" data-bind="text: temperatureState.isHeating() ? 'Heating' : 'Printing', css: {'bg-orange': temperatureState.isHeating()}, style: {width: temperatureState.totalProgress() + '%'}"></span>
+            <span class="bg-main" data-bind="text: toolInfo.isHeating() ? 'Heating' : 'Printing', css: {'bg-orange': toolInfo.isHeating()}, style: {width: toolInfo.totalProgress() + '%'}"></span>
           </div>
         </div>
       </div>

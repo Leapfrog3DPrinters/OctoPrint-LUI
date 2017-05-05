@@ -16,7 +16,7 @@
             <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
             <div class="Table-item Table-item-grow-4">
                 <div class="progress">
-                    <span style="width: 0%" data-bind="text: status, style: { width: progress() + '%'}, css: css_class"></span>
+                    <span style="width: 0%" data-bind="text: displayStatus, style: { width: progress() + '%'}, css: cssClass"></span>
                 </div>
             </div>
             <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
@@ -32,7 +32,7 @@
         <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
         <div class="Table-item Table-item-grow-4">
           <div class="progress">
-            <span style="width: 0%" data-bind="text: status, style: { width: progress() + '%'}, css: css_class"></span>
+            <span style="width: 0%" data-bind="text: displayStatus, style: { width: progress() + '%'}, css: cssClass"></span>
           </div>
         </div>
         <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>

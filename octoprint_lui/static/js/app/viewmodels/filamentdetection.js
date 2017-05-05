@@ -6,8 +6,10 @@ $(function ()  {
         self.settings = parameters[1];
         self.flyout = parameters[2];
         self.printerState = parameters[3];
-        self.temperatureState = parameters[4];
+        self.toolInfo = parameters[4];
         self.filament = parameters[5];
+
+        self.tool = ko.observable();
 
         self.temperatureSafetyTimerValue = ko.observable(undefined);
 
@@ -20,9 +22,7 @@ $(function ()  {
         });
 
         self.showFilamentDetectionFlyout = function (tool) {
-
-            self.filament.tool(tool);
-            self.filament.loadedFilamentAmount(self.filament.getFilamentAmount(tool));
+            self.tool(tool);
 
             $('.fd_step').removeClass('active');
             $('#filament_depleted').addClass('active');
@@ -33,9 +33,7 @@ $(function ()  {
                     self._finishFilamentDetectionApi();
                     console.log('Filament detection flyout accepted');
                 })
-                .fail(function ()  {
-                    self.filament.cancelChangeFilament();
-                })
+                .fail(self.filament.cancelChangeFilament)
                 .always(function ()  {
                     // If this closes we need to reset stuff
                     self.filament.filamentLoadProgress(0);
@@ -43,27 +41,15 @@ $(function ()  {
                 });
         }
 
-        self.startSwapFilamentWizard = function ()  {
+        self.startSwapFilamentWizard = function () {
             self._stopTempSafetyTimer();
-            self.filament.filamentInProgress(true);
-            self.filament.showUnload();
-
-            fd_slider.noUiSlider.set(FILAMENT_ROLL_LENGTH)
-
-            $('.fd_step').removeClass('active');
-            $('#fd_filament_swap_wizard').addClass('active'); 
+            self.filament.showFilamentChangeFlyout(self.tool()).always(self.showFilamentDetectionWizardComplete);
         }
 
         self.startPurgeWizard = function()
         {
             self._stopTempSafetyTimer();
-
-            $('.fd_step').removeClass('active');
-            $('#fd_filament_swap_wizard').addClass('active');
-            $('.fd_swap_process_step').removeClass('active');
-           
-            //Will also load correct view (either heating or purge)
-            self.filament.loadFilament('filament-detection-purge');
+            self.filament.showFilamentChangeFlyout(self.tool(), true).always(self.showFilamentDetectionWizardComplete);
         }
 
         self.showFilamentDetectionWizardComplete = function()
@@ -74,7 +60,7 @@ $(function ()  {
 
         self.completeFilamentDetection = function()
         {
-            self.flyout.closeFlyoutAccept();
+            self.flyout.closeFlyoutAccept('filament_detection');
         }
 
         self.cancelFilamentDetection = function()
@@ -90,19 +76,18 @@ $(function ()  {
                     self._cancelFilamentDetectionApi();
                     self.filament.requestData();
                 });
-           
         }
 
         self._stopTempSafetyTimer = function () {
-            sendToApi("filament/" + self.filament.tool() + "/detection/stop_timer");
+            sendToApi("filament/" + self.tool() + "/detection/stop_timer");
         }
 
         self._finishFilamentDetectionApi = function ()  {
-            sendToApi("filament/" + self.filament.tool() + "/detection/finish");
+            sendToApi("filament/" + self.tool() + "/detection/finish");
         }
 
         self._cancelFilamentDetectionApi = function () {
-            sendToApi("filament/" + self.filament.tool() + "/detection/cancel");
+            sendToApi("filament/" + self.tool() + "/detection/cancel");
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -126,7 +111,7 @@ $(function ()  {
     if (FILAMENT_DETECTION) {
         OCTOPRINT_VIEWMODELS.push([
             FilamentDetectionViewModel,
-            ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "temperatureViewModel", "filamentViewModel"],
+            ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel", "filamentViewModel"],
             ["#filament_detection_flyout"]
         ]);
     }
