@@ -746,11 +746,6 @@ input[type=radio] {
 .Table-condensed .Table-item
 {
     padding: 0.3em 0.1em;
-
-    input
-    {
-        padding: 12px 5px !important;
-    }
 }
 
 #user-list .Table, #settings_plugin_networkmanager .Table {
@@ -1130,7 +1125,7 @@ input[type=radio] {
 
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
-  padding-left: 10px;
+  padding: 12px 5px !important;
   min-width: 0;
   // user-select: none; Out for now bugs Safari
 }

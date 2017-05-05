@@ -2069,10 +2069,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         response = make_response(render_template("windows_lui/webcam_window_lui.jinja2", model=self.model, debug_lui=self.debug))
         return response
 
-    @BlueprintPlugin.route("/externaljs", methods=["GET"])
-    def externaljs(self):
-        return send_from_directory(os.path.join(self._basefolder, "static", "js"), "external.js")
-
     def get_ui_additional_key_data_for_cache(self):
         from_localhost = self._is_request_from_localhost(request)
 
