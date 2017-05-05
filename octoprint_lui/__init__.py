@@ -1587,11 +1587,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @BlueprintPlugin.route("/printer/select_demo", methods=["POST"])
     def select_demo(self):
-		abs_path = self._copy_demo_file("Bolt-PLA.gcode")
-		if abs_path:
+        """IntroJS"""
+        abs_path = self._copy_demo_file("Bolt-PLA.gcode")
+        if abs_path:
 			self._printer.select_file(abs_path, False, False)
-		self._send_client_message("demo_selected")
-		return make_response(jsonify(), 200)
+        self._send_client_message("demo_selected")
+        return make_response(jsonify(), 200)
 
     ## Files API
 
@@ -2360,6 +2361,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return path_on_disk
 
     def _copy_demo_file(self, demo_src_filename):
+        """IntroJS"""
         demo_src_path = None
         demo_dst_filename = "Bolt-PLA.gcode"
         demo_dst_path = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, demo_dst_filename)
