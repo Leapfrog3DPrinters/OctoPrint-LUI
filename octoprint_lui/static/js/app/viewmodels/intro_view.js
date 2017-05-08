@@ -4,6 +4,7 @@ $(function ()  {
 
         self.isTutorialStarted = false;
         self.isFirstStep = false;
+        self.lastStep = 0;
 
         self.flyout = parameters[0];
         self.toolInfo = parameters[1];
@@ -16,34 +17,33 @@ $(function ()  {
                 {
                     //1
                     stepName: "helloStep",
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\"><b>Welcome to your new Bolt.</b><br>This tutorial will guide you through the" +
-                    " steps you have to take to start printing your creations.<br>" +
+                    "<div class=\"step-text\"><b>" + gettext("Welcome to your new Bolt.") + "</b><br>" +
+                    gettext("This tutorial will guide you through the steps you have to take to start printing your creations.") + "<br>" +
                     "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
-                    "class=\"introjs-button next-button\" data-bind=\"click: function (){ beginButton() }\">Begin</a>" +
+                    "class=\"introjs-button next-button\" data-bind=\"click: function (){ beginButton() }\">" + gettext("Continue") + "</a>" +
                     "<a id=\"cancelButton\" role=\"button\" class=\"introjs-button\"" +
-                    "data-bind=\"click: function (){ cancelButton() }\">Cancel</a></div></div>"
+                    "data-bind=\"click: function (){ cancelButton() }\">"+ gettext("Cancel") + "</a></div></div>"
                 },
                 {
                     //2
                     stepName: "leftToolNoFilament",
                     element: '#tool1',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">There is not filament loaded in the left extruder. We will have to " +
-                    "load some filament in this extruder to be able to print. Click <i class=\"fa fa-refresh\"></i> <b> Swap Left</b> " +
-                    "to load the filament in the left extruder.</div>",
+                    "<div class=\"step-text\">" + gettext("There is no filament detected in the left extruder. We will have to " +
+                    "load some filament in this extruder to be able to print. Click ") + "<i class=\"fa fa-refresh\"></i> <b>" + gettext("Swap left") + "</b> " +
+                    gettext("to load the filament in the left extruder.") + "</div>",
                     position: 'top'
                 },
                 {
                     //3
                     stepName: "leftToolFilamentSelect",
                     element: '#filament_loading',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
-                    "that you are loading. This way the printer knows what it's using.</div>",
+                    "<div class=\"step-text\">" + gettext("Choose what kind of material you are loading and give the amount that you are loading. This way the printer knows what kind of filament you want to load.") + "</div>",
                     position: 'bottom',
                     tooltipClass: "tooltip_hidden"
                 },
@@ -51,41 +51,38 @@ $(function ()  {
                     //4
                     stepName: "leftToolFilamentLoading",
                     element: '#filament_loading',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">The left extruder is now being loaded. When something goes wrong you can press " +
-                    "Abort to cancel the action.</div>",
+                    "<div class=\"step-text\">" + gettext("The left extruder is now being loaded. When something goes wrong you can press Abort to cancel the action.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //5
                     stepName: "leftToolFilamentDone",
                     element: '#filament_loading',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">We are now done loading the left filament. If your not satisfied with the " +
-                    "amount that came out of the nozzle you can press <b>Extrude More</b>. If you are ready for " +
-                    "the next step press <b>Done</b>.</div>"
+                    "<div class=\"step-text\">" + gettext("We are now done loading the left filament. If your not satisfied with the amount of filament that came out of the nozzle you can press ")
+                    + "<b>" + gettext("Extrude more filament") + "</b>" + gettext("to extrude more filament." +
+                    " If you are ready for the next step press") + "<b>" + gettext("Done") + "</b>.</div>"
                 },
                 {
                     //6
                     stepName: "rightToolNoFilament",
                     element: '#tool0',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">There is not filament loaded in the right extruder. We will have to " +
-                    "load some filament in this extruder to be able to print. Click <i class=\"fa fa-refresh\"></i> <b> Swap Right</b> " +
-                    "to load the filament in the right extruder.</div>",
+                    "<div class=\"step-text\">" + gettext("There is no filament detected in the right extruder. We will have to load some filament in this extruder to be able to print. Click") +
+                    "<i class=\"fa fa-refresh\"></i> <b>" + gettext("Swap right") + "</b>" + gettext("to load the filament in the right extruder.") + "</div>",
                     position: 'top'
                 },
                 {
                     //7
                     stepName: "rightToolFilamentSelect",
                     element: '#filament_loading',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Choose what kind of material you are loading and give the amount " +
-                    "that you are loading. This way the printer knows what kind of filament you want to load.</div>",
+                    "<div class=\"step-text\">" + gettext("Choose what kind of material you are loading and give the amount that you are loading. This way the printer knows what kind of filament you want to load.") + "</div>",
                     position: 'bottom',
                     tooltipClass: "tooltip_hidden"
                 },
@@ -93,187 +90,189 @@ $(function ()  {
                     //8
                     stepName: "rightToolFilamentLoading",
                     element: '#filament_loading',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">The right extruder is being loaded. When something goes wrong you can press " +
-                    "Abort to cancel the action.</div>",
+                    "<div class=\"step-text\">" + gettext("The right extruder is being loaded. " +
+                    "When something goes wrong you can press Abort to cancel the action.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //9
                     stepName: "rightToolFilamentDone",
                     element: '#filament_loading',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">We are now done loading the right filament. If your not satisfied with the " +
-                    "amount that came out of the nozzle you can press <b>Extrude More</b>. If you are ready for " +
-                    "the next step press <b>Done</b>.</div>"
+                    "<div class=\"step-text\">" + gettext("We are now done loading the right filament. If your not satisfied with the amount of filament that came out of the nozzle you can press <b>Extrude More</b>. If you are ready for the next step press <b>Done</b>.") + "</div>"
                 },
                 {
                     //10
                     stepName: "bothToolsLoaded",
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">There is filament in both the extruders. Now we can calibrate the printer to make sure that the bed and" +
-                    " the extruders are aligned</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
-                    "class=\"introjs-button\" data-bind=\"click: function (){ goToStepButton(11) }\">Next</a></div></div>"
+                    "<div class=\"step-text\">" + gettext("There is filament detected in both the extruders. We will now calibrate the printer to make sure that the bed and" +
+                    " the extruders are aligned.") + "</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
+                    " class=\"introjs-button\" data-bind=\"click: function (){ goToStepButton(11) }\">" + gettext("Next") + "</a></div></div>"
                 },
                 {
                     //11 +
                     stepName: "goToMaintenance",
                     element: '#maintenance',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">To get to the maintenance menu, click on <i class=\"fa fa-wrench\"></i><b> Maintenance</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("The calibration wizard is located in the maintenance flyout. To go there press") +
+                    "<i class=\"fa fa-wrench\"></i><b>"+gettext("Maintenance")+"</b>.</div>",
                     position: 'bottom'
                 },
                 {
                     //12
                     stepName: "goToCalibrateBed",
                     element: '#bed_calibrate',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">To calibrate the bed, click on <b>Calibrate bed</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("First we will calibrate the height of the bed, this will prevent the nozzles from scraping against the bed during the extruder calibration. Press <b>Calibrate bed</b> to continue.") + "</div>",
                     position: 'top'
                 },
                 {
                     //13
                     stepName: "continueCalibration",
                     element: $('#bedcalibration_flyout_content').find('.ok-button')[0],
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Check if the printbed is empty, when it is click on <b>Continue calibration</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("Before pressing <b>Continue calibration</b>, check that the printbed is empty.") + "</div>",
                     position: 'top'
                 },
                 {
                     //14
                     stepName: "calibrateBed",
                     element: '#bed_calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">When you have calibrated the bed, press <b>Close</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("When the bed is level, press <b>Close</b> to continue.") + "</div>",
                     position: 'top',
                     tooltipClass: 'tooltip_hidden'
                 },
                 {
                     //15
                     stepName: "goToCalibrateExtruders",
-                    element: $('#maintenance_control').find('.button:contains(\'Calibrate extruders\')')[0],
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    element: $('#maintenance_control').find('.button')[2],
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">To align the extruders, press <b>Calibrate extruders</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("To align the extruders, press <b>Calibrate extruders</b>. This will start the extruder calibration wizard.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //16
                     stepName: "startLargeCalibration",
                     element: '#start-large-extruder-calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">To the extruder calibration, press <b>Start calibration</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("To start the first calibration print, press <b>Start calibration</b>.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //17
                     stepName: "printingLargeCalibration",
                     element: '#printing-extruder-calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Printing large calibration.</div>",
+                    "<div class=\"step-text\">" + gettext("The printer is now printing the large calibration print. " +
+                    "This will allow use the calibrate the x axis with a precision of 1mm") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //18
                     stepName: "largeCalibrationDone",
                     element: '#large-calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Select the best aligned line, press Next</div>",
+                    "<div class=\"step-text\">" + gettext("Select the best aligned horizontal line on the bed. When selected press <b>Next</b>.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //19
                     stepName: "startSmallCalibration",
                     element: '#start-small-extruder-calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Start small calibration</div>",
+                    "<div class=\"step-text\">" + gettext("Now we will start the small calibration") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //20
                     stepName: "printingSmallCalibration",
                     element: '#printing-extruder-calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Printing small calibration</div>",
+                    "<div class=\"step-text\">" + gettext("The printer is now printing the small calibration print. " +
+                    "This will allow use the calibrate the x and y axes with a precision of 0.1mm.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //21
                     stepName: "selectXSmall",
                     element: '#x-small-calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Select the best aligned line x, press Next</div>",
+                    "<div class=\"step-text\">" + gettext("Select the best aligned horizontal line on the bed. When selected press <b>Next</b>.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //22
                     stepName: "selectYSmall",
                     element: '#y-small-calibration',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Select the best aligned line y, press Next</div>",
+                    "<div class=\"step-text\">" + gettext("Select the best aligned vertical line on the bed. " +
+                    "When selected press <b>Next</b>.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //23
                     stepName: "selectPrintJob",
                     element: $('.print_status').find('.button-area')[0],
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Good Job, The printer is now calibrated and ready to print. Now we will select " +
-                    "the demo print job (the GCODE file) for the printer. To select the print job, " +
-                    "click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.</div>"
+                    "<div class=\"step-text\">" + gettext("Good Job, The printer is now calibrated and ready to print. " +
+                        "Now we will select the demo print job (the GCODE file) for the printer. To select the print job, " +
+                        "click on <i class=\"fa fa-file\"></i> <b>Select print job</b>.") + "</div>"
                 },
                 {
                     //24
                     stepName: "browseLocal",
-                    element: $('.browse_modes').find('.button-area:contains(\'Printer\')')[0],
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    element: $('.browse_modes').find('.load-button')[0],
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Now we can select a GCODE file that's saved on the printer. " +
-                    "There is a sample print you can try out.</div>"
+                    "<div class=\"step-text\">" + gettext("Now we can select a GCODE file that's saved on the printer. " +
+                    "There is a sample print you can try out.") + "</div>"
                 },
                 {
                     //25
                     stepName: "selectFile",
                     element: '#print_files',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Select the file and press on the <i class=\"fa fa-play\">" +
-                    "</i> button next to it</div>"
+                    "<div class=\"step-text\">" + gettext("Select the file and press on the <i class=\"fa fa-play\">" +
+                    "</i> button next to it") + "</div>"
                 },
                 {
                     //26
                     stepName: "selectPrintMode",
                     element: '#mode_select',
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Select one of the print modes. When you're ready, press <b>Start Print</b> or if you don't want to print" +
-                    " anything press <b>Cancel</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("Select one of the print modes. When you're ready, press <b>Start print</b> or if you don't want to print" +
+                    " anything press <b>Cancel</b>.") + "</div>",
                     position: 'bottom'
                 },
                 {
                     //27
                     stepName: "tutorialDone",
-                    intro: "<div class=\"step-header\">Your First Print<a class=\"exit-button\" data-bind=\"click: " +
+                    intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">Good Job!<br>The printer is now printing the first print. " +
-                    "Watch how the object magically appears before you.<br>" +
+                    "<div class=\"step-text\">" + gettext("Good Job!<br>The printer is now printing the first print. " +
+                    "Watch how the object magically appears before you.<br>") +
                     "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
-                    "data-bind=\"click: function(){ doneButton() }\">Done</a></div></div>"
+                    "data-bind=\"click: function(){ doneButton() }\">" + gettext("Done") + "</a></div></div>"
                 }
             ];
 
@@ -296,10 +295,14 @@ $(function ()  {
         });
 
         self.introInstance.onafterchange(function () {
-            var element = document.getElementById('introjs-container');
-            setTimeout(function () {
-                ko.applyBindings(self, element);
-            }, 750);
+            var step = self.currentStep();
+            if(self.lastStep != step) {
+                var element = document.getElementById('introjs-container');
+                setTimeout(function () {
+                    ko.applyBindings(self, element);
+                }, 750);
+                self.lastStep = step;
+            }
             switch (self.currentStep()){
                 case 17: setTimeout(function () {self.introInstance.refresh()}, 500);
                     break;
@@ -322,7 +325,7 @@ $(function ()  {
                         exitOnOverLayClick: false,
                         showBullets: false,
                         showButtons: false,
-                        keyboardNavigation: false
+                        keyboardNavigation: true
                     });
                     self.introInstance.start();
                     break;
@@ -340,13 +343,13 @@ $(function ()  {
                 self.isFirstStep = false;
             }
             if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName() != 'None' && self.toolInfo.getToolByKey('tool1').filament.materialProfileName() != 'None'){
-                self.introInstance.goToStep(10);
+                self.introInstance.goToStep(self.getStepNumberByName("bothToolsLoaded"));
             }
             else if (self.toolInfo.getToolByKey('tool1').filament.materialProfileName() != 'None' && self.toolInfo.getToolByKey('tool0').filament.materialProfileName() == 'None'){
-                self.introInstance.goToStep(6);
+                self.introInstance.goToStep(self.getStepNumberByName("rightToolNoFilament"));
             }
             else {
-                self.introInstance.goToStep(2);
+                self.introInstance.goToStep(self.getStepNumberByName("leftToolNoFilament"));
             }
         };
 
@@ -415,8 +418,19 @@ $(function ()  {
         };
 
         self.onSyncOrMirrorWarningClose = function () {
-            self.introInstance.start();
-            self.introInstance.goToStep(26);
+            if(self.isTutorialStarted) {
+                self.introInstance.start();
+                var checkWarningFlyoutClosed = setInterval(function () {
+                        if (!$('.warning_flyout').length) {
+                            clearInterval(checkWarningFlyoutClosed);
+                            setTimeout(function () {
+                                self.introInstance.refresh();
+                            }, 200);
+                            self.introInstance.goToStep(self.getStepNumberByName("selectPrintMode"));
+                        }
+                    }
+                    , 100);
+            }
         };
     }
     // This is how our plugin registers itself with the application, by adding some configuration

@@ -970,9 +970,10 @@ select {
   background-color: #f2f2f2;
   display: flex;
   min-width: 0px;
-  font-size: 0.89em;
+  font-size: 0.75em;
   flex-wrap: nowrap;
-  word-wrap: normal; }
+  word-wrap: normal;
+  margin-left: 1em; }
 
 .tutorial-info.hide {
   display: none; }

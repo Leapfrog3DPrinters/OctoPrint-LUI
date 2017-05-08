@@ -21,6 +21,7 @@
 
 .introjs-tooltip {
   padding-top: 3px;
+    width: 12em;
 }
 
 .tooltip_hidden {
@@ -34,6 +35,7 @@
 #nextButton {
   color: #ffffff;
   background: #424a54 none;
+  width: inherit;
 }
 
 #doneButton {
@@ -70,7 +72,7 @@
   border-radius: 0;
   /* IE hacks */
   margin: 5px 5px 1px;
-  width: 30% !important;
+  width: 30%;
 }
 
 .introjs-button:hover {
@@ -136,7 +138,7 @@
 }
 
 .exit-button {
-  margin-left: 35%;
+  float: right;
 }
 
 .exit-button i {
