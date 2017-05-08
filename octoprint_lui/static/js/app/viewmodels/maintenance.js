@@ -95,7 +95,7 @@ $(function () {
                     setTimeout(function () { self.introView.introInstance.refresh() }, 200);
                 });
 
-                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("continueCalibration"));
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("continueBedCalibration"));
             }
         };
 

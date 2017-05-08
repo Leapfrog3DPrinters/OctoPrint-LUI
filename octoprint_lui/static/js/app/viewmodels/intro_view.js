@@ -142,7 +142,7 @@ $(function ()  {
                 },
                 {
                     //13
-                    stepName: "continueCalibration",
+                    stepName: "continueBedCalibration",
                     element: $('#bedcalibration_flyout_content').find('.ok-button')[0],
                     intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
