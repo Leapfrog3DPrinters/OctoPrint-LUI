@@ -385,7 +385,7 @@ $(function ()  {
 
             switch (true) {
                 //Extruder Calibration Exit
-                case (step > 16 && step < 23):
+                case (step > 15 && step < 23):
                     callViewModels(self.allViewModels, 'onExtruderCalibrationIntroExit');
                     self.flyout.closeFlyout();
                     break;
