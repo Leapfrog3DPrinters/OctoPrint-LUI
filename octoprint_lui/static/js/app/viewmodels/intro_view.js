@@ -19,8 +19,8 @@ $(function ()  {
                     stepName: "helloStep",
                     intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\"><b>" + gettext("Welcome to your new Bolt.") + "</b><br>" +
-                    gettext("This tutorial will guide you through the steps you have to take to start printing your creations.") + "<br>" +
+                    "<div class=\"step-text\"><b>" + gettext("Welcome to your new Bolt.</b><br>This tutorial will guide you through " +
+                        "the steps you have to take to start printing your creations.<br>") +
                     "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                     "class=\"introjs-button next-button\" data-bind=\"click: function (){ beginButton() }\">" + gettext("Continue") + "</a>" +
                     "<a id=\"cancelButton\" role=\"button\" class=\"introjs-button\"" +
@@ -33,8 +33,8 @@ $(function ()  {
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                     "<div class=\"step-text\">" + gettext("There is no filament detected in the left extruder. We will have to " +
-                    "load some filament in this extruder to be able to print. Click ") + "<i class=\"fa fa-refresh\"></i> <b>" + gettext("Swap left") + "</b> " +
-                    gettext("to load the filament in the left extruder.") + "</div>",
+                    "load some filament in this extruder to be able to print. Click <i class=\"fa fa-refresh\">" +
+                        "</i><b>Swap left</b> to load the filament in the left extruder.") + "</div>",
                     position: 'top'
                 },
                 {
@@ -43,7 +43,8 @@ $(function ()  {
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("Choose what kind of material you are loading and give the amount that you are loading. This way the printer knows what kind of filament you want to load.") + "</div>",
+                    "<div class=\"step-text\">" + gettext("Choose what kind of material you are loading and give the" +
+                        " amount that you are loading. This way the printer knows what kind of filament you want to load.") + "</div>",
                     position: 'bottom',
                     tooltipClass: "tooltip_hidden"
                 },
@@ -53,7 +54,8 @@ $(function ()  {
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("The left extruder is now being loaded. When something goes wrong you can press Abort to cancel the action.") + "</div>",
+                    "<div class=\"step-text\">" + gettext("The left extruder is now being loaded. When something goes" +
+                        " wrong you can press Abort to cancel the action.") + "</div>",
                     position: 'bottom'
                 },
                 {
@@ -62,9 +64,9 @@ $(function ()  {
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("We are now done loading the left filament. If your not satisfied with the amount of filament that came out of the nozzle you can press ")
-                    + "<b>" + gettext("Extrude more filament") + "</b>" + gettext("to extrude more filament." +
-                    " If you are ready for the next step press") + "<b>" + gettext("Done") + "</b>.</div>"
+                    "<div class=\"step-text\">" + gettext("We are now done loading the left filament. If your not satisfied" +
+                        " with the amount of filament that came out of the nozzle you can press <b> Extrude more filament </b> " +
+                        "to extrude more filament. If you are ready for the next step press <b>Done</b>.") + "</div>"
                 },
                 {
                     //6
@@ -72,8 +74,9 @@ $(function ()  {
                     element: '#tool0',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("There is no filament detected in the right extruder. We will have to load some filament in this extruder to be able to print. Click") +
-                    "<i class=\"fa fa-refresh\"></i> <b>" + gettext("Swap right") + "</b>" + gettext("to load the filament in the right extruder.") + "</div>",
+                    "<div class=\"step-text\">" + gettext("There is no filament detected in the right extruder. We will have to " +
+                        "load some filament in this extruder to be able to print. " +
+                        "Click <i class=\"fa fa-refresh\"></i><b>Swap right </b> to load the filament in the right extruder.") + "</div>",
                     position: 'top'
                 },
                 {
@@ -82,7 +85,8 @@ $(function ()  {
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("Choose what kind of material you are loading and give the amount that you are loading. This way the printer knows what kind of filament you want to load.") + "</div>",
+                    "<div class=\"step-text\">" + gettext("Choose what kind of material you are loading and give the amount " +
+                        "that you are loading. This way the printer knows what kind of filament you want to load.") + "</div>",
                     position: 'bottom',
                     tooltipClass: "tooltip_hidden"
                 },
@@ -102,15 +106,18 @@ $(function ()  {
                     element: '#filament_loading',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("We are now done loading the right filament. If your not satisfied with the amount of filament that came out of the nozzle you can press <b>Extrude More</b>. If you are ready for the next step press <b>Done</b>.") + "</div>"
+                    "<div class=\"step-text\">" + gettext("We are now done loading the right filament. If your not " +
+                        "satisfied with the amount of filament that came out of the nozzle you can press <b>Extrude More</b>. " +
+                        "If you are ready for the next step press <b>Done</b>.") + "</div>"
                 },
                 {
                     //10
                     stepName: "bothToolsLoaded",
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("There is filament detected in both the extruders. We will now calibrate the printer to make sure that the bed and" +
-                    " the extruders are aligned.") + "</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
+                    "<div class=\"step-text\">" + gettext("There is filament detected in both the extruders. We will now" +
+                        " calibrate the printer to make sure that the bed and the extruders are aligned.") +
+                    "</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                     " class=\"introjs-button\" data-bind=\"click: function (){ goToStepButton(11) }\">" + gettext("Next") + "</a></div></div>"
                 },
                 {
@@ -119,8 +126,8 @@ $(function ()  {
                     element: '#maintenance',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("The calibration wizard is located in the maintenance flyout. To go there press") +
-                    "<i class=\"fa fa-wrench\"></i><b>"+gettext("Maintenance")+"</b>.</div>",
+                    "<div class=\"step-text\">" + gettext("The calibration wizard is located in the maintenance flyout. " +
+                        "To go there press <i class=\"fa fa-wrench\"></i><b>Maintenance</b>.") + "</div>",
                     position: 'bottom'
                 },
                 {
@@ -129,7 +136,8 @@ $(function ()  {
                     element: '#bed_calibrate',
                     intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("First we will calibrate the height of the bed, this will prevent the nozzles from scraping against the bed during the extruder calibration. Press <b>Calibrate bed</b> to continue.") + "</div>",
+                    "<div class=\"step-text\">" + gettext("First we will calibrate the height of the bed, this will " +
+                        "prevent the nozzles from scraping against the bed during the extruder calibration. Press <b>Calibrate bed</b> to continue.") + "</div>",
                     position: 'top'
                 },
                 {
@@ -157,7 +165,8 @@ $(function ()  {
                     element: $('#maintenance_control').find('.button')[2],
                     intro: "<div class=\"step-header\">" + gettext("Your first print") + "<a class=\"exit-button\" data-bind=\"click: " +
                     "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                    "<div class=\"step-text\">" + gettext("To align the extruders, press <b>Calibrate extruders</b>. This will start the extruder calibration wizard.") + "</div>",
+                    "<div class=\"step-text\">" + gettext("To align the extruders, press <b>Calibrate extruders</b>." +
+                        " This will start the extruder calibration wizard.") + "</div>",
                     position: 'bottom'
                 },
                 {
