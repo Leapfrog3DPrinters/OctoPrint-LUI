@@ -61,6 +61,8 @@ $(function () {
         self.isHeating = ko.observable(false);
         self.isStabilizing = ko.observable(false);
 
+        self._onToolsUpdated = [];
+
         self._printerProfileUpdated = function () {
             // Initialize the tools
             var heaterOptions = {};
@@ -94,6 +96,15 @@ $(function () {
             // write back
             self.heaterOptions(heaterOptions);
             self.tools(tools);
+
+            // execute callbacks
+            _.forEach(self._onToolsUpdated, function (func) { func(); });
+        }
+
+        self.onToolsUpdated = function (callback)
+        {
+            // Add the callback to the list of callbacks to be executed after a tool update
+            self._onToolsUpdated.push(callback);
         }
 
         self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function () {

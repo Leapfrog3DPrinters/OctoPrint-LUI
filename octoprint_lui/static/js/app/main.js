@@ -408,7 +408,8 @@ $(function () {
 
     var bindViewModels = function () {
         log.info("Going to bind " + allViewModelData.length + " view models...");
-        var t0 = performance.now(); 
+        var t0 = performance.now();
+
         _.forEach(allViewModelData, function(viewModelData) {
             if (!Array.isArray(viewModelData) || viewModelData.length != 2) {
                 return;
@@ -510,9 +511,11 @@ $(function () {
             var startup = function() {
                 //~~ Starting up the app
                 callViewModels(allViewModels, "onStartup");
+                bindViewModels();
+            };
 
-                viewModelMap["settingsViewModel"].requestData()
-                .done(function () {
+            OctoPrint.browser.passiveLogin()
+                .always(function () {
                     // There appears to be an odd race condition either in JQuery's AJAX implementation or
                     // the browser's implementation of XHR, causing a second GET request from inside the
                     // completion handler of the very same request to never get its completion handler called
@@ -524,15 +527,10 @@ $(function () {
                     //
                     // Decoupling all consecutive calls from this done event handler hence is an easy way
                     // to avoid this problem. A zero timeout should do the trick nicely.
-                    window.setTimeout(bindViewModels, 0);
-               });
-            };
-
-            OctoPrint.browser.passiveLogin()
-                .always(function() {
                     window.setTimeout(startup, 0);
                 });
         });
+
 
     // Icon bar selection
     $('.icon-bar a').on('mousedown', function () {

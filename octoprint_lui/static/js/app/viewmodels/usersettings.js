@@ -88,11 +88,9 @@ $(function () {
             return !self.passwordMismatch();
         };
 
-        self.onStartup = function () {
+        self.onAllBound = function (allViewModels) {
             self.userSettingsDialog = $("#usersettings_dialog");
-        };
 
-        self.onAllBound = function(allViewModels) {
             self.userSettingsDialog.on('show', function () {
                 callViewModels(allViewModels, "onUserSettingsShown");
             });

@@ -35,6 +35,11 @@ $(function () {
         self.server_diskspace_warning_str = sizeObservable(self.server_diskspace_warning);
         self.server_diskspace_critical_str = sizeObservable(self.server_diskspace_critical);
 
+        self.plugins_lui_zoffset = ko.observable();
+        self.plugins_lui_action_door = ko.observable();
+        self.plugins_lui_action_filament = ko.observable();
+        self.plugins_lui_debug_lui = ko.observable();
+        
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 
@@ -310,7 +315,6 @@ $(function () {
                         }
                     }
                 },
-                terminalFilters: function(value) { self.terminalFilters($.extend(true, [], value)) },
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
                 },
@@ -392,6 +396,7 @@ $(function () {
 
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
+            self.requestData();
         }
 
         self.onEventSettingsUpdated = function () {

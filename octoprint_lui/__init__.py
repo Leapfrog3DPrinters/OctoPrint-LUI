@@ -64,7 +64,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_shutdown = False
 
         ##~ Model specific
-        self.supported_models = ['bolt', 'xeed', 'xcel']
+        self.supported_models = ['bolt', 'boltpro', 'xeed', 'xcel']
         self.default_model = 'bolt'
         self.model = None
         self.platform = None
@@ -159,7 +159,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Firmware
         # If a lower version is found, user is required to update
         # Don't use any signs here. Version requirements are automatically prefixed with '>='
-        self.firmware_version_requirement = { "bolt": "2.7" }
+        self.firmware_version_requirement = { "bolt": "2.7",  "boltpro": "2.8" }
         self.firmware_info_received_hooks = []
         self.fw_version_info = None
         self.auto_firmware_update_started = False
@@ -178,7 +178,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_properties["bed_width_correction"] = "BED_WIDTH_CORRECTION"
 
         ##~ Usernames that cannot be removed
-        self.reserved_usernames = ['local', 'bolt', 'xeed', 'xcel', 'lpfrg']
+        self.reserved_usernames = ['local', 'bolt', 'boltpro', 'xeed', 'xcel', 'lpfrg']
         self.local_username = 'lpfrg'
 
         ##~ USB and file browser
@@ -1034,9 +1034,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             },
             "plugins": {
                 "lui": {
-                    "actionDoor": s.getBoolean(["action_door"]),
-                    "actionFilament": s.getBoolean(["action_filament"]),
+                    # Because we rely on OctoPrint for saving the settings, it is important to keep the casing in
+                    #  the JSON response and the config yaml the same here
+                    "action_door": s.getBoolean(["action_door"]),
+                    "action_filament": s.getBoolean(["action_filament"]),
                     "zoffset": s.getFloat(["zoffset"]),
+                    "debug_lui": s.getBoolean(["debug_lui"]),
+
+                    # AutoShutdown isn't kept in the the settings file, so we can make an exception here
                     "autoShutdown": self.auto_shutdown,
                 }
             }

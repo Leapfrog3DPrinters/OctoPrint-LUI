@@ -488,15 +488,15 @@ $(function ()  {
         }
 
         self.onBeforeBinding = function () {
-            self.requestData();
+            
             self.tool("tool0");
-            self.copyMaterialProfiles();
-        }
 
-        self.onEventSettingsUpdated = function ()  {
-            self.copyMaterialProfiles();
-        }
+            self.settings.temperature_profiles.subscribe(self.copyMaterialProfiles);
 
+            self.toolInfo.onToolsUpdated(function () {
+                self.requestData();
+            });
+        }
 
         self.fromResponse = function (data) {
             if (data.filaments) {
