@@ -389,6 +389,11 @@ $(function ()  {
                     callViewModels(self.allViewModels, 'onExtruderCalibrationIntroExit');
                     self.flyout.closeFlyout();
                     break;
+                case (step == 16):
+                    self.flyout.closeFlyout();
+                    self.flyout.closeFlyout();
+                    $('#print_icon').mousedown();
+                    break;
                 //Swap Filament Exit
                 case (step > 2 && step < 6 || step > 6 && step < 10):
                     callViewModels(self.allViewModels, 'onFilamentIntroExit');
