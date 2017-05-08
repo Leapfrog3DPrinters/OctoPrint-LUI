@@ -191,7 +191,10 @@ $(function ()  {
             filter = filter || "";
             path = path || "";
             
-            return getFromApi("files/" + origin + "/" + path);
+            if (filter)
+                return getFromApi("files/" + origin + "/" + path + "?filter=" + filter);
+            else
+                return getFromApi("files/" + origin + "/" + path);
         }
 
         // initialize list helper
