@@ -5,19 +5,9 @@ $(function () {
         self.loginState = parameters[0];
         self.flyout = parameters[1];
         self.settings = parameters[2];
-        
-        self.isPrinting = ko.observable(false);
 
         self.lastCommandResponse = undefined;
         self.systemActions = ko.observableArray([]);
-
-        self.fromCurrentData = function (data) {
-            self._processStateData(data.state);
-        };
-
-        self._processStateData = function (data) {
-            self.isPrinting(data.flags.printing);
-        };
 
         self.requestData = function () {
             self.requestCommandData();
@@ -54,113 +44,65 @@ $(function () {
         self.triggerCommand = function(commandSpec) {
             var deferred = $.Deferred();
 
-            var callback = function () {
-                if (commandSpec.before) commandSpec.before();
-                OctoPrint.system.executeCommand(commandSpec.actionSource, commandSpec.action)
-                    .done(function () {
-                        $.notify({
-                            title: gettext("Success"),
-                            text: _.sprintf(gettext("The command \"%(command)s\" executed successfully"), {command: commandSpec.name})},
-                            "success"
-                        );
-                        deferred.resolve(["success", arguments]);
-                    })
-                    .fail(function(jqXHR, textStatus, errorThrown) {
-                        if (!commandSpec.hasOwnProperty("ignore") || !commandSpec.ignore) {
-                            // jqXHR.responseText
-                            $.notify({
-                                title: gettext("Error"),
-                                text: _.sprintf(gettext('The command "%(command)s" could not be executed. Please check logs.'), {command: commandSpec.name})},
-                                "error"
-                            );
-                            deferred.reject(["error", arguments]);
-                        } else {
-                            deferred.resolve(["ignored", arguments]);
-                        }
-                    })
-                    .always(function(){
-                        if (commandSpec.after) commandSpec.after();
-                    });
-            };
+            if (commandSpec.before) commandSpec.before();
 
-            // Confirmation Dialog
-            if (commandSpec.confirm) {
-                self.flyout.showConfirmationFlyout(commandSpec.confirm)
-                    .done(function(){
-                        callback();
-                    })
-                    .fail(function(){
-                        deferred.reject("cancelled", arguments);
-                    });
-            } else {
-                callback();
-            }
+            OctoPrint.system.executeCommand(commandSpec.actionSource, commandSpec.action)
+                .done(function () {
+                    $.notify({
+                        title: gettext("Success"),
+                        text: _.sprintf(gettext("The command \"%(command)s\" executed successfully"), {command: commandSpec.name})},
+                        "success"
+                    );
+                    deferred.resolve(["success", arguments]);
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    if (!commandSpec.hasOwnProperty("ignore") || !commandSpec.ignore) {
+                        // jqXHR.responseText
+                        $.notify({
+                            title: gettext("Error"),
+                            text: _.sprintf(gettext('The command "%(command)s" could not be executed. Please check logs.'), {command: commandSpec.name})},
+                            "error"
+                        );
+                        deferred.reject(["error", arguments]);
+                    } else {
+                        deferred.resolve(["ignored", arguments]);
+                    }
+                })
+                .always(function(){
+                    if (commandSpec.after) commandSpec.after();
+                });
 
             return deferred.promise();
         };
 
         self.systemReboot = function () {
-            console.log("System Reboot called")
-            var dialog = {'title': gettext('Reboot printer'), 'text': gettext('You are about to reboot the printer.'), 'question' : gettext('Do you want to continue?')};
-            var command = {'actionSource': 'core', 'action': 'reboot', 'name': 'Reboot', confirm: dialog};
+            var command = { 'actionSource': 'core', 'action': 'reboot', 'name': 'Reboot' };
             self.triggerCommand(command);
         };
 
-        self.systemShutdown = function (confirm) {
-            confirm = confirm !== false;
-
-            var command = { 'actionSource': 'core', 'action': 'shutdown', 'name': 'Shutdown' }
-
-            if (confirm)
-            {
-                if (self.isPrinting() && !self.settings.autoShutdown())
-                {
-                    self.flyout.showFlyout('shutdown_confirmation')
-                        .done(function () {
-                            // Enable auto-shutdown
-                            self.settings.autoShutdown(true);
-                            self.settings.sendAutoShutdownStatus();
-                        });
-                }
-                else
-                {
-                    var dialog = { 'title': gettext('Shutdown printer'), 'text': gettext('You are about to shutdown the printer.'), 'question': gettext('Do you want to continue?') };
-                    command.confirm = dialog;
-                    self.triggerCommand(command);
-                }
-            }
-            else
-            {
-                // Shutdown immediately
-                self.triggerCommand(command);
-            }
+        self.systemShutdown = function () {
+            var command = { 'actionSource': 'core', 'action': 'shutdown', 'name': 'Shutdown' };
+            self.triggerCommand(command);
         };
 
         self.systemServiceRestart = function () {
-            var dialog = {'title': gettext('Restart system service'), 'text': gettext('You are about to restart the background printer services.'), 'question' : gettext('Do you want to continue?')};
+            var title = "";
+            var message = "";
 
-            self.flyout.showConfirmationFlyout(dialog)
-                    .done(function ()  {
-                        var title = "";
-                        var message = "";
-                        
-                        if (IS_LOCAL) {
-                            title = gettext("Service restarting");
-                            message = gettext("The background service of the printer is restarting. This is common after a software update. Printer will be available in a couple of minutes.")
-                        } else {
-                            title = gettext("Server disconnected");
-                            message = gettext("The browser has been disconnected from the printer. Either the printer is turned off or the network connection failed. Trying to reconnect in the coming minutes.")
-                        }
+            if (IS_LOCAL) {
+                title = gettext("Service restarting");
+                message = gettext("The background service of the printer is restarting. This is common after a software update. Printer will be available in a couple of minutes.")
+            } else {
+                title = gettext("Server disconnected");
+                message = gettext("The browser has been disconnected from the printer. Either the printer is turned off or the network connection failed. Trying to reconnect in the coming minutes.")
+            }
 
-                        showOfflineFlyout(
-                            title,
-                            message
-                        );
+            showOfflineFlyout(
+                title,
+                message
+            );
 
-                        // Will never respond, because it is shutdown immediately. Assume its OK.
-                        OctoPrint.system.executeCommand('core', 'restart', { timeout: 10 });
-
-                    });
+            OctoPrint.system.executeCommand('core', 'restart', { timeout: 10 });
         };
 
         self.onUserLoggedIn = function(user) {
@@ -181,18 +123,6 @@ $(function () {
                 self.requestData();
             }
         };
-
-        self.onDataUpdaterPluginMessage = function (plugin, data) {
-            var messageType = data['type'];
-            var messageData = data['data'];
-
-            if (plugin == "lui") {
-                switch (messageType) {
-                    case "powerbutton_pressed":
-                        self.systemShutdown();
-                }
-            }
-        }
     }
 
     // view model class, parameters for constructor, container to bind to

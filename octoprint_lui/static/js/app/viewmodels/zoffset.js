@@ -31,7 +31,7 @@ $(function ()  {
         };
 
         self.saveCalibration = function () {
-            self.settings.settings.plugins.lui.zoffset(self.calibration_zOffset());
+            self.settings.plugins_lui_zoffset(self.calibration_zOffset());
             self.settings.saveData();
             self.flyout.closeFlyoutAccept();
             self.sendJogCommand('z', 1, 20.0);
@@ -58,11 +58,6 @@ $(function ()  {
             self.calibration_zOffset(0);
             self.startedCalibration(false);
         }
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
-        };
 
     }
     // This is how our plugin registers itself with the application, by adding some configuration

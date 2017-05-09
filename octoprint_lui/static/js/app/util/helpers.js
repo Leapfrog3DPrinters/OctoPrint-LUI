@@ -63,6 +63,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         var index = self.allItems.indexOf(item);
         if (index > -1) {
             self.allItems.splice(index, 1);
+            self.allSize(self.allItems.length);
             self._updateItems();
         }
     };
@@ -308,8 +309,21 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         }
     };
 
+    self.supportsLocalStorage = function()
+    {
+        // Thanks modernizr
+        var mod='lssupport'
+        try {
+            localStorage.setItem(mod, mod);
+            localStorage.removeItem(mod);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     self._initializeLocalStorage = function () {
-        if (!Modernizr.localstorage)
+        if (!self.supportsLocalStorage())
             return false;
 
         if (localStorage[self.listType + "." + "currentSorting"] !== undefined && localStorage[self.listType + "." + "currentFilters"] !== undefined && JSON.parse(localStorage[self.listType + "." + "currentFilters"]) instanceof Array)
@@ -377,20 +391,6 @@ function formatDuration(seconds) {
     return _.sprintf(gettext(/* L10N: duration format */ "%(hour)02d:%(minute)02d:%(second)02d"), {hour: h, minute: m, second: s});
 }
 
-function formatFuzzyEstimation(seconds, base) {
-    if (!seconds || seconds < 1) return "-";
-
-    var m;
-    if (base != undefined) {
-        m = moment(base);
-    } else {
-        m = moment();
-    }
-
-    m.add(seconds, "s");
-    return m.fromNow(true);
-}
-
 function formatFuzzyPrintTime(totalSeconds) {
     /**
      * Formats a print time estimate in a very fuzzy way.
@@ -410,12 +410,10 @@ function formatFuzzyPrintTime(totalSeconds) {
 
     if (!totalSeconds || totalSeconds < 1) return "-";
 
-    var d = moment.duration(totalSeconds, "seconds");
-
-    var seconds = d.seconds();
-    var minutes = d.minutes();
-    var hours = d.hours();
-    var days = d.asDays();
+    var days = (totalSeconds / 86400);
+    var hours = (totalSeconds / 3600) % 24;
+    var minutes = (totalSeconds / 60) % 60;
+    var seconds = totalSeconds % 60;
 
     var replacements = {
         days: days,
@@ -503,14 +501,10 @@ function formatFuzzyPrintTime(totalSeconds) {
     return _.sprintf(text, replacements);
 }
 
-function formatDate(unixTimestamp) {
-    if (!unixTimestamp) return "-";
-    return moment.unix(unixTimestamp).format(gettext(/* L10N: Date format */ "YYYY-MM-DD HH:mm"));
-}
-
 function formatTimeAgo(unixTimestamp) {
     if (!unixTimestamp) return "-";
-    return moment.unix(unixTimestamp).fromNow();
+    var now = new Date().getTime() / 1000;
+    return formatFuzzyPrintTime(now - unixTimestamp) + " ago";
 }
 
 function formatFilament(filament) {
@@ -779,3 +773,33 @@ ko.subscribable.fn.subscribeChanged = function (callback) {
         callback(latestValue, oldValue);
     });
 };
+
+ko.bindingHandlers.foreachprop = {
+    transformObject: function (obj) {
+        var properties = [];
+        ko.utils.objectForEach(obj, function (key, value) {
+            properties.push({ key: key, value: value });
+        });
+        return properties;
+    },
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        var properties = ko.pureComputed(function () {
+            var obj = ko.utils.unwrapObservable(valueAccessor());
+            return ko.bindingHandlers.foreachprop.transformObject(obj);
+        });
+        ko.applyBindingsToNode(element, { foreach: properties }, bindingContext);
+        return { controlsDescendantBindings: true };
+    }
+};
+
+function getFromApi(url_suffix)
+{
+    url = OctoPrint.getBlueprintUrl("lui") + url_suffix;
+    return OctoPrint.get(url);
+}
+
+function sendToApi(url_suffix, data)
+{
+    url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
+    return OctoPrint.postJson(url, data);
+}

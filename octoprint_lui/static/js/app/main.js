@@ -8,7 +8,7 @@ $(function () {
 
     //~~ Logging setup
 
-    log.setLevel(CONFIG_DEBUG ? "debug" : "info");
+    log.setLevel(DEBUG_LUI ? "debug" : "info");
 
     //~~ OctoPrint client setup
     OctoPrint.options.baseurl = BASEURL;
@@ -63,8 +63,6 @@ $(function () {
         catalog = {messages: undefined, plural_expr: undefined, locale: undefined, domain: undefined}
     }
     babel.Translations.load(catalog).install();
-
-    moment.locale(LOCALE);
 
     // Dummy translation requests for dynamic strings supplied by the backend
     var dummyTranslations = [
@@ -172,6 +170,7 @@ $(function () {
     var allViewModelData = [];
     var pass = 1;
     var optionalDependencyPass = false;
+    var t0 = performance.now();
     log.info("Starting dependency resolution...");
     while (unprocessedViewModels.length > 0) {
         log.debug("Dependency resolution, pass #" + pass);
@@ -255,7 +254,8 @@ $(function () {
         log.debug("Dependency resolution pass #" + pass + " finished, " + unprocessedViewModels.length + " view models left to process");
         pass++;
     }
-    log.info("... dependency resolution done");
+    var t1 = performance.now();
+    log.info("... dependency resolution done in " + (t1 - t0).toFixed() + " ms");
 
     //~~ Custom knockout.js bindings
 
@@ -273,7 +273,7 @@ $(function () {
         },
         update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
             setTimeout(function () {
-                if (element.nodeName == "#comment") {
+                if (element && element.nodeName == "#comment") {
                     // foreach is bound to a virtual element
                     $(element.parentElement).slimScroll({scrollBy: 0});
                 } else {
@@ -309,6 +309,58 @@ $(function () {
                 })            
             } else {
                 ko.bindingHandlers.click.init(element, valueAccessor, allBindings, viewModel, bindingContext);
+            }
+        }
+    }
+
+    ko.bindingHandlers.noUiSlider = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var params = valueAccessor();
+
+            element.isUpdatingBinding = false;
+            
+            var initValue = ko.unwrap(params.value());
+
+            noUiSlider.create(element, {
+                start: [ initValue ],
+                step: 1,
+                behaviour: 'tap',
+                connect: 'lower',
+                range: {
+                    'min': 0,
+                    'max': FILAMENT_ROLL_LENGTH
+                },
+                format: {
+                    to: function (value) {
+                        return value.toFixed(0);
+                    },
+                    from: function (value) {
+                        return value;
+                    }
+                }
+            });
+
+            element.noUiSlider.on('slide', function (values, handle) {
+
+                window.setTimeout(
+                    function () {
+                        element.isUpdatingBinding = true;
+                        var value = values[handle];
+                        params.value(value);
+                        element.isUpdatingBinding = false;
+                    }, 0);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            if (element.isUpdatingBinding)
+                return;
+
+            var slider = element.noUiSlider;
+
+            if (slider) {
+                var params = ko.unwrap(valueAccessor());
+                var newValue = ko.unwrap(params.value());
+                slider.set(newValue);
             }
         }
     }
@@ -356,6 +408,8 @@ $(function () {
 
     var bindViewModels = function () {
         log.info("Going to bind " + allViewModelData.length + " view models...");
+        var t0 = performance.now();
+
         _.forEach(allViewModelData, function(viewModelData) {
             if (!Array.isArray(viewModelData) || viewModelData.length != 2) {
                 return;
@@ -429,7 +483,8 @@ $(function () {
         });
 
         callViewModels(allViewModels, "onAllBound", [allViewModels]);
-        log.info("... binding done");
+        var t1 = performance.now();
+        log.info("... binding done in " + (t1 - t0).toFixed() + " ms.");
 
         callViewModels(allViewModels, "onStartupComplete");
 
@@ -444,18 +499,23 @@ $(function () {
         throw new Error("settingsViewModel is missing, can't run UI");
     }
 
+    var t0 = performance.now();
     log.info("Initial application setup done, connecting to server...");
     var dataUpdater = new DataUpdater(allViewModels);
     dataUpdater.connect()
         .done(function () {
+            var t1 = performance.now();
+            log.info("Connected in " + (t1 - t0).toFixed() + " ms");
             log.info("Finalizing application startup");
 
             var startup = function() {
                 //~~ Starting up the app
                 callViewModels(allViewModels, "onStartup");
+                bindViewModels();
+            };
 
-                viewModelMap["settingsViewModel"].requestData()
-                .done(function () {
+            OctoPrint.browser.passiveLogin()
+                .always(function () {
                     // There appears to be an odd race condition either in JQuery's AJAX implementation or
                     // the browser's implementation of XHR, causing a second GET request from inside the
                     // completion handler of the very same request to never get its completion handler called
@@ -467,15 +527,10 @@ $(function () {
                     //
                     // Decoupling all consecutive calls from this done event handler hence is an easy way
                     // to avoid this problem. A zero timeout should do the trick nicely.
-                    window.setTimeout(bindViewModels, 0);
-               });
-            };
-
-            OctoPrint.browser.passiveLogin()
-                .always(function() {
                     window.setTimeout(startup, 0);
                 });
         });
+
 
     // Icon bar selection
     $('.icon-bar a').on('mousedown', function () {
@@ -518,7 +573,45 @@ $(function () {
     });
 
     // notifyjs init
-
+    $.notify.addStyle("lui", {
+        html:
+            "<div>" +
+                "<div class='image' data-notify-html='image'/>" +
+                "<div class='text-wrapper'>" +
+                    "<div class='notify-title' data-notify-html='title'/>" +
+                    "<div class='notify-text' data-notify-html='text'/>" +
+                "</div>" +
+            "</div>",
+        classes: {
+            error: {
+                "color": "#fafafa !important",
+                "background-color": "#CC2B14",
+                "border": "1px solid #FF0026"
+            },
+            success: {
+                "background-color": "#A9CC3C",
+                "border": "1px solid #4DB149"
+            },
+            info: {
+                "color": "#fafafa !important",
+                "background-color": "#4590cd",
+                "border": "1px solid #1E90FF"
+            },
+            warning: {
+                "background-color": "#EDDB53",
+                "border": "1px solid #EEEE45"
+            },
+            black: {
+                "color": "#fafafa !important",
+                "background-color": "#333",
+                "border": "1px solid #000"
+            },
+            white: {
+                "background-color": "#f1f1f1",
+                "border": "1px solid #ddd"
+            }
+        }
+    });
     $.notify.defaults( 
         {
             arrowShow: false,
@@ -616,49 +709,9 @@ $(function () {
 
         $("input[type='number']").keyboard(keyboardLayouts.number);
 
-        $("#input-format").keyboard({
-            layout: 'custom',
-            customLayout: {
-                normal: [
-                    '7 8 9 {clear}',
-                    '4 5 6 {cancel}',
-                    '1 2 3 {accept}',
-                    '. 0 {sp:3.1}',
-                ]
-            },
-            usePreview: true,
-            display: {
-                'accept': 'Accept:Accept',
-                'clear': 'Clear:Clear'
-            },
-            accepted: function (event, keyboard, el) {
-                slider.noUiSlider.set(keyboard.$preview.val());
-            }
-        });
-
-        $("#fd-input-format").keyboard({
-            layout: 'custom',
-            customLayout: {
-                normal: [
-                    '7 8 9 {clear}',
-                    '4 5 6 {cancel}',
-                    '1 2 3 {accept}',
-                    '. 0 {sp:3.1}',
-                ]
-            },
-            usePreview: true,
-            display: {
-                'accept': 'Accept:Accept',
-                'clear': 'Clear:Clear'
-            },
-            accepted: function (event, keyboard, el) {
-                fdSlider.noUiSlider.set(keyboard.$preview.val());
-            }
-        });
-
         ko.bindingHandlers.keyboardForeach = {
             init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-                return ko.bindingHandlers.foreach.init(element, valueAccessor(), allBindings, viewModel, bindingContext);
+                return ko.bindingHandlers.foreach.init(element, valueAccessor, allBindings, viewModel, bindingContext);
             },
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
                 setTimeout(function ()  {
@@ -666,83 +719,10 @@ $(function () {
                     $(element.parentElement).find("input[type='text']").keyboard(keyboardLayouts.qwerty);
 
                 }, 10);
-                return ko.bindingHandlers.foreach.update(element, valueAccessor(), allBindings, viewModel, bindingContext);
+                return ko.bindingHandlers.foreach.update(element, valueAccessor, allBindings, viewModel, bindingContext);
             }
         };
         ko.virtualElements.allowedBindings.keyboardForeach = true;
+
     }
-
-    var slider = document.getElementById('slider');
-    var fdSlider = document.getElementById('fd_slider');
-
-    noUiSlider.create(slider, {
-        start: FILAMENT_ROLL_LENGTH,
-        step: 1,
-        behaviour: 'tap',
-        connect: 'lower',
-        range: {
-            'min': 0,
-            'max': FILAMENT_ROLL_LENGTH
-        },
-        format: {
-          to: function ( value ) {
-            return value.toFixed(0);
-          },
-          from: function ( value ) {
-            return value;
-          }
-        }
-    });
-
-    noUiSlider.create(fdSlider, {
-        start: FILAMENT_ROLL_LENGTH,
-        step: 1,
-        behaviour: 'tap',
-        connect: 'lower',
-        range: {
-            'min': 0,
-            'max': FILAMENT_ROLL_LENGTH
-        },
-        format: {
-            to: function (value) {
-                return value.toFixed(0);
-            },
-            from: function (value) {
-                return value;
-            }
-        }
-    });
-
-    var inputFormat = document.getElementById('input-format');
-    var filament_percent = document.getElementById('filament_percent');
-    var newFilamentAmount = document.getElementById('new_filament_amount');
-    var newFilamentPercent = document.getElementById('new_filament_percent');
-
-
-    var fdInputFormat = document.getElementById('fd-input-format');
-    var fd_filament_percent = document.getElementById('fd_filament_percent');
-
-    slider.noUiSlider.on('update', function( values, handle ) {
-        inputFormat.value = values[handle];
-        new_filament_amount.innerText = values[handle];
-        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
-        filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
-        new_filament_percent.innerText = percent + "%";
-    });
-
-    fdSlider.noUiSlider.on('update', function (values, handle) {
-        fdInputFormat.value = values[handle];
-        percent = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0);
-        fd_filament_percent.innerHTML = ((values[handle] / FILAMENT_ROLL_LENGTH) * 100).toFixed(0) + "%";
-    });
-
-    inputFormat.addEventListener('change', function(){
-        slider.noUiSlider.set(this.value);
-    });
-
-    fdInputFormat.addEventListener('change', function ()  {
-        fdSlider.noUiSlider.set(this.value);
-    });
-
-
 });

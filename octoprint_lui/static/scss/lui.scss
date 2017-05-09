@@ -164,6 +164,15 @@ a {
     padding-left: 1rem;
 }
 
+button
+{
+    border: 0px;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: inherit;
+}
+
+/* TODO: Replace below with leaner html5 <buttons> */
 
 .button-area {
   display: flex;
@@ -1207,7 +1216,7 @@ select {
 }
 
 .file_search {
-  flex-basis: 60%;
+  flex: 1 1;
   padding-left: 0.5em;
 }
 
@@ -1230,11 +1239,20 @@ select {
     }
 }
 
-.file_sort{
-  flex-basis: 5%;
-  margin-left:auto;
+.file_sort {
+  text-align: center;
   & a {
     color: $main-color;
+    padding: 0 8px;
+  }
+}
+
+.file_refresh {
+  text-align: center;
+  & a {
+    color: $main-color;
+    padding: 0 8px;
+    
   }
 }
 
@@ -1288,10 +1306,6 @@ select {
   min-height: 50px;
   border-bottom: 1px solid $third-color;
   flex-direction: column;
-  flex: 0 1 auto;
-}
-
-.file_footer {
   flex: 0 1 auto;
 }
 
@@ -1434,6 +1448,12 @@ select {
     #terminal-output {
       min-height: 150px;
       margin-bottom: 5px;
+      width: 100%;
+    }
+
+    #terminal-command
+        {
+        width: 100%;
     }
 
     margin-bottom: 30px;
@@ -1545,7 +1565,7 @@ pre code {
 
 /* Filament swap */
 
-.swap_process_step, .fd_swap_process_step {
+.swap_process_step {
   display: none;
   width: 100%;
   &.active {
@@ -1553,14 +1573,14 @@ pre code {
   }
 }
 
-#swap-info, #fd-swap-info {
+#swap-info {
   display:none;
   &.active {
     display:flex;
   }
 }
 
-#swap-load-unload, #fd-swap-load-unload {
+#swap-load-unload {
   display: none;
   &.active {
     display:flex;

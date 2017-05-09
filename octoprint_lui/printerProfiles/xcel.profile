@@ -49,6 +49,7 @@ filamentQuickLoad: false
 dualX: false
 materialMinTemp: 150
 materialMaxTemp: 275
+lowTempMax: 275
 filament:
   loadInitial:
     amount: 18
@@ -58,6 +59,9 @@ filament:
     amount: 2.5
     speed: 300
   loadAmountStop: 2800
+  contLoad:
+    amount: 2.5
+    speed: 300
   contLoadAmountStop: 400
   unloadInitial:
     amount: -2.5

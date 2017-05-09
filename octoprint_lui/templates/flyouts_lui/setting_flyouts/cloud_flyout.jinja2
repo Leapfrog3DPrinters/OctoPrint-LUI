@@ -1,0 +1,35 @@
+<div class="Table">
+	<div class="Table-row Table-header">
+		<div class="Table-item">
+			{{ _('Cloud settings') }}
+		</div>
+	</div>
+  <div class="Table-row">
+    <div class="Table-item">
+      {{ _('Use the buttons below to connect or disconnect cloud services. Make sure your printer is connected to the internet before you continue.') }}
+    </div>
+  </div>
+  <!-- ko foreach: serviceInfo -->
+	<div class="Table-row" data-bind="css: { disabled: !$root.isOnline() }">
+    <!-- We can't use Table-item here due to chromium bug -->
+    <div style="flex: 1 1; margin: auto 0">
+      <img data-bind="attr: { src: $root.getCloudServiceIcon(name()) }" style="width: 23px; margin-right: 10px;" />
+      <span data-bind="text: $root.getCloudServiceName(name())"></span>
+    </div>
+    <div class="Table-item">
+      <ul class="button-area">
+        <li class="button ok-button" data-bind="click: function() { $root.loginService(name()) }, visible: !loggedIn()">
+          <a href="">
+            <span>{{ _('Connect') }}</span>
+          </a>
+        </li>
+        <li class="button failed-button" data-bind="click: function() { $root.logoutService(name()) }, visible: loggedIn()">
+          <a href="">
+            <span>{{ _('Disconnect') }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+	</div>
+  <!-- /ko-->
+</div>
