@@ -30,10 +30,10 @@ volume:
   formFactor: rectangular
   height: 205.0
   origin: lowerleft
-  width: 330.0
+  width: 339.0
 boundaries:
   minX: -37.0
-  maxX: 330.0
+  maxX: 339.0
   minY: -33.0
   maxY: 322.0
   minZ: -1.0
