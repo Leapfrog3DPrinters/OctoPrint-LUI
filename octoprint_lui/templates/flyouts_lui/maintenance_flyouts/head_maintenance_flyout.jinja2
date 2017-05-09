@@ -111,7 +111,7 @@
                   </a>
                 </li>
                 <li class="button failed-button" data-bind="visible: filament.isExtruding()">
-                  <a href="#" data-bind="touchClick: function() { $root.filament.finishExtruding(key()); }, css: { disabled: status() != 'READY'  } ">
+                  <a href="#" data-bind="touchClick: function() { $root.filament.finishExtruding(key()); }">
                     <span>
                       <i class="fa fa-close"></i>{{ _('Stop') }}
                     </span>
