@@ -20,7 +20,7 @@ from collections import OrderedDict
 from pipes import quote
 from functools import partial
 from copy import deepcopy
-from flask import jsonify, make_response, render_template, request, redirect
+from flask import jsonify, make_response, render_template, request, redirect, send_from_directory
 
 from distutils.version import StrictVersion
 from distutils.dir_util import copy_tree
@@ -233,14 +233,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_M999_on_reconnect = False
 
         ##~ Cloud
+        self.cloud_login_url = "http://cloud.lpfrg.com/login/"
+        self.cloud_enabled = False
         self.cloud_connect = None
         self.cloud_storage = None
-
+        
         self.api_exceptions = [ "plugin.lui.webcamstream", 
-                                "plugin.lui.connect_to_cloud_service", 
+                                "plugin.lui.externaljs",
                                 "plugin.lui.connect_to_cloud_service_finished",
                                 "plugin.lui.logout_cloud_service",
-                                "plugin.lui.logout_cloud_service_finished"
                                ]
 
     def initialize(self):
@@ -308,9 +309,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._init_cloud()
 
     def _init_cloud(self):
-        self.cloud_connect = CloudConnect(self._settings, self.get_plugin_data_folder())
-        self.cloud_storage = CloudStorage(self.cloud_connect)
-        self._file_manager.add_storage("cloud", self.cloud_storage)
+        self.cloud_enabled = self._settings.get_boolean(["cloud_enabled"])
+
+        if self.cloud_enabled:
+            self.cloud_connect = CloudConnect(self.get_plugin_data_folder())
+            available_services = self.cloud_connect.get_available_services()
+
+            if len(available_services) > 0:
+                self.cloud_storage = CloudStorage(self.cloud_connect)
+                self._file_manager.add_storage("cloud", self.cloud_storage)
+            else:
+                # Disable cloud if there are no available services
+                self.cloud_enabled = False
 
     def _init_usb(self):
         # Add the LocalFileStorage to allow to browse the drive's files and folders
@@ -827,26 +837,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         } 
         """
         info_obj = []
-        for service in cloud.AVAILABLE_SERVICES:
+
+
+        for service in self.cloud_connect.get_available_services():
+            redirect_uri = '{base_url}/plugin/lui/cloud/{service}/login'.format(base_url=flask.request.url_root, service=service)
+            login_url = '{cloud_login_url}?request_from=lui&service={service}&redirect_uri={redirect_uri}'.format(cloud_login_url=self.cloud_login_url, service=service, redirect_uri=redirect_uri)
+
             info_obj.append({ 
                 "name": service,
                 "friendlyName": service, #TODO: Use babel to get friendlyname
-                "loggedIn": self.cloud_connect.is_logged_in(service)
+                "loggedIn": self.cloud_connect.is_logged_in(service),
+                "loginUrl": login_url
                 });
-        return make_response(jsonify(services=info_obj))
 
+        return make_response(jsonify(services=info_obj))          
+    
     @BlueprintPlugin.route("/cloud/<string:service>/login", methods=["GET"])
-    def connect_to_cloud_service(self, service):
-        """
-        Provides the redirect URL to authenticate a cloud service
-        """
-        auth_url = self.cloud_connect.get_auth_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/login/finished'.format(service))
-        return make_response(jsonify({'auth_url' : auth_url }))
-         
-    @BlueprintPlugin.route("/cloud/<string:service>/login/finished", methods=["GET"])
     def connect_to_cloud_service_finished(self, service):
         """
-        Redirected to by the cloud service after authentication
+        Redirected to by the cloud service after authentication. Returns a HTML response that closes the current window
         """
         auth_result = self.cloud_connect.handle_auth_response(service, request)
 
@@ -855,21 +864,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
 
-    @BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["GET"])
+    @BlueprintPlugin.route("/cloud/<string:service>/login", methods=["POST"])
+    def authorize_cloud_service(self, service):
+        """
+        Manually authorizes a cloud service by providing an authorization code  (that's not an access code!)
+        """
+
+        auth_code = request.json.get("authCode","")
+
+        auth_result = self.cloud_connect.handle_manual_auth_response(service, auth_code)
+
+        if not auth_result:
+            self._send_client_message(ClientMessages.CLOUD_LOGIN_FAILED, { "service": service })
+            return make_response(jsonify(), 400)
+        else:
+            return make_response(jsonify(), 200)
+        
+
+    @BlueprintPlugin.route("/cloud/<string:service>/logout", methods=["POST"])
     def logout_cloud_service(self, service):
         """
-        Provides the redirect URL to logout from a cloud service
+        Revokes the client credentials
         """
-        logout_url = self.cloud_connect.get_logout_url(service, 'http://localhost:5000/plugin/lui/cloud/{0}/logout/finished'.format(service))
-        return make_response(jsonify({'logout_url' : logout_url }))
-
-    @BlueprintPlugin.route("/cloud/<string:service>/logout/finished", methods=["GET"])
-    def logout_cloud_service_finished(self, service):
-        """
-        Redirected to by the cloud service after logging out
-        """
-        self.cloud_connect.handle_logout_response(service, request)
-        return make_response("<hmtl><head></head><body><script type=\"text/javascript\">window.close()</script></body></html>")
+        self.cloud_connect.logout(service)
+        return make_response(jsonify(), 200)
 
 	## Software API
 
@@ -2100,7 +2118,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "changelog_version": "",
             "had_first_run": "",
             "force_first_run": False,
-            "debug_bundling" : False
+            "debug_bundling" : False,
+            "cloud": {
+                "enabled" : False
+                }
         }
 
     def find_assets(self, rel_path, file_ext):
@@ -2239,7 +2260,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "debug_lui": self.debug,
             "model": self.model,
             "printer_profile": self.current_printer_profile,
-            "reserved_usernames": self.reserved_usernames
+            "reserved_usernames": self.reserved_usernames,
+            "cloud_enabled": self.cloud_enabled
         }
 
         args.update(render_kwargs)
