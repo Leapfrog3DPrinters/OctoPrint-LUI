@@ -61,6 +61,9 @@ $(function () {
         self.afterHeadMaintenance = function () {
             sendToApi("maintenance/head/finish");
             self.isHeadMaintenanceFlyoutOpen = false;
+
+            // Restore any filaments that couldn't be loaded (eg when there was a HT hot end required)
+            self.filament.requestData();
         };
 
         self.afterHeadSwap = function () {
@@ -146,13 +149,13 @@ $(function () {
 
         self.onAfterBinding = function()
         {
-            //TODO: Don't do this once onAfterBinding, but subscribe to changes in the tools() observable
-            var tools = self.toolInfo.tools();
-            for (i = 0; i < tools.length; i++)
-            {
-                tools[i].filament.amountMeter.subscribe(self.onFilamentChanged.bind(tools[i]));
-                tools[i].filament.materialProfileName.subscribe(self.onFilamentChanged.bind(tools[i]));
-            }
+            self.toolInfo.onToolsUpdated(function () {
+                var tools = self.toolInfo.tools();
+                for (i = 0; i < tools.length; i++) {
+                    tools[i].filament.amountMeter.subscribe(self.onFilamentChanged.bind(tools[i]));
+                    tools[i].filament.materialProfileName.subscribe(self.onFilamentChanged.bind(tools[i]));
+                }
+            });
         }
 
         // Handle plugin messages

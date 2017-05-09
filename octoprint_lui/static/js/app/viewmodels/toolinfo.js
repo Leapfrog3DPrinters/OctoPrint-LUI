@@ -20,7 +20,8 @@ $(function () {
                     materialProfileName: ko.observable(),
                     amount: ko.observable(),
                     isExtruding: ko.observable(false),
-                    isRetracting: ko.observable(false)
+                    isRetracting: ko.observable(false),
+                    hotEndType: ko.observable("lt")
                 }
             }
 

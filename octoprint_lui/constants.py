@@ -126,3 +126,7 @@ class ExtrusionModes(object):
 class MovementModes(object):
     ABSOLUTE = "absolute"
     RELATIVE = "relative"
+    
+class HotEndTypes(object):
+    HIGH_TEMP = "ht"
+    LOW_TEMP = "lt"

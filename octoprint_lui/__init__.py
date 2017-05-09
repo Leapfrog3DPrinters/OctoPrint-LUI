@@ -143,10 +143,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 "filament_material_name": self.default_material_name,
                 "last_sent_filament_amount": 0,
                 "last_saved_filament_amount": 0,
-                "current_print_extrusion_amount": 0
+                "current_print_extrusion_amount": 0,
+                "hotend_type": HotEndTypes.LOW_TEMP
                 }
 
         self.tools = {}
+        self.low_temp_max_temperature = 275 # The max temperature that is accepted for low temp hot ends
 
         self.filament_delta_send = 10 # The difference in filament before the client is notified
         self.filament_delta_save = 100 # The difference in filament before the database is updated
@@ -166,16 +168,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetching_firmware_update = False
         self.virtual_m115 = "LEAPFROG_FIRMWARE:2.7.1 MACHINE_TYPE:Bolt Model:Bolt PROTOCOL_VERSION:1.0 \
                              FIRMWARE_NAME:Marlin V1 EXTRUDER_COUNT:2 EXTRUDER_OFFSET_X:0.0 EXTRUDER_OFFSET_Y:0.0 \
-                             BED_WIDTH_CORRECTION:0.0"
+                             BED_WIDTH_CORRECTION:0.0 HOTEND_TYPE_T0:ht"
         self.is_virtual = False
 
         # Properties to be read from the firmware. Local (python) property : Firmware property. Must be in same order as in firmware!
         self.firmware_info_properties = OrderedDict()
+        
         self.firmware_info_properties["firmware_version"] = "LEAPFROG_FIRMWARE"
         self.firmware_info_properties["machine_type"] = "MACHINE_TYPE"
         self.firmware_info_properties["extruder_offset_x"] = "EXTRUDER_OFFSET_X"
         self.firmware_info_properties["extruder_offset_y"] = "EXTRUDER_OFFSET_Y"
         self.firmware_info_properties["bed_width_correction"] = "BED_WIDTH_CORRECTION"
+
+        self.firmware_info_tool_properties = OrderedDict()
+        self.firmware_info_tool_properties["hotend_type"] = "HOTEND_TYPE_T{0:d}"
 
         ##~ Usernames that cannot be removed
         self.reserved_usernames = ['local', 'bolt', 'boltpro', 'xeed', 'xcel', 'lpfrg']
@@ -2411,12 +2417,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _get_current_filaments(self):
         """ 
-        Returns a list of the currently loaded filaments [{tool, material, amount}]
+        Returns a list of the currently loaded filaments [{tool, material, amount, hotEndType}]
         """
 
         filaments = [{ "tool": tool, 
                       "materialProfileName": info["filament_material_name"], 
-                      "amount": info["filament_amount"] } 
+                      "amount": info["filament_amount"],
+                      "hotEndType": info["hotend_type"]
+                      } 
 
                      for tool, info in self.tools.iteritems() if tool != "bed"]
         
@@ -3178,6 +3186,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Check if it is a temperature update, and we're waiting for a stabilized temperature
         if line.startswith("T0:"):
             self.tool_status_stabilizing = "W:" in line and not "W:?" in line
+        elif self.tool_status_stabilizing and line.startswith("ok"):
+            self.tool_status_stabilizing = False
 
         return line
 
@@ -3523,26 +3533,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(ClientMessages.MACHINE_INFO_UPDATED, self.machine_info)
 
     def _update_from_m115_properties(self, line):
+        
+        def find_m115_property_value(prop, line):
 
-        port, _ = self._printer._comm.getConnection()
-
-        if port == "VIRTUAL":
-            line = self.virtual_m115
-            self.is_virtual = True
-            self._logger.debug("Virtual port detected. Assuming virtual M115 line")
-
-        line = line.replace(': ', ':')
-        properties = dict()
-        idx_end = 0
-
-        # Loop through properties in defined order
-        # TODO: account for property type
-        for key in self.firmware_info_properties:
-            prop = self.firmware_info_properties[key]
             proplen = len(prop)
 
             # Find the value position of the current property, starting at the last property's value position
-            idx_start = line.find(prop, idx_end) + proplen + 1
+            idx_start = line.find(prop) + proplen + 1
 
             if idx_start > proplen:
 
@@ -3554,8 +3551,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     idx_end = len(line)
 
                 # Substring to get value
-                value = line[idx_start:idx_end]
+                return line[idx_start:idx_end]
 
+        port, _ = self._printer._comm.getConnection()
+
+        if port == "VIRTUAL":
+            line = self.virtual_m115
+            self.is_virtual = True
+            self._logger.debug("Virtual port detected. Assuming virtual M115 line")
+
+        line = line.replace(': ', ':')
+
+
+        # Loop through properties in defined order
+        # TODO: account for property type
+        for key in self.firmware_info_properties:
+            prop = self.firmware_info_properties[key]
+            value = find_m115_property_value(prop, line)
+
+            if value:
                 # For now, exception for bed_width_correction
                 # TODO: Consider changing firmware (M219, M115 and EEPROM_printSettings) to work with positive value of bed_width_correction
                 if key == "bed_width_correction":
@@ -3567,8 +3581,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 self.machine_database.update({'value': None }, self._machine_query.property == key)
 
+        # Now parse the tool specific properties
+        for tool in self.tools:
+            if tool != "bed":
+                for key in self.firmware_info_tool_properties:
+                    prop = self.firmware_info_tool_properties[key].format(self._get_tool_num(tool))
+                    value = find_m115_property_value(prop, line)
 
-        return properties
+                    if value:
+                        self.tools[tool][key] = value
 
     def _get_machine_info(self):
         machine_info = dict()

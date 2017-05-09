@@ -41,7 +41,12 @@
                   <div data-bind="visible: isProfileLocked()">
                     <strong>{{ _('Material:') }}</strong> <span data-bind="text: selectedTemperatureProfileName()"></span>
                   </div>
-                  <div data-bind="visible: selectedTemperatureProfileName() != 'None'">
+
+                  <div data-bind="visible: !$root.materialOkForHotEnd(selectedTemperatureProfileName(), $root.tool())"> 
+                    <i class="fa fa-exclamation-triangle"></i> {{ _('To print this material you need a high temperature hot end.') }}
+                  </div>
+
+                  <div data-bind="visible: selectedTemperatureProfileName() != 'None' && $root.materialOkForHotEnd(selectedTemperatureProfileName(), $root.tool())">
                     {{ _('Select how much filament is on the spool:') }}
                     <div id="slider_wrapper">
                         <div id="slider" data-bind="noUiSlider: { value: newFilamentAmountMeter }"></div>
@@ -71,9 +76,8 @@
                     {% endif %}
 
                   </div>
-
                   <ul class="button-area">
-                    <li class="button ok-button" id="load_cmd" data-bind="touchClick: function () { loadFilament(false); }, css: { disabled: !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
+                    <li class="button ok-button" id="load_cmd" data-bind="touchClick: function () { loadFilament(false); }, css: { disabled: !$root.materialOkForHotEnd(selectedTemperatureProfileName(), $root.tool()) || !selectedTemperatureProfile() || printerState.isLoading() || !loginState.loggedIn() || filamentLoading()}">
                       <a href="#">
                         <span data-bind="html: getLoadButtonContents()"></span>
                       </a>

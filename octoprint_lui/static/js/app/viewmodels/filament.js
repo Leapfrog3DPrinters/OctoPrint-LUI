@@ -101,6 +101,13 @@ $(function ()  {
                 return gettext("Left");
             });
 
+        self.getHotEndTypeName = function(hotEndType)
+        {
+            if (hotEndType == "ht") return gettext("(High-temp)");
+
+            return "";
+        }
+
         self.filamentLoadingText = ko.observable(undefined);
 
         self.filamentActionText = ko.observable(undefined);
@@ -287,11 +294,19 @@ $(function ()  {
             var profile = self.materialProfiles().find(function (profile) { return profile.name == materialProfileName });
 
             if (profile == undefined) {
-                return $.notify({
-                title: gettext("Filament updating warning"),
-                text: _.sprintf(gettext('Please select a material to update.'))},
-                    "warning"
-                )
+                $.notify({
+                    title: gettext("Filament updating warning"),
+                    text: _.sprintf(gettext('Please select a material to update.'))
+                },
+                   "warning"
+               );
+
+                return $.when();
+            }
+
+            if (!self.materialOkForHotEnd(materialProfileName, toolObj))
+            {
+                return $.when();
             }
 
             if (materialProfileName == "None") {
@@ -370,6 +385,23 @@ $(function ()  {
             tool = tool || self.tool();
             sendToApi("filament/" + tool + "/extrude/finish");
         }
+
+
+        self.materialOkForHotEnd = function(materialProfileName, toolObj)
+        {
+            var material = self.getMaterialByName(materialProfileName);
+
+            if (typeof toolObj == "string")
+                toolObj = self.toolInfo.getToolByKey(toolObj);
+
+            if (material) {
+                if (toolObj.filament.hotEndType() == "lt")
+                    return material.extruder < LOW_TEMP_MAX;
+                else
+                    return true;
+            }
+        }
+
 
         // Handle plugin messages
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -487,6 +519,10 @@ $(function ()  {
             });
         }
 
+        self.getMaterialByName = function(name) {
+            return _.find(self.materialProfiles(), { name: name });
+        }
+
         self.onBeforeBinding = function () {
             
             self.tool("tool0");
@@ -506,6 +542,7 @@ $(function ()  {
                     // Back-end provides a sorted list, so we may use indices here
                     tools[i].filament.materialProfileName(data.filaments[i].materialProfileName);
                     tools[i].filament.amount(data.filaments[i].amount);
+                    tools[i].filament.hotEndType(data.filaments[i].hotEndType);
                 }
             }
         }

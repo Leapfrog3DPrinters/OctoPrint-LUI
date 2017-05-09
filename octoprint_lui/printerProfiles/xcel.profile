@@ -49,6 +49,7 @@ filamentQuickLoad: false
 dualX: true
 materialMinTemp: 150
 materialMaxTemp: 275
+lowTempMax: 275
 filament:
   loadInitial:
     amount: 18
