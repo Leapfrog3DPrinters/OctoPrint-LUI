@@ -3731,7 +3731,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """Saves the hostname to the /etc/hostname file and replaces any occurences in /etc/hosts"""
         if self.hostname:
             # We need admin rights for this, so sudo a command, and in one go because sudo depends on hostname
-            command = "sudo -s -- hostname '{hostname}' && echo '{hostname}' > /etc/hostname && sed -i 's@127.0.1.1\(.*\)@127.0.1.1     {hostname}@g' /etc/hosts".format(hostname=new_hostname)
+            command = "sudo -s -- sh -c \"hostname '{hostname}' && echo '{hostname}' > /etc/hostname && sed -i 's@127.0.1.1\(.*\)@127.0.1.1      {hostname}@g' /etc/hosts\"".format(hostname=new_hostname)
             try:
                 octoprint_lui.util.execute(command)
             except octoprint_lui.util.ScriptError as e:
