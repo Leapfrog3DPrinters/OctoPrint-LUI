@@ -236,6 +236,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                 "plugin.lui.logout_cloud_service_finished"
                                ]
 
+        ## Hostname
+        self.hostname = None
+
     def initialize(self):
 
         #~~ get debug from yaml
@@ -299,6 +302,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Cloud init
         self._init_cloud()
+
+        ## Read hostname
+        self._read_hostname()
+
 
     def _init_cloud(self):
         self.cloud_connect = CloudConnect(self._settings, self.get_plugin_data_folder())
@@ -439,6 +446,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # Override tools dict with default values
         self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
+
+    def _read_hostname(self):
+        if self.platform == "RPi" and self.platform_info:
+            image_version = StrictVersion(self.platform_info["image_version"])
+            if image_version >= StrictVersion("1.2.0"):
+                with open('/etc/hostname', 'r') as hostname_file:
+                    try:
+                        self.hostname = hostname_file.read()
+                    except:
+                        self._logger.exception("Could not read hostname file")
+
 
     # End initializers
 
@@ -3689,6 +3707,76 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.paused_materials = self._get_current_materials()
             self.paused_print_mode = self.print_mode
             self.paused_position = payload["position"] # Containts x,y,z,e,f,t(ool)
+
+        if (event == Events.SETTINGS_UPDATED):
+            self._update_hostname()
+
+    def _update_hostname(self):
+        """ Updates the hostname of the environment"""
+
+        # If hostname is None, we couldn't even read the hostname, so let alone write it
+        if self.hostname:
+            new_name = self._settings.global_get(["appearance", "name"])
+
+            if new_name:
+                new_hostname = self._transform_hostname(new_name)
+            
+                if new_hostname != self.hostname:
+                    self._save_hostname(self, new_hostname)
+
+    def _save_hostname(self, new_hostname):
+        """Saves the hostname to the /etc/hostname file and replaces any occurences in /etc/hosts""""
+        if self.hostname:
+            # We need admin rights for this, so sudo a command
+            p1 = octoprint_lui.util.execute("echo \"{0}\" > sudo tee /etc/hostname".format(new_hostname))
+            p2 = octoprint_lui.util.execute("sudo sed -i -e \"s@{0}@{1}@g\" /etc/hosts".format(self.hostname, new_hostname))
+
+            # Check returncodes
+            success = p1[0] == 0 and p2[0] == 0
+
+            if success:
+                self.hostname = new_hostname
+            else:
+                if p1[0] != 0:
+                    self._logger.warn("Could not save hostname {0}: {1} - {2}".format(new_hostname, p1[1], p1[2]))
+                if p2[0] != 0:
+                    self._logger.warn("Could not update hosts for {0}: {1} - {2}".format(new_hostname, p2[1], p2[2]))
+
+            return success
+
+    def _transform_hostname(self, pretty_name):
+        """
+        Transforms any given unicode pretty_name into a fqdn
+        """
+        if not self.pretty_name:
+            return None
+
+        # Make it basic ascii
+        pretty_name = pretty_name.encode('ascii','ignore')
+
+        # Replace spaces and underscores with hyphens
+        pretty_name = pretty_name.replace(" ", "-").replace("_", "-")
+
+        # Remove everything that isn't 0-9a-zA-Z-.
+        pretty_name = re.sub("[^0-9a-zA-Z-.]", "", pretty_name)
+
+        # Trim up to 253 chars
+        if len(pretty_name) > 253:
+            pretty_name = pretty_name[:253]
+
+        # Ensure each part (splitted by .) is at most 63 chars
+        splitted = pretty_name.split(".")
+        new_pretty_name = ""
+        for p in splitted:
+            np = p.lstrip("-0123456789").rstrip("-")
+            if len(np) > 63:
+                new_pretty_name += "." + np[:63]
+            elif len(np) >= 1:
+                new_pretty_name += "." + np
+
+        pretty_name = new_pretty_name[1:]
+
+        return pretty_name
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:
