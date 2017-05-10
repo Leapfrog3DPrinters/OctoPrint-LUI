@@ -3751,7 +3751,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Transforms any given unicode pretty_name into a fqdn
         """
-        if not self.pretty_name:
+        if not pretty_name:
             return None
 
         # Make it basic ascii
