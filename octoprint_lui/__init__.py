@@ -3733,7 +3733,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # We need admin rights for this, so sudo a command
             try:
                 p1 = octoprint_lui.util.execute("echo \"{0}\" | sudo tee /etc/hostname".format(new_hostname))
-                p2 = octoprint_lui.util.execute("sudo sed -i -e \"s@{0}@{1}@g\" /etc/hosts".format(self.hostname, new_hostname))
+                p2 = octoprint_lui.util.execute("sudo sed -i -e 's@{0}@{1}@g' /etc/hosts".format(self.hostname, new_hostname))
             except octoprint_lui.util.ScriptError as e:
                 self._logger.warn("Could not save hostname {0}: {1} - {2}".format(new_hostname, e.stdout, e.stderr))
                 return False
