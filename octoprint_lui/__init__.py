@@ -265,6 +265,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.machine_info = self._get_machine_info()
         self._set_model()
 
+        ##~ Read and output information about the platform, such as the image version.
+        self._output_platform_info()
+
         ##~ Init Update
         self._init_update()
 
@@ -457,6 +460,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     except:
                         self._logger.exception("Could not read hostname file")
 
+                    self._logger.info("Hostname read: {0}".format(self.hostname))
+
 
     # End initializers
 
@@ -489,9 +494,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             first_run_results = []
 
-            # Read and output information about the platform, such as the image version.
-            first_run_results.append(self._output_platform_info())
-
             # Check OctoPrint Branch, it will reboot and first run will run again after wards.
             # This is at the top of the first run so most things won't run twice etc.
             first_run_results.append(self._check_octoprint_branch())
@@ -517,6 +519,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.error("First run failed")
 
     def _output_platform_info(self):
+        """Reads and writes platform information to the logfile"""
         self._read_platform_info()
         self._logger.info("Platform info: {0}".format(self.platform_info))
         return True
