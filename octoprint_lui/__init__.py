@@ -3725,7 +3725,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     self._save_hostname(self, new_hostname)
 
     def _save_hostname(self, new_hostname):
-        """Saves the hostname to the /etc/hostname file and replaces any occurences in /etc/hosts""""
+        """Saves the hostname to the /etc/hostname file and replaces any occurences in /etc/hosts"""
         if self.hostname:
             # We need admin rights for this, so sudo a command
             p1 = octoprint_lui.util.execute("echo \"{0}\" > sudo tee /etc/hostname".format(new_hostname))
