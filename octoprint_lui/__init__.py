@@ -1795,7 +1795,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if source_type == "gcode":
             return self._copy_gcode_to_usb(path)
         elif source_type == "timelapse":
-            return self._save_timelapse_to_usb(path)
+            return self._copy_timelapse_to_usb(path)
         elif source_type == "log":
             return self._copy_log_to_usb(path)
 
