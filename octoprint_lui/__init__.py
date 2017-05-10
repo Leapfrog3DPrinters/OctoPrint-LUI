@@ -3725,7 +3725,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 new_hostname = self._transform_hostname(new_name)
             
                 if new_hostname != self.hostname:
-                    self._save_hostname(self, new_hostname)
+                    self._save_hostname(new_hostname)
 
     def _save_hostname(self, new_hostname):
         """Saves the hostname to the /etc/hostname file and replaces any occurences in /etc/hosts"""
@@ -3735,17 +3735,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             p2 = octoprint_lui.util.execute("sudo sed -i -e \"s@{0}@{1}@g\" /etc/hosts".format(self.hostname, new_hostname))
 
             # Check returncodes
-            success = p1[0] == 0 and p2[0] == 0
-
-            if success:
-                self.hostname = new_hostname
+            if p1[0] != 0:
+                self._logger.warn("Could not save hostname {0}: {1} - {2}".format(new_hostname, p1[1], p1[2]))
+                return False
+            elif p2[0] != 0:
+                self._logger.warn("Could not update hosts for {0}: {1} - {2}".format(new_hostname, p2[1], p2[2]))
+                return False
             else:
-                if p1[0] != 0:
-                    self._logger.warn("Could not save hostname {0}: {1} - {2}".format(new_hostname, p1[1], p1[2]))
-                if p2[0] != 0:
-                    self._logger.warn("Could not update hosts for {0}: {1} - {2}".format(new_hostname, p2[1], p2[2]))
-
-            return success
+                self.hostname = new_hostname
+                self._logger.info("Hostname updated: {0}".format(self.hostname))
+                return True
 
     def _transform_hostname(self, pretty_name):
         """
