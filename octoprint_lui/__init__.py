@@ -166,7 +166,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fw_version_info = None
         self.auto_firmware_update_started = False
         self.fetching_firmware_update = False
-        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.7.1 MACHINE_TYPE:Bolt Model:Bolt PROTOCOL_VERSION:1.0 \
+        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.8 MACHINE_TYPE:BoltPro Model:BoltPro PROTOCOL_VERSION:1.0 \
                              FIRMWARE_NAME:Marlin V1 EXTRUDER_COUNT:2 EXTRUDER_OFFSET_X:0.0 EXTRUDER_OFFSET_Y:0.0 \
                              BED_WIDTH_CORRECTION:0.0 HOTEND_TYPE_T0:ht"
         self.is_virtual = False
@@ -212,6 +212,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Power Button
         self.powerbutton_handler = None
+
+        ##~ RGB Lights
+        self.rgblights_handler = None
 
         ##~ Update
         self.fetching_updates = False
@@ -281,6 +284,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Now we have control over the printer, also take over control of the power button
         self._init_powerbutton()
+
+        self._init_rgblights()
 
         ##~ USB init
         self._init_usb()
@@ -354,6 +359,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if not self.powerbutton_handler:
                 from octoprint_lui.util.powerbutton import DummyPowerButtonHandler
                 self.powerbutton_handler = DummyPowerButtonHandler(self._on_powerbutton_press)
+
+    def _init_rgblights(self):
+        if self.platform == "RPi" and "hasRgbLights" in self.current_printer_profile and self.current_printer_profile["hasRgbLights"]:
+            if not self.rgblights_handler:
+                from octoprint_lui.util.rgblights import RgbLightsHandler
+                self.rgblights_handler = RgbLightsHandler()
+                initial_color = self._settings.get(["rgb_lights_default_color"])
+                self.rgblights_handler.set_color(self.initial_color)
+
 
     def _init_update(self):
 
@@ -1069,6 +1083,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "action_filament": s.getBoolean(["action_filament"]),
                     "zoffset": s.getFloat(["zoffset"]),
                     "debug_lui": s.getBoolean(["debug_lui"]),
+                    "rgb_lights_default_color": s.get(["rgb_lights_default_color"]),
 
                     # AutoShutdown isn't kept in the the settings file, so we can make an exception here
                     "autoShutdown": self.auto_shutdown,
@@ -1563,6 +1578,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response(jsonify({
                 'machine_info': self.machine_info
                 }), 200)
+
+    @BlueprintPlugin.route("/printer/rgblights/<string:hex_color>", methods=["POST"])
+    def set_rgblights(self, hex_color):
+        if self.rgblights_handler:
+            self.rgblights_handler.set_color(hex_color)
+
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/printer/homing/start", methods=["POST"])
     def homing_start(self):
@@ -2119,6 +2141,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "had_first_run": "",
             "force_first_run": False,
             "debug_bundling" : False,
+            "rgb_lights_default_color": "#0000FF",
             "cloud": {
                 "enabled" : False
                 }
@@ -2180,7 +2203,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     'plugin/lui/js/lib/notify-0.4.2.js',
                     'plugin/lui/js/lib/nouislider-9.2.0.js',
                     'plugin/lui/js/lib/sockjs-1.1.2.js',
-                    'plugin/lui/js/lib/sprintf-1.0.3.js'
+                    'plugin/lui/js/lib/sprintf-1.0.3.js',
+                    'plugin/lui/js/lib/spectrum-1.8.0.js'
                     ]
 
         vm_js = self.find_assets('js/app/viewmodels', '.js')
@@ -2197,7 +2221,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'plugin/lui/css/notifyjs-lui.css',
                 'plugin/lui/css/keyboard-lui.css',
                 'plugin/lui/css/nouislider-lui.css',
-                'plugin/lui/css/dropit.css'
+                'plugin/lui/css/dropit.css',
+                'plugin/lui/css/spectrum.css'
                 ]
 
 

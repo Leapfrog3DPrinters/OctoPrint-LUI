@@ -40,6 +40,7 @@ boundaries:
   maxZ: 205.0
 requireOverscroll: false
 hasPowerButton: true
+hasRgbLights: true
 filamentRollLength: 320
 defaultStepperTimeout: 60
 autoBedCalibration: false
