@@ -6,6 +6,31 @@ import threading, Queue
 import math
 from binascii import unhexlify
 
+class RgbPatternManager(object):
+    def __init__(self, settings):
+        self._settings = settings
+        self._handler = RgbLightsHandler()
+        self._handler.start()
+
+    def on_startup(self):
+        color = self._settings.get(["rgb_lights_default_color"])
+        self._handler.set_pulsing_color(color)
+
+    def preview(self, color):
+        self._handler.set_color(color)
+
+    def on_idle(self):
+        color = self._settings.get(["rgb_lights_default_color"])
+        self._handler.set_color(color)
+
+    def on_heating(self):
+        color = self._settings.get(["rgb_lights_heating_color"])
+        self._handler.set_fast_pulsing_color(color)
+
+    def on_printing(self):
+        color = self._settings.get(["rgb_lights_printing_color"])
+        self._handler.set_color(color)
+
 class RgbDriver(object):
     resolution = 4095
     def __init__(self):
@@ -47,7 +72,7 @@ class RgbLightsHandler(object):
         color = self._parse_hex(hex_color)
 
         # Send the color to the driver
-        self._set_constant_color_immediate(*color)
+        self._set_constant_color_immediate(color)
 
     def set_pulsing_color(self, hex_color):
         """
@@ -56,8 +81,16 @@ class RgbLightsHandler(object):
         color = self._parse_hex(hex_color)
 
         # Send the color to the driver
-        self._set_pulsing(*color)
+        self._set_pulsing(color)
         
+    def set_fast_pulsing_color(self, hex_color):
+        """
+        Sets the color of the RGB leds based on a 3-byte hex string
+        """
+        color = self._parse_hex(hex_color)
+
+        # Send the color to the driver
+        self._set_pulsing(color, 2)
         
     def start(self):
         if not self.running:
@@ -86,17 +119,23 @@ class RgbLightsHandler(object):
             self._driver.set_rgbw(*self._color);
             time.sleep(self._interval)
 
-    def _set_constant_color(self, r, g, b, w):
+    def _set_constant_color(self, color):
+        if not color:
+            return
         with self._worker_lock:
-            self._pattern = RgbLightConstant((r,g,b,w))
+            self._pattern = RgbLightConstant(color)
 
-    def _set_constant_color_immediate(self, r, g, b, w):
+    def _set_constant_color_immediate(self, color):
+        if not color:
+            return
         with self._worker_lock:
-            self._pattern = RgbLightConstantImmediate((r,g,b,w))
+            self._pattern = RgbLightConstantImmediate(color)
 
-    def _set_pulsing(self, r, g, b, w):
+    def _set_pulsing(self, color, speed = 0.5):
+        if not color:
+            return
         with self._worker_lock:
-            self._pattern = RgbLightPulsing((r,g,b,w))
+            self._pattern = RgbLightPulsing(color, speed)
 
     def _parse_hex(self, hex_color):
         # Remove any #
@@ -140,12 +179,12 @@ class RgbLightConstantImmediate(RgbLightPattern):
         return self.color
 
 class RgbLightPulsing(RgbLightPattern):
-    def __init__(self, color):
+    def __init__(self, color, speed = 0.5):
         self.refresh_interval = 0.01
         self._to = color
         self._from = (0,0,0,0)
         self.i = 0
-        self.maxi = 255
+        self.maxi = 100 / speed
         self._color = self._from
 
         self.deltar = (self._to[0] - self._from[0]) / (self.maxi/2)

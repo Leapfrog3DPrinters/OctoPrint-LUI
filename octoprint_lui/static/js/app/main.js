@@ -492,7 +492,8 @@ $(function () {
         loader.addClass('loaded');
         setTimeout(function(){
             loader.remove();
-        }, 1000)
+            sendToApi('printer/rgblights/default');
+        }, 250)
     };
 
     if (!_.has(viewModelMap, "settingsViewModel")) {

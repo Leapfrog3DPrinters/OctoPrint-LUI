@@ -214,7 +214,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.powerbutton_handler = None
 
         ##~ RGB Lights
-        self.rgblights_handler = None
+        self.rgblights_manager = None
 
         ##~ Update
         self.fetching_updates = False
@@ -362,13 +362,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _init_rgblights(self):
         if self.platform == "RPi" and "hasRgbLights" in self.current_printer_profile and self.current_printer_profile["hasRgbLights"]:
-            if not self.rgblights_handler:
-                from octoprint_lui.util.rgblights import RgbLightsHandler
-                self.rgblights_handler = RgbLightsHandler()
-                self.rgblights_handler.start()
-                initial_color = self._settings.get(["rgb_lights_default_color"])
-                self.rgblights_handler.set_pulsing_color(initial_color)
-
+            if not self.rgblights_manager:
+                from octoprint_lui.util.rgblights import RgbPatternManager
+                self.rgblights_manager = RgbPatternManager(self._settings)
+                self.rgblights_manager.on_startup()
 
     def _init_update(self):
 
@@ -1085,6 +1082,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "zoffset": s.getFloat(["zoffset"]),
                     "debug_lui": s.getBoolean(["debug_lui"]),
                     "rgb_lights_default_color": s.get(["rgb_lights_default_color"]),
+                    "rgb_lights_printing_color": s.get(["rgb_lights_printing_color"]),
 
                     # AutoShutdown isn't kept in the the settings file, so we can make an exception here
                     "autoShutdown": self.auto_shutdown,
@@ -1580,10 +1578,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'machine_info': self.machine_info
                 }), 200)
 
-    @BlueprintPlugin.route("/printer/rgblights/<string:hex_color>", methods=["POST"])
-    def set_rgblights(self, hex_color):
-        if self.rgblights_handler:
-            self.rgblights_handler.set_color(hex_color)
+    @BlueprintPlugin.route("/printer/rgblights/preview/<string:hex_color>", methods=["POST"])
+    def rgblights_preview(self, hex_color):
+        if self.rgblights_manager:
+            self.rgblights_manager.preview(hex_color)
+
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/rgblights/default", methods=["POST"])
+    def rgblights_default(self):
+        self._set_rgblights_pattern()
 
         return make_response(jsonify(), 200)
 
@@ -2143,6 +2147,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "force_first_run": False,
             "debug_bundling" : False,
             "rgb_lights_default_color": "#0000FF",
+            "rgb_lights_heating_color": "#FFC901",
+            "rgb_lights_printing_color": "#00FF00",
             "cloud": {
                 "enabled" : False
                 }
@@ -3345,6 +3351,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             if not has_target and data["actual"] <= 35:
                 status = ToolStatuses.IDLE
+            elif not data['actual']:
+                status = ToolStatuses.IDLE
             else:
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
@@ -3360,8 +3368,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 else:
                     status = ToolStatuses.COOLING
 
-            self.tools[tool]["status"] = status
-            self.change_status(tool, status)
+            if self.tools[tool]["status"] != status:
+                self._set_rgblights_pattern()
+                self.tools[tool]["status"] = status
+                self.change_status(tool, status)
 
         self._send_client_message(ClientMessages.TOOL_STATUS, { "tool_status": self._single_prop_dict(self.tools, "status") })
 
@@ -3460,6 +3470,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _on_powerbutton_press(self):
         self._send_client_message(ClientMessages.POWERBUTTON_PRESSED)
+
+    def _set_rgblights_pattern(self):
+        if not self.rgblights_manager:
+            return
+
+        if self._printer._comm.isPrinting():
+            for tool in self.tools:
+                if self.tools[tool]["status"] in [ToolStatuses.HEATING, ToolStatuses.STABILIZING]:
+                    self.rgblights_manager.on_heating()
+                    return
+
+            self.rgblights_manager.on_printing()
+        else:
+            self.rgblights_manager.on_idle()
 
     def _add_server_commands(self):
         """
@@ -3761,6 +3785,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if(event == Events.PRINT_STARTED or event == Events.PRINT_RESUMED):
             self.filament_action = False
+            self._set_rgblights_pattern()
 
         if(event == Events.CONNECTING):
             self.intended_disconnect = False

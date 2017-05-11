@@ -40,6 +40,7 @@ $(function () {
         self.plugins_lui_action_filament = ko.observable();
         self.plugins_lui_debug_lui = ko.observable();
         self.plugins_lui_rgb_lights_default_color = ko.observable();
+        self.plugins_lui_rgb_lights_printing_color = ko.observable(); 
         
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
@@ -392,6 +393,7 @@ $(function () {
                 })
                 .always(function(xhr, status) {
                     if (options.complete) options.complete(xhr, status);
+                    self.restoreRgbLights();
                 });
         };
 
@@ -400,13 +402,26 @@ $(function () {
             var hex_color = color.toHexString();
 
             if (hex_color)
-                sendToApi('printer/rgblights/%23' + hex_color.substring(1));
+                sendToApi('printer/rgblights/preview/%23' + hex_color.substring(1));
+        }
+
+        self.restoreRgbLights = function ()
+        {
+            sendToApi('printer/rgblights/default');
         }
 
         self.onAllBound = function (allViewModels) {
             $('#settings-rgbLightsDefaultColor').spectrum({
                 move: self.setRgbLightsColor,
-                appendTo: "#colorPickerContainer"
+                hide: self.restoreRgbLights,
+                appendTo: "#colorPickerContainer",
+                preferredFormat: "hex"
+            });
+            $('#settings-rgbLightsPrintingColor').spectrum({
+                move: self.setRgbLightsColor,
+                hide: self.restoreRgbLights,
+                appendTo: "#colorPickerContainer",
+                preferredFormat: "hex"
             });
             self.allViewModels = allViewModels;
             self.requestData();
