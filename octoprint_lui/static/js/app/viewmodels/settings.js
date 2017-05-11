@@ -403,17 +403,9 @@ $(function () {
                 sendToApi('printer/rgblights/%23' + hex_color.substring(1));
         }
 
-        self.restoreRgbLightsColor = function (color) {
-            var hex_color = self.settings.plugins_lui_rgb_lights_default_color();
-
-            if (hex_color)
-                sendToApi('printer/rgblights/%23' + hex_color.substring(1));
-        }
-
         self.onAllBound = function (allViewModels) {
             $('#settings-rgbLightsDefaultColor').spectrum({
                 move: self.setRgbLightsColor,
-                hide: self.restoreRgbLightsColor,
                 appendTo: "#colorPickerContainer"
             });
             self.allViewModels = allViewModels;

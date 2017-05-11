@@ -33,7 +33,7 @@ plugin_url = "https://github.com/Booli/OctoPrint-LUI"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["tinydb>=3.2.0","RPi.GPIO","cssmin", "dropbox", "onedrivesdk", "google-api-python-client"]
+plugin_requires = ["tinydb>=3.2.0","RPi.GPIO","cssmin", "dropbox", "onedrivesdk", "google-api-python-client", "spidev"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point

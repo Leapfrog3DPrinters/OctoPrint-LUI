@@ -365,8 +365,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if not self.rgblights_handler:
                 from octoprint_lui.util.rgblights import RgbLightsHandler
                 self.rgblights_handler = RgbLightsHandler()
+                self.rgblights_handler.start()
                 initial_color = self._settings.get(["rgb_lights_default_color"])
-                self.rgblights_handler.set_color(self.initial_color)
+                self.rgblights_handler.set_pulsing_color(initial_color)
 
 
     def _init_update(self):
