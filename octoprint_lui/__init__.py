@@ -3711,8 +3711,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.paused_print_mode = self.print_mode
             self.paused_position = payload["position"] # Containts x,y,z,e,f,t(ool)
 
-        if (event == Events.SETTINGS_UPDATED):
-            self._update_hostname()
+        #if (event == Events.SETTINGS_UPDATED):
+        #    self._update_hostname()
+        # This function is not enabled yet as the readonly file system doesn't allow us to change the hostname yet
 
     def _update_hostname(self):
         """ Updates the hostname of the environment"""
@@ -3731,7 +3732,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """Saves the hostname to the /etc/hostname file and replaces any occurences in /etc/hosts"""
         if self.hostname:
             # We need admin rights for this, so sudo a command, and in one go because sudo depends on hostname
-            command = "sudo -s -- sh -c \"hostname '{hostname}' && echo '{hostname}' > /etc/hostname && sed -i 's@127.0.1.1\(.*\)@127.0.1.1      {hostname}@g' /etc/hosts\"".format(hostname=new_hostname)
+            command = "sudo -s -- sh -c \"hostname '{hostname}' && echo '{hostname}' > /etc/hostname && sed -i 's@127.0.1.1\(.*\)@127.0.1.1      {hostname}@' /etc/hosts\"".format(hostname=new_hostname)
             try:
                 octoprint_lui.util.execute(command)
             except octoprint_lui.util.ScriptError as e:
