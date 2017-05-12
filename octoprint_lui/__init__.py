@@ -22,7 +22,7 @@ from functools import partial
 from copy import deepcopy
 from flask import jsonify, make_response, render_template, request, redirect, send_from_directory
 
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 from distutils.dir_util import copy_tree
 
 from tinydb import TinyDB, Query
@@ -30,7 +30,7 @@ from tinydb.operations import delete
 
 import octoprint_lui.util
 
-from octoprint_lui.util import exceptions, cloud
+from octoprint_lui.util import exceptions, cloud, is_online, github_online
 from octoprint_lui.util.firmware import FirmwareUpdateUtility
 from octoprint_lui.util.cloud import CloudStorage, CloudConnect
 
@@ -214,6 +214,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.powerbutton_handler = None
 
         ##~ Update
+        self.update_info = []
+        self.any_forced_updates = False # Indicates whether there's any forced update required during this startup
         self.fetching_updates = False
         self.installing_updates = False
         self.git_lock = threading.RLock()
@@ -367,6 +369,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': "Leapfrog UI",
                 'identifier': 'lui',
                 'version': self._plugin_manager.get_plugin_info('lui').version,
+                'version_requirement': None, # LUI version is leading
                 'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -376,6 +379,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'Network Manager',
                 'identifier': 'networkmanager',
                 'version': self._plugin_manager.get_plugin_info('networkmanager').version,
+                'version_requirement': ">=1.1.0",
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -385,6 +389,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'Flash Firmware Module',
                 'identifier': 'flasharduino',
                 'version': self._plugin_manager.get_plugin_info('flasharduino').version,
+                'version_requirement': ">=1.0.2",
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -394,6 +399,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'G-code Render Module',
                 'identifier': 'gcoderender',
                 'version': self._plugin_manager.get_plugin_info('gcoderender').version,
+                'version_requirement': ">=1.0.0",
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -403,6 +409,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'OctoPrint',
                 'identifier': 'octoprint',
                 'version': VERSION,
+                'version_requirement': ">=1.3.2",
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -478,7 +485,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile")
 
-        if force_first_run or not had_first_run_version or StrictVersion(had_first_run_version) < StrictVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
+        if force_first_run or not had_first_run_version or LooseVersion(had_first_run_version) < LooseVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
             if force_first_run:
                 self._logger.debug("Simulating first run for debugging.")
             elif not os.path.exists(profile_dst_path):
@@ -491,9 +498,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Read and output information about the platform, such as the image version.
             first_run_results.append(self._output_platform_info())
 
-            # Check OctoPrint Branch, it will reboot and first run will run again after wards.
+            # Check plugin versions and check OctoPrint Branch, it will reboot and first run will run again after wards.
             # This is at the top of the first run so most things won't run twice etc.
-            first_run_results.append(self._check_octoprint_branch())
+            first_run_results.append(self._check_version_sanity())
 
             # Fix stuff on the image
             first_run_results.append(self._add_server_commands())
@@ -530,13 +537,45 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             except OSError:
                 self._logger.exception("Could not read platform info file")
 
+    def _check_version_sanity(self):
+        """
+        Checks if every plugin meets the required version. If not, forces an update. Part of first_run.
+        """
+
+        if self._settings.get_boolean(["skip_version_sanity_check"]):
+            self._logger.info("Skipping version sanity check")
+        else:
+            self._logger.info("Running plugin version sanity check")
+            needs_another_check = False
+
+            for component in self.update_info:
+                if component["version_requirement"] and not self._check_version_requirement(component["version"], component["version_requirement"]):
+                    # Make sure we run an update when the UI is ready
+                    component["forced_update"] = True
+                    self.any_forced_updates = True
+                    self._logger.warn("Component {component} is version {version}, requirement: {requirement}. Performing forced update.".format(component=component["name"], version=component["version"], requirement=component["version_requirement"]))
+
+            # If we're not online at this point, we need to do the check again on next startup
+            if self.any_forced_updates and not is_online() or not github_online():
+                self._logger.warn("An update of a component is required, but printer is not connected to the internet. Trying the update next startup.")
+                self.any_forced_updates = False
+                needs_another_check = True
+
+            octo_check = self._check_octoprint_branch()
+
+            # Return false if another sanity check (on the next startup) is required or if the octoprint branch check failed
+            if needs_another_check or not octo_check:
+                return False
+
+        return True
+
     def _check_octoprint_branch(self):
         """ Check if OctoPrint branch is still on development and change it to master
             if debug mode is not on. This will install and restart service. 
-            It will run _first_run again because it won't get to the saving part.
         """
         self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
-        if not self.debug and not "master" in octoprint.__branch__:
+
+        if not "master" in octoprint.__branch__:
             self._logger.warning("Install is not on master branch, going to switch")
             # So we are really still on devel, let's switch to master
             checkout_master_branch = None
@@ -550,6 +589,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 if checkout_master_branch:
                     self._logger.info("Switched OctoPrint from devel to master. Performing update later.")
                     self.update_info[4]["forced_update"] = True
+                    self.any_forced_updates = True
 
         # Return success by default
         return True
@@ -903,8 +943,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # First check if there's any forced update we need to execute
         # If so, return the cache of updates
-        if self._perform_forced_updates():
-            self._logger.debug("Performing forced updates. Not fetching.")
+        if self.fetching_updates or self.installing_updates:
+            self._logger.debug("Already fetching or performing updates. Not fetching.")
         elif not cache_time_expired and not force:
             self._logger.debug("Cache time of updates not expired, so not fetching updates yet")
         elif not self.fetching_updates:
@@ -985,7 +1025,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         version_requirement = None
 
         if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
-            current_version = StrictVersion(self.machine_info["firmware_version"])
+            current_version = LooseVersion(self.machine_info["firmware_version"])
 
         if self.model in self.firmware_version_requirement:
             version_requirement =  self.firmware_version_requirement[self.model]
@@ -1822,7 +1862,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         requires_lui_update = False
 
         if "firmware_version" in self.machine_info and self.machine_info["firmware_version"]:
-            current_version = StrictVersion(self.machine_info["firmware_version"])
+            current_version = LooseVersion(self.machine_info["firmware_version"])
         else:
             self._logger.warn("No current firmware version stored in machine database. Faking available firmware update .")
             current_version = None
@@ -1831,7 +1871,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             # Compare latest with current
             self._logger.debug("Current version / latest version: {0} / {1}".format(str(current_version), self.fw_version_info["version"]))
 
-            new_firmware_version = StrictVersion(self.fw_version_info["version"])
+            new_firmware_version = LooseVersion(self.fw_version_info["version"])
 
             if not current_version or new_firmware_version > current_version:
                 new_firmware = True
@@ -1934,41 +1974,40 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _check_version_requirement(self, current_version, requirement):
         """Helper function that checks if a given version matches a version requirement"""
+
         if requirement.startswith('<='):
-            return StrictVersion(current_version) <= StrictVersion(requirement[2:])
+            return LooseVersion(current_version) <= LooseVersion(requirement[2:])
         elif requirement.startswith('<'):
-            return StrictVersion(current_version) < StrictVersion(requirement[1:])
+            return LooseVersion(current_version) < LooseVersion(requirement[1:])
         elif requirement.startswith('>='):
-            return StrictVersion(current_version) >= StrictVersion(requirement[2:])
+            return LooseVersion(current_version) >= LooseVersion(requirement[2:])
         elif requirement.startswith('>'):
-            return StrictVersion(current_version) > StrictVersion(requirement[1:])
+            return LooseVersion(current_version) > LooseVersion(requirement[1:])
         elif requirement.startswith('=='):
-            return StrictVersion(current_version) == StrictVersion(requirement[2:])
+            return LooseVersion(current_version) == LooseVersion(requirement[2:])
         elif requirement.startswith('='):
-            return StrictVersion(current_version) == StrictVersion(requirement[1:])
+            return LooseVersion(current_version) == LooseVersion(requirement[1:])
         else:
-            return StrictVersion(current_version) == StrictVersion(requirement)
+            return LooseVersion(current_version) == LooseVersion(requirement)
 
     def _perform_forced_updates(self):
         """ 
         Loops the update info list checking for any update that needs to be executed on startup. When found, executed immediately.
         """
-        any_update = False
-        for update_info in self.update_info:
-            if update_info["forced_update"]:
-                update_info["update"] = True
-                any_update = True
 
-        if any_update:
+        if self.any_forced_updates:
+            self._logger.info("Performing forced updates")
             self._send_client_message(ClientMessages.FORCED_UPDATE)
-            self._update_plugins("all")
 
-        return any_update
+            for component in self.update_info:
+                if component["forced_update"]:
+                    component["update"] = True
+
+            self._update_plugins("all")
 
     def _update_plugins(self, plugin):
         if self.installing_updates:
             self._logger.warn("Update installer thread already started. Not starting another one.")
-            self._send_client_message(ClientMessages.UPDATE_ERROR)
             return
 
         plugins_to_update = []
@@ -2003,6 +2042,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.info("Update error! Message: {text} Erro: {error}".format(text=e.stdout, error=e.stderr))
                 self._send_client_message(ClientMessages.UPDATE_ERROR)
                 # We encountered an error lets just return out of this and see what went wrong in the logs.
+                # We're closing the thread, so release the lock
+                self.installing_updates = False
                 return
 
         # We made it! We have updated everything, send this great news to the front end
@@ -2028,7 +2069,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return update_frontend
 
     def _fetch_worker(self, update_info, force):
-        if not octoprint_lui.util.is_online():
+        if not is_online():
             # Only send a message to the front end if the user requests the update
             if force:
                 self._send_client_message(ClientMessages.INTERNET_OFFLINE)
@@ -2036,7 +2077,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.fetching_updates = False
             return
 
-        if not octoprint_lui.util.github_online():
+        if not github_online():
             # Only send a message to the front end if the user requests the update
             if force:
                 self._send_client_message(ClientMessages.GITHUB_OFFLINE)
@@ -2055,6 +2096,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         data = dict(update=self._create_update_frontend(self.update_info), machine_info=self.machine_info)
         self._send_client_message(ClientMessages.UPDATE_FETCH_SUCCESS, data)
+        self.fetching_updates = False
         return
 
     def _update_needed_version_all(self, update_info):
@@ -2119,6 +2161,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "had_first_run": "",
             "force_first_run": False,
             "debug_bundling" : False,
+            "skip_version_sanity_check": False,
             "cloud": {
                 "enabled" : False
                 }
@@ -3768,6 +3811,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.paused_materials = self._get_current_materials()
             self.paused_print_mode = self.print_mode
             self.paused_position = payload["position"] # Containts x,y,z,e,f,t(ool)
+
+        # The first run may have determined we need forced updates. This needs some UI interaction, so perform
+        # this action as soon as the client is connected.
+        if event == Events.CLIENT_OPENED:
+            self._perform_forced_updates()
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:

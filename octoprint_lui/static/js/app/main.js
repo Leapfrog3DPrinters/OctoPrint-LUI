@@ -427,7 +427,11 @@ $(function () {
             }
 
             if (viewModel.hasOwnProperty("onBeforeBinding")) {
-                viewModel.onBeforeBinding();
+                try {
+                    viewModel.onBeforeBinding();
+                } catch (exc) {
+                    log.error("Error occured before binding " + viewModel.constructor.name, (exc.stack || exc));
+                }
             }
 
             if (targets !== undefined) {
@@ -478,7 +482,11 @@ $(function () {
             viewModel._unbound = viewModel._bindings !== undefined && viewModel._bindings.length === 0;
 
             if (viewModel.hasOwnProperty("onAfterBinding")) {
-                viewModel.onAfterBinding();
+                try {
+                    viewModel.onAfterBinding();
+                } catch (exc) {
+                    log.error("Error occured after binding " + viewModel.constructor.name, (exc.stack || exc));
+                }
             }
         });
 
