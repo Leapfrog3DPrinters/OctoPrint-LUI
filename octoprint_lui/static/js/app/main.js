@@ -492,7 +492,7 @@ $(function () {
         loader.addClass('loaded');
         setTimeout(function(){
             loader.remove();
-        }, 1000)
+        }, 0)
     };
 
     if (!_.has(viewModelMap, "settingsViewModel")) {

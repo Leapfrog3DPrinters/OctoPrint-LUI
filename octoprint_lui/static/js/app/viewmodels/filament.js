@@ -394,12 +394,14 @@ $(function ()  {
             if (typeof toolObj == "string")
                 toolObj = self.toolInfo.getToolByKey(toolObj);
 
-            if (material) {
+            if (toolObj && material) {
                 if (toolObj.filament.hotEndType() == "lt")
                     return material.extruder < LOW_TEMP_MAX;
                 else
                     return true;
             }
+            else
+                return false;
         }
 
 
