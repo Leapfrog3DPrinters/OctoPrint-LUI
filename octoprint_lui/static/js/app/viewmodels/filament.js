@@ -577,7 +577,7 @@ $(function ()  {
         }
 
         self.requestData = function ()  {
-            getFromApi("filament").done(self.fromResponse);
+            return getFromApi("filament").done(self.fromResponse);
         };
 
         self.onMaterialsSettingsShown = function () {

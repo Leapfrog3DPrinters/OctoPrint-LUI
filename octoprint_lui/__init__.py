@@ -3007,6 +3007,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # We only "messed" with the filament change tool temperature, so no need to restore the temp of the other tool
         self._printer.set_temperature(tool, target_temp)
 
+    def _check_incompatible_filament(self):
+        """
+        Checks if there's any material loaded in a tool that doesn't support high-temp printing. If so, sets the filament to None.
+        This prevents the filament change wizard from accidentally heating a tool to a high temperature.
+        To be checked after the printer has connected (the only time when a change in hightemp/lowtemp hot end is allowed)
+        """
+
+        lowTempMax = 275
+        if "lowTempMax" in self.current_printer_profile:
+            lowTempMax = self.current_printer_profile["lowTempMax"]
+
+        for key, tool in self.tools.iteritems():
+            if key != "bed" and tool["hotend_type"] == HotEndTypes.LOW_TEMP:
+                material = self._get_material_from_name(tool["filament_material_name"])
+
+                # Check if the material's target temperature exceeds the safe maximum temperature for a low temp hotend
+                if material and material["extruder"] > lowTempMax:
+                    tool["filament_amount"] = 0
+                    tool["filament_material_name"] = self.default_material_name
+                    self._save_filament_to_db(key)
+                    self._logger.info("Incompatible filament found in {tool}, set to None".format(tool=key))
+
     # End filament change helpers
 
     # Client Message helpers
@@ -3614,6 +3636,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
                 self._update_printer_scripts_profiles()
                 self._init_model()
+
+            self._check_incompatible_filament()
 
             self._call_hooks(self.firmware_info_received_hooks)
             self._send_client_message(ClientMessages.MACHINE_INFO_UPDATED, self.machine_info)

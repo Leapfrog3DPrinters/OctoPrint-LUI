@@ -24,9 +24,11 @@ $(function () {
 
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function () {
-                    self.isHeadMaintenanceFlyoutOpen = true;
-                    self.moveToHeadMaintenancePosition();
-                    self.flyout.showFlyout('head_maintenance', true).always(self.afterHeadMaintenance);
+                    self.filament.requestData().always(function () {
+                        self.isHeadMaintenanceFlyoutOpen = true;
+                        self.moveToHeadMaintenancePosition();
+                        self.flyout.showFlyout('head_maintenance', true).always(self.afterHeadMaintenance);
+                    });
                 });
         };
 
