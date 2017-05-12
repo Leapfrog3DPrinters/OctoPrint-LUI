@@ -2152,7 +2152,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ##~ OctoPrint Settings
     def get_settings_defaults(self):
         return {
-            "model": self.model,
             "zoffset": 0,
             "action_door": True,
             "action_filament": True,
@@ -2402,9 +2401,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if cancel_print:
             self._printer.cancel_print()
-
-    
-    
 
     def _preheat_for_calibration(self):
         target_bed_temp = 0
@@ -3353,16 +3349,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             - COOLING
             - READY
         """
-        for tool, data in self.current_temperature_data.items():
+        for tool, data in self.current_temperature_data.iteritems():
             if tool == 'time':
                 continue
 
-            # some state vars
             has_target = data['target'] > 0
 
             if not has_target and data["actual"] <= 35:
                 status = ToolStatuses.IDLE
             else:
+                self._prevent_overheating(tool, data['target'])
+
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
                 stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
@@ -3381,6 +3378,25 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.change_status(tool, status)
 
         self._send_client_message(ClientMessages.TOOL_STATUS, { "tool_status": self._single_prop_dict(self.tools, "status") })
+
+    def _prevent_overheating(self, tool, target):
+        """ 
+        Checks if the target temperature of a given tool matches the installed hot end max temperature
+        """
+        # If the target temperature is over the max low temp temperature, and no high temp hotend is installed
+        if "lowTempMax" in self.current_printer_profile and target > self.current_printer_profile["lowTempMax"] and \
+            tool in self.tools and self.tools[tool]["hotend_type"] != HotEndTypes.HIGH_TEMP:
+                self._logger.warn("Tried to set target temperature {tool} at {target}, but no HT hotend installed. Max: {max}".format(
+                    tool=tool,
+                    target=target,
+                    max=self.current_printer_profile["lowTempMax"]
+                ))
+
+                # Cancel any heating running procedures and the print itself
+                self._immediate_cancel()
+
+                # Notify front-end
+                self._send_client_message(ClientMessages.HOTEND_ERROR, { "tool": tool, "target": target })
 
     def change_status(self, tool, new_status):
         """

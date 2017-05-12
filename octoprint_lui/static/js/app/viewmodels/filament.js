@@ -13,6 +13,8 @@ $(function ()  {
         self.filamentLoadProgress = ko.observable(0);
         self.forPurge = ko.observable(false);
 
+        self.hotEndErrorOpen = false;
+
         // Let's create an alias for the tools array, we're gonna use it a lot from here
         self.tools = self.toolInfo.tools;
 
@@ -246,6 +248,24 @@ $(function ()  {
             // We are finished, close the flyout
             self.flyout.closeFlyoutAccept();
         };
+
+        self.showHotEndError = function(tool, target)
+        {
+            if (!self.hotEndErrorOpen) {
+                self.hotEndErrorOpen = true;
+
+                var title = gettext("A temperature error occurred");
+
+                var message = gettext(_.sprintf("To heat the %(tool)s print head to %(target)d &deg;C you need a high temperature hot-end. Please make sure a high temperature hot-end is installed and connected properly.", {
+                    tool: tool == "tool1" ? gettext("left") : gettext("right"),
+                    target: target
+                }));
+
+                self.flyout.showWarning(title, message, false, function () {
+                    self.hotEndErrorOpen = false;
+                });
+            }
+        }
 
         self.startChangeFilament = function (tool) {
             return sendToApi("filament/" + tool + "/change/start");
@@ -505,6 +525,13 @@ $(function ()  {
                     var amounts = messageData.filament;
                     for (var i = 0; i < amounts.length; i++)
                         self.setFilamentAmount("tool" + i, amounts[i]);
+                    break;
+                case "hotend_error":
+                    var tool = messageData["tool"];
+                    var target = messageData["target"];
+
+                    self.showHotEndError(tool, target);
+
                     break;
 
             }

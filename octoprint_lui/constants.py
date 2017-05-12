@@ -20,6 +20,7 @@ class ClientMessages(object):
 
     TOOL_STATUS = "tool_status"
     TOOL_HEATING = "tool_heating"
+    HOTEND_ERROR = "hotend_error"
 
     IS_HOMING = "is_homing"
     IS_HOMED = "is_homed"
