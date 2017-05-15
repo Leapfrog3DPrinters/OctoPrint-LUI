@@ -261,19 +261,6 @@ $(function ()  {
 
         self.loadFilament = function (loadFor) {
 
-            //IntroJS
-            if (self.introView.isTutorialStarted) {
-                setTimeout(function () {
-                    self.introView.introInstance.refresh()
-                }, 300);
-                if(self.tool() == 'tool1') {
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
-                }
-                else{
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
-                }
-            }
-
             var loadFor = loadFor || "swap";
             var materialProfileName = undefined;
 
@@ -294,6 +281,27 @@ $(function ()  {
                     profile = self.selectedTemperatureProfile()
 
                 materialProfileName = profile.name;
+            }
+
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+
+                if (self.introView.requiredMaterial != materialProfileName) {
+
+
+
+                    return;
+                }
+
+                setTimeout(function () {
+                    self.introView.introInstance.refresh()
+                }, 300);
+                if(self.tool() == 'tool1') {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
+                }
+                else{
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
+                }
             }
 
             return sendToApi("filament/" + self.tool() + "/change/load",
