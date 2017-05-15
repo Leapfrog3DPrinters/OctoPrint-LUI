@@ -46,7 +46,7 @@ class RgbDriver(object):
         pwm_g = int(g * RgbDriver.resolution)
         pwm_b = int(b * RgbDriver.resolution)
         pwm_w = int(w * RgbDriver.resolution)
-        values= [pwm_r, pwm_g, pwm_b, pwm_w]
+        values= [pwm_r, pwm_g, pwm_b, pwm_w, pwm_r, pwm_g, pwm_b, pwm_w]
         s = ''.join('{:03x}'.format(v) for v in reversed(values))
         to_send = unhexlify(s)
         self.spi.writebytes(list(bytearray(to_send)))
