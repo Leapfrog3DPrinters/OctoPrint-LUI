@@ -476,8 +476,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _read_hostname(self):
         if self.platform == "RPi" and self.platform_info:
-            image_version = StrictVersion(self.platform_info["image_version"])
-            if image_version >= StrictVersion("1.2.0"):
+            image_version = LooseVersion(self.platform_info["image_version"])
+            if image_version >= LooseVersion("1.2.0"):
                 with open('/etc/hostname', 'r') as hostname_file:
                     try:
                         self.hostname = hostname_file.read()

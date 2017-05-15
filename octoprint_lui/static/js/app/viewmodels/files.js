@@ -98,7 +98,7 @@ $(function ()  {
         self.gcodePreviews = [];
 
         self.isOnline = ko.pureComputed(function () {
-            return self.network.status.connection.ethernet() || self.network.status.connection.wifi();
+            return self.network.status.ethernet.connected() || self.network.status.wifi.connected();
         })
 
         self.formatFilamentHeader = function (tool) {
