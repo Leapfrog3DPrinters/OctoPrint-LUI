@@ -191,6 +191,16 @@ $(function ()  {
             $('.swap_process_step,.fd_swap_process_step').removeClass('active');
             $('#unload_filament,#fd_unload_filament').addClass('active');
             $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                if(self.tool() == "tool1") {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentUnload"));
+                }
+                else{
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentUnload"));
+                }
+            }
         };
 
         self.showLoad = function ()  {
@@ -237,7 +247,7 @@ $(function ()  {
                     self.introView.introInstance.refresh()
                 }, 300);
                 if(self.tool() == 'tool1'){
-                    if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName()== 'None') {
+                    if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName() == 'None' || self.toolInfo.getToolByKey('tool0').filament.materialProfileName() != 'PLA') {
                         self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
                     }
                     else{
@@ -256,6 +266,18 @@ $(function ()  {
         }
 
         self.unloadFilament = function () {
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh()
+                }, 300);
+                if(self.tool() == 'tool1') {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentUnloading"));
+                }
+                else{
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentUnloading"));
+                }
+            }
             return sendToApi("filament/" + self.tool() + "/change/unload");
         }
 
