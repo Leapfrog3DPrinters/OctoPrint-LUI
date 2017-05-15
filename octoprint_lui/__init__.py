@@ -246,6 +246,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                                 "plugin.lui.logout_cloud_service",
                                ]
 
+        ## Hostname
+        self.hostname = None
+
     def initialize(self):
 
         #~~ get debug from yaml
@@ -271,6 +274,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Read model and prepare environment
         self.machine_info = self._get_machine_info()
         self._set_model()
+
+        ##~ Read and output information about the platform, such as the image version.
+        self._output_platform_info()
 
         ##~ Init Update
         self._init_update()
@@ -309,6 +315,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         ##~ Cloud init
         self._init_cloud()
+
+        ## Read hostname
+        self._read_hostname()
+
 
     def _init_cloud(self):
         self.cloud_enabled = self._settings.get_boolean(["cloud_enabled"])
@@ -464,6 +474,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Override tools dict with default values
         self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
 
+    def _read_hostname(self):
+        if self.platform == "RPi" and self.platform_info:
+            image_version = StrictVersion(self.platform_info["image_version"])
+            if image_version >= StrictVersion("1.2.0"):
+                with open('/etc/hostname', 'r') as hostname_file:
+                    try:
+                        self.hostname = hostname_file.read()
+                    except:
+                        self._logger.exception("Could not read hostname file")
+
+                    self._logger.info("Hostname read: {0}".format(self.hostname))
+
+
     # End initializers
 
     # Shutdown
@@ -495,10 +518,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             first_run_results = []
 
-            # Read and output information about the platform, such as the image version.
-            first_run_results.append(self._output_platform_info())
-
-            # Check plugin versions and check OctoPrint Branch, it will reboot and first run will run again after wards.
+            # Check OctoPrint Branch, it will reboot and first run will run again after wards.
             # This is at the top of the first run so most things won't run twice etc.
             first_run_results.append(self._check_version_sanity())
 
@@ -523,6 +543,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.error("First run failed")
 
     def _output_platform_info(self):
+        """Reads and writes platform information to the logfile"""
         self._read_platform_info()
         self._logger.info("Platform info: {0}".format(self.platform_info))
         return True
@@ -3856,6 +3877,73 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # this action as soon as the client is connected.
         if event == Events.CLIENT_OPENED:
             self._perform_forced_updates()
+
+        #if (event == Events.SETTINGS_UPDATED):
+        #    self._update_hostname()
+        # This function is not enabled yet as the readonly file system doesn't allow us to change the hostname yet
+
+    def _update_hostname(self):
+        """ Updates the hostname of the environment"""
+
+        # If hostname is None, we couldn't even read the hostname, so let alone write it
+        if self.hostname:
+            new_name = self._settings.global_get(["appearance", "name"])
+
+            if new_name:
+                new_hostname = self._transform_hostname(new_name)
+            
+                if new_hostname != self.hostname:
+                    self._save_hostname(new_hostname)
+
+    def _save_hostname(self, new_hostname):
+        """Saves the hostname to the /etc/hostname file and replaces any occurences in /etc/hosts"""
+        if self.hostname:
+            # We need admin rights for this, so sudo a command, and in one go because sudo depends on hostname
+            command = "sudo -s -- sh -c \"hostname '{hostname}' && echo '{hostname}' > /etc/hostname && sed -i 's@127.0.1.1\(.*\)@127.0.1.1      {hostname}@' /etc/hosts\"".format(hostname=new_hostname)
+            try:
+                octoprint_lui.util.execute(command)
+            except octoprint_lui.util.ScriptError as e:
+                self._logger.warn("Could not save hostname {0}: {1} - {2}".format(new_hostname, e.stdout, e.stderr))
+                return False
+
+            # Check returncodes
+            self.hostname = new_hostname
+            self._logger.info("Hostname updated: {0}".format(self.hostname))
+            return True
+
+    def _transform_hostname(self, pretty_name):
+        """
+        Transforms any given unicode pretty_name into a fqdn
+        """
+        if not pretty_name:
+            return None
+
+        # Make it basic ascii
+        pretty_name = pretty_name.encode('ascii','ignore')
+
+        # Replace spaces and underscores with hyphens
+        pretty_name = pretty_name.replace(" ", "-").replace("_", "-")
+
+        # Remove everything that isn't 0-9a-zA-Z-.
+        pretty_name = re.sub("[^0-9a-zA-Z-.]", "", pretty_name)
+
+        # Trim up to 253 chars
+        if len(pretty_name) > 253:
+            pretty_name = pretty_name[:253]
+
+        # Ensure each part (splitted by .) is at most 63 chars
+        splitted = pretty_name.split(".")
+        new_pretty_name = ""
+        for p in splitted:
+            np = p.lstrip("-0123456789").rstrip("-")
+            if len(np) > 63:
+                new_pretty_name += "." + np[:63]
+            elif len(np) >= 1:
+                new_pretty_name += "." + np
+
+        pretty_name = new_pretty_name[1:]
+
+        return pretty_name
 
     def _auto_shutdown_start(self):
         if not self.auto_shutdown_timer:
