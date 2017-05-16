@@ -328,18 +328,18 @@ $(function ()  {
             {
                  //32
                 stepName: "leftToolWrongFilament",
-                intro: "<div class=\"step-header tutorial-warning\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("You have to use PLA filament to continue with the tutorial.<br>") +
-                "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('leftToolNoFilament')) }\">"  + gettext("Continue") + "</a></div>"
+                "<div class=\"step-text\">" + gettext("Please select PLA filament when loading the filament.<br>") +
+                "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('leftToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
             },
             {
                  //33
                 stepName: "rightToolWrongFilament",
-                intro: "<div class=\"step-header tutorial-warning\">" + gettext("Warning") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("You have to load PLA filament to continue with the tutorial.<br>") +
-                "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('rightToolNoFilament')) }\">"  + gettext("Continue") + "</a></div>"
+                "<div class=\"step-text\">" + gettext("Please select PLA filament when loading the filament.<br>") +
+                "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('rightToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
             }
         ];
 
@@ -361,7 +361,6 @@ $(function ()  {
 
         self.introInstance.onafterchange(function () {
             var step = self.currentStep();
-            console.log(self.introInstance._introItems[step-1].stepName);
             if(self.lastStep != step) {
                 var element = document.getElementById('introjs-container');
                 if(!ko.utils.domData.get(element, "__ko_boundElement")) {
@@ -402,10 +401,7 @@ $(function ()  {
         };
 
         self.goToStepButton = function (step) {
-            if(self.currentStep() == 32 || self.currentStep() == 33){
-                callViewModels(self.allViewModels, "onFilamentIntroExit");
-                return;
-            }
+            setTimeout(function () { self.introInstance.refresh() }, 200);
             self.introInstance.goToStep(step);
         };
 
@@ -495,6 +491,10 @@ $(function ()  {
 
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
+        };
+
+        self.afterFilamentWarning = function () {
+            if(self.introInstance._introItems[self.currentStep()-1].stepName);
         };
 
         self.onSyncOrMirrorWarningClose = function () {
