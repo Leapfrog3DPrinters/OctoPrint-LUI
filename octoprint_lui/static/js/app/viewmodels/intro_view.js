@@ -84,7 +84,7 @@ $(function ()  {
             {
                 //7
                 stepName: "leftToolFilamentDone",
-                element: '#filament_loading',
+                element: '#finished_filament',
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("We are now done loading filament in the left extruder. If you are not satisfied" +
@@ -146,7 +146,7 @@ $(function ()  {
             {
                 //13
                 stepName: "rightToolFilamentDone",
-                element: '#filament_loading',
+                element: '#finished_filament',
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("We are now done loading filament. If you are not " +
@@ -350,6 +350,10 @@ $(function ()  {
                         $('#print_icon').mousedown();
                         self.isFirstStep = true;
                     break;
+                case 5: $(".introjs-progress").css("display","inherit");
+                    break;
+                case 11: $(".introjs-progress").css("display","inherit");
+                    break;
                 case 15: self.introInstance.refresh();
                          $('#settings_icon').mousedown();
                     break;
@@ -361,20 +365,22 @@ $(function ()  {
 
         self.introInstance.onafterchange(function () {
             var step = self.currentStep();
+            console.log(self.introInstance._introItems[step-1].stepName);
             if(self.lastStep != step) {
                 var element = document.getElementById('introjs-container');
                 if(!ko.utils.domData.get(element, "__ko_boundElement")) {
-                    ko.cleanNode(element);
+                    // We need to wait until the button click event completed before the DOM is updated
                     setTimeout(function () {
+                        ko.cleanNode(element);
                         ko.applyBindings(self, element);
-                    }, 750);
+                    }, 0);
                 }
                 self.lastStep = step;
             }
             switch (self.currentStep()){
-                case 21: setTimeout(function () {self.introInstance.refresh()}, 500);
+                case 32: $(".introjs-progress").css("display","none");
                     break;
-                case 24: setTimeout(function () {self.introInstance.refresh()}, 500);
+                case 33: $(".introjs-progress").css("display","none");
                     break;
             }
         });
@@ -401,8 +407,8 @@ $(function ()  {
         };
 
         self.goToStepButton = function (step) {
-            setTimeout(function () { self.introInstance.refresh() }, 200);
             self.introInstance.goToStep(step);
+            self.introInstance.refresh();
         };
 
         self.beginButton = function () {
@@ -431,12 +437,14 @@ $(function ()  {
             }
             self.isTutorialStarted = false;
             self.introInstance.exit();
+            self.lastStep = 0;
         };
 
         self.doneButton = function () {
             //Stops intro and resets flag
             self.isTutorialStarted = false;
             self.introInstance.exit();
+            self.lastStep = 0;
         };
 
         self.exitButton = function () {
@@ -478,6 +486,7 @@ $(function ()  {
                 default : $('#print_icon').mousedown();
                     break;
             }
+            self.lastStep = 0;
             self.introInstance.exit();
         };
 
@@ -493,20 +502,14 @@ $(function ()  {
             self.allViewModels = allViewModels;
         };
 
-        self.afterFilamentWarning = function () {
-            if(self.introInstance._introItems[self.currentStep()-1].stepName);
-        };
-
         self.onSyncOrMirrorWarningClose = function () {
             if(self.isTutorialStarted) {
                 self.introInstance.start();
                 var checkWarningFlyoutClosed = setInterval(function () {
                         if (!$('.warning_flyout').length) {
                             clearInterval(checkWarningFlyoutClosed);
-                            setTimeout(function () {
-                                self.introInstance.refresh();
-                            }, 200);
                             self.introInstance.goToStep(self.getStepNumberByName("selectPrintMode"));
+                            self.introInstance.refresh();
                         }
                     }
                     , 100);

@@ -844,7 +844,7 @@
           if (self._lastShowElementTimer) {
               clearTimeout(self._lastShowElementTimer);
           }
-          self._lastShowElementTimer = setTimeout(function() {
+
               //set current step to the label
               if (oldHelperNumberLayer != null) {
                   oldHelperNumberLayer.innerHTML = targetElement.step;
@@ -874,7 +874,6 @@
                   //still in the tour, focus on next
                   nextTooltipButton.focus();
               }
-          }, 350);
 
       } else {
           var helperLayer       = document.createElement('div'),

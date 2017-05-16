@@ -1323,10 +1323,8 @@ $(function ()  {
                         //IntroJS
                         if (self.introView.isTutorialStarted){
                             self.isIntroFile(false);
-                            setTimeout(function () {
-                                self.introView.introInstance.refresh();
-                            }, 500);
                             self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+                            self.introView.introInstance.refresh();
                         }
                         break;
                 }

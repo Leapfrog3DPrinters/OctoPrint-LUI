@@ -62,10 +62,8 @@ $(function ()  {
                 self.flyout.closeFlyoutAccept();
                 //IntroJS
                 if(self.introView.isTutorialStarted) {
-                    setTimeout(function () {
-                        self.introView.introInstance.refresh();
-                    }, 300);
                     self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateExtruders"));
+                    self.introView.introInstance.refresh();
                 }
             }
         }

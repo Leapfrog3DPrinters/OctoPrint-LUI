@@ -78,10 +78,9 @@ $(function () {
             if(self.introView.isTutorialStarted){
                 // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
                 $('#extrudercalibration_flyout').one("transitionend", function () {
-                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startLargeCalibration"));
+                    self.introView.introInstance.refresh();
                 });
-
-                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startLargeCalibration"));
             }
         }
 
@@ -92,10 +91,9 @@ $(function () {
             if(self.introView.isTutorialStarted){
                 // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
                 $('#bedcalibration_flyout').one("transitionend", function () {
-                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("continueBedCalibration"));
+                    self.introView.introInstance.refresh();
                 });
-
-                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("continueBedCalibration"));
             }
         };
 
@@ -201,11 +199,10 @@ $(function () {
             if (self.introView.isTutorialStarted) {
                 // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
                 $('#maintenance_settings_flyout').one("transitionend", function () {
-                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
-                });
-
                     self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
-                }
+                    self.introView.introInstance.refresh();
+                });
+            }
         }
     }
     ADDITIONAL_VIEWMODELS.push([

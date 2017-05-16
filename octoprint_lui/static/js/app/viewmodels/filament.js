@@ -193,13 +193,13 @@ $(function ()  {
             $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
             //IntroJS
             if (self.introView.isTutorialStarted) {
-                setTimeout(function () { self.introView.introInstance.refresh() }, 200);
-                if(self.tool() == "tool1") {
+                if (self.tool() == "tool1") {
                     self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentUnload"));
                 }
-                else{
+                else {
                     self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentUnload"));
                 }
+                self.introView.introInstance.refresh();
             }
         };
 
@@ -211,9 +211,6 @@ $(function ()  {
             self.filamentLoading(false);
             //IntroJS
             if (self.introView.isTutorialStarted) {
-                    setTimeout(function () {
-                        self.introView.introInstance.refresh()
-                    }, 300);
                     if(self.tool() == "tool1") {
                         self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentSelect"));
                     }
@@ -243,9 +240,10 @@ $(function ()  {
             // We are finished close the flyout
             //IntroJS
             if(self.introView.isTutorialStarted) {
-                setTimeout(function () {
-                    self.introView.introInstance.refresh()
-                }, 300);
+                $('#filament_flyout').one("transitionend", function () {
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                });
+
                 if(self.tool() == 'tool1'){
                     if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName() == 'None' || self.toolInfo.getToolByKey('tool0').filament.materialProfileName() != 'PLA') {
                         self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
@@ -268,9 +266,7 @@ $(function ()  {
         self.unloadFilament = function () {
             //IntroJS
             if (self.introView.isTutorialStarted) {
-                setTimeout(function () {
-                    self.introView.introInstance.refresh()
-                }, 300);
+
                 if(self.tool() == 'tool1') {
                     self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentUnloading"));
                 }
@@ -307,26 +303,16 @@ $(function ()  {
 
             //IntroJS
             if (self.introView.isTutorialStarted) {
-                setTimeout(function () {
-                        self.introView.introInstance.refresh()
-                }, 300);
                 if (self.introView.requiredMaterial != materialProfileName) {
-                    if(self.tool() == 'tool1') {
+                    if (self.tool() == 'tool1') {
                         self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolWrongFilament"));
                     }
-                    else{
+                    else {
                         self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolWrongFilament"));
                     }
                     return;
                 }
-                else {
-                    if (self.tool() == 'tool1') {
-                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
-                    }
-                    else {
-                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
-                    }
-                }
+                setTimeout(function () {self.introView.introInstance.refresh()}, 300);
             }
 
             return sendToApi("filament/" + self.tool() + "/change/load",
@@ -517,6 +503,17 @@ $(function ()  {
                     self.filamentLoading(true);
                     self.filamentLoadProgress(0);
                     self.onToolHeating();
+                    if (self.introView.isTutorialStarted) {
+                        if (self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect") || self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect")) {
+                            if (self.tool() == 'tool1') {
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
+                            }
+                            else {
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
+                            }
+                        }
+                        self.introView.introInstance.refresh();
+                    }
                     break;
                 case "filament_extruding_started":
                     var filament = self.getFilament(messageData["tool"]);
