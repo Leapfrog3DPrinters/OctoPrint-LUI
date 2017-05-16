@@ -307,22 +307,25 @@ $(function ()  {
 
             //IntroJS
             if (self.introView.isTutorialStarted) {
-
+                setTimeout(function () {
+                        self.introView.introInstance.refresh()
+                }, 300);
                 if (self.introView.requiredMaterial != materialProfileName) {
-
-
-
+                    if(self.tool() == 'tool1') {
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolWrongFilament"));
+                    }
+                    else{
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolWrongFilament"));
+                    }
                     return;
                 }
-
-                setTimeout(function () {
-                    self.introView.introInstance.refresh()
-                }, 300);
-                if(self.tool() == 'tool1') {
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
-                }
-                else{
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
+                else {
+                    if (self.tool() == 'tool1') {
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
+                    }
+                    else {
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
+                    }
                 }
             }
 

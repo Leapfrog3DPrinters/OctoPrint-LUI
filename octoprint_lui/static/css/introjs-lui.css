@@ -13,6 +13,9 @@
 .step-header {
   border-bottom: 2px solid #ff9734;
 }
+.tutorial-warning {
+    color: #CC2B14;
+}
 
 .introjs-bullets {
   pointer-events: none;

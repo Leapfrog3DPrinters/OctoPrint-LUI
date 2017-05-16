@@ -324,6 +324,22 @@ $(function ()  {
                 "Watch how the object magically appears in  front of you.<br>") +
                 "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
                 "data-bind=\"touchClick: function(){ doneButton() }\">" + gettext("Done") + "</a></div></div>"
+            },
+            {
+                 //32
+                stepName: "leftToolWrongFilament",
+                intro: "<div class=\"step-header tutorial-warning\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
+                "<div class=\"step-text\">" + gettext("You have to use PLA filament to continue with the tutorial.<br>") +
+                "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('leftToolNoFilament')) }\">"  + gettext("Continue") + "</a></div>"
+            },
+            {
+                 //33
+                stepName: "rightToolWrongFilament",
+                intro: "<div class=\"step-header tutorial-warning\">" + gettext("Warning") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
+                "<div class=\"step-text\">" + gettext("You have to load PLA filament to continue with the tutorial.<br>") +
+                "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('rightToolNoFilament')) }\">"  + gettext("Continue") + "</a></div>"
             }
         ];
 
@@ -345,13 +361,15 @@ $(function ()  {
 
         self.introInstance.onafterchange(function () {
             var step = self.currentStep();
-            console.log(step);
+            console.log(self.introInstance._introItems[step-1].stepName);
             if(self.lastStep != step) {
                 var element = document.getElementById('introjs-container');
-                ko.cleanNode(element);
-                setTimeout(function () {
-                    ko.applyBindings(self, element);
-                }, 750);
+                if(!ko.utils.domData.get(element, "__ko_boundElement")) {
+                    ko.cleanNode(element);
+                    setTimeout(function () {
+                        ko.applyBindings(self, element);
+                    }, 750);
+                }
                 self.lastStep = step;
             }
             switch (self.currentStep()){
@@ -384,6 +402,10 @@ $(function ()  {
         };
 
         self.goToStepButton = function (step) {
+            if(self.currentStep() == 32 || self.currentStep() == 33){
+                callViewModels(self.allViewModels, "onFilamentIntroExit");
+                return;
+            }
             self.introInstance.goToStep(step);
         };
 
@@ -428,32 +450,33 @@ $(function ()  {
 
             switch (true) {
                 //Extruder Calibration Exit
-                case (step > 15 && step < 23):
+                case (step > 19 && step < 27):
                     callViewModels(self.allViewModels, 'onExtruderCalibrationIntroExit');
                     self.flyout.closeFlyout();
                     break;
-                case (step == 16):
+                case (step == 20):
                     self.flyout.closeFlyout();
                     self.flyout.closeFlyout();
                     $('#print_icon').mousedown();
                     break;
                 //Swap Filament Exit
-                case (step > 2 && step < 6 || step > 6 && step < 10):
+                case (step > 2 && step < 8 || step > 8 && step < 14):
                     callViewModels(self.allViewModels, 'onFilamentIntroExit');
                     break;
                 //Bed Calibration Exit
-                case (step == 13 || step == 14 ):
+                case (step == 17 || step == 18 ):
                     callViewModels(self.allViewModels, 'onBedCalibrationIntroExit');
                     self.flyout.closeFlyout();
                     break;
                 // Maintenance Flyout Exit
-                case (step == 12 || step == 15):
+                case (step == 16 || step == 23):
                     self.flyout.closeFlyout();
                     $('#print_icon').mousedown();
                     break;
                 // Print Flyout Exit
-                case (step == 26):
+                case (step == 30):
                     sendToApi("printer/immediate_cancel");
+                    self.flyout.closeFlyout();
                     break;
                 // For other steps
                 default : $('#print_icon').mousedown();
