@@ -378,7 +378,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             {
                 'name': "Leapfrog UI",
                 'identifier': 'lui',
-                'version': self._plugin_manager.get_plugin_info('lui').version,
+                'version': self._plugin_manager.get_plugin_info('lui').version if self._plugin_manager.get_plugin_info('lui') else None, 
                 'version_requirement': None, # LUI version is leading
                 'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
                 'update': False,
@@ -388,7 +388,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             {
                 'name': 'Network Manager',
                 'identifier': 'networkmanager',
-                'version': self._plugin_manager.get_plugin_info('networkmanager').version,
+                'version': self._plugin_manager.get_plugin_info('networkmanager').version if self._plugin_manager.get_plugin_info('networkmanager') else None,
                 'version_requirement': ">=1.1.0",
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
                 'update': False,
@@ -398,7 +398,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             {
                 'name': 'Flash Firmware Module',
                 'identifier': 'flasharduino',
-                'version': self._plugin_manager.get_plugin_info('flasharduino').version,
+                'version': self._plugin_manager.get_plugin_info('flasharduino').version if self._plugin_manager.get_plugin_info('flasharduino') else None,
                 'version_requirement': ">=1.0.2",
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
                 'update': False,
@@ -408,7 +408,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             {
                 'name': 'G-code Render Module',
                 'identifier': 'gcoderender',
-                'version': self._plugin_manager.get_plugin_info('gcoderender').version,
+                'version': self._plugin_manager.get_plugin_info('gcoderender').version if self._plugin_manager.get_plugin_info('gcoderender') else None,
                 'version_requirement': ">=1.0.0",
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
@@ -1996,6 +1996,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _check_version_requirement(self, current_version, requirement):
         """Helper function that checks if a given version matches a version requirement"""
 
+        # If we don't require anything, everything must be ok
+        if not requirement:
+            return True
+
+        # If there's no current version given, it can't meet the requirement
+        if not current_version:
+            return False
+
         if requirement.startswith('<='):
             return LooseVersion(current_version) <= LooseVersion(requirement[2:])
         elif requirement.startswith('<'):
@@ -3417,7 +3425,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 else:
                     status = ToolStatuses.COOLING
 
-            self.tools[tool]["status"] = status
+            if tool in self.tools:
+                self.tools[tool]["status"] = status
+
             self.change_status(tool, status)
 
         self._send_client_message(ClientMessages.TOOL_STATUS, { "tool_status": self._single_prop_dict(self.tools, "status") })
