@@ -7,6 +7,7 @@ $(function ()  {
         self.flyout = parameters[2];
         self.printerState = parameters[3];
         self.temperatures = parameters[4];
+        self.introView = parameters[5];
 
         self.getToolName = function (tool)
         {
@@ -72,11 +73,26 @@ $(function ()  {
                 console.log("Calibration set to 0, 0");
                 sendToApi("maintenance/head/calibrate/start/bed_width_large");
             });
-
+            //IntroJS
+            if(self.introView.isTutorialStarted) {
+                var checkIfPrinting = setInterval(function () {
+                        if(self.printerState.isPrinting()){
+                            clearInterval(checkIfPrinting);
+                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("printingLargeCalibration"));
+                        }
+                    }, 100);
+            }
         };
 
         self.prepareSmallExtruderCalibration = function ()  {
             self.largeCalibrationCompleted(true);
+            //IntroJS
+            if(self.introView.isTutorialStarted) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 1000);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startSmallCalibration"));
+            }
         };
 
         self.startSmallExtruderCalibration = function ()  {
@@ -88,17 +104,43 @@ $(function ()  {
                 console.log("Calibration set to " + self.largeBedWidthCorrection() + ", 0");
                 sendToApi("maintenance/head/calibrate/start/bed_width_small");
             });
-
+            //IntroJS
+            if(self.introView.isTutorialStarted) {
+                var checkIfPrinting = setInterval(function () {
+                        if(self.printerState.isPrinting()){
+                            clearInterval(checkIfPrinting);
+                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("printingSmallCalibration"));
+                        }
+                    }, 100);
+            }
         };
 
         self.showSmallYCalibration = function()
         {
             self.smallXCalibrationCompleted(true);
-        };
+            //IntroJS
+            if(self.introView.isTutorialStarted) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectYSmall"));
+            }
+        }
 
         self.onCalibrationPrintCompleted = function (calibration_type) {
             self.isPrintingCalibration(false);
-        };
+            if(self.introView.isTutorialStarted) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                if(calibration_type == 'bed_width_large') {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("largeCalibrationDone"));
+                }
+                else{
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectXSmall"));
+                }
+            }
+        }
 
         self.onCalibrationPrintFailed = function (calibration_type) {
             self.restoreState();
@@ -150,6 +192,14 @@ $(function ()  {
                 {
                     $.notify({ title: gettext('Calibration failed'), text: gettext('An error has occured while storing the calibration settings. Please try again.') }, "error");
                 }).always(function ()  { self.restoreState(); sendToApi("files/unselect"); });
+            //IntroJS
+            if(self.introView.isTutorialStarted) {
+                self.flyout.closeFlyout();
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 1000);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintJob"));
+            }
         };
 
         self.abort = function ()
@@ -237,6 +287,10 @@ $(function ()  {
             }
         }
 
+        self.onExtruderCalibrationIntroExit = function () {
+            self.abort();
+        }
+
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
@@ -247,7 +301,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel", "introViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#extrudercalibration_flyout"]

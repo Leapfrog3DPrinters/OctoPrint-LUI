@@ -32,9 +32,9 @@ $(function () {
         {
             if(confirm)
             {
-                self.flyout.showConfirmationFlyout({ 
-                    'title': gettext('Restart system service'), 
-                    'text': gettext('You are about to restart the background printer services.'), 
+                self.flyout.showConfirmationFlyout({
+                    'title': gettext('Restart system service'),
+                    'text': gettext('You are about to restart the background printer services.'),
                     'question': gettext('Do you want to continue?')
                 }).done(self.system.systemServiceRestart);
             }

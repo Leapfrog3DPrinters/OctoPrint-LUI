@@ -19,7 +19,7 @@ $(function () {
 
         self.appearance_name = ko.observable(undefined);
         self.appearance_defaultLanguage = ko.observable();
-        
+
         self.feature_modelSizeDetection = ko.observable(undefined);
 
         self.serial_autoconnect = ko.observable(undefined);
@@ -78,7 +78,7 @@ $(function () {
                     $.notify({ title: title, text: "\"" + profile.name + _.sprintf(gettext('" must have an extruder temperature between %(mintemp)s &deg;C and %(maxtemp)s &deg;C.'), { "mintemp": minTemp, "maxtemp": maxTemp }) }, 'error');
                     return;
                 }
-                
+
 
                 if (isNaN(profile.bed) || profile.bed < 0) {
                     $.notify({ title: title, text: profile + profile.name + gettext('" must have a bed temperature of at least 0 &deg;C.') }, 'error');
@@ -318,7 +318,7 @@ $(function () {
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
                 },
-                plugins: 
+                plugins:
                     {
                         lui: {
                             autoShutdown: function (value) { self.autoShutdown(value); }
@@ -437,7 +437,7 @@ $(function () {
             // }
         };
 
-        
+
 
         // Sending custom commands to the printer, needed for level bed for example.
         // format is: sendCustomCommand({type:'command',command:'M106 S255'})
@@ -500,7 +500,7 @@ $(function () {
             [],
             0
         );
-        
+
 
         self.translationUploadFilename = ko.observable();
         self.invalidTranslationArchive = ko.pureComputed(function() {

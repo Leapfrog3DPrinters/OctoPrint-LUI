@@ -7,6 +7,7 @@ $(function ()  {
         self.flyout = parameters[2];
         self.printerState = parameters[3];
         self.toolInfo = parameters[4];
+        self.introView = parameters[5];
 
         self.loadedFilamentAmount = ko.observable();
         self.tool = ko.observable(undefined);
@@ -18,7 +19,7 @@ $(function ()  {
         // Let's create an alias for the tools array, we're gonna use it a lot from here
         self.tools = self.toolInfo.tools;
 
-        // IsExtruding is now stored in toolInfo.tools. This helper lets you know if there's any of these tools extruding 
+        // IsExtruding is now stored in toolInfo.tools. This helper lets you know if there's any of these tools extruding
         self.isAnyExtrudingOrRetracting = ko.pureComputed(function () {
             return _.some(self.tools(), function (tool) { return tool.filament.isExtruding() || tool.filament.isRetracting(); });
         });
@@ -218,6 +219,17 @@ $(function ()  {
             $('.swap_process_step').removeClass('active');
             $('#unload_filament').addClass('active');
             $('#unload_cmd').removeClass('disabled');
+
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                if (self.tool() == "tool1") {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentUnload"));
+                }
+                else {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentUnload"));
+                }
+                self.introView.introInstance.refresh();
+            }
         };
 
         self.showLoad = function ()  {
@@ -226,7 +238,16 @@ $(function ()  {
             $('.swap_process_step').removeClass('active');
             $('#load_filament').addClass('active');
             self.filamentLoading(false);
-            };
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                    if(self.tool() == "tool1") {
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentSelect"));
+                    }
+                    else{
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentSelect"));
+                    }
+            }
+        };
 
         self.showFinished = function ()  {
             $('#swap-info').removeClass('active')
@@ -245,7 +266,25 @@ $(function ()  {
             }
 
         self.finishedLoading = function ()  {
-            // We are finished, close the flyout
+            // We are finished close the flyout
+            //IntroJS
+            if(self.introView.isTutorialStarted) {
+                $('#filament_flyout').one("transitionend", function () {
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 200);
+                });
+
+                if(self.tool() == 'tool1'){
+                    if(self.toolInfo.getToolByKey('tool0').filament.materialProfileName() == 'None' || self.toolInfo.getToolByKey('tool0').filament.materialProfileName() != 'PLA') {
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
+                    }
+                    else{
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("bothToolsLoaded"));
+                    }
+                }
+                else {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("bothToolsLoaded"));
+                }
+            }
             self.flyout.closeFlyoutAccept();
         };
 
@@ -272,6 +311,16 @@ $(function ()  {
         }
 
         self.unloadFilament = function () {
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+
+                if(self.tool() == 'tool1') {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentUnloading"));
+                }
+                else{
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentUnloading"));
+                }
+            }
             return sendToApi("filament/" + self.tool() + "/change/unload");
         }
 
@@ -289,6 +338,20 @@ $(function ()  {
                 var profile = self.selectedTemperatureProfile()
 
                 materialProfileName = profile.name;
+            }
+
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                if (self.introView.requiredMaterial != materialProfileName) {
+                    if (self.tool() == 'tool1') {
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolWrongFilament"));
+                    }
+                    else {
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolWrongFilament"));
+                    }
+                    return;
+                }
+                setTimeout(function () {self.introView.introInstance.refresh()}, 300);
             }
 
             return sendToApi("filament/" + self.tool() + "/change/load",
@@ -368,7 +431,7 @@ $(function ()  {
 
         self.finishHeating = function (tool) {
             tool = tool || self.tool();
-            
+
             sendToApi("filament/" + tool + "/heat/finish");
         }
 
@@ -439,7 +502,7 @@ $(function ()  {
 
                     if (messageData && messageData.hasOwnProperty('paused_materials'))
                         self.lockTemperatureProfile(messageData['paused_materials'])
-                    
+
                     break;
                 case "filament_change_cancelled":
                     self.filamentInProgress(false);
@@ -488,6 +551,27 @@ $(function ()  {
                     self.filamentLoading(false);
                     self.showFinished();
                     self.hideToolLoading();
+                    //IntroJS
+                    if (self.introView.isTutorialStarted) {
+                        tool = self.tool();
+                        profile = self.selectedTemperatureProfile();
+                        if (tool == 'tool1') {
+                            if(profile.name == 'None') {
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolNoFilament"));
+                            }
+                            else {
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentDone"));
+                            }
+                        }
+                        else {
+                            if(profile.name == 'None'){
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
+                            }
+                            else {
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentDone"));
+                            }
+                        }
+                    }
                     self.filamentLoadProgress(0);
                     if (!messageData.profile) {
                         self.flyout.closeFlyoutAccept();
@@ -499,6 +583,18 @@ $(function ()  {
                         self.filamentLoading(true);
                         self.filamentLoadProgress(0);
                         self.onToolHeating();
+
+                        if (self.introView.isTutorialStarted) {
+                            if (self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect") || self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect")) {
+                                if (self.tool() == 'tool1') {
+                                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
+                                }
+                                else {
+                                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
+                                }
+                            }
+                            self.introView.introInstance.refresh();
+                        }
                     }
                     break;
                 case "filament_extruding_started":
@@ -535,7 +631,7 @@ $(function ()  {
                     break;
 
             }
-        }
+        };
 
 
         self.copyMaterialProfiles = function ()  {
@@ -546,7 +642,7 @@ $(function ()  {
                 extruder: 0,
                 name: "None"
             });
-        }
+        };
 
         self.getMaterialByName = function(name) {
             return _.find(self.materialProfiles(), { name: name });
@@ -574,7 +670,7 @@ $(function ()  {
                     tools[i].filament.hotEndType(data.filaments[i].hotEndType);
                 }
             }
-        }
+        };
 
         self.requestData = function ()  {
             return getFromApi("filament").done(self.fromResponse);
@@ -582,12 +678,33 @@ $(function ()  {
 
         self.onMaterialsSettingsShown = function () {
             self.requestData();
+        };
+
+        self.abortFilament = function () {
+            self.flyout.closeFlyout();
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                tool = self.tool();
+                if (tool == 'tool1') {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolNoFilament"));
+                }
+                else {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolNoFilament"));
+                }
+            }
+        };
+
+        self.onFilamentIntroExit = function () {
+            self.abortFilament();
         }
     }
 
     OCTOPRINT_VIEWMODELS.push([
       FilamentViewModel,
-      ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel"],
+      ["loginStateViewModel", "settingsViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel", "introViewModel"],
       ["#filament_status", "#filament_flyout", "#materials_settings_flyout_content"]
     ]);
 

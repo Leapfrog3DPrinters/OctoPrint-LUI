@@ -1,7 +1,7 @@
 $(function () {
   function FlyoutViewModel(parameters) {
     var self = this;
-    
+
     self.confirmationDeferred = undefined;
 
     self.template_flyout = undefined;
@@ -14,7 +14,7 @@ $(function () {
     self.confirmation_question = ko.observable(undefined);
     self.confirmation_ok_text = ko.observable(undefined);
     self.confirmation_cancel_text = ko.observable(undefined);
-    
+
     self.warnings = ko.observableArray([]);
     self.infos = ko.observableArray([]);
     self.flyouts = ko.observableArray([]);
@@ -45,6 +45,10 @@ $(function () {
     {
         self.warnings.remove(warningVm);
         self.setOverlay();
+        //IntroJS
+        if (warningVm.warning_title == gettext("Sync or Mirror print")) {
+                callViewModels(self.allViewModels, "onSyncOrMirrorWarningClose");
+        }
     };
 
     self.closeLastWarning = function()
@@ -88,7 +92,7 @@ $(function () {
 
         var flyout_ref = _.find(self.flyouts(), function (f) { return f.template == template_flyout });
 
-        
+
         if (!flyout_ref)
         {
             // If we can't find a reference to the flyout, create a new one
@@ -120,7 +124,7 @@ $(function () {
 
         return flyout_ref.deferred
     };
-    
+
     self.showConfirmationFlyout = function(data, leaveFlyout) {
       // Set flyout ko.observables
       var title = data.title || gettext("Are you sure?");
@@ -147,9 +151,9 @@ $(function () {
 
               if (self.flyouts().length !== 0 && !leaveFlyout)
                   self.closeFlyoutAccept();
-          
+
               self.confirmationDeferred = undefined;
-              
+
           })
           .fail(function ()  {
               $('#confirmation_flyout').removeClass('active');
@@ -192,7 +196,7 @@ $(function () {
         }
 
         var deferred = flyout_ref.deferred;
-        
+
         if (deferred != undefined)
         {
             deferred.reject();
@@ -212,7 +216,7 @@ $(function () {
         }
         self.deactivateFlyout(template_flyout);
     };
-    
+
     self.closeFlyoutAccept = function (flyout) {
         if (flyout !== undefined)
         {
@@ -237,7 +241,7 @@ $(function () {
         }
 
         var deferred = flyout_ref.deferred;
-        
+
         if (deferred != undefined)
         {
             deferred.resolve();

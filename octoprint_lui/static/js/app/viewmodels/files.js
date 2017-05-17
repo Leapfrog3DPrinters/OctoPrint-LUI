@@ -11,7 +11,9 @@ $(function ()  {
         self.network = parameters[6];
         self.cloud = parameters[7];
         self.navigation = parameters[8];
+        self.introView = parameters[9];
 
+        self.isIntroFile = ko.observable(false);
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
         self.currentOrigin = ko.observable("local");
@@ -168,8 +170,18 @@ $(function ()  {
             .always(function () {
                 self.isLoadingFileList(false);
             });
-           
-        }
+
+            if (origin = "local" && self.introView.isTutorialStarted) {
+                self.isIntroFile(true);
+                var checkIfFileVisible = setInterval(function () {
+                    if($('#print_files').is(":visible")) {
+                        self.introView.introInstance.refresh();
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectFile"));
+                    }
+                    clearInterval(checkIfFileVisible);
+                }, 100);
+            }
+        };
 
         self.browseUsbForFirmware = function ()  {
             if (self.isLoadingFileList())
@@ -323,7 +335,7 @@ $(function ()  {
             {
                 self.browseOrigin("local",filenameToFocus);
             }
-            
+
         };
 
         self.focusOnFile = function(filenameToFocus, locationToFocus)
@@ -352,7 +364,7 @@ $(function ()  {
 
             self.allItems(files);
             self.currentPath("");
-            
+
 
             if (!switchToPath) {
                 self.listHelper.updateItems(files);
@@ -376,7 +388,7 @@ $(function ()  {
         };
 
         self.changeFolder = function (data) {
-            
+
             if (!data.children) {
                 self.loadChildrenAndBrowse(data);
             }
@@ -391,7 +403,7 @@ $(function ()  {
         {
             if (self.isLoadingFileList())
                 return;
-            
+
             self.isLoadingFileList(true);
             self.loadFiles(folder.origin, "", folder.path).done(preProcessList).then(function (children) {
                 folder.children = children.files;
@@ -504,15 +516,15 @@ $(function ()  {
                             if (self.flyout.flyouts().length > 0)
                                 self.flyout.closeFlyoutAccept();
                             // changeTabTo("print");
-                        }).always(function ()  { self.isLoadingFile = false; });;
+                        }).always(function ()  { self.isLoadingFile = false; });
             }
 
         };
 
-        self.printAndChangeTab = function () {
+        self.printAndChangeTab = function (datafile) {
             changeTabTo("print");
             self.printerState.print();
-        }
+        };
 
         self.copyToUsb = function(file)
         {
@@ -525,20 +537,20 @@ $(function ()  {
 
         self.removeAllFiles = function()
         {
-            
+
             var text = gettext("You have opted to delete all print jobs.");
             if (self.selectedFile())
                 text += gettext(" This will not delete the currently selected file.");
 
             var question = gettext("Do you want to continue?");
-            var title = gettext("Delete all jobs"); 
+            var title = gettext("Delete all jobs");
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
             .done(function ()  {
                 return sendToApi('files/delete_all')
                     .done(function ()  {
-                        
+
                         $.notify({
                             title: gettext("Jobs deleted"),
                             text: gettext("All print jobs were deleted.")
@@ -557,7 +569,7 @@ $(function ()  {
                 })
                 .always(function ()  { self.requestData(undefined, undefined, undefined); })
             });
-        }
+        };
 
         self.removeFile = function (file) {
             if (!file) {
@@ -584,7 +596,7 @@ $(function ()  {
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
-            .done(function () {        
+            .done(function () {
                 OctoPrint.files.delete(file.origin, file.path)
                     .done(function () {
 
@@ -612,18 +624,22 @@ $(function ()  {
                 sendToApi('printer/start_print/' + mode);
                 self.flyout.closeFlyoutAccept();
             }
-
-
             // do print stuff
-            // close flyout. 
+            // close flyout.
+            if(self.introView.isTutorialStarted){
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("tutorialDone"));
+                }, 200);
+            }
         };
 
         self.isDualPrint = ko.computed(function(){
             // Checks if selected file uses both tools for printing.
-            // At the moment tools is hardcoded, should be taken from 
-            // printer profile. 
-            // There is a length check in there, because the analyser 
-            // sometimes falsely puts some extrusion on one of the tools 
+            // At the moment tools is hardcoded, should be taken from
+            // printer profile.
+            // There is a length check in there, because the analyser
+            // sometimes falsely puts some extrusion on one of the tools
             // at start up script (or something)
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
                 var analysis = self.selectedFile()["gcodeAnalysis"]();
@@ -677,15 +693,15 @@ $(function ()  {
                 }
 
                 var neededFilaments = analysis['filament'];
-               
+
                 var mode = self.printerState.printMode();
                 var lengthThreshold = 100;
-                
+
                 if (mode == "normal") {
                     sufficient = _.every(neededFilaments, function (tool, key) {
                         return (tool['length'] - lengthThreshold) < self.filament.getFilament(key).amount();
                     });
-                    
+
                 } else if (mode == "sync" || mode == "mirror") {
                     var maxLength = 0.0;
                     _.each(neededFilaments, function (x) { maxLength = Math.max(maxLength, x.length); });
@@ -760,7 +776,7 @@ $(function ()  {
             // model not within bounds, we need to prepare a warning
             var warning = "";
             var info = "";
-            var title = _.sprintf(gettext("Size check %(mode)s mode failed"), {mode: mode});  
+            var title = _.sprintf(gettext("Size check %(mode)s mode failed"), {mode: mode});
 
             var formatData = {
                 profile: boundaries,
@@ -768,7 +784,7 @@ $(function ()  {
                 dimensions: dimensions
             };
 
-            // Create grid 
+            // Create grid
             var grid = "<div class='Table-row'><div class='Table-item'>";
             var gridsize_y = 300;
             var gridsize_x = 330;
@@ -799,7 +815,7 @@ $(function ()  {
             if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
                 info += gettext("Object exceeds print area in width. ");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object width') + "</div></div>";
-                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);  
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);
             }
             if (dimensions["depth"] > (boundaries["maxY"] + Math.abs(boundaries["minY"]))) {
                 info += gettext("Object exceeds print area in depth.");
@@ -821,19 +837,19 @@ $(function ()  {
                 if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
                     info += gettext("Object positioned outside print area in width.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object position') + "</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);
                 }
                 if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
                     info += gettext("Object positioned outside print area in depth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area depth') + "</div><div class='Table-item'>" + gettext('Object position') + "</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);
                 }
                 if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
                     info += gettext("Object positioned outside print area in heigth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area height') + "</div><div class='Table-item'>" + gettext('Object position') +"</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);
                 }
-                
+
             }
 
             //warn user
@@ -867,6 +883,8 @@ $(function ()  {
 
         self.printerState.printMode.subscribeChanged(function(newValue, oldValue){
             if ((newValue == "sync" || newValue == "mirror") && (oldValue == "normal")) {
+                //IntroJS
+                self.introView.introInstance.exit();
                 self.showSyncMirrorWarning();
             }
         });
@@ -996,7 +1014,7 @@ $(function ()  {
 
         self.refreshPrintPreview = function (filename, url) {
             var file = self.getFileByFilename(filename);
-         
+
             if(file)
                 file.previewUrl(url);
         }
@@ -1145,7 +1163,7 @@ $(function ()  {
                         text: _.sprintf(gettext('Uploaded file: "%(filename)s"'), { filename: filename })
                     },
                         "success"
-                    )
+                    );
                     self.loadFile(data.result.files.local, false);
                 }
             }
@@ -1156,7 +1174,7 @@ $(function ()  {
                     text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\"'))
                 },
                     "error"
-                )
+                );
                 self.setProgressBar(0, "", false);
             }
 
@@ -1165,14 +1183,14 @@ $(function ()  {
                 self.setProgressBar(progress);
             }
 
-            
+
             var url = API_BASEURL + "files/local";
 
             if (self.uploadButton === undefined)
                 return;
 
             self.uploadButton.fileupload({
-                
+
                 add: function (e, data) {
                     var acceptFileTypes = /(\.)(gcode|gco|g)$/i;
                     var dfd = $.Deferred(),
@@ -1199,7 +1217,7 @@ $(function ()  {
                 if (self.currentPath() != "")
                     data.formData = { path: self.currentPath() };
             });
-            
+
             self.requestData();
             self.checkUsbMounted();
         };
@@ -1211,7 +1229,7 @@ $(function ()  {
             });
         }
         self.onEventMetadataAnalysisFinished = function (payload) {
-            
+
             var file = self.getFileByFilename(payload.path);
 
             if(file)
@@ -1317,14 +1335,33 @@ $(function ()  {
                         );
                         break;
 
+                    case "demo_selected":
+                        self.printAndChangeTab();
+                        //IntroJS
+                        if (self.introView.isTutorialStarted){
+                            self.isIntroFile(false);
+                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+                            self.introView.introInstance.refresh();
+                        }
+                        break;
                 }
             }
-        }
+        };
+
+        self.checkIntroCancel = function () {
+            //IntroJS
+            self.introView.introInstance.exit();
+            self.flyout.closeFlyout();
+        };
+
+        self.selectDemoFile = function () {
+            sendToApi("printer/select_demo");
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([
         FilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel", "cloudViewModel", "navigationViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel", "cloudViewModel", "navigationViewModel", "introViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });

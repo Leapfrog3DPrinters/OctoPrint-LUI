@@ -8,6 +8,7 @@ $(function () {
         self.toolInfo = parameters[3];
         self.filament = parameters[4];
         self.navigation = parameters[5];
+        self.introView = parameters[6];
 
         self.poweringUpInfo = null;
         self.movingToHeadSwapPositionInfo = null;
@@ -41,7 +42,7 @@ $(function () {
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function () {
                     self.moveToHeadSwapPosition();
-                }); 
+                });
         };
 
         self.cleanBedPosition = function ()  {
@@ -79,11 +80,27 @@ $(function () {
 
         self.calibrateExtruders = function ()  {
             self.flyout.showFlyout('extrudercalibration', true);
-        };
+            //IntroJS
+            if(self.introView.isTutorialStarted){
+                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
+                $('#extrudercalibration_flyout').one("transitionend", function () {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startLargeCalibration"));
+                    self.introView.introInstance.refresh();
+                });
+            }
+        }
 
         self.calibrateBed = function()
         {
             self.flyout.showFlyout('bedcalibration', true);
+            //IntroJS
+            if(self.introView.isTutorialStarted){
+                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
+                $('#bedcalibration_flyout').one("transitionend", function () {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("continueBedCalibration"));
+                    self.introView.introInstance.refresh();
+                });
+            }
         };
 
         self.moveToCleanBedPosition = function () {
@@ -184,10 +201,21 @@ $(function () {
                     break;
             }
         }
+
+        self.onMaintenanceSettingsShown = function () {
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
+                $('#maintenance_settings_flyout').one("transitionend", function () {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
+                    self.introView.introInstance.refresh();
+                });
+            }
+        }
     }
     ADDITIONAL_VIEWMODELS.push([
         MaintenanceViewModel,
-        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "toolInfoViewModel", "filamentViewModel", "navigationViewModel"],
+        ["flyoutViewModel", "printerStateViewModel", "settingsViewModel", "toolInfoViewModel", "filamentViewModel", "navigationViewModel", "introViewModel"],
         ["#maintenance_settings_flyout_content", "#head_maintenance_flyout"]
     ]);
 });

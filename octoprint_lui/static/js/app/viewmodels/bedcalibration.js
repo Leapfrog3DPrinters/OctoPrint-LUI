@@ -6,6 +6,7 @@ $(function ()  {
         self.loginState = parameters[1];
         self.flyout = parameters[2];
         self.printerState = parameters[3];
+        self.introView = parameters[4];
 
         self.mayAbort = ko.observable(true);
         self.mayAccept = ko.observable(false);
@@ -32,16 +33,22 @@ $(function ()  {
             self.mayAbort(true);
             self.mayAccept(false);
             $('.bed-canvas-item').removeClass('active');
-        }
+        };
 
         self.onBedcalibrationFlyoutShown = function ()  {
             self.resetState();
-        }
+        };
 
         self.abort = function()
         {
             self.flyout.closeFlyout();
-        }
+            if(self.introView.isTutorialStarted){
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
+            }
+        };
 
         self.accept = function()
         {
@@ -53,6 +60,11 @@ $(function ()  {
                 if (self.showManualBedCalibration())
                     self.restoreFromCalibrationPosition();
                 self.flyout.closeFlyoutAccept();
+                //IntroJS
+                if(self.introView.isTutorialStarted) {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateExtruders"));
+                    self.introView.introInstance.refresh();
+                }
             }
         }
 
@@ -62,6 +74,13 @@ $(function ()  {
             self.showManualBedCalibration(true);
             self.mayAbort(false);
             self.mayAccept(true);
+            //IntroJS
+            if(self.introView.isTutorialStarted){
+                setTimeout(function(){
+                    self.introView.introInstance.refresh();
+                }, 300);
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("calibrateBed"));
+            }
         }
 
         self.startZoffset = function ()  {
@@ -134,6 +153,11 @@ $(function ()  {
             }
         }
 
+        self.onBedCalibrationIntroExit = function () {
+            self.abort();
+        }
+
+
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
@@ -144,7 +168,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "introViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         ["#bedcalibration_flyout"]

@@ -4,15 +4,15 @@
             <img src="{{ url_for("plugin.lui.static", filename="img/logo.png") }}" width="50%" height="50%" style="margin-top: 6px">
         </a>
     </div>
-    
+
     {% if debug_lui %}
     <div style="padding-right: 2em" data-bind="touchClick: function () { doDebuggingAction() } ">
       <a href="#">
         Debug
       </a>
     </div>
-    {% endif %} 
-    
+    {% endif %}
+
     <div class="header_status">
         <span data-bind="text: printerState.stateString"></span>
     </div>

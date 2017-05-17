@@ -23,7 +23,7 @@
       </div><!-- Printer -->
       {% if local_addr %}
       <!-- Maintenance -->
-      <div class="settings_topic">
+      <div id="maintenance" class="settings_topic">
         <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('maintenance')}, css: { disabled: !printerState.isOperational() || printerState.isPaused() || printerState.isPrinting() } ">
           <li class="topic_dash">
             <a href="#">
@@ -154,9 +154,10 @@
           <li class="topic_dash">
             <a href="#">
               <!-- ko allowBindings: false -->
-              <i id="update_icon" class="fa fa-refresh">
+              <div id="update_icon">
+                <i class="fa fa-refresh"></i>
                 <span data-bind="text: update_needed() + firmwareUpdateAvailable() == 0 ? '' : update_needed() + firmwareUpdateAvailable(), css: {badge: update_needed() + firmwareUpdateAvailable()}"></span>
-              </i>
+              </div>
               <!-- /ko -->
             </a>
           </li>
@@ -195,7 +196,7 @@
       <!-- Cloud -->
       {% if cloud_enabled %} 
       <div class="settings_topic">
-        <ul class="topic_main" data-bind="click: function () {showSettingsTopic('cloud')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('cloud')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
           <li class="topic_dash">
             <a href="">
               <i id="cloud_icon" class="fa fa-cloud"></i>
@@ -236,6 +237,28 @@
         </ul>
       </div><!-- /Logs -->
       {% endif %}
+      {% if local_addr %}
+      <!-- Tutorials -->
+      <div class="settings_topic">
+          <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('tutorials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() || printerState.isPaused()|| printerState.isPrinting()}">
+          <li class="topic_dash">
+            <a href="">
+              <i id="language_icon" class="fa fa-graduation-cap"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>{{ _('Tutorials') }}</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- /Tutorials -->
+    {% endif %}
     </div>
     <!-- /Topics -->
   </div>

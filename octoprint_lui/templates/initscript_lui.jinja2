@@ -31,5 +31,6 @@
   var CONFIG_USERSPERPAGE = 5;
   var CONFIG_ACCESS_CONTROL = true;
 
+  var FIRST_START = {%  if first_start -%} true; {% else %} false; {%- endif %}
   var LPFRG_MODEL = "{{ model }}"
 </script>
