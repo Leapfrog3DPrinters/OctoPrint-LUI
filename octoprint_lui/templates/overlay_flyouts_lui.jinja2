@@ -520,18 +520,9 @@
     </ul>
   </div>
 </aside>
-<aside id="firmware_update_required_flyout" class="flyout">
-  <div class="flyout-header bg-yellow">
-    <h4>
-      <i class="fa fa-exclamation-triangle"></i>Firmware update required
-    </h4>
-  </div>
-  <div class="flyout-body">
-    <div id="firmware_update_required_flyout_content">
-      {% include "flyouts_lui/info_flyouts/firmware_update_required_flyout.jinja2" %}
-    </div>
-  </div>
-</aside>
+
+{% include "flyouts_lui/info_flyouts/update_required_flyout.jinja2" %}
+
 <aside id="offline_flyout" class="flyout">
   <div class="flyout-header">
     <h4><i class="fa fa-exclamation-triangle"></i>{{ _('Service Offline') }}</h4>

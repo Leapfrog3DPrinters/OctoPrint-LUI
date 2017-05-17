@@ -32,7 +32,7 @@ INSTALLED_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
 
 class CloudService(object):
     def __init__(self, secrets, data_folder):
-        self._logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger("octoprint.plugins.lui.cloud")
     def get_auth_url(self, redirect_uri):
         pass
     def handle_auth_response(self, request):
@@ -51,6 +51,7 @@ class DropboxCloudService(CloudService):
         super(DropboxCloudService, self).__init__(secrets, data_folder)
         self._secrets = secrets
         self._csrf = {}
+        
         self._client = None
         self._client_secret = self._secrets.get('client_secret');
         self._client_id = self._secrets.get('client_id');
@@ -59,6 +60,8 @@ class DropboxCloudService(CloudService):
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
         self._load_credentials()
+
+        self._flow = dropbox.client.DropboxOAuth2FlowNoRedirect(self._client_id, self._client_secret)
         
     ## Private methods
     def _get_client(self):
@@ -105,8 +108,6 @@ class DropboxCloudService(CloudService):
 
     def get_auth_url(self, redirect_uri):
         self._redirect_uri = redirect_uri
-        self._flow = dropbox.client.DropboxOAuth2Flow(self._client_id, self._client_secret, redirect_uri, self._csrf, "dropbox-auth-csrf-token")
-
         return self._flow.start()
 
     def handle_auth_response(self, request):
@@ -116,6 +117,17 @@ class DropboxCloudService(CloudService):
 
         try:
             self._access_token, _, _ = self._flow.finish(request.values)
+            self._save_credentials()
+            self._logger.info("Dropbox authenticated")
+            return True
+        except Exception as e:
+            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
+            return False
+
+    def handle_manual_auth_response(self, auth_code):
+
+        try:
+            self._access_token, _, _ = flow.finish(auth_code)
             self._save_credentials()
             self._logger.info("Dropbox authenticated")
             return True
@@ -418,6 +430,19 @@ class OnedriveCloudService(CloudService):
         try:
             auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
             self._access_token = access_token
+            auth_provider.save_session(path=self._credential_path)
+            self._logger.info("OneDrive authenticated")
+            return True
+        except Exception as e:
+            self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
+            return False
+
+    def handle_manual_auth_response(self, auth_code):
+        auth_provider = self._get_client().auth_provider
+        self._logger.debug("OneDrive access token received")
+        try:
+            auth_provider.authenticate(auth_code, self._redirect_uri, self._client_secret)
+            self._access_token = auth_code
             auth_provider.save_session(path=self._credential_path)
             self._logger.info("OneDrive authenticated")
             return True

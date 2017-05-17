@@ -46,7 +46,6 @@ $(function () {
         self.loginService = function (service) {
 
             // If we're local, present the user with a manual auth code entry
-
             if (IS_LOCAL) {
                 self.getServiceInfo(service).showAuthCodeForm(true);
             }

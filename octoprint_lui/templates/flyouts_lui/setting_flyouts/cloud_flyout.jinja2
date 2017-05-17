@@ -15,11 +15,29 @@
           </div>
         </div>
         {% if not local_addr %}
-        <div class="Table-row">
+        <!-- ko foreach: serviceInfo.slice(0) -->
+        <div class="Table-row" data-bind="css: { disabled: !$root.isOnline() }">
+          <!-- We can't use Table-item here due to chromium bug -->
+          <div style="flex: 1 1; margin: auto 0">
+            <img data-bind="attr: { src: $root.getCloudServiceIcon(name()) }" style="width: 23px; margin-right: 10px;" />
+            <span data-bind="text: $root.getCloudServiceName(name())"></span>
+          </div>
           <div class="Table-item">
-            {{ _('Please use your 3D printer to connect to cloud services. It is not possible to configure cloud services remotely.') }}
+            <ul class="button-area">
+              <li class="button ok-button" data-bind="click: function() { $root.loginService(name()) }, visible: !loggedIn()">
+                <a href="">
+                  <span>{{ _('Connect') }}</span>
+                </a>
+              </li>
+              <li class="button failed-button" data-bind="click: function() { $root.logoutService(name()) }, visible: loggedIn()">
+                <a href="">
+                  <span>{{ _('Disconnect') }}</span>
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
+      <!-- /ko-->  
         {% else %}
         <div class="Table-row">
           <div class="Table-item">
