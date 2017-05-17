@@ -1703,9 +1703,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     @BlueprintPlugin.route("/printer/had_first_start", methods=["POST"])
     def had_first_start(self):
-        if not self._settings.get_boolean(["first_start"]):
-			self._settings.set(["first_start"], True)
-			self._settings.save()
+        if self._settings.get_boolean(["first_start"]):
+            self._settings.set(["first_start"], False)
+            self._settings.save()
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/printer/select_demo", methods=["POST"])
@@ -1713,7 +1713,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """IntroJS"""
         abs_path = self._copy_demo_file("Bolt-PLA.gcode")
         if abs_path:
-			self._printer.select_file(abs_path, False, False)
+            self._printer.select_file(abs_path, False, False)
         self._send_client_message("demo_selected")
         return make_response(jsonify(), 200)
 

@@ -415,6 +415,7 @@ $(function ()  {
             //Check if filament is loaded and skips steps when not needed.
             if(self.currentStep() == 1){
                 sendToApi('printer/had_first_start');
+                FIRST_START = false;
                 self.isFirstStep = false;
             }
 
@@ -433,6 +434,7 @@ $(function ()  {
             //Cancels the intro, sends to backend that intro has run.
             if(self.currentStep() == 1 && self.isFirstStep == true){
                 sendToApi('printer/had_first_start');
+                FIRST_START = false;
                 self.isFirstStep = false;
             }
             self.isTutorialStarted = false;

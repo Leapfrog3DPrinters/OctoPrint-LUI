@@ -452,7 +452,7 @@ $(function ()  {
         self.beginHoming = function () {
             self.isHomingRequested(true);
             sendToApi('printer/homing/start');
-            if(!FIRST_START){
+            if(FIRST_START){
                 self.introView.startIntro('firstPrint');
             }
         };
