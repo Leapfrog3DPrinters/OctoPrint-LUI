@@ -14,7 +14,7 @@ $(function ()  {
         self.filamentLoadProgress = ko.observable(0);
         self.forPurge = ko.observable(false);
 
-        self.hotEndErrorOpen = false;
+        self.targetTempErrorOpen = false;
 
         // Let's create an alias for the tools array, we're gonna use it a lot from here
         self.tools = self.toolInfo.tools;
@@ -288,20 +288,21 @@ $(function ()  {
             self.flyout.closeFlyoutAccept();
         };
 
-        self.showHotEndError = function(tool, target)
+        self.showTargetTempError = function(tool, target, max)
         {
-            if (!self.hotEndErrorOpen) {
-                self.hotEndErrorOpen = true;
+            if (!self.targetTempErrorOpen) {
+                self.targetTempErrorOpen = true;
 
                 var title = gettext("A temperature error occurred");
 
-                var message = gettext(_.sprintf("To heat the %(tool)s print head to %(target)d &deg;C you need a high temperature hot-end. Please make sure a high temperature hot-end is installed and connected properly.", {
+                var message = gettext(_.sprintf("You are trying to print with the %(tool)s print head at %(target)d &deg;C, but the maximum print temperature for the current hot-end is %(max)d &deg;C.", {
                     tool: tool == "tool1" ? gettext("left") : gettext("right"),
-                    target: target
+                    target: target,
+                    max: max
                 }));
 
                 self.flyout.showWarning(title, message, false, function () {
-                    self.hotEndErrorOpen = false;
+                    self.targetTempErrorOpen = false;
                 });
             }
         }
@@ -622,14 +623,14 @@ $(function ()  {
                     for (var i = 0; i < amounts.length; i++)
                         self.setFilamentAmount("tool" + i, amounts[i]);
                     break;
-                case "hotend_error":
+                case "target_temp_error":
                     var tool = messageData["tool"];
                     var target = messageData["target"];
+                    var max = messageData["max"];
 
-                    self.showHotEndError(tool, target);
+                    self.showTargetTempError(tool, target, max);
 
                     break;
-
             }
         };
 
