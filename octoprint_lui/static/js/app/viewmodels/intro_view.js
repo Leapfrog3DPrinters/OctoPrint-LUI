@@ -365,7 +365,6 @@ $(function ()  {
 
         self.introInstance.onafterchange(function () {
             var step = self.currentStep();
-            console.log(self.introInstance._introItems[step-1].stepName);
             if(self.lastStep != step) {
                 var element = document.getElementById('introjs-container');
                 if(!ko.utils.domData.get(element, "__ko_boundElement")) {
