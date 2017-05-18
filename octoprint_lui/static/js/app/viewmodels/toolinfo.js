@@ -108,10 +108,11 @@ $(function () {
             self._onToolsUpdated.push(callback);
         }
 
-        self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function () {
+        self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function (value) {
             self._printerProfileUpdated();
-            self.settingsViewModel.printerProfiles.currentProfileData().extruder.count.subscribe(self._printerProfileUpdated);
-            self.settingsViewModel.printerProfiles.currentProfileData().heatedBed.subscribe(self._printerProfileUpdated);
+
+            value.extruder.count.subscribe(self._printerProfileUpdated);
+            value.heatedBed.subscribe(self._printerProfileUpdated);
         });
 
         self.fromCurrentData = function(data) {

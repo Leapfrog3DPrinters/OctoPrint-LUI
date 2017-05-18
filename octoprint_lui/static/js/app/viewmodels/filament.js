@@ -636,12 +636,14 @@ $(function ()  {
 
         self.copyMaterialProfiles = function ()  {
             // Copy the settings materials and add a "None" profile
-            self.materialProfiles(self.settings.temperature_profiles.slice(0));
-            self.materialProfiles.unshift({
+            var allProfiles = self.settings.temperature_profiles.slice(0);
+            allProfiles.unshift({
                 bed: 0,
                 extruder: 0,
                 name: "None"
             });
+
+            self.materialProfiles(allProfiles);
         };
 
         self.getMaterialByName = function(name) {
