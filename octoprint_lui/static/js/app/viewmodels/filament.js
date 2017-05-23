@@ -631,6 +631,9 @@ $(function ()  {
                     self.showTargetTempError(tool, target, max);
 
                     break;
+                case "tools_changed":
+                        self.fromResponse(messageData);
+                    break;
             }
         };
 

@@ -64,7 +64,7 @@ $(function () {
 
         self._onToolsUpdated = [];
 
-        self._printerProfileUpdated = function () {
+        self._initializeTools = function () {
             // Initialize the tools
             var heaterOptions = {};
             var tools = self.tools();
@@ -109,10 +109,10 @@ $(function () {
         }
 
         self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function (value) {
-            self._printerProfileUpdated();
+            self._initializeTools();
 
-            value.extruder.count.subscribe(self._printerProfileUpdated);
-            value.heatedBed.subscribe(self._printerProfileUpdated);
+            value.extruder.count.subscribe(self._initializeTools);
+            value.heatedBed.subscribe(self._initializeTools);
         });
 
         self.fromCurrentData = function(data) {

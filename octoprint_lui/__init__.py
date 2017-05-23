@@ -3795,14 +3795,21 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self.machine_database.update({'value': None }, self._machine_query.property == key)
 
         # Now parse the tool specific properties
+        tools_changed = False
         for tool in self.tools:
             if tool != "bed":
                 for key in self.firmware_info_tool_properties:
                     prop = self.firmware_info_tool_properties[key].format(self._get_tool_num(tool))
                     value = find_m115_property_value(prop, line)
 
-                    if value:
+                    if value and value != self.tools[tool].get(key):
                         self.tools[tool][key] = value
+                        tools_changed = True
+        
+        # Notify the front end of any updates in tools (e.g. a switch to a high temp hot-end)
+        if tools_changed:
+            self._send_client_message(ClientMessages.TOOLS_CHANGED, { "filaments": self._get_current_filaments() } )
+
 
     def _get_machine_info(self):
         machine_info = dict()

@@ -21,6 +21,7 @@ class ClientMessages(object):
     TOOL_STATUS = "tool_status"
     TOOL_HEATING = "tool_heating"
     TARGET_TEMP_ERROR = "target_temp_error"
+    TOOLS_CHANGED = "tools_changed"
 
     IS_HOMING = "is_homing"
     IS_HOMED = "is_homed"
