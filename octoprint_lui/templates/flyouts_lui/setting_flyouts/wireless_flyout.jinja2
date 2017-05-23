@@ -11,16 +11,16 @@
       <div id="settings_plugin_networkmanager">
         <div id="networkmanager_connections" class="Table active" data-bind="visible: !connectionDetailsEditorVisible()">
           <div class="Table-row Table-header">
-            <div class="Table-item">
+            <div class="Table-item" style="flex: 0 0 50px;">
               {{ _('Wifi') }}
             </div>
-            <div class="Table-item">
+            <div class="Table-item" style="flex: 0 0 110px;">
               <div class="check_toggle">
                 <input type="checkbox" id="wifi-enabled" data-bind="checked: status.wifi.enabled" />
                 <label for="wifi-enabled"></label>
               </div>
             </div>
-            <div class="Table-item Table-item-right" style="width: 120px;">
+            <div class="Table-item Table-item-right" style="width: 140px;">
               <span data-bind="text: wifiIp"></span>
             </div>
             <div class="Table-item" data-bind="visible: working" style="flex-basis: 40px; max-width: 40px;">
