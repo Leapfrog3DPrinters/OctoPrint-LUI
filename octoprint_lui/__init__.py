@@ -2773,19 +2773,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             added_file = octoprint.server.fileManager.add_file(octoprint.filemanager.FileDestinations.LOCAL, futureFullPath, upload, allow_overwrite=True)
         except octoprint.filemanager.storage.StorageError as e:
             timer.cancel()
+            self._send_client_message(ClientMessages.MEDIA_FILE_COPY_FAILED)
             if e.code == octoprint.filemanager.storage.StorageError.INVALID_FILE:
                 return make_response(jsonify({ "message": "Could not upload the file \"{}\", invalid type".format(upload.filename) }), 400)
             else:
                 return make_response(jsonify({ "message": "Could not upload the file \"{}\"".format(upload.filename) }), 500)
-        finally:
-             self._send_client_message(ClientMessages.MEDIA_FILE_COPY_FAILED)
 
         # Stop the timer
         is_copying = False
 
         self._printer.select_file(futureFullPath, False, False)
 
-        self._event_bus.fire(octoprint.events.Events.UPLOAD, {"name": added_file, "path": added_file, "target": "local"})
+        self._event_bus.fire(Events.UPLOAD, {"name": added_file, "path": added_file, "target": "local"})
 
         location = flask.url_for(".readGcodeFile", target=octoprint.filemanager.FileDestinations.LOCAL, filename=added_file, _external=True)
 
