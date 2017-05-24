@@ -153,7 +153,6 @@ $(function () {
         };
 
         self.requestData = function (local) {
-
             console.log("Requesting settings");
 
             // handle old parameter format

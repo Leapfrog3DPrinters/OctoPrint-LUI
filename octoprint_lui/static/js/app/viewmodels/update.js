@@ -419,7 +419,7 @@ $(function ()  {
             self.requestData();
         };
 
-        self.onSettingsHidden = function ()  {
+        self.onUpdateSettingsHidden = function ()  {
             self.flashArduino.resetFile();
         }
 

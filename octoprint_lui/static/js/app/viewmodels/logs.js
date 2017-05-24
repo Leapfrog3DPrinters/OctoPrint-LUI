@@ -89,7 +89,7 @@ $(function() {
             })
         };
 
-        self.onSettingsShown = function() {
+        self.onLogsSettingsShown = function() {
             self.requestData();
         };
     }
