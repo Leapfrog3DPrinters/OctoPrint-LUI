@@ -118,9 +118,11 @@ $(function () {
                     title: gettext("Turn on auto shutdown"),
                     text: gettext("You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine.")
                 };
+
+                // Wait for the toggle animation
                 setTimeout(function(){
                     self.flyout.showWarning(data.title, data.text)
-                }, 500)
+                }, 200)
             }
 
             self.sendAutoShutdownStatus(!toggle);
@@ -129,7 +131,7 @@ $(function () {
 
         self.sendAutoShutdownStatus = function(toggle)
         {
-            sendToApi("printer/auto_shutdown/" + toggle ? "on" : "off");
+            sendToApi("printer/auto_shutdown/" + (toggle ? "on" : "off"));
         }
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
