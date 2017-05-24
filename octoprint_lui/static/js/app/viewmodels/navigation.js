@@ -97,6 +97,7 @@ $(function () {
                 })
                 .always(function () {
                     callViewModels(self.allViewModels, "onSettingsHidden");
+                    callViewModels(self.allViewModels, "on" + settingsTopic + "SettingsHidden");
                 });
         };
 

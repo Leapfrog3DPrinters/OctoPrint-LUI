@@ -21,6 +21,7 @@ $(function ()  {
         self.waitingForPause = ko.observable(false);
         self.waitingForCancel = ko.observable(false);
 
+        self.maintenanceMode = ko.observable(false);
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
         self.isHomingRequested = ko.observable(false);
@@ -518,6 +519,7 @@ $(function ()  {
         };
 
         self.fromResponse = function (data) {
+            self.maintenanceMode(data.maintenanceMode);
             self.isHomed(data.isHomed);
             self.isHoming(data.isHoming);
             self.isHomingRequested(false);
@@ -546,12 +548,30 @@ $(function ()  {
                 self.erroredExtruder(undefined);
                 self.errorReason(undefined);
             }
+
+            if(data.maintenanceMode)
+                self.showMaintenanceModeFlyout();
+            else
+                self.hideMaintenanceModeFlyout();
         };
 
         self.requestData = function ()  {
             self.refreshPrintPreview();
 
             getFromApi('printer').done(self.fromResponse);
+        }
+
+        self.showMaintenanceModeFlyout = function () {
+            // Only shown on remote, prevents user from undertaking any action on the printer until maintenance is exited
+            if (!IS_LOCAL) {
+                // High priority flyout
+                if (!self.flyout.isFlyoutOpen('maintenance_mode'))
+                    self.flyout.showFlyout('maintenance_mode', true, true);
+            }
+        }
+
+        self.hideMaintenanceModeFlyout = function () {
+            if (!IS_LOCAL) self.flyout.closeFlyoutAccept("maintenance_mode");
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -579,6 +599,12 @@ $(function ()  {
             else if (plugin == "lui") {
 
                 switch (messageType) {
+                    case "maintenance_started":
+                        self.showMaintenanceModeFlyout();
+                        break;
+                    case "maintenance_finished":
+                        self.hideMaintenanceModeFlyout();
+                        break;
                     case "is_homed":
                         self.isHomed(true);
                         self.isHoming(false);

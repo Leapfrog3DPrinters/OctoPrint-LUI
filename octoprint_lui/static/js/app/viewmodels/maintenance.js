@@ -177,6 +177,25 @@ $(function () {
             });
         }
 
+        self.onMaintenanceSettingsShown = function () {
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
+                $('#maintenance_settings_flyout').one("transitionend", function () {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
+                    self.introView.introInstance.refresh();
+                });
+            }
+
+            // Notify the back-end we're in maintenance mode
+            sendToApi("maintenance/start");
+        }
+
+        self.onMaintenanceSettingsHidden = function () {
+            // Notify the back-end we're done with maintenance mode
+            sendToApi("maintenance/finish");
+        }
+
         // Handle plugin messages
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
@@ -185,7 +204,6 @@ $(function () {
 
             var messageType = data['type'];
             switch (messageType) {
-
                 case "head_in_swap_position":
                     self.finishHeadSwap();
                     break;
@@ -199,17 +217,6 @@ $(function () {
                         self.flyout.closeInfo(self.poweringUpInfo);
                     }
                     break;
-            }
-        }
-
-        self.onMaintenanceSettingsShown = function () {
-            //IntroJS
-            if (self.introView.isTutorialStarted) {
-                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
-                $('#maintenance_settings_flyout').one("transitionend", function () {
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
-                    self.introView.introInstance.refresh();
-                });
             }
         }
     }

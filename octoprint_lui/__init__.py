@@ -62,6 +62,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Global
         self.debug = False
         self.auto_shutdown = False
+        self.maintenance_mode = False
 
         ##~ Model specific
         self.supported_models = ['bolt', 'boltpro', 'xeed', 'xcel']
@@ -1154,6 +1155,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     ## Maintenance API
 
+    @BlueprintPlugin.route("/maintenance/start", methods=["POST"])
+    def maintenance_start(self):
+        """
+        Notifies all clients we're in maintenance mode (and prevents any action until it is done)
+        """
+        self._start_maintenance_mode()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/finish", methods=["POST"])
+    def maintenance_finish(self):
+        """
+        Notifies all clients we're done with maintenance mode
+        """
+        self._finish_maintenance_mode()
+        return make_response(jsonify(), 200)
+
     @BlueprintPlugin.route("/maintenance/bed/clean/start", methods=["POST"])
     def maintenance_bed_clean_start(self):
         """
@@ -1392,6 +1409,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Starts the change filament procedure, by setting the state variables server side and initiating the filament unload sequence. 
         """
         # Send to the front end that we are currently changing filament.
+        self._start_maintenance_mode()
+
         if self._printer.is_paused():
             self._send_client_message(ClientMessages.FILAMENT_CHANGE_STARTED, { "paused_materials": self.paused_materials })
         else:
@@ -1514,6 +1533,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Finishes the change filament wizard, restores the state (so if paused, resets to paused temperatures, etc)
         """
+        self._finish_maintenance_mode()
+
         if self.load_filament_timer:
             self.load_filament_timer.cancel()
 
@@ -1544,6 +1565,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Abort mission! Stop filament loading.
         Cancel all heat up and reset
         """
+        self._finish_maintenance_mode()
 
         # Loading has already started, so just cancel the loading, which will stop heating already.
         context = { "filamentAction": self.filament_action,
@@ -1619,14 +1641,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         isHomed: bool,
         isHoming: bool,
         printerErrorReason: string,
-        printerErrorExtruder: string
+        printerErrorExtruder: string,
+        maintenanceMode: bool
         }
         """
         return make_response(jsonify({
                 'isHomed': self.is_homed,
                 'isHoming': self.is_homing,
                 'printerErrorReason': self.printer_error_reason,
-                'printerErrorExtruder': self.printer_error_extruder
+                'printerErrorExtruder': self.printer_error_extruder,
+                'maintenanceMode': self.maintenance_mode
                 }), 200)
 
     @BlueprintPlugin.route("/printer/machine_info", methods=["GET"])
@@ -3125,6 +3149,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     # End filament change helpers
 
     # Client Message helpers
+    def _start_maintenance_mode(self):
+        # Notify the client we're in maintenance mode
+        self.maintenance_mode = True
+        self._send_client_message(ClientMessages.MAINTENANCE_STARTED)
+
+    def _finish_maintenance_mode(self):
+        # Notify the client we're in maintenance mode
+        self.maintenance_mode = False
+        self._send_client_message(ClientMessages.MAINTENANCE_FINISHED)
+
     def _send_client_message(self, message_type, data=None):
 
         if message_type != ClientMessages.TOOL_STATUS:

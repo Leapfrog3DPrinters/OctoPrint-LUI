@@ -26,6 +26,9 @@ class ClientMessages(object):
     IS_HOMING = "is_homing"
     IS_HOMED = "is_homed"
 
+    MAINTENANCE_STARTED = "maintenance_started"
+    MAINTENANCE_FINISHED = "maintenance_finished"
+
     LEVELBED_COMPLETE = "levelbed_complete"
     LEVELBED_PROGRESS = "levelbed_progress"
 
