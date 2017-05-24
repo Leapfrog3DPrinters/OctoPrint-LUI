@@ -351,8 +351,14 @@ $(function ()  {
                         self.isFirstStep = true;
                     break;
                 case 5: $(".introjs-progress").css("display","inherit");
+                        $('#material-select').bind("change", self.refreshElements);
+                    break;
+                case 6: $('#material-select').unbind("change");
                     break;
                 case 11: $(".introjs-progress").css("display","inherit");
+                        $('#material-select').bind("change", self.refreshElements);
+                    break;
+                case 12: $('#material-select').unbind("change");
                     break;
                 case 15: self.introInstance.refresh();
                          $('#settings_icon').mousedown();
@@ -483,6 +489,9 @@ $(function ()  {
                     sendToApi("printer/immediate_cancel");
                     self.flyout.closeFlyout();
                     break;
+                case (step == 32 || step == 33):
+                    $('#material-select').unbind("change");
+                    break;
                 // For other steps
                 default : $('#print_icon').mousedown();
                     break;
@@ -516,6 +525,14 @@ $(function ()  {
                     , 100);
             }
         };
+
+        self.onShutdownOrDisconnectFlyout = function () {
+          self.introInstance.exit();
+        };
+
+        self.refreshElements = function () {
+            self.introInstance.refresh();
+        }
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
