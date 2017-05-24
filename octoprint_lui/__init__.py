@@ -236,7 +236,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.send_M999_on_reconnect = False
 
         ##~ Cloud
-        self.cloud_login_url = "https://cloud.lpfrg.com/login/"
+        self.cloud_login_url = "https://www.speedplaza.net/Cloud/"
         self.cloud_enabled = False
         self.cloud_connect = None
         self.cloud_storage = None
@@ -328,7 +328,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.cloud_enabled = self._settings.get_boolean(["cloud_enabled"])
 
         if self.cloud_enabled:
-            self.cloud_connect = CloudConnect(self.get_plugin_data_folder())
+            self.cloud_connect = CloudConnect(self.get_plugin_data_folder(), self.cloud_login_url)
             available_services = self.cloud_connect.get_available_services()
 
             if len(available_services) > 0:

@@ -31,8 +31,9 @@ INSTALLED_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
 
 
 class CloudService(object):
-    def __init__(self, secrets, data_folder):
+    def __init__(self, secrets, data_folder, default_redirect_uri):
         self._logger = logging.getLogger("octoprint.plugins.lui.cloud")
+        self._redirect_uri = default_redirect_uri
     def get_auth_url(self, redirect_uri):
         pass
     def handle_auth_response(self, request):
@@ -47,21 +48,20 @@ class CloudService(object):
         pass
 
 class DropboxCloudService(CloudService):
-    def __init__(self, secrets, data_folder):
-        super(DropboxCloudService, self).__init__(secrets, data_folder)
+    def __init__(self, secrets, data_folder, default_redirect_uri):
+        super(DropboxCloudService, self).__init__(secrets, data_folder, default_redirect_uri)
         self._secrets = secrets
         self._csrf = {}
         
         self._client = None
         self._client_secret = self._secrets.get('client_secret');
         self._client_id = self._secrets.get('client_id');
-        self._redirect_uri = None
         self._access_token = None
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
         self._load_credentials()
 
-        self._flow = dropbox.client.DropboxOAuth2FlowNoRedirect(self._client_id, self._client_secret)
+        self._flow = dropbox.client.DropboxOAuth2Flow(self._client_id, self._client_secret, self._redirect_uri, None, self._csrf)
         
     ## Private methods
     def _get_client(self):
@@ -127,7 +127,7 @@ class DropboxCloudService(CloudService):
     def handle_manual_auth_response(self, auth_code):
 
         try:
-            self._access_token, _, _ = flow.finish(auth_code)
+            self._access_token, _, _ = self._flow.finish(auth_code)
             self._save_credentials()
             self._logger.info("Dropbox authenticated")
             return True
@@ -197,20 +197,19 @@ class DropboxCloudService(CloudService):
 
 
 class GoogleDriveCloudService(CloudService):
-    def __init__(self, secrets, data_folder):
-        super(GoogleDriveCloudService, self).__init__(secrets, data_folder)
+    def __init__(self, secrets, data_folder, default_redirect_uri):
+        super(GoogleDriveCloudService, self).__init__(secrets, data_folder, default_redirect_uri)
         self._secrets = secrets
         self._http = httplib2.Http()
         self._client = None
-        self._client_secret = self._secrets.get('client_secret');
-        self._client_id = self._secrets.get('client_id');
-        self._redirect_uri = "http://cloud.lpfrg.com/login/"
+        self._client_secret = self._secrets.get('client_secret')
+        self._client_id = self._secrets.get('client_id')
         self._credentials = None
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, GOOGLE_DRIVE + "_credentials.pickle")
         self._load_credentials()
         self._refresh_credentials()
-        self._flow = self._flow_factory()
+        self._flow = self._flow_factory(self._redirect_uri)
         
     ## Private methods
     def _get_client(self):
@@ -254,11 +253,11 @@ class GoogleDriveCloudService(CloudService):
             pickle.dump(self._credentials, session_file, pickle.HIGHEST_PROTOCOL)
             self._logger.debug("Google Drive credentials saved")
 
-    def _flow_factory(self):
+    def _flow_factory(self, redirect_uri):
         return OAuth2WebServerFlow(client_id=self._client_id,
                             client_secret=self._client_secret,
                             scope='https://www.googleapis.com/auth/drive.readonly',
-                            redirect_uri=self._redirect_uri)
+                            redirect_uri=redirect_uri)
 
     def _get_file_type(self, item):
         if "mimeType" in item and item["mimeType"] == "application/vnd.google-apps.folder":
@@ -274,6 +273,7 @@ class GoogleDriveCloudService(CloudService):
 
     def get_auth_url(self, redirect_uri):
         self._redirect_uri = redirect_uri
+        self._flow = self._flow_factory(redirect_uri)
 
         return self._flow.step1_get_authorize_url()
 
@@ -366,11 +366,10 @@ class GoogleDriveCloudService(CloudService):
 
 
 class OnedriveCloudService(CloudService):
-    def __init__(self, secrets, data_folder):
-        super(OnedriveCloudService, self).__init__(secrets, data_folder)
+    def __init__(self, secrets, data_folder, default_redirect_uri):
+        super(OnedriveCloudService, self).__init__(secrets, data_folder, default_redirect_uri)
         self._secrets = secrets
         self._client = None
-        self._redirect_uri = None
 
         self._client_secret = self._secrets.get('client_secret');
         self._client_id = self._secrets.get('client_id');
@@ -486,8 +485,10 @@ class OnedriveCloudService(CloudService):
         return response
 
 class CloudConnect():
-    def __init__(self, data_folder):
+    def __init__(self, data_folder, default_redirect_uri):
         self._data_folder = data_folder
+        self._default_redirect_uri = default_redirect_uri
+
         self._cloud_secrets = []
         self._logger = logging.getLogger(__name__)
 
@@ -526,11 +527,11 @@ class CloudConnect():
 
     def _service_factory(self, service):
         if service == ONEDRIVE and ONEDRIVE in self._cloud_secrets:
-            return OnedriveCloudService(self._cloud_secrets[ONEDRIVE], self._data_folder)
+            return OnedriveCloudService(self._cloud_secrets[ONEDRIVE], self._data_folder, self._default_redirect_uri)
         elif service == GOOGLE_DRIVE and GOOGLE_DRIVE in self._cloud_secrets:
-            return GoogleDriveCloudService(self._cloud_secrets[GOOGLE_DRIVE], self._data_folder)
+            return GoogleDriveCloudService(self._cloud_secrets[GOOGLE_DRIVE], self._data_folder, self._default_redirect_uri)
         elif service == DROPBOX and DROPBOX in self._cloud_secrets:
-            return DropboxCloudService(self._cloud_secrets[DROPBOX], self._data_folder)
+            return DropboxCloudService(self._cloud_secrets[DROPBOX], self._data_folder, self._default_redirect_uri)
     ## Public methods
 
     def get_service(self, service):
