@@ -4,8 +4,9 @@ $(function ()  {
 
         self.loginState = parameters[0];
         self.flyout = parameters[1];
-        self.temperatureState = parameters[2];
+        self.toolInfo = parameters[2];
         self.settings = parameters[3];
+        self.introView = parameters[4];
 
         self.stateString = ko.observable(undefined);
         self.isErrorOrClosed = ko.observable(undefined);
@@ -20,6 +21,7 @@ $(function ()  {
         self.waitingForPause = ko.observable(false);
         self.waitingForCancel = ko.observable(false);
 
+        self.maintenanceMode = ko.observable(false);
         self.isHomed = ko.observable(undefined);
         self.isHoming = ko.observable(undefined);
         self.isHomingRequested = ko.observable(false);
@@ -35,9 +37,6 @@ $(function ()  {
         self.printTimeLeft = ko.observable(undefined);
         self.sd = ko.observable(undefined);
         self.timelapse = ko.observable(undefined);
-
-        // These are updated from the filament viewmodel
-        self.loadedFilaments = undefined;
 
         self.printMode = ko.observable("normal");
         self.forcePrint = ko.observable(false);
@@ -235,7 +234,7 @@ $(function ()  {
                 }
             }
 
-            
+
         };
 
         self.onEventError = function (payload) {
@@ -249,7 +248,7 @@ $(function ()  {
                 });
 
                 self.isConnecting(false); // Restore connecting state
-            } else 
+            } else
             {
                 self.requestData();
             }
@@ -338,7 +337,7 @@ $(function ()  {
             var question = gettext("Do you want to by-pass the print analysis and start the print?");
             var dialog = {title: title, text: message, question: question};
             self.flyout.showConfirmationFlyout(dialog, true)
-                .done(function(){ 
+                .done(function(){
                     self.forcePrint(true);
                 });
         };
@@ -353,8 +352,7 @@ $(function ()  {
         self.pause = function () {
 
             if (self.isPaused()) {
-                var tools = self.temperatureState.tools();
-                var loaded = self.loadedFilaments();
+                var tools = self.toolInfo.tools();
                 var needed = self.requiredFilaments();
                 
                 var message = undefined;
@@ -363,14 +361,8 @@ $(function ()  {
                 if (self.printMode() != "normal")
                 {
                     // Check if all extruders are loaded with filament
-                    
-                    for (var i = 0; i < tools.length; i++)
-                    {
-                        // Look in the loaded filaments for the current tool and check if it has 'None' loaded
-                        if (_.some(loaded, function(filament) { return filament.tool() == tools[i].key && filament.materialProfileName() == "None" }))
-                            anyEmpty = true;
-                    }
-
+                    anyEmpty = _.some(tools, function(tool) { return tool.filament.materialProfileName() == "None" });
+  
                     if(anyEmpty)
                         message = gettext("Please load filament in both the left and right extruder before you resume your print.")
                 }
@@ -380,8 +372,10 @@ $(function ()  {
 
                     for (var i = 0; i < needed.length; i++)
                     {
+                        var tool = self.toolInfo.getToolByKey(needed[i].name);
+                        
                         // Look in the loaded filaments for the current tool and check if it has 'None' loaded
-                        if (_.some(loaded, function(filament) { return filament.tool() == needed[i].name && filament.materialProfileName() == "None" }))
+                        if (tool.filament.materialProfileName() == "None")
                             anyEmpty = true;
                     }
 
@@ -430,13 +424,15 @@ $(function ()  {
                         autoHide: true
                     });
 
-                    //OctoPrint.job.cancel()
-                    self._sendApi({ command: "immediate_cancel" });
+                    sendToApi("printer/immediate_cancel");
                 });
         };
 
         self.gotoFileSelect = function ()  {
             changeTabTo("files");
+            if (self.introView.isTutorialStarted) {
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("browseLocal"));
+            }
         };
 
         self.showInfoFlyout = function ()  {
@@ -448,19 +444,22 @@ $(function ()  {
         self.showStartupFlyout = function () {
             if(!self.flyout.isFlyoutOpen('startup'))
                 self.flyout.showFlyout('startup', true);
-        }
+        };
 
         self.closeStartupFlyout = function ()  {
             self.flyout.closeFlyoutAccept('startup');
-        }
+        };
 
         self.beginHoming = function () {
             self.isHomingRequested(true);
-            self._sendApi({ command: "begin_homing" });
-        }
+            sendToApi('printer/homing/start');
+            if(FIRST_START){
+                self.introView.startIntro('firstPrint');
+            }
+        };
 
         self.cancelAutoShutdown = function () {
-            self._sendApi({command: 'auto_shutdown_timer_cancel'});
+            sendToApi('printer/auto_shutdown/cancel');
         }
 
         self.onDoorOpen = function ()  {
@@ -468,13 +467,13 @@ $(function ()  {
                 self.warningVm = self.flyout.showWarning(gettext('Door open'),
                     gettext('Please close the door before you continue printing.'));
             }
-        }
+        };
         self.onDoorClose = function ()  {
             if (self.warningVm !== undefined) {
                 self.flyout.closeWarning(self.warningVm);
                 self.warningVm = undefined;
             }
-        }
+        };
 
         self.showPrinterErrorFlyout = function () {
             if (!self.flyout.isFlyoutOpen('printer_error'))
@@ -484,14 +483,14 @@ $(function ()  {
         self.closePrinterErrorFlyout = function () {
             self.flyout.closeFlyout('printer_error');
             self.isConnecting(false);
-        }
+        };
 
         self.restorePrinterConnection = function()
         {
             self.isConnecting(true);
-            self._sendApi({ command: 'connect_after_error' }); // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
+            sendToApi("printer/reconnect") // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
 
-        }
+        };
 
         self.refreshPrintPreview = function(url)
         {
@@ -514,25 +513,23 @@ $(function ()  {
                     {
                         self.printPreviewUrl(undefined)
                     })
-            } 
+            }
             else
                 self.printPreviewUrl(undefined);
-        }
+        };
 
         self.fromResponse = function (data) {
-            self.isHomed(data.is_homed);
-            self.isHoming(data.is_homing);
+            self.maintenanceMode(data.maintenanceMode);
+            self.isHomed(data.isHomed);
+            self.isHoming(data.isHoming);
             self.isHomingRequested(false);
-
-            self.settings.autoShutdown(data.auto_shutdown);
-
 
             // Startup flyout priority:
             // 1. Printer error
             // 2. Firmware update required (update.js)
             // 3. Changelog (update.js)
             // 4. Startup flyout (homing/maintenance)
-            
+
             // This fromResponse method is also called after a firmware update and printer error/disconnect
 
 
@@ -541,9 +538,9 @@ $(function ()  {
                 self.showStartupFlyout();
             }
 
-            if (data.printer_error_reason) {
-                self.errorReason(data.printer_error_reason);
-                self.erroredExtruder(data.printer_error_extruder);
+            if (data.printerErrorReason) {
+                self.errorReason(data.printerErrorReason);
+                self.erroredExtruder(data.printerErrorExtruder);
                 self.showPrinterErrorFlyout();
             }
             else {
@@ -551,21 +548,30 @@ $(function ()  {
                 self.erroredExtruder(undefined);
                 self.errorReason(undefined);
             }
-        }
 
-        // Api send functions
-        
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
+            if(data.maintenanceMode)
+                self.showMaintenanceModeFlyout();
+            else
+                self.hideMaintenanceModeFlyout();
         };
 
         self.requestData = function ()  {
             self.refreshPrintPreview();
 
-            OctoPrint.simpleApiGet('lui', {
-                success: self.fromResponse
-            });
+            getFromApi('printer').done(self.fromResponse);
+        }
+
+        self.showMaintenanceModeFlyout = function () {
+            // Only shown on remote, prevents user from undertaking any action on the printer until maintenance is exited
+            if (!IS_LOCAL) {
+                // High priority flyout
+                if (!self.flyout.isFlyoutOpen('maintenance_mode'))
+                    self.flyout.showFlyout('maintenance_mode', true, true);
+            }
+        }
+
+        self.hideMaintenanceModeFlyout = function () {
+            if (!IS_LOCAL) self.flyout.closeFlyoutAccept("maintenance_mode");
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -593,6 +599,12 @@ $(function ()  {
             else if (plugin == "lui") {
 
                 switch (messageType) {
+                    case "maintenance_started":
+                        self.showMaintenanceModeFlyout();
+                        break;
+                    case "maintenance_finished":
+                        self.hideMaintenanceModeFlyout();
+                        break;
                     case "is_homed":
                         self.isHomed(true);
                         self.isHoming(false);
@@ -613,7 +625,7 @@ $(function ()  {
                         self.settings.autoShutdown(messageData.toggle);
                         break;
                     case "auto_shutdown_start":
-                        self.flyout.showFlyout("auto_shutdown", true)
+                        self.flyout.showFlyout("auto_shutdown", true);
                         self.autoShutdownTimer(180);
                         break;
                     case "auto_shutdown_wait_on_render":
@@ -635,7 +647,7 @@ $(function ()  {
                         break;
                 }
             }
-        }
+        };
 
         self.updateAnalyzingActivity = function()
         {
@@ -643,15 +655,15 @@ $(function ()  {
                 self.activities.push('Analyzing');
             else
                 self.activities.remove('Analyzing');
-        }
+        };
 
         self.onBeforeBinding = function()
         {
             self.requestData();
-        }
+        };
 
         self.onStartupComplete = function ()  {
-            
+
             self.filepath.subscribe(function ()  {
                 self.activities.remove(gettext('Creating preview'));
                 self.refreshPrintPreview(); // Important to pass no parameters 
@@ -661,7 +673,7 @@ $(function ()  {
 
     OCTOPRINT_VIEWMODELS.push([
         PrinterStateViewModel,
-        ["loginStateViewModel", "flyoutViewModel", "temperatureViewModel", "settingsViewModel"],
+        ["loginStateViewModel", "flyoutViewModel", "toolInfoViewModel", "settingsViewModel", "introViewModel"],
         ["#print", "#info_flyout"]
     ]);
 });

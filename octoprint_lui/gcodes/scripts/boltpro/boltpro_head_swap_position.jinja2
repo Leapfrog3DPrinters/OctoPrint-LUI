@@ -1,0 +1,8 @@
+{% if currentZ < 30  %}
+G1 Z30 F600
+{% endif %}
+M605 S3
+G28 X0 Y0
+G1 X80 F10000
+G1 Y-33 F15000
+M605 S0

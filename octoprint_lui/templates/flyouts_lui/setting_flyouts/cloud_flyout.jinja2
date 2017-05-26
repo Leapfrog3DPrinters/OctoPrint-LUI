@@ -1,0 +1,103 @@
+<aside id="cloud_settings_flyout" class="flyout">
+  <div class="flyout-header">
+    <h4>{{ _('Cloud') }}</h4>
+    <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout('cloud_settings') }">
+      <i class="fa fa-times"></i>
+    </span>
+  </div>
+  <div class="flyout-body">
+    <!-- ko allowBindings: false -->
+    <div id="cloud_settings_flyout_content" class="flyout_content">
+      <div class="Table">
+        <div class="Table-row Table-header">
+          <div class="Table-item">
+            {{ _('Cloud settings') }}
+          </div>
+        </div>
+        {% if not local_addr %}
+        <!-- ko foreach: serviceInfo.slice(0) -->
+        <div class="Table-row" data-bind="css: { disabled: !$root.isOnline() }">
+          <!-- We can't use Table-item here due to chromium bug -->
+          <div style="flex: 1 1; margin: auto 0">
+            <img data-bind="attr: { src: $root.getCloudServiceIcon(name()) }" style="width: 23px; margin-right: 10px;" />
+            <span data-bind="text: $root.getCloudServiceName(name())"></span>
+          </div>
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button ok-button" data-bind="click: function() { $root.loginService(name()) }, visible: !loggedIn()">
+                <a href="">
+                  <span>{{ _('Connect') }}</span>
+                </a>
+              </li>
+              <li class="button failed-button" data-bind="click: function() { $root.logoutService(name()) }, visible: loggedIn()">
+                <a href="">
+                  <span>{{ _('Disconnect') }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      <!-- /ko-->  
+        {% else %}
+        <div class="Table-row">
+          <div class="Table-item">
+            {{ _('Use the buttons below to connect or disconnect cloud services. Make sure your printer is connected to the internet before you continue.') }}
+          </div>
+        </div>
+        <!-- ko keyboardForeach: serviceInfo.slice(0) -->
+        <div class="Table-row" data-bind="css: { disabled: !$root.isOnline() }">
+          <!-- We can't use Table-item here due to chromium bug -->
+          <div style="flex: 1 1; margin: auto 0">
+            <img data-bind="attr: { src: $root.getCloudServiceIcon(name()) }" style="width: 23px; margin-right: 10px;" />
+            <span data-bind="text: $root.getCloudServiceName(name())"></span>
+          </div>
+          <div class="Table-item">
+            <ul class="button-area">
+              <li class="button ok-button" data-bind="click: function() { $root.loginService(name()) }, visible: !loggedIn()">
+                <a href="">
+                  <span>{{ _('Connect') }}</span>
+                </a>
+              </li>
+              <li class="button failed-button" data-bind="click: function() { $root.logoutService(name()) }, visible: loggedIn()">
+                <a href="">
+                  <span>{{ _('Disconnect') }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div data-bind="visible: showAuthCodeForm">
+          <div class="Table-row">
+            <div class="Table-item">
+              <span>{{ _('Please visit cloud.lpfrg.com/login to obtain an authorization code.') }}</span>
+            </div>
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+              <input type="text" data-bind="value: authCode" placeholder="Authorization code" style="width: 100%" />
+            </div>
+            <div class="Table-item" style="flex: 0 0 130px">
+              <ul class="button-area">
+                <li class="button" data-bind="click: function() { $root.authorizeService(name()) }, visible: !loggedIn()">
+                  <a href="">
+                    <span>{{ _('Authorize') }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- /ko-->        
+        {% endif %}
+      </div>
+    </div>
+    <!-- /ko -->
+    <ul class="button-area">
+      <li class="button" data-bind="click: function () { flyout.closeFlyout('cloud_settings') }">
+        <a href="#">
+          <span>{{ _('Close') }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>

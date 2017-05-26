@@ -63,6 +63,7 @@ function ItemListHelper(listType, supportedSorting, supportedFilters, defaultSor
         var index = self.allItems.indexOf(item);
         if (index > -1) {
             self.allItems.splice(index, 1);
+            self.allSize(self.allItems.length);
             self._updateItems();
         }
     };
@@ -771,4 +772,34 @@ ko.subscribable.fn.subscribeChanged = function (callback) {
         savedValue = latestValue;
         callback(latestValue, oldValue);
     });
+};
+
+ko.bindingHandlers.foreachprop = {
+    transformObject: function (obj) {
+        var properties = [];
+        ko.utils.objectForEach(obj, function (key, value) {
+            properties.push({ key: key, value: value });
+        });
+        return properties;
+    },
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        var properties = ko.pureComputed(function () {
+            var obj = ko.utils.unwrapObservable(valueAccessor());
+            return ko.bindingHandlers.foreachprop.transformObject(obj);
+        });
+        ko.applyBindingsToNode(element, { foreach: properties }, bindingContext);
+        return { controlsDescendantBindings: true };
+    }
+};
+
+function getFromApi(url_suffix)
+{
+    url = OctoPrint.getBlueprintUrl("lui") + url_suffix;
+    return OctoPrint.get(url);
+}
+
+function sendToApi(url_suffix, data)
+{
+    url = OctoPrint.getBlueprintUrl('lui') + url_suffix;
+    return OctoPrint.postJson(url, data);
 }

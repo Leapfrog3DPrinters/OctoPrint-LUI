@@ -19,7 +19,7 @@ $(function () {
 
         self.appearance_name = ko.observable(undefined);
         self.appearance_defaultLanguage = ko.observable();
-        
+
         self.feature_modelSizeDetection = ko.observable(undefined);
 
         self.serial_autoconnect = ko.observable(undefined);
@@ -35,6 +35,11 @@ $(function () {
         self.server_diskspace_warning_str = sizeObservable(self.server_diskspace_warning);
         self.server_diskspace_critical_str = sizeObservable(self.server_diskspace_critical);
 
+        self.plugins_lui_zoffset = ko.observable();
+        self.plugins_lui_action_door = ko.observable();
+        self.plugins_lui_action_filament = ko.observable();
+        self.plugins_lui_debug_lui = ko.observable();
+        
         self.locallock_enabled = ko.observable(false);
         self.locallock_code = ko.observable(undefined);
         self.locallock_timeout = ko.observable(0);
@@ -77,7 +82,7 @@ $(function () {
                     $.notify({ title: title, text: "\"" + profile.name + _.sprintf(gettext('" must have an extruder temperature between %(mintemp)s &deg;C and %(maxtemp)s &deg;C.'), { "mintemp": minTemp, "maxtemp": maxTemp }) }, 'error');
                     return;
                 }
-                
+
 
                 if (isNaN(profile.bed) || profile.bed < 0) {
                     $.notify({ title: title, text: profile + profile.name + gettext('" must have a bed temperature of at least 0 &deg;C.') }, 'error');
@@ -117,9 +122,11 @@ $(function () {
                     title: gettext("Turn on auto shutdown"),
                     text: gettext("You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine.")
                 };
+
+                // Wait for the toggle animation
                 setTimeout(function(){
                     self.flyout.showWarning(data.title, data.text)
-                }, 500)
+                }, 200)
             }
 
             self.sendAutoShutdownStatus(!toggle);
@@ -128,11 +135,7 @@ $(function () {
 
         self.sendAutoShutdownStatus = function(toggle)
         {
-            var data = {
-                command: "auto_shutdown",
-                toggle: toggle
-            };
-            self._sendApi(data);
+            sendToApi("printer/auto_shutdown/" + (toggle ? "on" : "off"));
         }
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
@@ -153,7 +156,9 @@ $(function () {
             self.requestData();
         };
 
-        self.requestData = function(local) {
+        self.requestData = function (local) {
+            console.log("Requesting settings");
+
             // handle old parameter format
             var callback = undefined;
             if (arguments.length == 2 || _.isFunction(local)) {
@@ -197,7 +202,7 @@ $(function () {
 
             // perform the request
             self.receiving(true);
-            return self._getApi('settings')
+            return getFromApi('settings')
                 .done(function(response) {
                     self.fromResponse(response, local);
 
@@ -238,31 +243,7 @@ $(function () {
             }
 
             // some special read functions for various observables
-            var specialMappings = {
-                scripts: {
-                    gcode: function () {
-                        // we have a special handler function for the gcode scripts since the
-                        // server will always send us those that have been set already, so we
-                        // can't depend on all keys that we support to be present in the
-                        // original request we iterate through in mapFromObservables to
-                        // generate our response - hence we use our observables instead
-                        //
-                        // Note: If we ever introduce sub categories in the gcode scripts
-                        // here (more _ after the prefix), we'll need to adjust this code
-                        // to be able to cope with that, right now it only strips the prefix
-                        // and uses the rest as key in the result, no recursive translation
-                        // is done!
-                        var result = {};
-                        var prefix = "scripts_gcode_";
-                        var observables = _.filter(_.keys(self), function(key) { return _.startsWith(key, prefix); });
-                        _.each(observables, function(observable) {
-                            var script = observable.substring(prefix.length);
-                            result[script] = self[observable]();
-                        });
-                        return result;
-                    }
-                }
-            };
+            var specialMappings = {};
 
             var mapFromObservables = function(data, mapping, keyPrefix) {
                 var flag = false;
@@ -339,10 +320,15 @@ $(function () {
                         }
                     }
                 },
-                terminalFilters: function(value) { self.terminalFilters($.extend(true, [], value)) },
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
-                }
+                },
+                plugins:
+                    {
+                        lui: {
+                            autoShutdown: function (value) { self.autoShutdown(value); }
+                        }
+                    }
             };
 
             var mapToObservables = function(data, mapping, local, keyPrefix) {
@@ -415,6 +401,7 @@ $(function () {
 
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
+            self.requestData();
         }
 
         self.onEventSettingsUpdated = function () {
@@ -455,7 +442,7 @@ $(function () {
             // }
         };
 
-        
+
 
         // Sending custom commands to the printer, needed for level bed for example.
         // format is: sendCustomCommand({type:'command',command:'M106 S255'})
@@ -499,18 +486,6 @@ $(function () {
 
         };
 
-        // Api send functions
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
-        self._getApi = function (urlSuffix) {
-            var url = OctoPrint.getBlueprintUrl("lui") + urlSuffix;
-            return OctoPrint.get(url);
-        }
-
-
         // Translations code
 
         self.translations = new ItemListHelper(
@@ -530,7 +505,7 @@ $(function () {
             [],
             0
         );
-        
+
 
         self.translationUploadFilename = ko.observable();
         self.invalidTranslationArchive = ko.pureComputed(function() {

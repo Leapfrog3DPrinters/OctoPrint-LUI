@@ -5,8 +5,6 @@ $(function () {
         self.loginState = parameters[0];
         self.settings = parameters[1];
 
-        self.reservedUsernames = [];
-
         // initialize list helper
         self.listHelper = new ItemListHelper(
             "users",
@@ -72,15 +70,7 @@ $(function () {
 
         self.requestData = function () {
             if (!CONFIG_ACCESS_CONTROL) return;
-
-            OctoPrint.simpleApiGet('lui', {
-                success: function(data)
-                {
-                    self.reservedUsernames = data.reserved_usernames;
-
-                    OctoPrint.users.list().done(self.fromResponse);
-                }
-            });
+            OctoPrint.users.list().done(self.fromResponse);
         };
 
         self.fromResponse = function(response) {
@@ -88,7 +78,7 @@ $(function () {
             self.listHelper.updateItems(response.users.filter(function(user) 
             {
                 //Only return users not in the reserved username list
-                return self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() } ) === undefined
+                return RESERVED_USERNAMES.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() }) === undefined
             }));
         };
 
@@ -225,7 +215,7 @@ $(function () {
                 throw OctoPrint.InvalidArgumentError("user must be set");
             }
             
-            if (self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() })) {
+            if (RESERVED_USERNAMES.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() })) {
                 // we do not allow to delete any of the reserved users
                 $.notify({
                     title: gettext("Not possible"),
@@ -263,7 +253,7 @@ $(function () {
                 return $.Deferred().reject("You may not delete your own account").promise();
             }
 
-            if (self.reservedUsernames.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() }))
+            if (RESERVED_USERNAMES.find(function (f) { return f.toLowerCase() == user.name.toLowerCase() }))
             {
                 // we do not allow to delete any of the reserved users
                 $.notify({

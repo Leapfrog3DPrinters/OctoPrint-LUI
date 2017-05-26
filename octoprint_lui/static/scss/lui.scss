@@ -1,20 +1,20 @@
-/* 
-  Color Variables 
+/*
+  Color Variables
 */
 
 $main-color: #434A54;
 $second-color: #ffffff;
 $third-color: #FF9734;
 $off-white: #F6F7F7;
-$color-ok: #A9CC3C; 
+$color-ok: #A9CC3C;
 $color-warning: #EDDB53;
 $color-failed: #CC2B14;
- 
+
 $orangeborder: 1px solid $third-color;
 
-/* 
+/*
   Font face
-*/  
+*/
 
 @font-face {
   font-family: agenda-light;
@@ -35,13 +35,13 @@ $orangeborder: 1px solid $third-color;
 }
 
 
-/* 
+/*
   Mixins
 */
 
 
 @mixin transition($item) {
-    -webkit-transition: $item 0.2s ease-in-out;  
+    -webkit-transition: $item 0.2s ease-in-out;
     -moz-transition: $item 0.2s ease-in-out;
     -ms-transition: $item 0.2s ease-in-out;
     -o-transition: $item 0.2s ease-in-out;
@@ -62,10 +62,10 @@ html {
   user-select: none;
 }
 
-.clearfix:after {    
+.clearfix:after {
     content: "";
     clear: both;
-    display: table;   
+    display: table;
 }
 
 ul {
@@ -164,6 +164,15 @@ a {
     padding-left: 1rem;
 }
 
+button
+{
+    border: 0px;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: inherit;
+}
+
+/* TODO: Replace below with leaner html5 <buttons> */
 
 .button-area {
   display: flex;
@@ -187,7 +196,7 @@ a {
 .button-area .button a {
   color: $second-color;
   padding:10px 5px;
-  flex: 1 1 auto; 
+  flex: 1 1 auto;
 }
 
 .button-area .button a:active {
@@ -195,15 +204,15 @@ a {
   color: $main-color;
 }
 
-.button-area .secondary-button { 
+.button-area .secondary-button {
   background-color: $second-color;
 }
 
-.button-area .secondary-button a { 
+.button-area .secondary-button a {
   color: $main-color;
 }
 
-.button-area .secondary-button a:active { 
+.button-area .secondary-button a:active {
   color: $second-color;
   background-color: $main-color;
 }
@@ -214,26 +223,26 @@ a {
   border: 0px;
 }
 
-.button-area .ok-button { 
+.button-area .ok-button {
   background-color: $color-ok;
   border: 1px solid $color-ok;
 }
 
-.button-area .failed-button { 
+.button-area .failed-button {
   background-color: $color-failed;
   border: 1px solid $color-failed;
 }
 
-.button-area .warning-button { 
+.button-area .warning-button {
   background-color: $color-warning;
   border: 1px solid $color-warning;
 }
 
-.button-area .ok-button a, .button-area .failed-button a, .button-area .warning-button a { 
+.button-area .ok-button a, .button-area .failed-button a, .button-area .warning-button a {
   color: $second-color;
 }
 
-.button-area .ok-button a:active, .button-area .failed-button a:active, .button-area .warning-button a:active { 
+.button-area .ok-button a:active, .button-area .failed-button a:active, .button-area .warning-button a:active {
   color: $main-color;
   background-color: $second-color;
 }
@@ -288,8 +297,8 @@ a {
   padding: 10px 0px;
 }
 
-/* 
-  Checkbox 
+/*
+  Checkbox
 */
 
 input[type=checkbox] {
@@ -458,6 +467,7 @@ input[type=radio] {
 }
 
 .tab {
+  position: relative; /* We need an explicit relative position for introjs positioning when scrolling */
   display: none;
   flex: 1 0 auto;
   height:200px;
@@ -473,7 +483,7 @@ input[type=radio] {
 */
 
 .content {
-  display: flex;      
+  display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   width: 100%;
@@ -485,7 +495,7 @@ input[type=radio] {
   min-width: 0;
 }
 
-/* 
+/*
   Overlay & Fly out
 
 */
@@ -516,15 +526,15 @@ input[type=radio] {
   max-width: 500px;
   overflow-y: auto;
   position: fixed;
+  transform: translate3d(100%, 0, 0);
   right: 0;
   top: 0;
-  transform: translate3d(100%, 0, 0);
-  width: 80%; 
+  width: 80%;
   @include transition(transform);
-  display: flex; 
+  display: flex;
   flex-direction: column;
   &.active {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0); 
   }
   z-index: 1;
   & a {
@@ -553,7 +563,7 @@ input[type=radio] {
 }
 
 .flyout-body {
-  overflow-y: auto; 
+  overflow-y: auto;
   padding: 1em;
   flex: 1 1 auto;
   min-height: 0px;
@@ -600,7 +610,7 @@ input[type=radio] {
   z-index: 96;
 }
 
-/* 
+/*
   Circles
 */
 
@@ -635,7 +645,7 @@ input[type=radio] {
 }
 
 /*
-  Icon Bar 
+  Icon Bar
 */
 
 .icon-bar {
@@ -647,8 +657,8 @@ input[type=radio] {
   color: $second-color;
 }
 
-/*   
-  Button-area 
+/*
+  Button-area
 */
 
 .button-area {
@@ -678,7 +688,7 @@ input[type=radio] {
   text-align: center;
 }
 
-/* 
+/*
   Table
 */
 
@@ -735,10 +745,10 @@ input[type=radio] {
     padding-left: 0;
   }
   &-ellipsis {
-      width: 100%; 
-      overflow: hidden; 
-      display: block; 
-      white-space: nowrap; 
+      width: 100%;
+      overflow: hidden;
+      display: block;
+      white-space: nowrap;
       text-overflow: ellipsis;
   }
 }
@@ -746,11 +756,6 @@ input[type=radio] {
 .Table-condensed .Table-item
 {
     padding: 0.3em 0.1em;
-
-    input
-    {
-        padding: 12px 5px !important;
-    }
 }
 
 #user-list .Table, #settings_plugin_networkmanager .Table {
@@ -766,26 +771,29 @@ input[type=radio] {
 }
 
 // Add badge to font awesome
-.fa {
-  position: relative;
+
+#update_icon
+{
+    position: relative;
+
+    .badge {
+      font-size: .6em;
+      font-family: Agenda-Medium;
+      font-weight: 700;
+      display: block;
+      position: absolute;
+      top: -3px;
+      right: -8px;
+      width: 15px;
+      height: 15px;
+      line-height: 14px;
+      border-radius: 50%;
+      text-align: center;
+      color: #fff;
+      background: rgba(190, 0, 0, 1);
+    }
 }
 
-.badge {
-  font-size: .25em;
-  font-family: Agenda-Medium;
-  font-weight: 700;
-  display: block;
-  position: absolute;
-  top: -1.5em;
-  right: -2.2em;
-  width: 2em;
-  height: 2em;
-  line-height: 2.2em;
-  border-radius: 50%;
-  text-align: center;
-  color: #fff;
-  background: rgba(190, 0, 0, 1);
-}
 
 /*
  Pagination (multiple pages)
@@ -868,8 +876,8 @@ input[type=radio] {
   }
 }
 
-/* 
-  Control 
+/*
+  Control
 */
 
 #control .content
@@ -1048,11 +1056,11 @@ input[type=radio] {
 }
 
 
-/* 
+/*
   Settings tab
 */
 
-.settings_topic { 
+.settings_topic {
   display: flex;
   min-height: 50px;
   border-bottom: 1px solid $third-color;
@@ -1096,7 +1104,7 @@ input[type=radio] {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  min-width: 0px; 
+  min-width: 0px;
 }
 
 .topic_info {
@@ -1130,7 +1138,7 @@ input[type=radio] {
 
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
-  padding-left: 10px;
+  padding: 12px 5px !important;
   min-width: 0;
   // user-select: none; Out for now bugs Safari
 }
@@ -1147,7 +1155,7 @@ select {
 }
 
 
-/* 
+/*
   Settings Flyout
 */
 
@@ -1156,6 +1164,76 @@ select {
   &.active {
     display: flex;
   }
+}
+
+/*
+  Tutorial Flyout
+ */
+
+.tutorial_topic {
+  display: flex;
+  min-height: 50px;
+  border-bottom: 1px solid #ff9734;
+  flex-direction: column;
+  flex: 0 1 auto;
+}
+
+.tutorial_topic a {
+  align-items: center;
+  display: flex;
+  padding: 0px 20px;
+  min-width: 0px;
+  flex: 1;
+  color: #434A54;
+}
+
+.tutorial_name {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0px;
+}
+
+.tutorial-start {
+  display: flex;
+  flex: 0 0 55px;
+  text-align: right;
+}
+
+.tutorial_main {
+  display: flex;
+  flex: 1;
+  min-height: 55px;
+  border: 2px solid #ffffff;
+}
+
+.tutorial_topic i {
+  flex: 1;
+  text-align: center;
+}
+
+.tutorial_topic span {
+  flex: 1 1 auto;
+  min-width: 0px;
+}
+
+.tutorial-add-info {
+  display: flex;
+  flex: 0 0 55px;
+  text-align: right;
+}
+
+.tutorial-info {
+  background-color: #f2f2f2;
+  display: flex;
+  min-width: 0px;
+  font-size: 0.89em;
+  flex-wrap: nowrap;
+  word-wrap: normal;
+  margin-left: 1em;
+}
+
+.tutorial-info.hide {
+    display: none;
 }
 
 /*
@@ -1172,7 +1250,7 @@ select {
   width: 100%;
 }
 
-#print .Table { 
+#print .Table {
   margin: 0;
 }
 
@@ -1180,7 +1258,7 @@ select {
   padding-left: 0.5em;
 }
 
-/* 
+/*
   Files tab
 */
 
@@ -1207,7 +1285,7 @@ select {
 }
 
 .file_search {
-  flex-basis: 60%;
+  flex: 1 1;
   padding-left: 0.5em;
 }
 
@@ -1230,11 +1308,20 @@ select {
     }
 }
 
-.file_sort{
-  flex-basis: 5%;
-  margin-left:auto;
+.file_sort {
+  text-align: center;
   & a {
     color: $main-color;
+    padding: 0 8px;
+  }
+}
+
+.file_refresh {
+  text-align: center;
+  & a {
+    color: $main-color;
+    padding: 0 8px;
+    
   }
 }
 
@@ -1283,15 +1370,11 @@ select {
   flex: 1 1 auto;
 }
 
-.file_entry { 
+.file_entry {
   display: flex;
   min-height: 50px;
   border-bottom: 1px solid $third-color;
   flex-direction: column;
-  flex: 0 1 auto;
-}
-
-.file_footer {
   flex: 0 1 auto;
 }
 
@@ -1350,7 +1433,7 @@ select {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  min-width: 0px; 
+  min-width: 0px;
 }
 
 .file_entry  span.no_files
@@ -1393,7 +1476,7 @@ select {
 .file_add_info_preview {
   flex-basis: 150px;
   align-items: flex-start; /* Chrome aspect ratio fix */
-  min-width: 150px; 
+  min-width: 150px;
 }
 
 .file_info {
@@ -1434,6 +1517,12 @@ select {
     #terminal-output {
       min-height: 150px;
       margin-bottom: 5px;
+      width: 100%;
+    }
+
+    #terminal-command
+        {
+        width: 100%;
     }
 
     margin-bottom: 30px;
@@ -1545,7 +1634,7 @@ pre code {
 
 /* Filament swap */
 
-.swap_process_step, .fd_swap_process_step {
+.swap_process_step {
   display: none;
   width: 100%;
   &.active {
@@ -1553,14 +1642,14 @@ pre code {
   }
 }
 
-#swap-info, #fd-swap-info {
+#swap-info {
   display:none;
   &.active {
     display:flex;
   }
 }
 
-#swap-load-unload, #fd-swap-load-unload {
+#swap-load-unload {
   display: none;
   &.active {
     display:flex;
@@ -1609,35 +1698,35 @@ pre code {
 
 .fa-signal-0
 {
-  width: 0px; 
+  width: 0px;
   overflow: hidden;
 }
 
 .fa-signal-1
 {
-  width: 4px; 
+  width: 4px;
   overflow: hidden;
 }
 
 .fa-signal-2
 {
-  width: 8px; 
+  width: 8px;
   overflow: hidden;
 }
 
 .fa-signal-3
 {
-  width: 13px; 
+  width: 13px;
   overflow: hidden;
 }
 .fa-signal-4
 {
-  width: 17px; 
+  width: 17px;
   overflow: hidden;
 }
 .fa-signal-5
 {
-  width: 22px; 
+  width: 22px;
   overflow: hidden;
 }
 
@@ -1672,7 +1761,7 @@ ul.width-calibrator
       color: #cccccc;
     }
   }
- 
+
 }
 
 ul.height-calibrator
@@ -1703,7 +1792,7 @@ ul.height-calibrator
       color: #cccccc;
     }
   }
- 
+
 }
 
 /* Bed calibration */
@@ -1730,7 +1819,7 @@ $bed-height: 180px;
   border-radius: 4px;
   width: $corner-size;
   height: $corner-size;
-  
+
   &:hover, &.active
   {
     border-color: $color-ok;
@@ -1741,22 +1830,22 @@ $bed-height: 180px;
     top: ($bed-height - $corner-size - 5px)/2;
     left: ($bed-width - $corner-size - 5px)/2;
   }
-  
+
   &.top
   {
     top: $bed-padding;
   }
-  
+
   &.left
   {
     left: $bed-padding;
   }
-  
+
     &.bottom
   {
     bottom: $bed-padding;
   }
-  
+
     &.right
   {
     right: $bed-padding;
@@ -1806,7 +1895,7 @@ $bed-height: 180px;
     background: $second-color;
 
     border-radius: 50% 50% 50% 50% / 100% 100% 0% 0% ;
-  }      
+  }
 }
 
 .semi-circle--mask {
@@ -1840,11 +1929,11 @@ $bed-height: 180px;
     background: $off-white;
 
     border-radius: 50% 50% 50% 50% / 100% 100% 0% 0% ;
-  }      
+  }
 }
 
 .gauge {
-  
+
   .semi-circle {
     background: $color-failed;
   }
@@ -1916,7 +2005,7 @@ $bed-height: 180px;
 
 
 
-/* 
+/*
   Media Queries
 */
 
@@ -1926,7 +2015,7 @@ $bed-height: 180px;
   .file_entry .file_add_info.slide{
     flex-wrap:wrap;
   }
-  
+
   .file_entry .file_extra_info {
     flex-basis:70%;
     flex-direction: row;
@@ -1963,8 +2052,8 @@ $bed-height: 180px;
   }
 }
 
-/* 
-  Animation Key frames 
+/*
+  Animation Key frames
 */
 
 @keyframes fadeOut {
@@ -1982,7 +2071,7 @@ $bed-height: 180px;
 }
 
 @-webkit-keyframes spin {
-  0%   { 
+  0%   {
     -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
     -ms-transform: rotate(0deg);  /* IE 9 */
     transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
@@ -1994,7 +2083,7 @@ $bed-height: 180px;
   }
 }
 @keyframes spin {
-  0%   { 
+  0%   {
     -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
     -ms-transform: rotate(0deg);  /* IE 9 */
     transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */

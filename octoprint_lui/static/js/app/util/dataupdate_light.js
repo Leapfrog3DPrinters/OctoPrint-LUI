@@ -140,8 +140,6 @@ function DataUpdater(allViewModels) {
             callViewModels(self.allViewModels, "onServerConnect");
         }
 
-        log.info("Connected to the server");
-
         // if we have a connected promise, resolve it now
         if (self._connectedDeferred) {
             self._connectedDeferred.resolve();

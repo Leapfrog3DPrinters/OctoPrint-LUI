@@ -51,35 +51,39 @@ filamentQuickLoad: false
 dualX: true
 materialMinTemp: 150
 materialMaxTemp: 360
+lowTempMax: 275
 filament:
   stepperTimeout: 300
   loadInitial:
     amount: 2.5
     speed: 240
   loadAmountStop: 200
-  contLoadAmountStop: 100    
+  contLoad:
+    amount: 2.5
+    speed: 240
+  contLoadAmountStop: 100
   unloadInitial:
     amount: -2.5
     speed: 300
   unloadAmountStop: 150
 manualBedCalibrationPositions:
-  - tool: tool1
+  top_left:
+    tool: tool1
     X: 33
     Y: 250
     mode: 'fullcontrol'
-  - tool: tool0
+  top_right:
+    tool: tool0
     X: 268
     Y: 250
     mode: 'fullcontrol'
-  - tool: tool1
+  bottom_left:
+    tool: tool1
     X: 33
     Y: 70
     mode: 'fullcontrol'
-  - tool: tool0
+  bottom_right:
+    tool: tool0
     X: 268
     Y: 70
     mode: 'fullcontrol'
-  - tool: tool1
-    X: 130
-    Y: 160
-    mode: 'mirror'

@@ -22,6 +22,7 @@ $(function ()  {
         self.update_warning = undefined;
         self.firmware_update_warning = undefined;
         self.currentLuiVersion = ko.observable(undefined);
+        self.softwareUpdateRequired = ko.observable(false);
 
         self.changelogContents = ko.observable(undefined);
 
@@ -36,7 +37,7 @@ $(function ()  {
         self.firmwareUpdating = ko.observable(false);
 
         self.flashingAllowed = ko.computed(function ()  {
-            return self.printerState.isOperational() && self.printerState.isReady() && !self.printerState.isPrinting() && self.loginState.loggedIn();
+            return !self.printerState.isPrinting() && self.loginState.loggedIn();
         });
 
         self.getUpdateText = function (data) {
@@ -115,7 +116,7 @@ $(function ()  {
 
             self.files.browseUsbForFirmware();
 
-            // Show this flyout with high priority, as it may be opened through firmware_update_required_flyout
+            // Show this flyout with high priority, as it may be opened through update_required_flyout
             self.flyout.showFlyout('firmware_file', false, true)
                 .done(function ()  {
                     file = self.files.selectedFirmwareFile();
@@ -123,12 +124,12 @@ $(function ()  {
                 })
                 .fail(function ()  { })
                 .always(function ()  {
-                    self.files.browseLocal(); // Reset file list to local gcodes
+                    self.files.browseOrigin("local"); // Reset file list to local gcodes
                 });
         };
 
         self.update = function (plugin) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "update";
+            var endpoint = "software/update";
 
             var text, question, title, name = "";
             if (_.isObject(plugin)) {
@@ -149,7 +150,7 @@ $(function ()  {
             var dialog = { 'title': title, 'text': text, 'question': question };
             self.flyout.showConfirmationFlyout(dialog)
                 .done(function () {
-                    OctoPrint.postJson(url, {"plugin":name})
+                    sendToApi(endpoint, { "plugin": name })
                         .done(function () {
                             self.showUpdateWarning();
                          }).fail(function () {
@@ -166,8 +167,8 @@ $(function ()  {
         self.firmwareUpdate = function()
         {
             self.firmwareUpdating(true);
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update";
-            OctoPrint.postJson(url)
+            var endpoint = "firmware/update";
+            sendToApi(endpoint)
                 .done(function () {
                     self.firmwareUpdateAvailable(false);
                 }).fail(function () {
@@ -198,18 +199,20 @@ $(function ()  {
             // We're actively clcosing the update_required flyout here for improved user experience.
             // If the auto-update for whatever reason flashed the wrong version, the flyout will automatically pop-up again
             if (success)
-                self.hideFirmwareUpdateRequiredFlyout();
+                self.hideUpdateRequiredFlyout();
         }
 
-        self.showFirmwareUpdateRequiredFlyout = function () {
+        self.showUpdateRequiredFlyout = function () {
 
             // High priority flyout (must be shown on top of 'homing' flyout)
-            if (!self.flyout.isFlyoutOpen('firmware_update_required'))
-                self.flyout.showFlyout('firmware_update_required', true, true); 
+            if (!self.flyout.isFlyoutOpen('update_required'))
+                self.flyout.showFlyout('update_required', true, true); 
         }
 
-        self.hideFirmwareUpdateRequiredFlyout = function () {
-            self.flyout.closeFlyoutAccept("firmware_update_required");
+        self.hideUpdateRequiredFlyout = function () {
+            // Only hide the flyout when we don't need a software update nor a firmware update
+            if(!self.firmwareUpdateRequired() && !self.softwareUpdateRequired())
+                self.flyout.closeFlyoutAccept("update_required");
         }
 
         self.showUpdateFlyout = function()
@@ -246,19 +249,30 @@ $(function ()  {
         self.fromResponse = function (data) {
             var info = ko.mapping.fromJS(data.update);
             var updates = 0;
+            var any_update_required = false;
+
             _.each(info(), function (i) {
                 if (i.update()) updates++
+                if (i.update_required()) any_update_required = true;
             });
             self.update_needed(updates);
             self.updateinfo(info());
+            self.softwareUpdateRequired(any_update_required);
 
-
-            var lui_update = info().find(function (x) { return x.name() === "Leapfrog UI" })
+            var lui_update = info().find(function (x) { return x.identifier() === "lui" })
 
             if (lui_update !== undefined)
                 self.currentLuiVersion(lui_update.version());
 
             self.modelName(data.machine_info.machine_type);
+
+            if(data.status == "cache")
+                self.updateDoneOrError();
+
+            if (any_update_required)
+                self.showUpdateRequiredFlyout();
+            else
+                self.hideUpdateRequiredFlyout();
         };
 
         self.fromChangelogResponse = function (data, from_startup)
@@ -277,9 +291,9 @@ $(function ()  {
             self.firmwareVersion(data.current_version);
 
             if (data.update_required)
-                self.showFirmwareUpdateRequiredFlyout();
+                self.showUpdateRequiredFlyout();
             else
-                self.hideFirmwareUpdateRequiredFlyout();
+                self.hideUpdateRequiredFlyout();
 
             if (data.auto_update_started)
                 self.showFirmwareUpdateWarning();
@@ -332,38 +346,35 @@ $(function ()  {
 
         self.requestData = function (force) {
             var force = force || false;
-            var url = OctoPrint.getBlueprintUrl("lui") + "update";
-            OctoPrint.getWithQuery(url, {force: force})
-                .done(function(response){
-                    self.fromResponse(response);
-                });
+            var endpoint = "software";
+
+            if (force)
+                endpoint += "/forced"
+
+            getFromApi(endpoint).done(self.fromResponse);
         };
 
-        self.requestChangelogData = function (from_startup, refesh)
-        {
+        self.requestChangelogData = function (from_startup, refesh) {
+            var endpoint = "software/changelog";
+
             if (refesh)
-                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog/refresh";
-            else
-                var url = OctoPrint.getBlueprintUrl("lui") + "software/changelog";
+                endpoint += "/refresh";
 
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromChangelogResponse(response, from_startup);
-                });
-        }
+            getFromApi(endpoint).done(function (response) {
+                self.fromChangelogResponse(response, from_startup);
+            });
+        };
 
-        self.requestFirmwareData = function ()
-        {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware";
-            OctoPrint.get(url)
-                .done(function (response) {
-                    self.fromFirmwareResponse(response);
-                });
-        }
+        self.requestFirmwareData = function () {
+            getFromApi("firmware").done(self.fromFirmwareResponse);
+        };
 
         self.requestFirmwareUpdateData = function (silent) {
-            var url = OctoPrint.getBlueprintUrl("lui") + "firmware/update/" + (silent ? 'silent' : '');
-            OctoPrint.get(url, { silent: silent });
+            var endpoint = "firmware/update";
+            if (silent)
+                endpoint = endpoint + "/silent";
+
+            getFromApi(endpoint);
         };
 
         self.onFirmwareUpdateFound = function (file) {
@@ -408,7 +419,7 @@ $(function ()  {
             self.requestData();
         };
 
-        self.onSettingsHidden = function ()  {
+        self.onUpdateSettingsHidden = function ()  {
             self.flashArduino.resetFile();
         }
 
@@ -436,13 +447,13 @@ $(function ()  {
             self.flashingAllowed.subscribe(function (allowed) { self.flashArduino.flashingAllowed(allowed); });
 
             // Wait for connection to be up so we can perform an initial software and firmware check
-            self.networkManager.status.connection.wifi.subscribe(self.onOnline);
-            self.networkManager.status.connection.ethernet.subscribe(self.onOnline);
+            self.networkManager.status.wifi.connected.subscribe(self.onOnline);
+            self.networkManager.status.ethernet.connected.subscribe(self.onOnline);
         }
 
         self.onFlashingBegin = function()
         {
-            self._sendApi({ command: 'notify_intended_disconnect' });
+            sendToApi("printer/notify_intended_disconnect");
         }
 
         self.showChangelogFlyout = function (updateContents) {
@@ -454,7 +465,7 @@ $(function ()  {
             // Show it on top of other flyouts (high priority)
             self.flyout.showFlyout('changelog', true, true)
                 .always(function () {
-                        self._sendApi({ command: "changelog_seen" });
+                    sendToApi("software/changelog/seen");
                 });
         }
 
@@ -468,11 +479,6 @@ $(function ()  {
             $('#firmware_update_spinner').removeClass('fa-spin');
         }
 
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
-
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
                 return;
@@ -481,9 +487,6 @@ $(function ()  {
             var messageType = data['type'];
             var messageData = data['data'];
             switch (messageType) {
-                case "firmware_update_required":
-                    self.showFirmwareUpdateRequired();
-                    break;
                 case "firmware_update_notification":
                     self.firmwareUpdateDoneOrError();
                     self.firmwareUpdateNotification(messageData);
@@ -582,7 +585,7 @@ $(function ()  {
     OCTOPRINT_VIEWMODELS.push([
       UpdateViewModel,
       ["loginStateViewModel", "systemViewModel", "flyoutViewModel", "filesViewModel", "settingsViewModel", "printerStateViewModel", "flashArduinoViewModel", "networkmanagerViewModel", "userSettingsViewModel", "navigationViewModel"],
-      ['#update', '#update_icon', '#firmware_update_required', '#changelog_flyout']
+      ['#update', '#update_icon', '#update_required', '#changelog_flyout']
     ]);
 
 });

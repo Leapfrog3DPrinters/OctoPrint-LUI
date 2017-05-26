@@ -7,15 +7,12 @@
     <div class="file_area">
 
       <div class="gcode_files">
-        <div class="file_footer">
-
-        </div>
         <div class="file_header">
           <div class="browse_modes">
             {%  if local_addr -%}
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="touchClick: function () { browseLocal() }, css: {'secondary-button': !isOriginLocal()}">
+                <li class="button load-button" data-bind="touchClick: function () { browseOrigin('local') }, css: { 'secondary-button': currentOrigin() == 'local' }">
                   <a href="#browse_local">
                     <span>
                       <i class="fa fa-hdd-o"></i>{{ _('Printer') }}
@@ -26,7 +23,7 @@
             </div>
             <div class="button-area">
               <ul>
-                <li class="button load-button" data-bind="touchClick: function () { browseUsb() }, css: {disabled: !isUsbAvailable(), 'secondary-button': isOriginLocal()}">
+                <li class="button load-button" data-bind="touchClick: function () { browseOrigin('usb') }, css: {disabled: !isUsbAvailable(), 'secondary-button': currentOrigin() == 'usb' }">
                   <a href="#browse_usb">
                     <span>
                       <i class="fa fa-usb"></i>{{ _('USB') }}
@@ -35,17 +32,30 @@
                 </li>
               </ul>
             </div>
+            {% if cloud_enabled %}
+            <div class="button-area">
+              <ul>
+                <li class="button load-button" data-bind="touchClick: function () { browseOrigin('cloud') }, css: {  'secondary-button': currentOrigin() == 'cloud' }">
+                  <a href="#browse_cloud">
+                    <span>
+                      <i class="fa fa-cloud"></i>{{ _('Cloud') }}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            {% endif %}
             {%- endif %}
             {% if not local_addr or debug_lui  %}
             <div class="button-area">
               <ul>
-                <li class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
+                <li id="upload_button" class="button fileinput-button" data-bind="css: {disabled: !$root.loginState.isUser()}">
                   <a href="#upload_file">
                     <span>
                       <i class="fa fa-upload" aria-hidden="true"></i>{{ _('Upload') }}
                     </span>
-                    <input id="gcode_upload" type="file" name="file" accept=".gcode,.gco,.g" class="fileinput-button">
-                            </a>
+                    <input id="gcode_upload" type="file" name="file" accept=".gcode,.gco,.g" class="fileinput-button" />
+                  </a>
                 </li>
               </ul>
             </div>
@@ -54,7 +64,7 @@
           <div class="file_search">
             <form class="form-search" data-bind="submit: performSearch">
               <div class="file-search-input-container">
-                <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;">
+                <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;" />
                   <div class="button-area" data-bind="visible: searchQuery()">
                     <ul>
                       <li class="button">
@@ -70,10 +80,10 @@
           <div id="sort" class="file_sort">
             <ul id="files_menu" class="sort_menu">
               <li>
-                <a href="#">
+                <a id="files_options" href="#">
                   <i class="fa fa-list"></i>
                 </a>
-                <ul>
+                <ul style="text-align: left">
                   <li class="menu_label">
                     <span>
                       <i class="fa fa-sort"></i>
@@ -105,6 +115,11 @@
                 </ul>
               </li>
             </ul>
+          </div>
+          <div class="file_refresh">
+            <a href="#" data-bind="touchClick: refreshCurrentFolder">
+              <i class="fa fa-refresh"></i>
+            </a>
           </div>
         </div>
         <div class="loading" data-bind="visible: isLoadingFileList()">
@@ -138,6 +153,17 @@
             </ul>
           </div>
         </div>
+        <div class="loading" data-bind="visible: !isLoadingFileList() && currentOrigin() == 'cloud' && !isOnline()">
+          <div class="file_entry">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#file_name">
+                  <span class="no_files">{{ _('The printer appears to be offline. Connect the printer to the internet before you browse cloud storage services.') }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
         <div class="file_list"  data-bind="visible: !isLoadingFileList()">
           <div class="file_entry" data-bind="visible: currentPath() != '', touchClick: function () { $root.navigateUp(); }" style="display: none">
             <ul class="file_main" style="background-color: #f2f2f2">
@@ -153,9 +179,51 @@
               </li>
             </ul>
           </div>
+          <div id="print_files" class="file_entry" data-bind="visible: isIntroFile(), css: {'file_selected': isIntroFile()}, touchClick: function () {}">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#file_name">
+                  <span>Bolt-PLA.gcode</span>
+                </a>
+              </li>
+              <li class="file_print" data-bind="visible: isIntroFile()">
+                <a href="#" data-bind="touchClick: function () { selectDemoFile() }" title="{{ _('Print') }}">
+                  <i class="fa fa-play"></i>
+                </a>
+              </li>
+              <li class="file_status">
+                <a>
+                  <i class="fa fa-circle-thin"></i>
+                </a>
+              </li>
+              <li class="file_info">
+                <a href="#file_info" title="{{ _('Additional data') }}">
+                  <i class="fa fa-2x fa-angle-down"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
 
           <!-- ko foreach: filesAndFolders -->
           <div class="file_entry" data-bind="attr: { id: $root.getEntryId($data) }, template: { name: $root.templateFor($data), data: $data }"></div>
+          <!-- /ko -->
+          <!-- ko if: currentOrigin() == 'cloud' && (!currentPath() || currentPath() == '/') -->
+          <div class="file_entry">
+            <div data-bind="touchClick: showCloudSettings">
+              <ul class="file_main">
+                <li class="file_status file_neutral">
+                  <a href="#file_status">
+                    <i class="fa fa-cog"></i>
+                  </a>
+                </li>
+                <li class="file_name">
+                  <a href="#">
+                    <span>{{ _('Connect to cloud services') }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
           <!-- /ko -->
           <script type="text/html" id="files_template_firmware">
             <ul class="file_main">
@@ -175,7 +243,7 @@
               </li>
               <li class="file_print" data-bind="visible: $root.listHelper.isSelected($data)">
                   <a href="#" data-bind="css: {disabled: !$root.isLoadActionPossible()}, touchClick: function () { $root.printAndChangeTab(); }" title="{{ _('Print') }}">
-                    <i class="fa fa-play"></i> 
+                    <i class="fa fa-play"></i>
                   </a>
               </li>
               <li class="file_status">
@@ -194,12 +262,48 @@
                 <img data-bind="attr: {src: $data.previewUrl() }, visible: $data.previewUrl()" style="width: 100%; max-width: 150px;" />
                 <i data-bind="visible: !$data.previewUrl()" class="fa fa-cube" style="font-size: 3em; color: lightgrey"></i>
               </div>
-              <div class="file_add_info_content" data-bind="html: $root.getAdditionalData($data)"></div>
+              <div class="file_add_info_content">
+                <strong>{{ _("Filename:") }}</strong>
+                <br/>
+                <span style="white-space: normal" data-bind="text: name"></span>
+                <br />
+                <!-- ko if: gcodeAnalysis() -->
+                <div data-bind="foreachprop: gcodeAnalysis().filament">
+                    <strong data-bind="text: $root.formatFilamentHeader(key)"></strong>
+                    <br />
+                    <span data-bind="text: formatFilament(value)"></span>
+                    <br/>
+                </div>
+
+                <strong>{{ _("Est. Print Time:") }}</strong>
+                <br />
+                <span data-bind="text: formatFuzzyPrintTime(gcodeAnalysis().estimatedPrintTime)"></span>
+                <br />
+                <!-- /ko -->
+                <!-- ko if: !gcodeAnalysis() -->
+                <strong>{{ _("Analyzing job") }}</strong> <i class='fa fa-spinner fa-pulse'></i>
+                <br />
+                <!-- /ko -->
+
+                <!-- ko if: prints() -->
+
+                <!-- ko if: prints().last-->
+                <strong>{{ _("Last printed:") }}</strong><br/>
+                <span data-bind="text: formatTimeAgo(prints().last.date)"></span><br />
+                <!-- /ko -->
+
+                <!-- ko if: prints().last.lastPrintTime-->
+                <strong>{{ _("Last print duration:") }}</strong><br/>
+                <span data-bind="text: formatDuration(prints().last.lastPrintTime)"></span>
+                <!-- /ko -->
+
+                <!-- /ko -->
+              </div>
               <div class="file_add_info_buttons">
                 <ul class="button-area">
                   {% if local_addr %}
                   <li class="button">
-                    <a href="#" data-bind="click: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
+                    <a href="#" data-bind="touchClick: $root.copyToUsb, css: {disabled: !$root.isUsbAvailable() }">
                       <span>{{ _('Copy to USB') }}</span>
                     </a>
                   </li>
@@ -237,6 +341,26 @@
               </li>
             </ul>
           </script>
+          <script type="text/html" id="files_template_cloud_machinecode">
+            <ul class="file_main">
+              <li class="file_name">
+                <a href="#">
+                  <span data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }, text: name"></span>
+                </a>
+              </li>
+              <li class="file_load">
+                <ul class="button-area">
+                  <li class="button secondary-button load-button">
+                    <a href="#" data-bind="touchClick: function () { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }, css: {disabled: !$root.enableSelect($data)}" title="{{ _('Load') }}">
+                      <span>
+                        <i class="fa fa-upload"></i>{{ _('Load') }}
+                      </span>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </script>
 
           <script type="text/html" id="files_template_model">
             <ul class="file_main">
@@ -256,8 +380,40 @@
               </li>
             </ul>
           </script>
+          <script type="text/html" id="files_template_cloud_folder">
+            <div data-bind="touchClick: $root.changeFolder">
+              <ul class="file_main">
+                <li class="file_status file_neutral">
+                  <a href="#file_status">
+                    <i class="fa fa-folder-open"></i>
+                  </a>
+                </li>
+                <li class="file_name" data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }">
+                  <a href="#file_name">
+                    <span data-bind="text: name"></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </script>
+          <script type="text/html" id="files_template_cloud_root_folder">
+            <div data-bind="touchClick: $root.changeFolder, css: { disabled: !is_connected }">
+              <ul class="file_main">
+                <li class="file_status file_neutral">
+                  <a href="#file_status">
+                    <img data-bind="attr: { src: $root.cloud.getCloudServiceIcon(service) }" style="width: 23px;" />
+                  </a>
+                </li>
+                <li class="file_name" data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }">
+                  <a href="#file_name">
+                    <span data-bind="text: $root.cloud.getCloudServiceName(service)"></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </script>
           <script type="text/html" id="files_template_folder">
-            <div data-bind="click: $root.changeFolder">
+            <div data-bind="touchClick: $root.changeFolder">
               <ul class="file_main">
                 <li class="file_status file_neutral">
                   <a href="#file_status">

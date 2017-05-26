@@ -82,14 +82,10 @@ $(function () {
                     });
             } else {
                 self.requestData();
-                self._sendApi({ command: 'notify_intended_disconnect' }).always(function () {
+                sendToApi("printer/notify_intended_disconnect").always(function () {
                     OctoPrint.connection.disconnect();
                 });
             }
-        };
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
         };
     }
 

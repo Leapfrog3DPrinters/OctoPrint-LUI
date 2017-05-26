@@ -14,13 +14,14 @@
         </div>
     </div>
     {% if local_addr %}
-    <!-- ko keyboardForeach: settings.temperature_profiles -->
+    {# Workaround .slice(0) fixes the on-screen keyboard not popping up #}
+    <!-- ko keyboardForeach: settings.temperature_profiles.slice(0) -->
     {% else %}
-    <!-- ko foreach: settings.temperature_profiles -->
+    <!-- ko foreach: settings.temperature_profiles.slice(0) -->
     {% endif %}
   <div class="Table-row" data-bind="css: {disabled: $parent.disableRemove($data)}">
         <div class="Table-item Table-item-grow-3 profile_name">
-            <input type="text" data-bind="value: name" style="padding: " />
+            <input type="text" data-bind="value: name" />
         </div>
         <div class="Table-item Table-item-grow-3 extruder_temp">
             <input type="number" data-bind="value: extruder" />

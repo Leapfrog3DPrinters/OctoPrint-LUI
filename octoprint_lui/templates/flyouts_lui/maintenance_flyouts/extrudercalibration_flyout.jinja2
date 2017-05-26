@@ -1,0 +1,304 @@
+<!--TODO: Wrap in only for Bolt-->
+<div id="start-large-extruder-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: !calibrationProcessStarted()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        {{ _('Extruder calibration') }}
+      </div>
+    </div>
+      <div id="start_extruder_calibration">
+    <div class="Table-row">
+      <div class="Table-item">
+        {{ _('Make sure the print bed is empty and calibrated. Also ensure both extruders are loaded with differently colored filament. Apply a print adhesive to the bed and press Start calibration.') }}
+      </div>
+    </div>
+    <!-- ko foreach: temperatures.tools.slice(0).reverse() -->
+    <div class="Table-row" data-bind="visible: filament.materialProfileName() == 'None'">
+      <div class="Table-item">
+        <span>
+          <i class="fa fa-exclamation-triangle"></i>{{ _(' Please load filament in the ') }}<span data-bind="text: $root.getToolName(key())"></span>{{ _(' extruder before you continue.') }}
+        </span>
+      </div>
+    </div>
+    <!-- /ko -->
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button ok-button" data-bind="css: {disabled: !mayStartLargeCalibration() || !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startLargeExtruderCalibration()}">
+            <a href="#">
+              <span>{{ _('Start calibration') }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+<div id="large-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && !largeCalibrationCompleted()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        {{ _('X-axis calibration') }}
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <p data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">{{ _('Please indicate which line on the print bed is aligned best.') }}</p>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item" style="padding: 0.3em 0">
+        <ul class="width-calibrator" id="large-bed-width-correction"  data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">
+          <li data-val="-8">
+            <i>-8</i>
+          </li>
+          <li data-val="-7"></li>
+          <li data-val="-6"></li>
+          <li data-val="-5"></li>
+          <li data-val="-4">
+            <i>-4</i>
+          </li>
+          <li data-val="-3"></li>
+          <li data-val="-2"></li>
+          <li data-val="-1"></li>
+          <li data-val="0" class="active">
+            <i>0</i>
+          </li>
+          <li data-val="1"></li>
+          <li data-val="2"></li>
+          <li data-val="3"></li>
+          <li data-val="4">
+            <i>+4</i>
+          </li>
+          <li data-val="5"></li>
+          <li data-val="6"></li>
+          <li data-val="7"></li>
+          <li data-val="8"><i>+8</i></li>
+        </ul>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item" style="align-self: flex-start; flex-basis: initial; flex-grow: 0">
+        <ul class="button-area">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeLargeBedWidthCalibration(-1) }">
+            <a href="#">
+              <i class="fa fa-chevron-left" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="Table-item"><!-- spacer --></div>
+      <div class="Table-item" style="align-self: flex-end;  flex-basis: initial; flex-grow: 0">
+        <ul class="button-area">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeLargeBedWidthCalibration(+1)}">
+            <a href="#">
+              <i class="fa fa-chevron-right" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
+            </a>
+          </li> 
+        </ul>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { prepareSmallExtruderCalibration()}">
+            <a href="#">
+              <span>{{ _('Next') }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="start-small-extruder-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && largeCalibrationCompleted() && !smallCalibrationPrepared()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        {{ _('Printing calibration pattern') }}
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        {{ _('Press next to begin the next calibration step.') }}
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startSmallExtruderCalibration()}">
+            <a href="#">
+              <span>{{ _('Next') }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="x-small-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && smallCalibrationPrepared() && !smallXCalibrationCompleted()">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        {{ _('X-axis calibration') }}
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <p  data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">{{ _('Please indicate which line on the print bed is aligned best horizontally.') }}</p>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+
+        <ul class="width-calibrator" id="small-bed-width-correction" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">
+          <li data-val="-5">
+            <i>-5</i>
+          </li>
+          <li data-val="-4"></li>
+          <li data-val="-3"></li>
+          <li data-val="-2"></li>
+          <li data-val="-1"></li>
+          <li data-val="0" class="active">
+            <i>0</i>
+          </li>
+          <li data-val="1"></li>
+          <li data-val="2"></li>
+          <li data-val="3"></li>
+          <li data-val="4"></li>
+          <li data-val="5">
+            <i>+5</i>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item" style="align-self: flex-start; flex-basis: initial; flex-grow: 0">
+        <ul class="button-area">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeSmallBedWidthCalibration(-1) }">
+            <a href="#">
+              <i class="fa fa-chevron-left" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="Table-item"><!-- spacer --></div>
+      <div class="Table-item" style="align-self: flex-end;  flex-basis: initial; flex-grow: 0">
+        <ul class="button-area">
+          <li class="button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { changeSmallBedWidthCalibration(+1)}">
+            <a href="#">
+              <i class="fa fa-chevron-right" style="padding-left: 0.3em; padding-right: 0.3em;"></i>
+            </a>
+          </li> 
+        </ul>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="touchClick: function () {showSmallYCalibration()}">
+            <a href="#">
+              <span>{{ _('Next') }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="y-small-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: calibrationProcessStarted() && !isPrintingCalibration() && smallXCalibrationCompleted() ">
+  <div class="Table">
+    <div class="Table-row Table-header">
+      <div class="Table-item">
+        {{ _('Y-axis calibration') }}
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+        <p  data-bind="css: {disabled:  !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">{{ _('Please indicate which line on the print bed is aligned best vertically.') }}</p>
+      </div>
+    </div>
+    <div class="Table-row">
+      <div class="Table-item">
+
+        <ul class="height-calibrator" id="y-axis-calibration" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}">
+          <li data-val="5">
+            <i>+5</i>
+          </li>
+          <li data-val="4"></li>
+          <li data-val="3"></li>
+          <li data-val="2"></li>
+          <li data-val="1"></li>
+          <li data-val="0" class="active">
+            <i>0</i>
+          </li>
+          <li data-val="-1"></li>
+          <li data-val="-2"></li>
+          <li data-val="-3"></li>
+          <li data-val="-4"></li>
+          <li data-val="-5">
+            <i>-5</i>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="Table-row">
+      <div class="Table-item">
+        <ul class="button-area">
+          <li class="button ok-button" data-bind="touchClick: function () {saveCalibration()}">
+            <a href="#">
+              <span>{{ _('Save') }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="printing-extruder-calibration" class="bolt-bed-width-calibration-step" data-bind="visible: isPrintingCalibration(), with: printerState">
+
+  <p>{{ _('Please wait until the print has completed.') }}</p>
+
+  <div class="status_block print_progress" data-bind="visible: isPrinting() || isPaused()">
+    <div class="Table">
+      <div class="Table-row Table-header">
+        <div class="Table-item">{{ _('Print Status') }}</div>
+      </div>
+      <div class="Table-row">
+        <div class="Table-item">{{ _('Status') }}</div>
+        <div class="Table-item Table-item-grow-4">
+          <div class="progress progress-striped progress-animate">
+            <span id="calibration-progress" class="bg-main" data-bind="text: toolInfo.isHeating() ? 'Heating' : 'Printing', css: {'bg-orange': toolInfo.isHeating()}, style: {width: toolInfo.totalProgress() + '%'}"></span>
+          </div>
+        </div>
+      </div>
+      <div class="Table-row">
+        <div class="Table-item">{{ _('Total') }}</div>
+        <div class="Table-item Table-item-grow-4">
+          <div class="progress">
+            <span class="bg-main" data-bind="style: { width: progressString() + '%' }"></span>
+          </div>
+        </div>
+      </div>
+
+      <!--<div class="Table-item">
+        <ul class="button-area">
+          <li class="button" data-bind="touchClick: function () { pause() }, enable: enablePause, css: {active: isPaused()}, attr: {title: titlePauseButton}">
+            <a href="#">
+              <span data-bind="visible: !isPaused()">
+                <i class="fa" data-bind="css: {'fa-pause': !isPaused(), 'fa-play': isPaused()}"></i> {{ _('Pause') }}
+              </span>
+              <span data-bind="visible: isPaused()">
+                <i class="fa" data-bind="css: {'fa-pause': !isPaused(), 'fa-play': isPaused()}"></i> {{ _('Resume') }}
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>-->
+
+    </div>
+  </div>
+</div>

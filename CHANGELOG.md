@@ -1,12 +1,23 @@
-# Change log 
+# Changelog 
 
-Change log for OctoPrint-LUI. 
+Changelog for OctoPrint-LUI. 
+
+## 1.1.1
+
+- Improved: Feedback when copying file to USB
+- Improved: German translations
+- Improved: course and fine extruder calibration do not overlap anymore
+- Fixed: fine extruder calibration does not generate any overlapping lines
+- Fixed: compatibility with Leapfrog Xcel
 
 ## 1.1.0
-- When updating software, firmware is automatically updated when necessary
-- Coordinate system is updated to match actual print area better
+
+### This update requires new slicing profiles. Go to bolt.lpfrg.com for the new Simplify3D slicing profiles or update your Creatr Software settings by pressing the Update profiles button in the Profile editor.
+
 - Added ability to swap filament when the print is paused
 - Improved user experience when pausing or cancelling print
+- When updating software, firmware is automatically updated when necessary
+- Coordinate system is updated to match actual print area better(requires new slicing profiles)
 - Improved livestream performance. Older browsers are no longer supported
 - Timelapses are now ordered by date
 - Log files may be downloaded when the printer is unresponsive

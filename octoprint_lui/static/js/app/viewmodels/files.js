@@ -2,13 +2,18 @@ $(function ()  {
     function FilesViewModel(parameters) {
         var self = this;
 
-        self.settingsViewModel = parameters[0];
+        self.settings = parameters[0];
         self.loginState = parameters[1];
         self.printerState = parameters[2];
         self.flyout = parameters[3];
         self.printerProfiles=parameters[4];
         self.filament = parameters[5];
+        self.network = parameters[6];
+        self.cloud = parameters[7];
+        self.navigation = parameters[8];
+        self.introView = parameters[9];
 
+        self.isIntroFile = ko.observable(false);
         self.isUsbAvailable = ko.observable(false);
         self.selectedFirmwareFile = ko.observable(undefined);
         self.currentOrigin = ko.observable("local");
@@ -30,19 +35,23 @@ $(function ()  {
                 return "-";
             return formatSize(self.freeSpace()) + gettext(" free");
         });
+
         self.totalSpaceString = ko.computed(function ()  {
             if (!self.totalSpace())
                 return "-";
             return formatSize(self.totalSpace());
         });
 
+        self.wasDiskusageWarning = false;
         self.diskusageWarning = ko.computed(function ()  {
             return self.freeSpace() != undefined
-                && self.freeSpace() < self.settingsViewModel.server_diskspace_warning();
+                && self.freeSpace() < self.settings.server_diskspace_warning();
         });
+
+        self.wasDiskusageCritical = false;
         self.diskusageCritical = ko.computed(function ()  {
             return self.freeSpace() != undefined
-                && self.freeSpace() < self.settingsViewModel.server_diskspace_critical();
+                && self.freeSpace() < self.settings.server_diskspace_critical();
         });
         self.diskusageString = ko.computed(function ()  {
             if (self.diskusageCritical()) {
@@ -54,30 +63,29 @@ $(function ()  {
             }
         });
 
-        self.diskusageNotificationCheck = function() {
-            if (self.diskusageCritical()) {
+        self.showDiskUsageWarnings = function () {
+            if (!self.wasDiskusageCritical && self.diskusageCritical()) {
                 $.notify({
                     title: gettext("Disk space critically low!"),
-                    text: _.sprintf(gettext('Free some space by deleting jobs or timelapses to continue usage.'), {})
-                },
-                { 
-                    className: "error",
-                    autoHide: false
-                }
-                )
-                return
-            } else if (self.diskusageWarning()) {
+                    text: gettext('Free some space by deleting jobs or timelapses to continue usage.')
+                }, { className: "error", autoHide: false });
+
+                self.wasDiskusageCritical = true;
+            }
+            else if (!self.wasDiskusageWarning && self.diskusageWarning()) {
                 $.notify({
                     title: gettext("Disk space very low!"),
-                    text: _.sprintf(gettext('Please free some space by deleting jobs or timelapses.'), {})
-                },
-                { 
-                    className: "warning",
-                    autoHide: false
-                }
-                )
+                    text: gettext('Please free some space by deleting jobs or timelapses.')
+                }, { className: "warning", autoHide: false });
+
+                self.wasDiskusageWarning = true;
             }
-        };
+            else
+            {
+                self.wasDiskusageWarning = false;
+                self.wasDiskusageCritical = false;
+            }
+        }
 
         self.uploadButton = undefined;
         self.uploadProgressBar = undefined;
@@ -91,11 +99,29 @@ $(function ()  {
 
         self.gcodePreviews = [];
 
+        self.isOnline = ko.pureComputed(function () {
+            return self.network.status.ethernet.connected() || self.network.status.wifi.connected();
+        })
+
+        self.formatFilamentHeader = function (tool) {
+            switch (tool) {
+                case "tool0":
+                    return gettext("Filament right:");
+                case "tool1":
+                    return gettext("Filament left:");
+            }
+        }
+
         var preProcessList = function (response) {
             var recursiveCheck = function (element, index, list) {
                 if (!element.hasOwnProperty("parent")) element.parent = { children: list, parent: undefined };
                 if (!element.hasOwnProperty("size")) element.size = undefined;
                 if (!element.hasOwnProperty("date")) element.date = undefined;
+
+                element.gcodeAnalysis = ko.observable(element.gcodeAnalysis);
+
+                element.prints = ko.observable(element.prints);
+
                 if (element.origin == "local" && !element.hasOwnProperty("previewUrl")) {
                     previewItem = self.gcodePreviews.find(function (item) { return item.filename.toLowerCase() == element["name"].toLowerCase(); });
                     if (previewItem)
@@ -110,55 +136,51 @@ $(function ()  {
                         recursiveCheck(e, i, l);
                     });
                 }
+
             };
             _.each(response.files, recursiveCheck);
         };
 
-        self.isOriginLocal = ko.pureComputed(function () {
-            return self.currentOrigin() == "local";
-        })
-
-        self.browseLocal = function (filenameToFocus) {
+        self.browseOrigin = function (origin, filenameToFocus)
+        {
             if (self.isLoadingFileList())
                 return;
 
             self.isLoadingFileList(true);
-            if (filenameToFocus == undefined) {
+
+            var locationToFocus = undefined;
+            var switchToPath = '';
+
+            if (origin == "local" && filenameToFocus == undefined) {
                 filenameToFocus = ''
                 selectedFile = self.selectedFile();
-                if (selectedFile){
+                if (selectedFile) {
                     filenameToFocus = selectedFile.name;
                 }
             }
-            var locationToFocus = undefined;
-            var switchToPath = '';
-            self.loadFiles("local").done(preProcessList).done(function (response) {
+
+            self.loadFiles(origin).done(preProcessList).then(function (response) {
                 self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-                self.currentOrigin("local");
-            }).always(function ()  { 
+                self.currentOrigin(origin);
+            })
+            .fail(function () {
+                if(origin == "usb")
+                    $.notify({ title: gettext('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
+            })
+            .always(function () {
                 self.isLoadingFileList(false);
             });
-        }
 
-        self.browseUsb = function ()  {
-            if (self.isLoadingFileList())
-                return;
-
-            self.isLoadingFileList(true);
-            var filenameToFocus = '';
-            var locationToFocus = '';
-            var switchToPath = '';
-            self.loadFiles("usb")
-                .done(preProcessList)
-                .fail(self.notifyUsbFail)
-                .then(function (response) {
-                    self.fromResponse(response, filenameToFocus, locationToFocus, switchToPath);
-                    self.currentOrigin("usb");
-                }).always(function ()  { self.isLoadingFileList(false); });
-        }
-
-        self.notifyUsbFail = function ()  {
-            $.notify({ title: gettex('USB access failed'), text: gettext('The USB drive could not be accessed. Please try again.') }, 'error');
+            if (origin = "local" && self.introView.isTutorialStarted) {
+                self.isIntroFile(true);
+                var checkIfFileVisible = setInterval(function () {
+                    if($('#print_files').is(":visible")) {
+                        self.introView.introInstance.refresh();
+                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectFile"));
+                    }
+                    clearInterval(checkIfFileVisible);
+                }, 100);
+            }
         };
 
         self.browseUsbForFirmware = function ()  {
@@ -177,25 +199,15 @@ $(function ()  {
                 }).always(function ()  { self.isLoadingFileList(false); });
         }
 
-        self.loadFiles = function (origin, filter) {
+        self.loadFiles = function (origin, filter, path) {
             filter = filter || "";
-            return self._getApi({
-                command: "get_files",
-                origin: origin,
-                filter: filter,
-                recursive: true
-            });
+            path = path || "";
+            
+            if (filter)
+                return getFromApi("files/" + origin + "/" + path + "?filter=" + filter);
+            else
+                return getFromApi("files/" + origin + "/" + path);
         }
-
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, { data: data });
-        };
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
-        };
 
         // initialize list helper
         self.listHelper = new ItemListHelper(
@@ -233,7 +245,7 @@ $(function ()  {
                         } else {
                             children_check = false;
                         }
-                        return data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check);
+                        return data["origin"] == "cloud" || (data["type"] && (data["type"] != "folder" || data["weight"] > 0 || children_check));
                     }
                 }
             },
@@ -315,30 +327,19 @@ $(function ()  {
                     .done(function (data) {
                         self.gcodePreviews = data.previews;
                     }).always(function ()  {
-                        self.browseLocal(filenameToFocus);
+                        self.browseOrigin("local",filenameToFocus);
                     });
 
             }
             else
             {
-                self.browseLocal(filenameToFocus);
+                self.browseOrigin("local",filenameToFocus);
             }
-            
+
         };
 
-        self.fromResponse = function (response, filenameToFocus, locationToFocus, switchToPath) {
-            var files = response.files;
-
-            self.allItems(files);
-            self.currentPath("");
-            
-
-            if (!switchToPath) {
-                self.listHelper.updateItems(files);
-            } else {
-                self.changeFolderByPath(switchToPath);
-            }
-
+        self.focusOnFile = function(filenameToFocus, locationToFocus)
+        {
             if (filenameToFocus) {
                 // got a file to scroll to
                 if (locationToFocus === undefined) {
@@ -349,13 +350,29 @@ $(function ()  {
                     var container = $('#files');
                     var scrollTo = $(entryElement);
 
-                    setTimeout(function(){
+                    setTimeout(function () {
                         container.animate({
                             scrollTop: scrollTo.offset().top - container.offset().top + container.scrollTop() - 60
                         }, 500, 'swing');
-                    }, 100); 
+                    }, 100);
                 }
             }
+        }
+
+        self.fromResponse = function (response, filenameToFocus, locationToFocus, switchToPath) {
+            var files = response.files;
+
+            self.allItems(files);
+            self.currentPath("");
+
+
+            if (!switchToPath) {
+                self.listHelper.updateItems(files);
+            } else {
+                self.changeFolderByPath(switchToPath);
+            }
+
+            self.focusOnFile(filenameToFocus, locationToFocus);
 
             if (response.free != undefined) {
                 self.freeSpace(response.free);
@@ -365,16 +382,44 @@ $(function ()  {
                 self.totalSpace(response.total);
             }
 
-            self.diskusageNotificationCheck();
+            self.showDiskUsageWarnings();
 
             self.highlightCurrentFilename();
         };
 
         self.changeFolder = function (data) {
-            self.currentPath(data.path);
-            self.listHelper.updateItems(data.children);
-            self.highlightCurrentFilename();
+
+            if (!data.children) {
+                self.loadChildrenAndBrowse(data);
+            }
+            else {
+                self.currentPath(data.path);
+                self.listHelper.updateItems(data.children);
+                self.highlightCurrentFilename();
+            }
         };
+
+        self.loadChildrenAndBrowse = function (folder)
+        {
+            if (self.isLoadingFileList())
+                return;
+
+            self.isLoadingFileList(true);
+            self.loadFiles(folder.origin, "", folder.path).done(preProcessList).then(function (children) {
+                folder.children = children.files;
+                self.currentPath(folder.path);
+                self.listHelper.updateItems(folder.children);
+                self.highlightCurrentFilename();
+            }).fail(function()
+            {
+                $.notify({
+                    title: gettext("Could not open folder"),
+                    text: gettext("The folder could not be opened. Please check if your printer is connected to the internet.")
+                }, "error");
+            }).always(function () {
+                self.isLoadingFileList(false);
+            });
+        }
 
         self.navigateUp = function ()  {
             var path = self.currentPath().split("/");
@@ -419,6 +464,18 @@ $(function ()  {
             return recursiveSearch(path.split("/"), root);
         };
 
+        self.showCloudSettings = function()
+        {
+            self.navigation.showSettingsTopic('cloud');
+        }
+
+        self.showAddFolderDialog = function ()  {
+            if (self.addFolderDialog) {
+                self.addFolderDialog.modal("show");
+            }
+        };
+
+
         self.loadFile = function (file, printAfterLoad) {
             if (!file || self.isLoadingFile) {
                 return;
@@ -434,9 +491,9 @@ $(function ()  {
 
                 self.isLoadingFile = false;
             }
-            else if (file.origin == "usb") {
-                self._sendApi({ command: "select_usb_file", filename: file.path })
-                .done(function ()  {
+            else if (file.origin != "local") {
+                sendToApi("files/select/" + file.origin + "/" + file.path)
+                .done(function () {
                     self.setProgressBar(0);
 
                     if (printAfterLoad) {
@@ -446,9 +503,9 @@ $(function ()  {
                     if (self.flyout.flyouts().length > 0)
                         self.flyout.closeFlyoutAccept();
 
-                    self.browseLocal(file.name);
+                    self.browseOrigin("local",file.name);
                 })
-                .always(function ()  { self.isLoadingFile = false; })
+                .always(function () { self.isLoadingFile = false; })
             }
             else {
                 OctoPrint.files.select(file.origin, file.path)
@@ -459,15 +516,15 @@ $(function ()  {
                             if (self.flyout.flyouts().length > 0)
                                 self.flyout.closeFlyoutAccept();
                             // changeTabTo("print");
-                        }).always(function ()  { self.isLoadingFile = false; });;
+                        }).always(function ()  { self.isLoadingFile = false; });
             }
 
         };
 
-        self.printAndChangeTab = function () {
+        self.printAndChangeTab = function (datafile) {
             changeTabTo("print");
             self.printerState.print();
-        }
+        };
 
         self.copyToUsb = function(file)
         {
@@ -475,25 +532,25 @@ $(function ()  {
                 return;
             }
 
-            self._sendApi({ command: "copy_gcode_to_usb", filename: file.name });
+            sendToApi("usb/save/gcode/" + file.path);
         }
 
         self.removeAllFiles = function()
         {
-            
+
             var text = gettext("You have opted to delete all print jobs.");
             if (self.selectedFile())
                 text += gettext(" This will not delete the currently selected file.");
 
             var question = gettext("Do you want to continue?");
-            var title = gettext("Delete all jobs"); 
+            var title = gettext("Delete all jobs");
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
             .done(function ()  {
-                return self._sendApi({ command: 'delete_all_uploads' })
+                return sendToApi('files/delete_all')
                     .done(function ()  {
-                        
+
                         $.notify({
                             title: gettext("Jobs deleted"),
                             text: gettext("All print jobs were deleted.")
@@ -512,7 +569,7 @@ $(function ()  {
                 })
                 .always(function ()  { self.requestData(undefined, undefined, undefined); })
             });
-        }
+        };
 
         self.removeFile = function (file) {
             if (!file) {
@@ -539,10 +596,15 @@ $(function ()  {
             var dialog = { 'title': title, 'text': text, 'question': question };
 
             self.flyout.showConfirmationFlyout(dialog)
-            .done(function () {        
+            .done(function () {
                 OctoPrint.files.delete(file.origin, file.path)
                     .done(function () {
-                        self.requestData(undefined, filenameToFocus, (file.parent ? file.parent.path : ""));
+
+                        self.focusOnFile(filenameToFocus);
+                        self.listHelper.removeItem(function (item) {
+                           return item.path == file.path
+                        });
+
                         $.notify({
                             title: gettext("File removed succesfully"),
                             text: _.sprintf(gettext('Removed file: "%(filename)s"'), {filename: file.name})},
@@ -559,31 +621,32 @@ $(function ()  {
             var withinPrintDimensions = self.evaluatePrintDimensions(file, mode, true);
 
             if (withinPrintDimensions) {
-                self._sendApi({
-                    command: "start_print",
-                    mode: mode
-                })
+                sendToApi('printer/start_print/' + mode);
                 self.flyout.closeFlyoutAccept();
             }
-
-
             // do print stuff
-            // close flyout. 
+            // close flyout.
+            if(self.introView.isTutorialStarted){
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("tutorialDone"));
+                }, 200);
+            }
         };
 
         self.isDualPrint = ko.computed(function(){
             // Checks if selected file uses both tools for printing.
-            // At the moment tools is hardcoded, should be taken from 
-            // printer profile. 
-            // There is a length check in there, because the analyser 
-            // sometimes falsely puts some extrusion on one of the tools 
+            // At the moment tools is hardcoded, should be taken from
+            // printer profile.
+            // There is a length check in there, because the analyser
+            // sometimes falsely puts some extrusion on one of the tools
             // at start up script (or something)
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
-                var analysis = self.selectedFile()["gcodeAnalysis"];
+                var analysis = self.selectedFile()["gcodeAnalysis"]();
                 if (!analysis) {
                     return false;
                 }
-                var filamentInfo = self.selectedFile()['gcodeAnalysis']['filament'];
+                var filamentInfo = analysis['filament'];
                 var requiredTools = ["tool0", "tool1"];
                 var lengthThreshold = 100;
 
@@ -615,61 +678,66 @@ $(function ()  {
         self.gcodeAnalysisFinished = ko.computed(function(){
             return true // 1.0.2 work around
             if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local"){
-                var analysis = self.selectedFile()["gcodeAnalysis"];
+                var analysis = self.selectedFile()["gcodeAnalysis"]();
                 return analysis ? true : false;
             }
         });
 
         self.enoughFilament = ko.computed(function () {
-            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local" && self.filament.filaments().length > 0){
-                var analysis = self.selectedFile()["gcodeAnalysis"];
+            var sufficient = false;
+
+            if (self.selectedFile() != undefined && self.selectedFile()['origin'] == "local") {
+                var analysis = self.selectedFile()["gcodeAnalysis"]();
                 if (!analysis) {
                     return true;
                 }
-                var printFilament = analysis['filament'];
-                var loadedFilament = self.filament.filaments();
+
+                var neededFilaments = analysis['filament'];
+
                 var mode = self.printerState.printMode();
                 var lengthThreshold = 100;
 
                 if (mode == "normal") {
-                    var normalmode = _.every(printFilament, function(tool, key){
-                        var toolNum = key.slice(-1);
-                        return (tool['length'] - lengthThreshold) < loadedFilament[toolNum].amount();
+                    sufficient = _.every(neededFilaments, function (tool, key) {
+                        return (tool['length'] - lengthThreshold) < self.filament.getFilament(key).amount();
                     });
-                    return normalmode;
+
                 } else if (mode == "sync" || mode == "mirror") {
                     var maxLength = 0.0;
-                    _.each(printFilament, function(x){ maxLength < x.length ? maxLength = x.length : maxLength = maxLength});
-                    var mirrorsyncmode = _.every(loadedFilament, function(filament) { 
-                        return filament.amount() >= maxLength});
-                    return mirrorsyncmode;
+                    _.each(neededFilaments, function (x) { maxLength = Math.max(maxLength, x.length); });
+
+                    sufficient = _.every(self.filament.tools(), function (tool) {
+                        return tool.filament.amount() >= maxLength;
+                    });
                 }
             }
+
+            return sufficient;
         });
 
         self.evaluatePrintDimensions = function (data, mode, notify) {
             // This functionality is temporarily disabled for 1.0.8
             return true;
 
-            if (!self.settingsViewModel.feature_modelSizeDetection()) {
+            if (!self.settings.feature_modelSizeDetection()) {
                 return true;
             }
 
             if (self.printerState.forcePrint())
                 return true;
 
-            var analysis = data["gcodeAnalysis"];
+            var analysis = data["gcodeAnalysis"]();
             if (!analysis) {
                 // This should be false but is true atm to cater for the analysis blocking.
                 return true;
             }
 
-            var printingArea = data["gcodeAnalysis"]["printingArea"];
+            var printingArea = analysis["printingArea"];
             if (!printingArea) {
                 return true;
             }
 
-            var dimensions = data["gcodeAnalysis"]["dimensions"];
+            var dimensions = analysis["dimensions"];
             if (!dimensions) {
                 return true;
             }
@@ -708,7 +776,7 @@ $(function ()  {
             // model not within bounds, we need to prepare a warning
             var warning = "";
             var info = "";
-            var title = _.sprintf(gettext("Size check %(mode)s mode failed"), {mode: mode});  
+            var title = _.sprintf(gettext("Size check %(mode)s mode failed"), {mode: mode});
 
             var formatData = {
                 profile: boundaries,
@@ -716,7 +784,7 @@ $(function ()  {
                 dimensions: dimensions
             };
 
-            // Create grid 
+            // Create grid
             var grid = "<div class='Table-row'><div class='Table-item'>";
             var gridsize_y = 300;
             var gridsize_x = 330;
@@ -747,7 +815,7 @@ $(function ()  {
             if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
                 info += gettext("Object exceeds print area in width. ");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object width') + "</div></div>";
-                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);  
+                sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);
             }
             if (dimensions["depth"] > (boundaries["maxY"] + Math.abs(boundaries["minY"]))) {
                 info += gettext("Object exceeds print area in depth.");
@@ -769,19 +837,19 @@ $(function ()  {
                 if (printingArea["minX"] < boundaries["minX"] || printingArea["maxX"] > boundaries["maxX"]) {
                     info += gettext("Object positioned outside print area in width.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object position') + "</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(object.minX).2f - %(object.maxX).2f mm</div></div>", formatData);
                 }
                 if (printingArea["minY"] < boundaries["minY"] || printingArea["maxY"] > boundaries["maxY"]) {
                     info += gettext("Object positioned outside print area in depth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area depth') + "</div><div class='Table-item'>" + gettext('Object position') + "</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxY).2f mm</div><div class='Table-item file_failed'>%(object.minY).2f - %(object.maxY).2f mm</div></div>", formatData);
                 }
                 if (printingArea["minZ"] < boundaries["minZ"] || printingArea["maxZ"] > boundaries["maxZ"]) {
                     info += gettext("Object positioned outside print area in heigth.");
                     positionTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area height') + "</div><div class='Table-item'>" + gettext('Object position') +"</div></div>";
-                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);  
+                    positionTable += _.sprintf("<div class='Table-row'><div class='Table-item'>0.00 - %(profile.maxZ).2f mm</div><div class='Table-item file_failed'>%(object.minZ).2f - %(object.maxZ).2f mm</div></div>", formatData);
                 }
-                
+
             }
 
             //warn user
@@ -815,6 +883,8 @@ $(function ()  {
 
         self.printerState.printMode.subscribeChanged(function(newValue, oldValue){
             if ((newValue == "sync" || newValue == "mirror") && (oldValue == "normal")) {
+                //IntroJS
+                self.introView.introInstance.exit();
                 self.showSyncMirrorWarning();
             }
         });
@@ -845,24 +915,15 @@ $(function ()  {
             self.flyout.showWarning(title, message, false);
         };
 
-        self.sliceFile = function(file) {
-            if (!file) {
-                return;
-            }
-            self.slicing.show(file.origin, file.path, true);
-        };
+        self.refreshCurrentFolder = function (data)
+        {
+            var folder = self.elementByPath(self.currentPath());
 
-        self.initSdCard = function ()  {
-            OctoPrint.printer.initSd();
-        };
-
-        self.releaseSdCard = function ()  {
-            OctoPrint.printer.releaseSd();
-        };
-
-        self.refreshSdFiles = function ()  {
-            OctoPrint.printer.refreshSd();
-        };
+            if (folder)
+                self.loadChildrenAndBrowse(folder);
+            else
+                self.browseOrigin(self.currentOrigin());
+        }
 
         self.downloadLink = function (data) {
             if (data["refs"] && data["refs"]["download"]) {
@@ -895,7 +956,11 @@ $(function ()  {
         };
 
         self.templateFor = function (data) {
-            if (data.origin == "usb" && data.type == "machinecode")
+            if (data.origin == "cloud" && data.path == data.name)
+                return "files_template_cloud_root_folder"
+            else if (data.origin == "cloud")
+                return "files_template_cloud_" + data.type
+            else if (data.origin == "usb" && data.type == "machinecode")
                 return "files_template_usb_" + data.type;
             else
                 return "files_template_" + data.type;
@@ -934,7 +999,7 @@ $(function ()  {
 
         self.enableAdditionalData = function (data) {
             // TODO: Add anaylsing icon in files additional data.
-            return data["gcodeAnalysis"] || data["prints"] && data["prints"]["last"];
+            return data["gcodeAnalysis"]() || data["prints"] && data["prints"]["last"];
         };
 
         self.toggleAdditionalData = function (data) {
@@ -947,39 +1012,9 @@ $(function ()  {
             angleIcon.toggleClass("fa-angle-down fa-angle-up");
         };
 
-        self.getAdditionalData = function (data) {
-            var output = "";
-            //add the full name of the gcode
-            output += "<strong>" +gettext("Filename") + ":</strong><br/>" + data["name"] + "<br/>";
-            if (data["gcodeAnalysis"]) {
-                if (data["gcodeAnalysis"]["filament"] && typeof (data["gcodeAnalysis"]["filament"]) == "object") {
-                    var filament = data["gcodeAnalysis"]["filament"];
-                    if (_.keys(filament).length == 1) {
-                        output += "<strong>" + gettext("Filament") + ":</strong><br/>" + formatFilament(data["gcodeAnalysis"]["filament"]["tool" + 0]) + "<br>";
-                    } else if (_.keys(filament).length > 1) {
-                        for (var toolKey in filament) {
-                            if (!_.startsWith(toolKey, "tool") || !filament[toolKey] || !filament[toolKey].hasOwnProperty("length") || filament[toolKey]["length"] <= 0) continue;
-
-                            output += "<strong>" + gettext("Filament") + "</strong> (" + (toolKey == 'tool0' ? gettext('Right') : gettext('Left')) + "):<br/>" + formatFilament(filament[toolKey]) + "<br>";
-                        }
-                    }
-                }
-                output += "<strong>" + gettext("Est. Print Time") + ":</strong><br/>" + formatFuzzyPrintTime(data["gcodeAnalysis"]["estimatedPrintTime"]) + "<br>";
-            } else {
-                output += "<strong>" + gettext('Analysing job')+ "</strong> <i class='fa fa-spinner fa-pulse'></i>"
-            }
-            if (data["prints"] && data["prints"]["last"]) {
-                output += "<strong>" + gettext("Last Printed") + ":</strong><br/>" + formatTimeAgo(data["prints"]["last"]["date"]) + "<br>";
-                if (data["prints"]["last"]["lastPrintTime"]) {
-                    output += "<strong>">gettext("Last Print Time") + ":</strong><br/>" + formatDuration(data["prints"]["last"]["lastPrintTime"]);
-                }
-            }
-            return output;
-        };
-
         self.refreshPrintPreview = function (filename, url) {
             var file = self.getFileByFilename(filename);
-         
+
             if(file)
                 file.previewUrl(url);
         }
@@ -1047,9 +1082,9 @@ $(function ()  {
 
             if ($('#files').hasClass('open')) {
                 if (!available)
-                    self.browseLocal();
+                    self.browseOrigin("local");
                 else
-                    self.browseUsb();
+                    self.browseOrigin("usb");
             }
             else if (available && (!self.flyout.isOpen() || !self.flyout.blocking)) {
                 var text = gettext("You have inserted a USB drive.");
@@ -1060,7 +1095,7 @@ $(function ()  {
                 self.flyout.showConfirmationFlyout(dialog)
                .done(function ()  {
                    changeTabTo("files");
-                   self.browseUsb();
+                   self.browseOrigin("usb");
                });
             }
             else if (available)
@@ -1071,7 +1106,7 @@ $(function ()  {
                 }, "success");
             }
             else {
-                self.browseLocal();
+                self.browseOrigin("local");
             }
         }
 
@@ -1080,8 +1115,28 @@ $(function ()  {
                 .css("width", percentage + "%")
         }
 
-        self.onStartup = function ()  {
-           
+        self.onStartup = function () {
+
+            self.cloud.onServiceInfoUpdated(function () {
+                if(self.currentOrigin() == "cloud")
+                {
+                    var current_path = self.currentPath();
+                    if(!current_path || current_path == "/")
+                    {
+                        // If we're on the 'select cloud' page, refresh everything
+                        self.browseOrigin("cloud");
+                    }
+                    else
+                    {
+                        // Check if we' re currently browsing in a disconnect service
+                        // If so, reload the cloud page
+                        _.forEach(self.cloud.serviceInfo(), function (service) {
+                            if (!service.loggedIn() && current_path.startsWith(service.name()))
+                                self.browseOrigin("cloud");
+                        });
+                    }
+                }
+            });
 
             //~~ Gcode upload
             self.uploadButton = $("#gcode_upload");
@@ -1108,7 +1163,7 @@ $(function ()  {
                         text: _.sprintf(gettext('Uploaded file: "%(filename)s"'), { filename: filename })
                     },
                         "success"
-                    )
+                    );
                     self.loadFile(data.result.files.local, false);
                 }
             }
@@ -1119,7 +1174,7 @@ $(function ()  {
                     text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\"'))
                 },
                     "error"
-                )
+                );
                 self.setProgressBar(0, "", false);
             }
 
@@ -1128,14 +1183,14 @@ $(function ()  {
                 self.setProgressBar(progress);
             }
 
-            
+
             var url = API_BASEURL + "files/local";
 
             if (self.uploadButton === undefined)
                 return;
 
             self.uploadButton.fileupload({
-                
+
                 add: function (e, data) {
                     var acceptFileTypes = /(\.)(gcode|gco|g)$/i;
                     var dfd = $.Deferred(),
@@ -1162,38 +1217,35 @@ $(function ()  {
                 if (self.currentPath() != "")
                     data.formData = { path: self.currentPath() };
             });
-            
+
             self.requestData();
             self.checkUsbMounted();
         };
 
         self.checkUsbMounted = function ()  {
-            self._getApi({ "command": "is_media_mounted" }).done(function (data) {
-                self.isUsbAvailable(data.is_media_mounted);
+            getFromApi("usb").done(function (data) {
+                self.isUsbAvailable(data.isMediaMounted);
                 // Don't call onChanged, as it is the initialization
             });
         }
-
-        self.onEventUpdatedFiles = function (payload) {
-            //TODO: Fix for USB
-            if (payload.type == "gcode") {
-                self.requestData(undefined, undefined, self.currentPath());
-            }
-        };
-
-        self.onEventMetadataAnalysisStarted = function (payload) {
-        };
-
         self.onEventMetadataAnalysisFinished = function (payload) {
-            self.requestData(undefined, undefined, self.currentPath());
+
+            var file = self.getFileByFilename(payload.path);
+
+            if(file)
+                file["gcodeAnalysis"](payload.result);
         };
 
         self.onEventMetadataStatisticsUpdated = function (payload) {
-            self.requestData(undefined, undefined, self.currentPath());
-        };
 
-        self.onEventTransferDone = function (payload) {
-            self.requestData(payload.remote, "sdcard");
+            var file = self.getFileByFilename(payload.path);
+
+            if (file && file.refs.resource)
+            {
+                OctoPrint.get(file.refs.resource).done(function (metadata) {
+                    file.prints(metadata.prints);
+                });
+            }
         };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -1224,7 +1276,7 @@ $(function ()  {
                 var copying = gettext("Copying");
                 switch (messageType) {
                     case "media_folder_updated":
-                        self.isUsbAvailable(messageData.is_media_mounted);
+                        self.isUsbAvailable(messageData.isMediaMounted);
                         self.onUsbAvailableChanged();
 
                         if (messageData.error) {
@@ -1263,20 +1315,53 @@ $(function ()  {
                     case "gcode_copy_complete":
                         self.setProgressBar(0);
                         self.printerState.activities.remove(copying);
+                        
+                        $.notify({
+                            title: gettext("File copied"),
+                            text: _.sprintf(gettext('"%(filename)s" has been copied to your USB drive.'), { filename: filename = messageData["filename"] })
+                        },
+                            "success"
+                        );
                         break;
                     case "gcode_copy_failed":
                         self.setProgressBar(0);
                         self.printerState.activities.remove(copying);
+                        filename = messageData["filename"];
+                        $.notify({
+                            title: gettext("Error during file copy."),
+                            text: _.sprintf(gettext('Could not copy "%(filename)s" to your USB drive. Please ensure there is enough space available.'), { filename: messageData["filename"] })
+                        },
+                            "error"
+                        );
                         break;
 
+                    case "demo_selected":
+                        self.printAndChangeTab();
+                        //IntroJS
+                        if (self.introView.isTutorialStarted){
+                            self.isIntroFile(false);
+                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+                            self.introView.introInstance.refresh();
+                        }
+                        break;
                 }
             }
-        }
+        };
+
+        self.checkIntroCancel = function () {
+            //IntroJS
+            self.introView.introInstance.exit();
+            self.flyout.closeFlyout();
+        };
+
+        self.selectDemoFile = function () {
+            sendToApi("printer/select_demo");
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([
         FilesViewModel,
-        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel"],
+        ["settingsViewModel", "loginStateViewModel", "printerStateViewModel", "flyoutViewModel", "printerProfilesViewModel", "filamentViewModel", "networkmanagerViewModel", "cloudViewModel", "navigationViewModel", "introViewModel"],
         ["#files", "#firmware_file_flyout", "#mode_select_flyout"]
     ]);
 });

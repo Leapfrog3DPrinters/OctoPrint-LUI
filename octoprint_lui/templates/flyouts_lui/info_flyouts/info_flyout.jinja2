@@ -16,7 +16,7 @@
             <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
             <div class="Table-item Table-item-grow-4">
                 <div class="progress">
-                    <span style="width: 0%" data-bind="text: status, style: { width: progress() + '%'}, css: css_class"></span>
+                    <span style="width: 0%" data-bind="text: displayStatus, style: { width: progress() + '%'}, css: cssClass"></span>
                 </div>
             </div>
             <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
@@ -32,7 +32,7 @@
         <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
         <div class="Table-item Table-item-grow-4">
           <div class="progress">
-            <span style="width: 0%" data-bind="text: status, style: { width: progress() + '%'}, css: css_class"></span>
+            <span style="width: 0%" data-bind="text: displayStatus, style: { width: progress() + '%'}, css: cssClass"></span>
           </div>
         </div>
         <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
@@ -70,16 +70,27 @@
             </div>
             <div class="Table-row">
                 <div class="Table-item">
-                    <pre id="terminal-output" class="pre-scrollable" data-bind="foreach: displayedLines"><span data-bind="text: line, css: {muted: type == 'filtered' || type == 'cut'}"></span><br></pre>
+                    <pre id="terminal-output" class="pre-scrollable" data-bind="foreach: log"><span data-bind="text: line"></span><br /></pre>
                 </div>
             </div>
+          <div class="Table-row">
+            <div class="Table-item">           
+              <span>Scroll automatically</span>
+            </div>
+          <div class="Table-item" style="flex: 0 1 auto">
+            <div class="check_toggle">
+                <input type="checkbox" data-bind="checked: autoscrollEnabled" id="terminal-autoscrollEnabled" />
+                <label for="terminal-autoscrollEnabled"></label>
+              </div>
+          </div>
+          </div>
             <div class="Table-row">
                 <div class="Table-item">
-                    <input type="text" id="terminal-command" data-bind="value: command, event: { keyup: function(d,e) { return handleKeyUp(e); }, keydown: function(d,e) { return handleKeyDown(e); } }, enable: isOperational() && loginState.isUser()">
+                    <input type="text" id="terminal-command" data-bind="value: command" />
                 </div>
-                <div class="Table-item">
+                <div class="Table-item" style="flex: 0 1 auto">
                     <ul class="button-area">
-                        <li class="button" id="terminal-send" data-bind="touchClick: function () { sendCommand() }, enable: isOperational() && loginState.isUser()"><a href="#"><span>Send</span></a></li>
+                        <li class="button" id="terminal-send" data-bind="touchClick: function () { sendCommand() }"><a href="#"><span>Send</span></a></li>
                     </ul>
                 </div>
             </div>

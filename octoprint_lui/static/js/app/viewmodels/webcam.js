@@ -215,7 +215,7 @@ $(function ()  {
 
             self.flyout.showConfirmationFlyout(dialog, true)
             .done(function ()  {
-                return self._sendApi({ command: 'delete_all_timelapses' })
+                return sendToApi("timelapse/delete_all")
                     .done(function ()  {
 
                         $.notify({
@@ -240,17 +240,15 @@ $(function ()  {
         self.copyToUsb = function (filename) {
             self.isCopying(true);
 
-            self._sendApi({
-                command: "copy_timelapse_to_usb",
-                filename: filename
-            }).done(function ()  {
-                self.setProgressBar(0);
-                $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
-            }).fail(function ()  {
-                $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
-            }).always(function ()  {
-                self.isCopying(false);
-            });
+            sendToApi('usb/save/timelapse/' + filename)
+                .done(function () {
+                    self.setProgressBar(0);
+                    $.notify({ title: gettext('Timelapse copied'), text: gettext('The timelapse has been copied to your USB drive.') }, 'success');
+                }).fail(function ()  {
+                    $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
+                }).always(function ()  {
+                    self.isCopying(false);
+                });
         }
 
         self.removeUnrendered = function (name) {
@@ -347,16 +345,6 @@ $(function ()  {
                 "success");
 
             self.requestData();
-        };
-
-        self._getApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.get(url, { data: data });
-        };
-
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            return OctoPrint.postJson(url, data);
         };
 
         self.setProgressBar = function (percentage) {

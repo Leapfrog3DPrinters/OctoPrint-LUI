@@ -8,6 +8,8 @@ $(function () {
         self.settings = parameters[3];
         self.system = parameters[4];
 
+        self.allViewModels = [];
+
         self.numUpdates = ko.observable(0);
 
         self.isLocalLocked = ko.observable(false);
@@ -46,9 +48,7 @@ $(function () {
 
         //TODO: Remove!
         self.doDebuggingAction = function ()  {
-            self._sendApi({
-                command: "trigger_debugging_action"
-            });
+            sendToApi("printer/debugging_action");
         }
 
         self.showMaintenanceFlyout = function () {
@@ -63,9 +63,9 @@ $(function () {
         {
             if(confirm)
             {
-                self.flyout.showConfirmationFlyout({ 
-                    'title': gettext('Restart system service'), 
-                    'text': gettext('You are about to restart the background printer services.'), 
+                self.flyout.showConfirmationFlyout({
+                    'title': gettext('Restart system service'),
+                    'text': gettext('You are about to restart the background printer services.'),
                     'question': gettext('Do you want to continue?')
                 }).done(self.system.systemServiceRestart);
             }
@@ -100,7 +100,7 @@ $(function () {
                         .done(function () {
                             // Enable auto-shutdown
                             self.settings.autoShutdown(true);
-                            self.settings.sendAutoShutdownStatus();
+                            self.settings.sendAutoShutdownStatus(true);
                         });
                 }
                 else {
@@ -119,15 +119,28 @@ $(function () {
 
         self.showSettingsTopic = function (topic, blocking, high_priority) {
             var settingsTopic = capitalize(topic);
-            callViewModels(self.allViewModels, "onSettingsShown");
-            callViewModels(self.allViewModels, "on" + settingsTopic + "SettingsShown");
+
+            // Wait for the opening transition to complete
+            // Don't rely on transitionend here, functionality is too critical
+            window.setTimeout(function () {
+                callViewModels(self.allViewModels, "onSettingsShown");
+                callViewModels(self.allViewModels, "on" + settingsTopic + "SettingsShown");
+            }, 300);
 
             return self.flyout.showFlyout(topic + '_settings', blocking, high_priority)
                 .done(function () {
-                    self.settings.saveData();
+                    // Only save if flyout has been accepted
+                    window.setTimeout(function () {
+                        self.settings.saveData();
+                    }, 300);
                 })
                 .always(function () {
-                    callViewModels(self.allViewModels, "onSettingsHidden");
+
+                    // Wait for the closing transition to complete
+                    window.setTimeout(function () {
+                        callViewModels(self.allViewModels, "onSettingsHidden");
+                        callViewModels(self.allViewModels, "on" + settingsTopic + "SettingsHidden");
+                    }, 300);
                 });
         };
 
@@ -152,6 +165,10 @@ $(function () {
                         self.requestSystemShutdown();
                 }
             }
+        }
+
+        self.onAllBound = function (allViewModels) {
+            self.allViewModels = allViewModels;
         }
     }
 
