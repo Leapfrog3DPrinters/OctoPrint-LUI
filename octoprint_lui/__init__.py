@@ -1741,6 +1741,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message("demo_selected")
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/printer/security/local/lock", methods=["POST"])
+    def save_lock_code(self):
+
+        data = request.json
+        lock_code = data.get("lockCode")
+
+        self._settings.set(["local_lock_code"], lock_code)
+        self._settings.save()
+
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/security/local/lock", methods=["GET"])
+    def get_lock_code(self):
+
+        local_lock_code = self._settings.get(["local_lock_code"])
+
+        return make_response(jsonify({
+            'localLockCode': local_lock_code
+        }), 200)
+
     ## Files API
 
     @BlueprintPlugin.route("/files/<string:origin>/<path:path>", methods=["GET"], strict_slashes=False)

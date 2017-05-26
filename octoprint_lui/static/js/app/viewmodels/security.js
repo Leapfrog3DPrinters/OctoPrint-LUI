@@ -308,6 +308,7 @@ $(function () {
         {
             var currentValue = self.settings.locallock_enabled();
             self.settings.locallock_enabled(!currentValue);
+            return true;
         }
     }
 

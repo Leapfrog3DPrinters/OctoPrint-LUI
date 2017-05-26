@@ -1857,6 +1857,11 @@ $bed-height: 180px;
   @return #{$val / 18}rem;
 }
 
+//Unlock Container
+#locallock-unlock-container {
+  z-index: 101;
+  background-color: #fff;
+}
 
 // Gauge
 .mask {

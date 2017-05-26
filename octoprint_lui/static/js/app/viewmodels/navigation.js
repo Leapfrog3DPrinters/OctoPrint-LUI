@@ -13,6 +13,7 @@ $(function () {
         self.numUpdates = ko.observable(0);
 
         self.isLocalLocked = ko.observable(false);
+        self.localLockCode = undefined;
 
         self.showLoginFlyout = function ()  {
             self.flyout.showFlyout('login');
@@ -32,13 +33,42 @@ $(function () {
         self.lock = function()
         {
             //TODO: Notify and lock backend
+            $.notify({title: gettext("Printer Locked"), text: gettext("The interface is now locked")}, "warning");
+
+            var lockCode = undefined;
+
+            if(self.settings.locallock_code != undefined){
+                lockCode = self.settings.locallock_code();
+                self.settings.locallock_code(undefined);
+            }
+
+            sendToApi("printer/security/local/lock",
+                {
+                    lockCode: lockCode
+                }
+            );
+
+            self.flyout.closeFlyout();
             self.isLocalLocked(true);
-        }
+        };
 
         self.unlock = function (code) {
             //TODO: Confirm code before unlocking
+            getFromApi("printer/security/local/lock");
+
+            if(self.localLockCode != code()){
+                $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
+                return;
+            }
+
             self.isLocalLocked(false);
-        }
+        };
+
+         self.fromResponse = function (data) {
+             if(data.localLockCode) {
+                 self.localLockCode = data.localLockCode;
+             }
+         };
 
         //TODO: Remove!
         self.doDebuggingAction = function ()  {
