@@ -946,6 +946,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         auth_code = request.json.get("authCode","")
 
+        auth_code = auth_code.strip()
+
         auth_result = self.cloud_connect.handle_manual_auth_response(service, auth_code)
 
         if not auth_result:

@@ -51,7 +51,7 @@ class DropboxCloudService(CloudService):
     def __init__(self, secrets, data_folder, default_redirect_uri):
         super(DropboxCloudService, self).__init__(secrets, data_folder, default_redirect_uri)
         self._secrets = secrets
-        self._csrf = {}
+        self._csrf = "csrf"
         
         self._client = None
         self._client_secret = self._secrets.get('client_secret');
@@ -89,10 +89,13 @@ class DropboxCloudService(CloudService):
         self._access_token = None
 
     def _save_credentials(self):
-        with open(self._credential_path, "wb") as session_file:
-            import pickle
-            pickle.dump(self._access_token, session_file, pickle.HIGHEST_PROTOCOL)
-            self._logger.debug("Dropbox credentials saved")
+        try:
+            with open(self._credential_path, "wb") as session_file:
+                import pickle
+                pickle.dump(self._access_token, session_file, pickle.HIGHEST_PROTOCOL)
+                self._logger.debug("Dropbox credentials saved")
+        except OSError as e:
+            self._logger.exception("Could not store Dropbox credentials")
 
     def _get_file_type(self, item):
         if type(item) is dropbox.files.FolderMetadata:
@@ -104,7 +107,7 @@ class DropboxCloudService(CloudService):
     ## Public methods
 
     def is_logged_in(self):
-        return not self._access_token is None
+        return self._access_token is not None
 
     def get_auth_url(self, redirect_uri):
         self._redirect_uri = redirect_uri
@@ -117,23 +120,29 @@ class DropboxCloudService(CloudService):
 
         try:
             self._access_token, _, _ = self._flow.finish(request.values)
-            self._save_credentials()
             self._logger.info("Dropbox authenticated")
             return True
         except Exception as e:
             self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
             return False
+
+        self._client = self._get_client()
+        self._save_credentials()
+        return True
 
     def handle_manual_auth_response(self, auth_code):
-
         try:
-            self._access_token, _, _ = self._flow.finish(auth_code)
-            self._save_credentials()
+            self._access_token, _ = self._flow._finish(auth_code, self._redirect_uri)
             self._logger.info("Dropbox authenticated")
-            return True
+        except dropbox.exceptions.HttpError as e:
+            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.body))
         except Exception as e:
             self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
             return False
+
+        self._client = self._get_client()
+        self._save_credentials()
+        return True
 
     def list_files(self, path = None, filter = None):
 
@@ -188,8 +197,11 @@ class DropboxCloudService(CloudService):
 
     def logout(self):
         if self._access_token:
-            self._get_client().auth_token_revoke()
-            self._logger.debug("Dropbox auth token revoked")
+            try:
+                self._get_client().auth_token_revoke()
+                self._logger.debug("Dropbox auth token revoked")
+            except Exception as e:
+                self._logger.debug("Could not revoke Dropbox auth token: %s" % e.message)
 
         self._delete_credentials()
         self._client = None
