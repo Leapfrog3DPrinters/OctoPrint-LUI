@@ -41,12 +41,6 @@ $(function () {
         }
 
         //TODO: Remove!
-        self._sendApi = function (data) {
-            url = OctoPrint.getSimpleApiUrl('lui');
-            OctoPrint.postJson(url, data);
-        }
-
-        //TODO: Remove!
         self.doDebuggingAction = function ()  {
             sendToApi("printer/debugging_action");
         }
