@@ -50,13 +50,25 @@ class ClientMessages(object):
     GCODE_COPY_FINISHED = "gcode_copy_complete"
     GCODE_COPY_FAILED = "gcode_copy_failed"
 
+    GCODE_COPY_ALL_PROGRESS = "gcode_copy_all_progress"
+    GCODE_COPY_ALL_FINISHED = "gcode_copy_all_complete"
+    GCODE_COPY_ALL_FAILED = "gcode_copy_all_failed"
+
     TIMELAPSE_COPY_PROGRESS = "timelapse_copy_progress"
     TIMELAPSE_COPY_FINISHED = "timelapse_copy_complete"
     TIMELAPSE_COPY_FAILED = "timelapse_copy_failed"
 
+    TIMELAPSE_COPY_ALL_PROGRESS = "timelapse_copy_all_progress"
+    TIMELAPSE_COPY_ALL_FINISHED = "timelapse_copy_all_complete"
+    TIMELAPSE_COPY_ALL_FAILED = "timelapse_copy_all_failed"
+
     LOGS_COPY_PROGRESS = "logs_copy_progress"
     LOGS_COPY_FINISHED = "logs_copy_complete"
     LOGS_COPY_FAILED = "logs_copy_failed"
+
+    LOGS_COPY_ALL_PROGRESS = "logs_copy_all_progress"
+    LOGS_COPY_ALL_FINISHED = "logs_copy_all_complete"
+    LOGS_COPY_ALL_FAILED = "logs_copy_all_failed"
 
     CLOUD_LOGIN_FAILED = "cloud_login_failed"
 

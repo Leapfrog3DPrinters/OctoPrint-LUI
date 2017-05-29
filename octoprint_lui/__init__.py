@@ -1906,12 +1906,39 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Saves a file to the usb drive. source_type must be either 'gcode', 'timelapse' or 'log'
         """
+
+        result = False
+
         if source_type == "gcode":
-            return self._copy_gcode_to_usb(path)
+            result = self._copy_gcode_to_usb(path)
         elif source_type == "timelapse":
-            return self._copy_timelapse_to_usb(path)
+            result = self._copy_timelapse_to_usb(path)
         elif source_type == "log":
-            return self._copy_log_to_usb(path)
+            result = self._copy_log_to_usb(path)
+
+        if result:
+            return make_response(jsonify(), 200)
+        else:
+            return make_response(jsonify({ "message" : "File error during copying" }), 500)
+
+    @BlueprintPlugin.route("/usb/save_all/<string:source_type>", methods=["POST"])
+    def save_all_to_usb(self, source_type):
+        """
+        Saves a file to the usb drive. source_type must be either 'gcode', 'timelapse' or 'log'
+        """
+        result = False
+
+        if source_type == "gcodes":
+            result = self._copy_all_gcodes_to_usb()
+        elif source_type == "timelapses":
+            result = self._copy_all_timelapses_to_usb()
+        elif source_type == "logs":
+            result = self._copy_all_logs_to_usb()
+
+        if result:
+            return make_response(jsonify(), 200)
+        else:
+            return make_response(jsonify({ "message" : "File error during copying" }), 500)
 
     # End API
 
@@ -2733,6 +2760,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r
 
+    # Begin file backup/copying methods
+
     def _select_usb_file(self, path):
         target = "usb"
 
@@ -2829,12 +2858,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r
 
+    def _copy_all_gcodes_to_usb(self):
+        uploads_folder = self._settings.global_get_basefolder("uploads")
+        valid_file_callback = lambda f: octoprint.filemanager.valid_file_type(f, type="machinecode")
+
+        return self._copy_all_files_to_usb(uploads_folder, "Leapfrog-gcodes", valid_file_callback,  ClientMessages.GCODE_COPY_ALL_PROGRESS , ClientMessages.GCODE_COPY_ALL_FINISHED, ClientMessages.GCODE_COPY_ALL_FAILED)
+
+    def _copy_all_timelapses_to_usb(self):
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+        valid_file_callback = lambda f: octoprint.util.is_allowed_file(f, ["mpg", "mpeg", "mp4"])
+
+        return self._copy_all_files_to_usb(timelapse_folder, "Leapfrog-timelapses", valid_file_callback,  ClientMessages.TIMELAPSE_COPY_ALL_PROGRESS , ClientMessages.TIMELAPSE_COPY_ALL_FINISHED, ClientMessages.TIMELAPSE_COPY_ALL_FAILED)
+
+    def _copy_all_logs_to_usb(self):
+        logs_folder = self._settings.global_get_basefolder("logs")
+
+        return self._copy_all_files_to_usb(logs_folder, "Leapfrog-logs", None,  ClientMessages.LOGS_COPY_ALL_PROGRESS , ClientMessages.LOGS_COPY_ALL_FINISHED, ClientMessages.LOGS_COPY_ALL_FAILED)
+
     def _copy_gcode_to_usb(self, filename):
-        if not self.is_media_mounted:
-            return make_response(jsonify({ "message": "Could not access the media folder" }), 400)
 
         if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
-            return make_response(jsonify(error="Not allowed to copy this file"), 400)
+            self._logger.error("Tried to backup a non-gcode file to the gcodes folder on the USB drive")
+            return False
 
         uploads_folder = self._settings.global_get_basefolder("uploads")
         src_path = os.path.join(uploads_folder, filename)
@@ -2842,27 +2887,77 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", ClientMessages.GCODE_COPY_PROGRESS , ClientMessages.GCODE_COPY_FINISHED, ClientMessages.GCODE_COPY_FAILED)
 
     def _copy_timelapse_to_usb(self, filename):
-        if not self.is_media_mounted:
-            return make_response(jsonify({ "message": "Could not access the media folder"}), 400)
 
         if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
-            return make_response(jsonify(error="Not allowed to copy this file"), 400)
+            self._logger.error("Tried to backup a non-timelapse file to the timelapse folder on the USB drive")
+            return False
 
         timelapse_folder = self._settings.global_get_basefolder("timelapse")
         src_path = os.path.join(timelapse_folder, filename)
 
         return self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", ClientMessages.TIMELAPSE_COPY_PROGRESS, ClientMessages.TIMELAPSE_COPY_FINISHED, ClientMessages.TIMELAPSE_COPY_FAILED)
-
+       
     def _copy_log_to_usb(self, filename):
-        if not self.is_media_mounted:
-            return make_response(jsonify(error="Could not access the media folder"), 400)
 
         logs_folder = self._settings.global_get_basefolder("logs")
         src_path = os.path.join(logs_folder, filename)
 
         return self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", ClientMessages.LOGS_COPY_PROGRESS, ClientMessages.LOGS_COPY_FINISHED, ClientMessages.LOGS_COPY_FAILED)
 
+    def _copy_all_files_to_usb(self, src_folder, dst_folder, valid_file_callback, message_progress, message_complete, message_failed):
+        """
+        Backup all files that match a give predicate in a given folder to the mounted media folder.
+        """
+        if not self.is_media_mounted:
+            self._logger.warn("Tried to backup files to {0} while no USB media is present".format(dst_folder))
+            return False
+
+        # If there's nothing to copy, return True by default
+        result = True 
+
+        files = os.listdir(src_folder)
+
+        i = 0
+        n = float(len(files))
+
+        for filename in files:
+            src_path = os.path.join(src_folder, filename)
+
+            # Don't try to copy directories
+            if os.path.isdir(src_path):
+                continue
+
+            # Don't copy hidden files
+            if filename.startswith("."):
+                continue
+
+            # Check if we have a valid file according to the supplied predicate
+            # continue to the next file if not
+            if callable(valid_file_callback) and not valid_file_callback(filename):
+                self._logger.warn("Could not copy {0} to USB. Invalid filetype.".format(filename))
+                continue
+
+            # Copy the file and keep track of the result
+            result = result and self._copy_file_to_usb(filename, src_path, dst_folder, None, None, None)
+
+            i += 1
+
+            if message_progress:
+                percentage = (i / n) * 100
+                self._send_client_message(message_progress, {  "percentage" : percentage })
+
+        if result and message_complete:
+            self._send_client_message(message_complete)
+        elif not result and message_failed:
+            self._send_client_message(message_failed)
+
+        return result
+
     def _copy_file_to_usb(self, filename, src_path, dst_folder, message_progress, message_complete, message_failed):
+        if not self.is_media_mounted:
+            self._logger.warn("Tried to backup {0} while no USB media is present".format(filename))
+            return False
+
         # Loop through all directories in the media folder and find the mount with most free space
         bytes_available = 0
         drive_folder = None
@@ -2888,10 +2983,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         filesize = os.path.getsize(src_path)
 
         if filesize > bytes_available:
-            return make_response(jsonify({ "message": "Insuffient space available on USB drive", "filename": filename }), 400)
+            self._logger.error("Insuffient space available on USB drive to copy file {0}".format(filename))
+            return False
 
         if drive_folder is None:
-            return make_response(jsonify({ "message": "Insuffient space available on USB drive", "filename": filename }), 400)
+            self._logger.error("Insuffient space available on USB drive to copy file {0}".format(filename))
+            return False
 
         folder_path = os.path.join(drive_folder, dst_folder)
         new_full_path = os.path.join(folder_path, filename)
@@ -2907,7 +3004,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 percentage = 0
             self._logger.debug("File copy progress: %f" % percentage)
-            self._send_client_message(message_progress, { "percentage" : percentage, "filename": filename })
+            if message_progress:
+                self._send_client_message(message_progress, { "percentage" : percentage, "filename": filename })
 
         is_copying = True
 
@@ -2915,7 +3013,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return is_copying
 
         def file_copying_finished():
-            self._send_client_message(message_complete, { "filename": filename })
+            if message_complete:
+                self._send_client_message(message_complete, { "filename": filename })
 
         # Start monitoring copy status
         timer = RepeatedTimer(1, on_file_copy, run_first = False, condition = is_copying_file, on_finish = file_copying_finished)
@@ -2929,13 +3028,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             shutil.copy2(src_path, new_full_path)
         except Exception as e:
             timer.cancel()
-            self._send_client_message(message_failed, { "filename": filename })
-            return make_response(jsonify({ "message" : "File error during copying: %s" % e.message, "filename": filename }), 500)
+            if message_failed:
+                self._send_client_message(message_failed, { "filename": filename })
+            self._logger.exception("Error during file copy of {0}".format(filename))
+            return False
         finally:
             is_copying = False
 
-        return make_response(jsonify(), 200)
+        return True
 
+    # End file backup/copying methods
+    
     # Filament change helpers
 
     def _load_filament(self, tool, amount, material_name):

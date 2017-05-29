@@ -109,6 +109,10 @@
                     </span>
                   </li>
                   <li>
+                    <a href="#" data-bind="touchClick: function () { copyAllToUsb() }, css: { disabled: currentOrigin() != 'local'  || !isUsbAvailable() || !loginState.isAdmin() || listHelper.allSize() == 0 }">
+                      <i class="fa fa-floppy-o"></i>{{ _('Save all') }}</a>
+                  </li>
+                    <li>
                     <a href="#" data-bind="touchClick: function () { removeAllFiles() }, css: { disabled: currentOrigin() != 'local' || !loginState.isAdmin() || listHelper.allSize() == 0 }">
                       <i class="fa fa-trash"></i>{{ _('Delete all') }}</a>
                   </li>

@@ -251,6 +251,20 @@ $(function ()  {
                 });
         }
 
+        self.copyAllToUsb = function () {
+            self.isCopying(true);
+
+            sendToApi('usb/save_all/timelapses')
+                .done(function () {
+                    self.setProgressBar(0);
+                    $.notify({ title: gettext('Timelapses copied'), text: gettext('The timelapses have been copied to your USB drive.') }, 'success');
+                }).fail(function () {
+                    $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('One or more timelapses could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
+                }).always(function () {
+                    self.isCopying(false);
+                });
+        }
+
         self.removeUnrendered = function (name) {
             OctoPrint.timelapse.deleteUnrendered(name)
                 .done(self.requestData);
@@ -372,7 +386,18 @@ $(function ()  {
                     self.setProgressBar(0);
                     self.printerState.activities.remove('Copying');
                     break;
-
+                case "timelapse_copy_all_progress":
+                    self.setProgressBar(messageData.percentage);
+                    self.printerState.activities.push('Copying');
+                    break;
+                case "timelapse_copy_all_complete":
+                    self.setProgressBar(0);
+                    self.printerState.activities.remove('Copying');
+                    break;
+                case "timelapse_copy_all_failed":
+                    self.setProgressBar(0);
+                    self.printerState.activities.remove('Copying');
+                    break;
             }
         }
 
