@@ -126,6 +126,7 @@ $(function () {
                 switch (messageType) {
                     case "powerbutton_pressed":
                         self.requestSystemShutdown();
+                        callViewModels(self.allViewModels, "onShutdownOrDisconnectFlyout");
                 }
             }
         }
