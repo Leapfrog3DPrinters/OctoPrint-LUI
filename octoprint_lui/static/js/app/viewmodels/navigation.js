@@ -13,7 +13,7 @@ $(function () {
         self.numUpdates = ko.observable(0);
 
         self.isLocalLocked = ko.observable(false);
-        self.localLockCode = undefined;
+        self.localLockCode = ko.observable(undefined);
 
         self.showLoginFlyout = function ()  {
             self.flyout.showFlyout('login');
@@ -35,17 +35,22 @@ $(function () {
             //TODO: Notify and lock backend
             $.notify({title: gettext("Printer locked"), text: gettext("The interface is now locked")}, "warning");
 
-            self.flyout.closeFlyout();
+            if(self.flyout.isFlyoutOpen('login')){
+                self.flyout.closeFlyout();
+            }
             self.isLocalLocked(true);
-            self.updateLockSettings();
-            self.settings.locallock_code(undefined);
+            self.localLockCode(undefined);
+        };
+
+        self.immediateLock = function () {
+            sendToApi("printer/security/lock/immediate");
         };
 
         self.unlock = function (code) {
             //TODO: Confirm code before unlocking
-            getFromApi("printer/security/local/lock/settings").done(self.fromResponse).done(
+            getFromApi("printer/security/lock").done(self.fromResponse).done(
                 function () {
-                    if(self.localLockCode != code){
+                    if(self.settings.locallock_code() != code){
                         $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
                     return;
                     }
@@ -53,14 +58,9 @@ $(function () {
                     $.notify({title: gettext("Printer unlocked"), text: gettext("The interface is now unlocked")});
 
                     self.isLocalLocked(false);
-                    self.settings.locallock_enabled(false);
-                    self.settings.locallock_code(undefined);
-                    self.settings.locallock_timeout(undefined);
-
-                    self.updateLockSettings();
+                    self.settings.saveLockSettings();
                 }
             );
-
         };
 
         //TODO: Remove!
@@ -170,7 +170,7 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
-            getFromApi('printer/security/local/lock/settings').done(self.fromResponse).done(function () {
+            getFromApi('printer/security/lock').done(self.fromResponse).done(function () {
                 self.isLocalLocked(self.settings.locallock_enabled());
             });
         }
@@ -178,7 +178,7 @@ $(function () {
         self.fromResponse = function (data) {
             if(data.lockEnabled){
                 self.settings.locallock_enabled(data.lockEnabled);
-                self.localLockCode = data.lockCode;
+                self.settings.locallock_code(data.lockCode);
             }
         }
 
@@ -190,19 +190,11 @@ $(function () {
                 switch (messageType) {
                     case "powerbutton_pressed":
                         self.requestSystemShutdown();
+                    case "local_lock":
+                        self.lock();
                 }
             }
         }
-
-        self.updateLockSettings = function () {
-            sendToApi("printer/security/local/lock/update",
-                {
-                    lockCode: self.settings.locallock_code(),
-                    lockEnabled: self.settings.locallock_enabled(),
-                    lockTimeout: self.settings.locallock_timeout()
-                }
-            );
-        };
 
         self.onAllBound = function (allViewModels) {
             self.allViewModels = allViewModels;

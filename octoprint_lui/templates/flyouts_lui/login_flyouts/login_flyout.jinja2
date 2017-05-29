@@ -46,11 +46,11 @@
 	    </div>
 	</div>
 	{% endif %}
-  <div class="Table-row" data-bind="visible: settings.locallock_enabled">
+  <div class="Table-row">
     <div class="Table-item">
       <ul class="button-area">
         <li class="button">
-          <a href="#" data-bind="touchClick: function () {navigation.lock()}">
+          <a href="#" data-bind="touchClick: function () {navigation.immediateLock()}">
             <span>
               <i class="fa fa-lock" style="padding-left: 0.5em;"></i>{{ _('Lock printer') }}
             </span>

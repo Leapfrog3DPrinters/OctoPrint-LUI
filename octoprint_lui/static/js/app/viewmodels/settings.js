@@ -536,6 +536,18 @@ $(function () {
             return (data.language == self.appearance_defaultLanguage());
         }
 
+        self.saveLockSettings = function () {
+            sendToApi("printer/security/lock",
+                {
+                    lockCode: self.locallock_code(),
+                    lockEnabled: self.locallock_enabled(),
+                    lockTimeout: self.locallock_timeout()
+                }
+            );
+            if(self.flyout.isFlyoutOpen('security_settings')){
+                self.flyout.closeFlyout();
+            }
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([

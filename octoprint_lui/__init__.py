@@ -114,6 +114,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.auto_shutdown_timer_value = 0
         self.auto_shutdown_after_movie_done = False
 
+        self.local_auto_lock_timer = None
+        self.local_auto_lock_timer_value = 0
+
         ##~ TinyDB
 
         self.filament_database_path = None
@@ -1741,20 +1744,37 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message("demo_selected")
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/local/lock/update", methods=["POST"])
-    def set_lock_settings(self):
+    @BlueprintPlugin.route("/printer/security/lock", methods=["POST"])
+    def set_lock_settings(self, force = False):
 
         data = request.json
         lock_code = data.get("lockCode")
         lock_enabled = data.get("lockEnabled")
+        lock_timeout = int(data.get("lockTimeout"))
 
         self._settings.set(["local_lock_code"], lock_code)
         self._settings.set(["local_lock_enabled"], lock_enabled)
         self._settings.save()
 
+        if self.local_auto_lock_timer:
+            self.local_auto_lock_timer.cancel()
+            self.local_auto_lock_timer = None
+
+        if(lock_enabled):
+            if(lock_timeout > 0):
+                self._local_auto_lock_start(lock_timeout)
+
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/local/lock/settings", methods=["GET"])
+    @BlueprintPlugin.route("/printer/security/lock/immediate", methods=["POST"])
+    def force_local_lock(self):
+        if self.local_auto_lock_timer:
+            self.local_auto_lock_timer.cancel()
+            self.local_auto_lock_timer = None
+        self._send_client_message(ClientMessages.LOCAL_LOCK)
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/security/lock", methods=["GET"])
     def get_lock_settings(self):
 
         local_lock_code = self._settings.get(["local_lock_code"])
@@ -4149,7 +4169,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if callable(method):
                 method(*args, **kwargs)
 
+    def _local_auto_lock_start(self, auto_lock_timeout):
+        if not self.local_auto_lock_timer:
+            self.local_auto_lock_timer_value = auto_lock_timeout
+            self.local_auto_lock_timer = RepeatedTimer(1,
+                                                     self._local_auto_lock_tick,
+                                                     run_first=False,
+                                                     condition=self._local_auto_lock_required,
+                                                     on_condition_false=self._local_auto_lock_condition)
+            self.local_auto_lock_timer.start()
 
+    def _local_auto_lock_tick(self):
+        self.local_auto_lock_timer_value -= 1
+        self._send_client_message(ClientMessages.LOCAL_AUTO_LOCK_TIMER, { "timer": self.local_auto_lock_timer_value })
+
+    def _local_auto_lock_required(self):
+        return self.local_auto_lock_timer_value > 0
+
+    def _local_auto_lock_condition(self):
+        self._logger.info("Autolock timer finished. Locking local")
+        self._send_client_message(ClientMessages.LOCAL_LOCK)
+        if self.load_filament_timer:
+            self.load_filament_timer.cancel()
 
 __plugin_name__ = "Leapfog UI"
 def __plugin_load__():

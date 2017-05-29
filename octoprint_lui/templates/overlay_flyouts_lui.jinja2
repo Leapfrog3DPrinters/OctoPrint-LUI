@@ -60,7 +60,7 @@
   <aside id="security_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Security') }}</h4>
-      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+      <span class="flyout-close" data-bind="touchClick: function () { saveLockSettings() }"><i class="fa fa-times"></i></span>
     </div>
     <div class="flyout-body">
       <!-- ko allowBindings: false -->
@@ -70,7 +70,7 @@
       <!-- /ko -->
       <ul class="button-area">
         <li class="button">
-          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
+          <a href="#close" data-bind="touchClick: function () { saveLockSettings() }">
             <span>{{ _('Close') }}</span>
           </a>
         </li>
