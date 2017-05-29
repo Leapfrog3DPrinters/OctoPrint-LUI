@@ -213,6 +213,10 @@ $(function () {
                     self.poweringUpInfo = self.flyout.showInfo(title, message, true);
                     break;
                 case "powering_up_after_swap_failed":
+                    if (self.poweringUpInfo != undefined) {
+                        self.flyout.closeInfo(self.poweringUpInfo);
+                    }
+
                     // Trigger a connection error flyout
                     self.printerState.requestData();
                     break;
