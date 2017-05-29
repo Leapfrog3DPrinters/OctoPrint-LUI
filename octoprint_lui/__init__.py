@@ -361,7 +361,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._on_media_folder_updated(None)
 
     def _init_powerbutton(self):
-        if self.platform == "RPi" and "hasPowerButton" in self.current_printer_profile and self.current_printer_profile["hasPowerButton"]:
+        if self.platform == Platforms.RaspberryPi and "hasPowerButton" in self.current_printer_profile and self.current_printer_profile["hasPowerButton"]:
             ## ~ Only initialise if it's not done yet.
             if not self.powerbutton_handler:
                 from octoprint_lui.util.powerbutton import PowerButtonHandler
@@ -447,18 +447,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.model = self.default_model
 
         if sys.platform == "darwin":
-            self.platform = "MacDebug"
+            self.platform = Platforms.MacDebug
             mac_path = os.path.expanduser("~")
             self.update_basefolder = "{mac_path}/lpfrg/".format(mac_path=mac_path)
             self.media_folder = "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path)
             self.platform_info_file = "{mac_path}/lpfrg/lpfrgplatform.json".format(mac_path=mac_path)
         elif sys.platform == "win32":
-            self.platform = "WindowsDebug"
+            self.platform = Platforms.WindowsDebug
             self.update_basefolder = "C:\\Users\\erikh\\OneDrive\\Programmatuur\\"
             self.media_folder = "C:\\Tijdelijk\\usb\\"
             self.platform_info_file = "C:\\Tijdelijk\\lpfrgplatform.json"
         else:
-            self.platform = "RPi"
+            self.platform = Platforms.RaspberryPi
             self.update_basefolder = "/home/pi/"
             self.media_folder = "/media/pi/"
             self.platform_info_file = "/boot/lpfrgpi.json"
@@ -486,7 +486,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
 
     def _read_hostname(self):
-        if self.platform == "RPi" and self.platform_info:
+        if self.platform == Platforms.RaspberryPi and self.platform_info:
             image_version = LooseVersion(self.platform_info["image_version"])
             if image_version >= LooseVersion("1.2.0"):
                 with open('/etc/hostname', 'r') as hostname_file:
@@ -629,7 +629,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return True
 
     def _disable_ssh(self):
-        if self.platform == "RPi" and not self.debug and os.path.exists("/etc/init/ssh.conf"):
+        if self.platform == Platforms.RaspberryPi and not self.debug and os.path.exists("/etc/init/ssh.conf"):
             try:
                 octoprint_lui.util.execute("sudo mv /etc/init/ssh.conf /etc/init/ssh.conf.disabled")
             except:
@@ -646,7 +646,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         required_chromium_arguments = ["--touch-events", "--disable-pinch"]
 
-        if self.platform == "RPi" and not self.platform_info:
+        if self.platform == Platforms.RaspberryPi and not self.platform_info:
             # If we don't have platform_info, it means we are < image v1.1
 
             # Read current arguments
@@ -2684,15 +2684,40 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Powers up printer after maintenance
         """
         if self.powerbutton_handler:
-            self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP)
-            # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
-            self.powerbutton_handler.enableAuxPower()
+            self._send_client_message("powering_up_after_maintenance")
+            
+            # Enable auxiliary power. This will fully reset the printer, so full homing is required after. 
+            self.powerbutton_handler.enableAuxPower() 
             self._logger.debug("Auxiliary power up after maintenance")
-            time.sleep(5) # Give it 5 sec to power up
-            #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
-            #TODO: Or monitor if /dev/ttyUSB0 exists?
             self.connecting_after_maintenance = True
-            self._printer.connect()
+
+            # On a RPi, we wait until the port becomes available
+            if self.platform == Platforms.RaspberryPi:
+                port = self._settings.global_get(["serial", "port"])
+                if not port:
+                    port = '/dev/ttyUSB0'
+
+                # Reconnect straight away on a virtual port
+                if port == "VIRTUAL":
+                    self._printer.connect()
+                    return
+
+                # Else, poll if the port exists for 15 sec and connect
+                for attempt in range(15):
+                    if os.path.exists(port):
+                        self._logger.info("Serial port {0} found after {1} sec. Attempting to reconnect.".format(port, attempt))
+                        self._printer.connect()
+                        return
+
+                    time.sleep(1)
+
+                # If we reach here, reconnecting failed
+                self._logger.error("Could not reconnect to printer after 15 sec. Is the auxilary power up?")
+            else:
+                # Currently, this situation is not supported (only on RPi there's a powerbutton_handler)
+                # yet, provide for unforeseen circumstances
+                time.sleep(5)
+                self._printer.connect()
 
     def _auto_home_after_maintenance(self):
         """
@@ -2970,7 +2995,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 continue
 
             #Check disk space
-            if self.platform == 'WindowsDebug':
+            if self.platform == Platforms.WindowsDebug:
                 mount_bytes_available = 14 * 1024 * 1024 * 1024;
             else:
                 disk_info = os.statvfs(mount_path)

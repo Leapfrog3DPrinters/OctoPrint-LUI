@@ -97,6 +97,10 @@ class ClientMessages(object):
     AUTO_FIRMWARE_UPDATE_FAILED = "auto_firmware_update_failed"
     AUTO_FIRMWARE_UPDATE_FINISHED = "auto_firmware_update_finished"
 
+class Platforms(object):
+    RaspberryPi = "RPi"
+    WindowsDebug = "WindowsDebug"
+    MacDebug = "MacDebug"
 
 class ToolStatuses(object):
     IDLE = 'IDLE'
