@@ -2058,6 +2058,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if flash_plugin:
             if hasattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file'):
+                self._logger.info("Flash firmware started")
                 self.intended_disconnect = True
                 _, port, _, _ = self._printer.get_current_connection()
                 if not port:
@@ -2069,9 +2070,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 return getattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file')(board, programmer, port, baudrate, firmware_path, ext_path)
             else:
-                self._logger.warning("Could not flash firmware. FlashArduino plugin not up to date.")
+                self._logger.error("Could not flash firmware. FlashArduino plugin not up to date.")
         else:
-            self._logger.warning("Could not flash firmware. FlashArduino plugin not loaded.")
+            self._logger.error("Could not flash firmware. FlashArduino plugin not loaded.")
 
     def _check_version_requirement(self, current_version, requirement):
         """Helper function that checks if a given version matches a version requirement"""
