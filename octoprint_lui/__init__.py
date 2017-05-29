@@ -2684,7 +2684,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Powers up printer after maintenance
         """
         if self.powerbutton_handler:
-            self._send_client_message("powering_up_after_maintenance")
+            self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP)
             
             # Enable auxiliary power. This will fully reset the printer, so full homing is required after. 
             self.powerbutton_handler.enableAuxPower() 
@@ -2713,6 +2713,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 # If we reach here, reconnecting failed
                 self._logger.error("Could not reconnect to printer after 15 sec. Is the auxilary power up?")
+                self.printer_error_reason = "reconnect_failed"
+                self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP_FAILED)
+
             else:
                 # Currently, this situation is not supported (only on RPi there's a powerbutton_handler)
                 # yet, provide for unforeseen circumstances

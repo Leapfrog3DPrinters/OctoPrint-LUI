@@ -212,6 +212,10 @@ $(function () {
                     var message = gettext("Please wait while the printer is being reconnected. Note that the printer will home automatically.");
                     self.poweringUpInfo = self.flyout.showInfo(title, message, true);
                     break;
+                case "powering_up_after_swap_failed":
+                    // Trigger a connection error flyout
+                    self.printerState.requestData();
+                    break;
                 case "is_homed":
                     if (self.poweringUpInfo != undefined) {
                         self.flyout.closeInfo(self.poweringUpInfo);

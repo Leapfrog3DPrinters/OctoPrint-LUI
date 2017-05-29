@@ -40,6 +40,7 @@ class ClientMessages(object):
     
     HEAD_IN_SWAP_POSITION = "head_in_swap_position"
     POWERING_UP_AFTER_SWAP = "powering_up_after_swap"
+    POWERING_UP_AFTER_SWAP_FAILED = "powering_up_after_swap_failed"
 
     MEDIA_FOLDER_UPDATED = "media_folder_updated"
     MEDIA_FILE_COPY_PROGRESS = "media_file_copy_progress"
