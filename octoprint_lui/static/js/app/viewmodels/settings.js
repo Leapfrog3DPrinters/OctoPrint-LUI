@@ -537,6 +537,13 @@ $(function () {
         }
 
         self.saveLockSettings = function () {
+            if(!self.locallock_enabled){
+                self.locallock_code(undefined);
+            }
+            else if (self.locallock_code() == undefined) {
+                self.locallock_enabled(false);
+            }
+
             sendToApi("printer/security/lock",
                 {
                     lockCode: self.locallock_code(),

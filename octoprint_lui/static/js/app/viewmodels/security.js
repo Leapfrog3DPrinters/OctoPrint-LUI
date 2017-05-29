@@ -42,6 +42,8 @@ $(function () {
         self.changePasswordDialog = undefined;
         self.changePasswordDialogVisible = ko.observable(false);
 
+        self.isCodeReadable = ko.observable(false);
+
         self.currentUser.subscribe(function(newValue) {
             if (newValue === undefined) {
                 self.editorUsername(undefined);
@@ -310,11 +312,15 @@ $(function () {
             self.settings.locallock_enabled(!currentValue);
             return true;
         }
+
+        self.toggleShowCode = function (isReadable) {
+            self.isCodeReadable(!isReadable);
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([
         SecurityViewModel,
-        ["loginStateViewModel", "settingsViewModel"],
+        ["loginStateViewModel", "settingsViewModel", "navigationViewModel"],
         ["#security_settings_flyout_content"]
     ]);
 });
