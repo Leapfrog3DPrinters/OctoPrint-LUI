@@ -1741,24 +1741,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message("demo_selected")
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/local/lock", methods=["POST"])
-    def save_lock_code(self):
+    @BlueprintPlugin.route("/printer/security/local/lock/update", methods=["POST"])
+    def set_lock_settings(self):
 
         data = request.json
         lock_code = data.get("lockCode")
+        lock_enabled = data.get("lockEnabled")
 
         self._settings.set(["local_lock_code"], lock_code)
+        self._settings.set(["local_lock_enabled"], lock_enabled)
         self._settings.save()
 
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/local/lock", methods=["GET"])
-    def get_lock_code(self):
+    @BlueprintPlugin.route("/printer/security/local/lock/settings", methods=["GET"])
+    def get_lock_settings(self):
 
         local_lock_code = self._settings.get(["local_lock_code"])
+        local_lock_enabled = self._settings.get(["local_lock_enabled"])
 
         return make_response(jsonify({
-            'localLockCode': local_lock_code
+            'lockCode': local_lock_code,
+            'lockEnabled': local_lock_enabled
         }), 200)
 
     ## Files API
@@ -2281,7 +2285,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "cloud": {
                 "enabled" : False
                 },
-			"first_start": False
+			"first_start": False,
+            "local_lock_code": "",
+            "local_lock_enabled": False
         }
 
     def find_assets(self, rel_path, file_ext):

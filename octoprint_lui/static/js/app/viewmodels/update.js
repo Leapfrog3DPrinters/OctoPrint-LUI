@@ -137,7 +137,7 @@ $(function ()  {
             } else {
                 name = plugin;
             }
-            // Standar behaviour
+            // Standard behaviour
             if (name == "all") {
                 title = gettext("Update software");
                 text = gettext("You are about to update the printer software. This will take some time and will restart the printer background service when completed.");

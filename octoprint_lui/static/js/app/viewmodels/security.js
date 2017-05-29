@@ -306,7 +306,7 @@ $(function () {
 
         self.toggleLocalLock = function()
         {
-            var currentValue = self.settings.locallock_enabled();
+            var currentValue = self.settings.locallock_enabled;
             self.settings.locallock_enabled(!currentValue);
             return true;
         }

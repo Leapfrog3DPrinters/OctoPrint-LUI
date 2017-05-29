@@ -566,6 +566,7 @@ $(function () {
     $('a, div').on('dragstart', function(event) {event.preventDefault();});
 
     var flyout = viewModelMap["flyoutViewModel"];
+    var navigation = viewModelMap["navigationViewModel"];
     var $overlay = $('.overlay');
     $overlay.bind("click", function(e) {
         e.preventDefault();
@@ -574,7 +575,7 @@ $(function () {
             !flyout.blocking &&
             flyout.warnings().length == 0 &&
             flyout.infos().length == 0 &&
-            flyout.confirmationDeferred === undefined)
+            flyout.confirmationDeferred === undefined && !navigation.isLocalLocked)
         {
             flyout.closeFlyout();
         }

@@ -534,7 +534,7 @@ $(function ()  {
 
 
 
-            if (!self.isHomed()) {
+            if (!self.isHomed() && !self.settings.locallock_enabled) {
                 self.showStartupFlyout();
             }
 

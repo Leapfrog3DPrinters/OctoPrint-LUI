@@ -1397,8 +1397,8 @@ ul.height-calibrator {
     background: #cccccc;
 }
 
-#locallock-unlock-container span {
-
+#locallock-unlock-container input {
+    border: solid 1px;
 }
 /* Bed calibration */
 .bed-canvas {

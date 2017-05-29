@@ -33,42 +33,35 @@ $(function () {
         self.lock = function()
         {
             //TODO: Notify and lock backend
-            $.notify({title: gettext("Printer Locked"), text: gettext("The interface is now locked")}, "warning");
-
-            var lockCode = undefined;
-
-            if(self.settings.locallock_code != undefined){
-                lockCode = self.settings.locallock_code();
-                self.settings.locallock_code(undefined);
-            }
-
-            sendToApi("printer/security/local/lock",
-                {
-                    lockCode: lockCode
-                }
-            );
+            $.notify({title: gettext("Printer locked"), text: gettext("The interface is now locked")}, "warning");
 
             self.flyout.closeFlyout();
             self.isLocalLocked(true);
+            self.updateLockSettings();
+            self.settings.locallock_code(undefined);
         };
 
         self.unlock = function (code) {
             //TODO: Confirm code before unlocking
-            getFromApi("printer/security/local/lock");
+            getFromApi("printer/security/local/lock/settings").done(self.fromResponse).done(
+                function () {
+                    if(self.localLockCode != code){
+                        $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
+                    return;
+                    }
 
-            if(self.localLockCode != code()){
-                $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
-                return;
-            }
+                    $.notify({title: gettext("Printer unlocked"), text: gettext("The interface is now unlocked")});
 
-            self.isLocalLocked(false);
+                    self.isLocalLocked(false);
+                    self.settings.locallock_enabled(false);
+                    self.settings.locallock_code(undefined);
+                    self.settings.locallock_timeout(undefined);
+
+                    self.updateLockSettings();
+                }
+            );
+
         };
-
-         self.fromResponse = function (data) {
-             if(data.localLockCode) {
-                 self.localLockCode = data.localLockCode;
-             }
-         };
 
         //TODO: Remove!
         self.doDebuggingAction = function ()  {
@@ -177,6 +170,16 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
+            getFromApi('printer/security/local/lock/settings').done(self.fromResponse).done(function () {
+                self.isLocalLocked(self.settings.locallock_enabled());
+            });
+        }
+
+        self.fromResponse = function (data) {
+            if(data.lockEnabled){
+                self.settings.locallock_enabled(data.lockEnabled);
+                self.localLockCode = data.lockCode;
+            }
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -190,6 +193,16 @@ $(function () {
                 }
             }
         }
+
+        self.updateLockSettings = function () {
+            sendToApi("printer/security/local/lock/update",
+                {
+                    lockCode: self.settings.locallock_code(),
+                    lockEnabled: self.settings.locallock_enabled(),
+                    lockTimeout: self.settings.locallock_timeout()
+                }
+            );
+        };
 
         self.onAllBound = function (allViewModels) {
             self.allViewModels = allViewModels;

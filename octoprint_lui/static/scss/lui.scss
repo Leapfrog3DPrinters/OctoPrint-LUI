@@ -1863,6 +1863,14 @@ $bed-height: 180px;
   background-color: #fff;
 }
 
+#locallock-unlock-container h2 {
+    background: #cccccc;
+}
+
+#locallock-unlock-container input {
+    border: solid 1px;
+}
+
 // Gauge
 .mask {
   position: relative;
