@@ -4181,7 +4181,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _local_auto_lock_tick(self):
         self.local_auto_lock_timer_value -= 1
-        self._send_client_message(ClientMessages.LOCAL_AUTO_LOCK_TIMER, { "timer": self.local_auto_lock_timer_value })
 
     def _local_auto_lock_required(self):
         return self.local_auto_lock_timer_value > 0
