@@ -160,12 +160,20 @@ $(function () {
 
         self.onAfterBinding = function()
         {
-            //TODO: Don't do this once onAfterBinding, but subscribe to changes in the tools() observable
-            var tools = self.toolInfo.tools();
-            for (i = 0; i < tools.length; i++)
-            {
-                tools[i].filament.amountMeter.subscribe(self.onFilamentChanged.bind(tools[i]));
-                tools[i].filament.materialProfileName.subscribe(self.onFilamentChanged.bind(tools[i]));
+            self.toolInfo.onToolsUpdated(function () {
+                var tools = self.toolInfo.tools();
+                for (i = 0; i < tools.length; i++) {
+                    tools[i].filament.amountMeter.subscribe(self.onFilamentChanged.bind(tools[i]));
+                    tools[i].filament.materialProfileName.subscribe(self.onFilamentChanged.bind(tools[i]));
+                }
+            });
+        }
+
+        self.onMaintenanceSettingsShown = function () {
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
+                self.introView.introInstance.refresh();
             }
         }
 

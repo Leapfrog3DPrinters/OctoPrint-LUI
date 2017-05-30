@@ -352,7 +352,11 @@ $(function ()  {
                     break;
                 case 5: $(".introjs-progress").css("display","inherit");
                     break;
+                case 6: $('#material-select').unbind("change", self.refreshElements);
+                    break;
                 case 11: $(".introjs-progress").css("display","inherit");
+                    break;
+                case 12: $('#material-select').unbind("change", self.refreshElements);
                     break;
                 case 15: self.introInstance.refresh();
                          $('#settings_icon').mousedown();
