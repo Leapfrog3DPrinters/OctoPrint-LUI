@@ -14,6 +14,10 @@ $(function () {
 
         self.isLocalLocked = ko.observable(false);
         self.localLockCode = ko.observable(undefined);
+        self.triesTimeout = ko.observable(false);
+        self.invalidUnlockTimer = ko.observable(0);
+
+        var unlockTries = 3;
 
         self.showLoginFlyout = function ()  {
             self.flyout.showFlyout('login');
@@ -38,30 +42,42 @@ $(function () {
             if(self.flyout.isFlyoutOpen('login')){
                 self.flyout.closeFlyout();
             }
-            self.isLocalLocked(true);
+            self.flyout.showFlyout('locallock');
             self.localLockCode(undefined);
         };
 
         self.immediateLock = function () {
-            sendToApi("printer/security/lock/immediate");
+            sendToApi("printer/security/local/lock/immediate");
         };
 
         self.unlock = function (code) {
             //TODO: Confirm code before unlocking
-            getFromApi("printer/security/lock").done(self.fromResponse).done(
+            getFromApi("printer/security/local/lock").done(self.fromResponse).done(
                 function () {
                     if(self.settings.locallock_code() != code){
                         $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
+                        if(unlockTries > 1) {
+                            unlockTries--;
+                        }
+                        else {
+                            self.startInvalidUnlockTimer();
+                            self.triesTimeout(true);
+                            self.invalidUnlockTimer(30);
+                        }
                     return;
                     }
 
                     $.notify({title: gettext("Printer unlocked"), text: gettext("The interface is now unlocked")});
 
-                    self.isLocalLocked(false);
+                    self.flyout.closeFlyout();
                     self.settings.saveLockSettings();
                 }
             );
         };
+
+        self.startInvalidUnlockTimer = function () {
+            sendToApi('printer/security/local/lock/invalid');
+        }
 
         //TODO: Remove!
         self.doDebuggingAction = function ()  {
@@ -170,8 +186,8 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
-            getFromApi('printer/security/lock').done(self.fromResponse).done(function () {
-                self.isLocalLocked(self.settings.locallock_enabled());
+            getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
+                if(self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
             });
         }
 
@@ -192,6 +208,18 @@ $(function () {
                         self.requestSystemShutdown();
                     case "local_lock":
                         self.lock();
+                    case "local_invalid_unlock_timer":
+                        if (!$('#locallock_flyout').hasClass('active')) {
+                            self.flyout.showFlyout("locallock", true);
+                        }
+                        self.invalidUnlockTimer(messageData.timer);
+                        self.triesTimeout(true);
+                        break;
+                    case "local_invalid_unlock_reset":
+                        self.triesTimeout(false);
+                        self.invalidUnlockTimer(0);
+                        unlockTries = 3;
+                        break;
                 }
             }
         }
@@ -204,6 +232,6 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
         NavigationViewModel,
         ["loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "settingsViewModel", "systemViewModel"],
-        ["#header", "#settings", "#auto_shutdown_flyout", "#printer_error_flyout", "#startup_flyout", "#locallock-unlock-container"]
+        ["#header", "#settings", "#auto_shutdown_flyout", "#printer_error_flyout", "#startup_flyout", "#locallock_flyout_content"]
     ]);
 });

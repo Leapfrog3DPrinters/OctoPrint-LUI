@@ -88,6 +88,9 @@ class ClientMessages(object):
     LOCAL_LOCK = "local_lock"
     LOCAL_AUTO_LOCK_TIMER = "local_lock_timer"
 
+    LOCAL_INVALID_UNLOCK_TIMER = "local_invalid_unlock_timer"
+    LOCAL_INVALID_UNLOCK_RESET = "local_invalid_unlock_reset"
+
 class ToolStatuses(object):
     IDLE = 'IDLE'
     HEATING = 'HEATING'

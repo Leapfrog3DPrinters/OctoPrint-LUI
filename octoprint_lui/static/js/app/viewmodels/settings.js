@@ -544,7 +544,7 @@ $(function () {
                 self.locallock_enabled(false);
             }
 
-            sendToApi("printer/security/lock",
+            sendToApi("printer/security/local/lock",
                 {
                     lockCode: self.locallock_code(),
                     lockEnabled: self.locallock_enabled(),

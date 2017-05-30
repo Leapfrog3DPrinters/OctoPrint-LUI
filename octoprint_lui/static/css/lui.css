@@ -1387,19 +1387,6 @@ ul.height-calibrator {
       font-style: normal;
       color: #cccccc; }
 
-/* Unlock Container */
-#locallock-unlock-container {
-  z-index: 2;
-  background-color: #fff;
-}
-
-#locallock-unlock-container h2 {
-    background: #cccccc;
-}
-
-#locallock-unlock-container input {
-    border: solid 1px;
-}
 /* Bed calibration */
 .bed-canvas {
   width: 220px;

@@ -117,6 +117,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.local_auto_lock_timer = None
         self.local_auto_lock_timer_value = 0
 
+        self.local_invalid_unlock_timer = None
+        self.local_invalid_unlock_timer_value = 0
+
         ##~ TinyDB
 
         self.filament_database_path = None
@@ -1744,7 +1747,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message("demo_selected")
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/lock", methods=["POST"])
+    @BlueprintPlugin.route("/printer/security/local/lock", methods=["POST"])
     def set_lock_settings(self, force = False):
 
         data = request.json
@@ -1766,7 +1769,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/lock/immediate", methods=["POST"])
+    @BlueprintPlugin.route("/printer/security/local/lock/immediate", methods=["POST"])
     def force_local_lock(self):
         if self.local_auto_lock_timer:
             self.local_auto_lock_timer.cancel()
@@ -1774,7 +1777,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message(ClientMessages.LOCAL_LOCK)
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/lock", methods=["GET"])
+    @BlueprintPlugin.route("/printer/security/local/lock/invalid", methods=["POST"])
+    def local_invalid_unlock_timer_start(self):
+        if self.local_invalid_unlock_timer:
+            self.local_invalid_unlock_timer.cancel()
+            self.local_invalid_unlock_timer = None
+        self._local_invalid_unlock_start()
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/security/local/lock", methods=["GET"])
     def get_lock_settings(self):
 
         local_lock_code = self._settings.get(["local_lock_code"])
@@ -4188,8 +4199,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def _local_auto_lock_condition(self):
         self._logger.info("Autolock timer finished. Locking local")
         self._send_client_message(ClientMessages.LOCAL_LOCK)
-        if self.load_filament_timer:
-            self.load_filament_timer.cancel()
+        if self.local_auto_lock_timer:
+            self.local_auto_lock_timer.cancel()
+
+    def _local_invalid_unlock_start(self):
+        if not self.local_auto_lock_timer:
+            self.local_invalid_unlock_timer_value = 30
+            self.local_invalid_unlock_timer = RepeatedTimer(1,
+                                                     self._local_invalid_unlock_tick,
+                                                     run_first=False,
+                                                     condition=self._local_invalid_unlock_required,
+                                                     on_condition_false=self._local_invalid_unlock_condition)
+            self.local_invalid_unlock_timer.start()
+
+    def _local_invalid_unlock_tick(self):
+        self.local_invalid_unlock_timer_value -= 1
+        self._send_client_message(ClientMessages.LOCAL_INVALID_UNLOCK_TIMER, {"timer": self.local_invalid_unlock_timer_value})
+
+    def _local_invalid_unlock_required(self):
+        return self.local_invalid_unlock_timer_value > 0
+
+    def _local_invalid_unlock_condition(self):
+        self._logger.info("Invalid unlock timer finished.")
+        self._send_client_message(ClientMessages.LOCAL_INVALID_UNLOCK_RESET)
+        if self.local_invalid_unlock_timer:
+            self.local_invalid_unlock_timer.cancel()
 
 __plugin_name__ = "Leapfog UI"
 def __plugin_load__():
