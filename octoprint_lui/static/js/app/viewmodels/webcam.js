@@ -151,7 +151,7 @@ $(function ()  {
                 height = 405;
             }
 
-            window.open('/plugin/lui/webcamstream', '_blank', 'menubar=no,status=no,toolbar=no,width='+width+'px,height='+height+'px')
+            window.open('/plugin/lui/webcamstream', '_wstream', 'menubar=no,status=no,toolbar=no,width='+width+'px,height='+height+'px')
         }
 
         self.requestData = function ()  {
