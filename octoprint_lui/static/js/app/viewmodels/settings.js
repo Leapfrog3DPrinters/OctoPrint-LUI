@@ -551,6 +551,7 @@ $(function () {
                     lockTimeout: self.locallock_timeout()
                 }
             );
+
             if(self.flyout.isFlyoutOpen('security_settings')){
                 self.flyout.closeFlyout();
             }

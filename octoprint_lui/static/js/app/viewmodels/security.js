@@ -316,6 +316,10 @@ $(function () {
         self.toggleShowCode = function (isReadable) {
             self.isCodeReadable(!isReadable);
         };
+
+        self.onSecuritySettingsHidden = function () {
+            self.isCodeReadable(false);
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([

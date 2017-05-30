@@ -38,11 +38,12 @@ $(function () {
         {
             //TODO: Notify and lock backend
             $.notify({title: gettext("Printer locked"), text: gettext("The interface is now locked")}, "warning");
-
-            if(self.flyout.isFlyoutOpen('login')){
-                self.flyout.closeFlyout();
+            if(IS_LOCAL) {
+                if (self.flyout.isFlyoutOpen('login')) {
+                    self.flyout.closeFlyout();
+                }
+                self.flyout.showFlyout('locallock');
             }
-            self.flyout.showFlyout('locallock');
             self.localLockCode(undefined);
         };
 
@@ -186,9 +187,11 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
-            getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
-                if(self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
-            });
+            if(IS_LOCAL) {
+                getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
+                    if (self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
+                });
+            }
         }
 
         self.fromResponse = function (data) {
@@ -211,11 +214,13 @@ $(function () {
                         self.lock();
                         break;
                     case "local_invalid_unlock_timer":
-                        if (!$('#locallock_flyout').hasClass('active')) {
-                            self.flyout.showFlyout("locallock", true);
+                        if(IS_LOCAL) {
+                            if (!$('#locallock_flyout').hasClass('active')) {
+                                self.flyout.showFlyout("locallock", true);
+                            }
+                            self.invalidUnlockTimer(messageData.timer);
+                            self.triesTimeout(true);
                         }
-                        self.invalidUnlockTimer(messageData.timer);
-                        self.triesTimeout(true);
                         break;
                     case "local_invalid_unlock_reset":
                         self.triesTimeout(false);
