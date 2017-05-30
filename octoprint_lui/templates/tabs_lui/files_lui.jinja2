@@ -241,8 +241,8 @@
           <script type="text/html" id="files_template_machinecode">
             <ul class="file_main" data-bind="css: {'file_selected': $root.listHelper.isSelected($data)}">
               <li class="file_name" data-bind="touchClick: function () { if ($root.enableSelect($data)) { $root.loadFile($data, false); } else { return; } }">
-                <a href="#file_name">
-                  <span data-bind="text: name, css: {disabled: !$root.isLoadActionPossible()}" title="{{ _('Load') }}"></span>
+                <a href="#file_name" data-bind="attr: { title: name }">
+                  <span data-bind="text: name, css: {disabled: !$root.isLoadActionPossible()}"></span>
                 </a>
               </li>
               <li class="file_print" data-bind="visible: $root.listHelper.isSelected($data)">
