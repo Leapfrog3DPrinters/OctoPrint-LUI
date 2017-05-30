@@ -20,7 +20,8 @@ $(function () {
                     materialProfileName: ko.observable(),
                     amount: ko.observable(),
                     isExtruding: ko.observable(false),
-                    isRetracting: ko.observable(false)
+                    isRetracting: ko.observable(false),
+                    hotEndType: ko.observable("lt")
                 }
             }
 
@@ -61,7 +62,9 @@ $(function () {
         self.isHeating = ko.observable(false);
         self.isStabilizing = ko.observable(false);
 
-        self._printerProfileUpdated = function () {
+        self._onToolsUpdated = [];
+
+        self._initializeTools = function () {
             // Initialize the tools
             var heaterOptions = {};
             var tools = self.tools();
@@ -94,12 +97,22 @@ $(function () {
             // write back
             self.heaterOptions(heaterOptions);
             self.tools(tools);
+
+            // execute callbacks
+            _.forEach(self._onToolsUpdated, function (func) { func(); });
         }
 
-        self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function () {
-            self._printerProfileUpdated();
-            self.settingsViewModel.printerProfiles.currentProfileData().extruder.count.subscribe(self._printerProfileUpdated);
-            self.settingsViewModel.printerProfiles.currentProfileData().heatedBed.subscribe(self._printerProfileUpdated);
+        self.onToolsUpdated = function (callback)
+        {
+            // Add the callback to the list of callbacks to be executed after a tool update
+            self._onToolsUpdated.push(callback);
+        }
+
+        self.settingsViewModel.printerProfiles.currentProfileData.subscribe(function (value) {
+            self._initializeTools();
+
+            value.extruder.count.subscribe(self._initializeTools);
+            value.heatedBed.subscribe(self._initializeTools);
         });
 
         self.fromCurrentData = function(data) {

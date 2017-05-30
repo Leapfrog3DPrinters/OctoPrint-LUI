@@ -27,38 +27,41 @@ ONEDRIVE = "onedrive"
 GOOGLE_DRIVE = "google_drive"
 DROPBOX = "dropbox"
 
-AVAILABLE_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
+INSTALLED_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
 
 
 class CloudService(object):
-    def __init__(self, settings, data_folder):
-        self._logger = logging.getLogger(__name__)
+    def __init__(self, secrets, data_folder):
+        self._logger = logging.getLogger("octoprint.plugins.lui.cloud")
     def get_auth_url(self, redirect_uri):
         pass
     def handle_auth_response(self, request):
+        pass
+    def handle_manual_auth_response(self, auth_code):
         pass
     def list_files(self, path=None, filter=None):
         pass
     def download_file(self, path, target_path, progress_callback = None):
         pass
-    def get_logout_url(self, redirect_uri):
-        pass
-    def handle_logout_response(self, request):
+    def logout(self):
         pass
 
 class DropboxCloudService(CloudService):
-    def __init__(self, settings, data_folder):
-        super(DropboxCloudService, self).__init__(settings, data_folder)
-        self._settings = settings
+    def __init__(self, secrets, data_folder):
+        super(DropboxCloudService, self).__init__(secrets, data_folder)
+        self._secrets = secrets
         self._csrf = {}
+        
         self._client = None
-        self._client_secret = self._settings.get(['cloud', DROPBOX, 'client_secret']);
-        self._client_id = self._settings.get(['cloud', DROPBOX, 'client_id']);
+        self._client_secret = self._secrets.get('client_secret');
+        self._client_id = self._secrets.get('client_id');
         self._redirect_uri = None
         self._access_token = None
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
         self._load_credentials()
+
+        self._flow = dropbox.client.DropboxOAuth2FlowNoRedirect(self._client_id, self._client_secret)
         
     ## Private methods
     def _get_client(self):
@@ -105,8 +108,6 @@ class DropboxCloudService(CloudService):
 
     def get_auth_url(self, redirect_uri):
         self._redirect_uri = redirect_uri
-        self._flow = dropbox.client.DropboxOAuth2Flow(self._client_id, self._client_secret, redirect_uri, self._csrf, "dropbox-auth-csrf-token")
-
         return self._flow.start()
 
     def handle_auth_response(self, request):
@@ -116,6 +117,17 @@ class DropboxCloudService(CloudService):
 
         try:
             self._access_token, _, _ = self._flow.finish(request.values)
+            self._save_credentials()
+            self._logger.info("Dropbox authenticated")
+            return True
+        except Exception as e:
+            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
+            return False
+
+    def handle_manual_auth_response(self, auth_code):
+
+        try:
+            self._access_token, _, _ = flow.finish(auth_code)
             self._save_credentials()
             self._logger.info("Dropbox authenticated")
             return True
@@ -174,10 +186,7 @@ class DropboxCloudService(CloudService):
                     f.write(chunk)
                     f.flush()
 
-    def get_logout_url(self, redirect_uri):
-        return redirect_uri
-
-    def handle_logout_response(self, request):
+    def logout(self):
         if self._access_token:
             self._get_client().auth_token_revoke()
             self._logger.debug("Dropbox auth token revoked")
@@ -188,19 +197,20 @@ class DropboxCloudService(CloudService):
 
 
 class GoogleDriveCloudService(CloudService):
-    def __init__(self, settings, data_folder):
-        super(GoogleDriveCloudService, self).__init__(settings, data_folder)
-        self._settings = settings
+    def __init__(self, secrets, data_folder):
+        super(GoogleDriveCloudService, self).__init__(secrets, data_folder)
+        self._secrets = secrets
         self._http = httplib2.Http()
         self._client = None
-        self._client_secret = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_secret']);
-        self._client_id = self._settings.get(['cloud', GOOGLE_DRIVE, 'client_id']);
-        self._redirect_uri = None
+        self._client_secret = self._secrets.get('client_secret');
+        self._client_id = self._secrets.get('client_id');
+        self._redirect_uri = "http://cloud.lpfrg.com/login/"
         self._credentials = None
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, GOOGLE_DRIVE + "_credentials.pickle")
         self._load_credentials()
         self._refresh_credentials()
+        self._flow = self._flow_factory()
         
     ## Private methods
     def _get_client(self):
@@ -264,7 +274,6 @@ class GoogleDriveCloudService(CloudService):
 
     def get_auth_url(self, redirect_uri):
         self._redirect_uri = redirect_uri
-        self._flow = self._flow_factory()
 
         return self._flow.step1_get_authorize_url()
 
@@ -276,6 +285,17 @@ class GoogleDriveCloudService(CloudService):
         access_token = request.values.get("code")
         try:
             self._credentials = self._flow.step2_exchange(access_token)
+            self._http = self._credentials.authorize(self._http)
+            self._save_credentials()
+            self._logger.info("Google Drive authenticated")
+            return True
+        except Exception as e:
+            self._logger.exception("Google Drive authentication failed: {0}".format(e.message))
+            return False
+
+    def handle_manual_auth_response(self, auth_code):
+        try:
+            self._credentials = self._flow.step2_exchange(auth_code)
             self._http = self._credentials.authorize(self._http)
             self._save_credentials()
             self._logger.info("Google Drive authenticated")
@@ -333,10 +353,7 @@ class GoogleDriveCloudService(CloudService):
                 if progress_callback and callable(progress_callback):
                     progress_callback(status.progress())
 
-    def get_logout_url(self, redirect_uri):
-        return redirect_uri
-
-    def handle_logout_response(self, request):
+    def logout(self):
         if self._credentials and not self._credentials.access_token_expired:
             try:
                 self._credentials.revoke(self._http)
@@ -349,14 +366,14 @@ class GoogleDriveCloudService(CloudService):
 
 
 class OnedriveCloudService(CloudService):
-    def __init__(self, settings, data_folder):
-        super(OnedriveCloudService, self).__init__(settings, data_folder)
-        self._settings = settings
+    def __init__(self, secrets, data_folder):
+        super(OnedriveCloudService, self).__init__(secrets, data_folder)
+        self._secrets = secrets
         self._client = None
         self._redirect_uri = None
 
-        self._client_secret = self._settings.get(['cloud', ONEDRIVE, 'client_secret']);
-        self._client_id = self._settings.get(['cloud', ONEDRIVE, 'client_id']);
+        self._client_secret = self._secrets.get('client_secret');
+        self._client_id = self._secrets.get('client_id');
 
         self._api_base_url = 'https://api.onedrive.com/v1.0/'
         self._scopes = ['wl.signin', 'wl.offline_access', 'onedrive.readonly']
@@ -420,10 +437,20 @@ class OnedriveCloudService(CloudService):
             self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
             return False
 
-    def get_logout_url(self, redirect_uri):
-        return redirect_uri
+    def handle_manual_auth_response(self, auth_code):
+        auth_provider = self._get_client().auth_provider
+        self._logger.debug("OneDrive access token received")
+        try:
+            auth_provider.authenticate(auth_code, self._redirect_uri, self._client_secret)
+            self._access_token = auth_code
+            auth_provider.save_session(path=self._credential_path)
+            self._logger.info("OneDrive authenticated")
+            return True
+        except Exception as e:
+            self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
+            return False
 
-    def handle_logout_response(self, request):
+    def logout(self):
         self._get_client().auth_provider.delete_session()
         self._logger.info("OneDrive disconnected")
 
@@ -459,27 +486,59 @@ class OnedriveCloudService(CloudService):
         return response
 
 class CloudConnect():
-    def __init__(self, settings, data_folder):
-        self._settings = settings
+    def __init__(self, data_folder):
         self._data_folder = data_folder
+        self._cloud_secrets = []
+        self._logger = logging.getLogger(__name__)
+
         self.services = {}
+        
+        self._read_secrets()
+        self._init_all_services()
     
     ## Private methods
 
+    def _read_secrets(self):
+        secrets_data = self._read_secrets_file()
+
+        if secrets_data and "cloud" in secrets_data:
+            self._cloud_secrets = secrets_data["cloud"]
+
+    def _read_secrets_file(self):
+        cloud_file = os.path.join(self._data_folder, "cloud.yaml")
+        if os.path.isfile(cloud_file):
+            import yaml
+            try:
+                with open(cloud_file) as f:
+                    data = yaml.safe_load(f)
+                return data
+            except:
+                self._logger.exception("Could not read cloud settings")
+        else:
+            self._logger.warning("Cloud settings not found")
+
+    def _init_all_services(self):
+        for service in INSTALLED_SERVICES:
+            service_obj = self._service_factory(service)
+
+            if service_obj:
+                self.services[service] = service_obj
+
     def _service_factory(self, service):
-        if service == ONEDRIVE:
-            return OnedriveCloudService(self._settings, self._data_folder)
-        elif service == GOOGLE_DRIVE:
-            return GoogleDriveCloudService(self._settings, self._data_folder)
-        elif service == DROPBOX:
-            return DropboxCloudService(self._settings, self._data_folder)
+        if service == ONEDRIVE and ONEDRIVE in self._cloud_secrets:
+            return OnedriveCloudService(self._cloud_secrets[ONEDRIVE], self._data_folder)
+        elif service == GOOGLE_DRIVE and GOOGLE_DRIVE in self._cloud_secrets:
+            return GoogleDriveCloudService(self._cloud_secrets[GOOGLE_DRIVE], self._data_folder)
+        elif service == DROPBOX and DROPBOX in self._cloud_secrets:
+            return DropboxCloudService(self._cloud_secrets[DROPBOX], self._data_folder)
     ## Public methods
 
     def get_service(self, service):
-        if not service in self.services:
-            self.services[service] = self._service_factory(service)
+        if service in self.services:
+            return self.services[service]
 
-        return self.services[service]
+    def get_available_services(self):
+        return self.services.keys()
 
     def is_logged_in(self, service):
         return self.get_service(service).is_logged_in()
@@ -490,11 +549,11 @@ class CloudConnect():
     def handle_auth_response(self, service, request):
         return self.get_service(service).handle_auth_response(request)
 
-    def get_logout_url(self, service, redirect_uri):
-        return self.get_service(service).get_logout_url(redirect_uri)
+    def handle_manual_auth_response(self, service, auth_code):
+        return self.get_service(service).handle_manual_auth_response(auth_code)
 
-    def handle_logout_response(self, service, request):
-        return self.get_service(service).handle_logout_response(request)
+    def logout(self, service):
+        return self.get_service(service).logout()
 
 
 class CloudStorage(LocalFileStorage):
@@ -512,7 +571,7 @@ class CloudStorage(LocalFileStorage):
                         "is_connected": self._cloud_connect.get_service(service).is_logged_in(),
 		                "type": "folder",
                         "origin": "cloud"
-                    } for service in AVAILABLE_SERVICES]
+                    } for service in self._cloud_connect.get_available_services()]
         else:
             service = self._get_service_from_path(path)
             return self._cloud_connect.get_service(service).list_files(path, filter)

@@ -56,27 +56,7 @@
       </ul>
     </div>
   </aside>
-  <aside id="wireless_settings_flyout" class="flyout">
-    <div class="flyout-header">
-      <h4>{{ _('Wireless') }}</h4>
-      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
-    </div>
-    <div class="flyout-body">
-
-      <!-- ko allowBindings: false -->
-      <div id="wireless_settings_flyout_content" class="flyout_content">
-        {% include "flyouts_lui/setting_flyouts/wireless_flyout.jinja2" %}
-      </div>
-      <!-- /ko -->
-      <ul class="button-area">
-        <li class="button">
-          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
-            <span>{{ _('Close') }}</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </aside>
+  {% include "flyouts_lui/setting_flyouts/wireless_flyout.jinja2" %}
   <aside id="users_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Users') }}</h4>
@@ -230,29 +210,8 @@
       </div>
     </div>
   </aside>
-  <aside id="cloud_settings_flyout" class="flyout">
-    <div class="flyout-header">
-      <h4>{{ _('Cloud') }}</h4>
-      <span class="flyout-close" data-bind="click: function () { flyout.closeFlyout() }">
-        <i class="fa fa-times"></i>
-      </span>
-    </div>
-    <div class="flyout-body">
-      <!-- ko allowBindings: false -->
-      <div id="cloud_settings_flyout_content" class="flyout_content">
-        {% include "flyouts_lui/setting_flyouts/cloud_flyout.jinja2" %}
-      </div>
-      <!-- /ko -->
-      <ul class="button-area">
-        <li class="button" data-bind="click: function () { flyout.closeFlyout() }">
-          <a href="#">
-            <span>{{ _('Close') }}</span>
-          </a>
-        </li>
-      </ul>
-     
-    </div>
-  </aside>
+  {% include "flyouts_lui/setting_flyouts/cloud_flyout.jinja2" %}
+  
   <aside id="tutorials_settings_flyout" class="flyout">
     <div class="flyout-header">
       <h4>{{ _('Tutorials') }}</h4>
@@ -563,18 +522,10 @@
     </ul>
   </div>
 </aside>
-<aside id="firmware_update_required_flyout" class="flyout">
-  <div class="flyout-header bg-yellow">
-    <h4>
-      <i class="fa fa-exclamation-triangle"></i>Firmware update required
-    </h4>
-  </div>
-  <div class="flyout-body">
-    <div id="firmware_update_required_flyout_content">
-      {% include "flyouts_lui/info_flyouts/firmware_update_required_flyout.jinja2" %}
-    </div>
-  </div>
-</aside>
+
+{% include "flyouts_lui/info_flyouts/update_required_flyout.jinja2" %}
+{% include "flyouts_lui/info_flyouts/maintenance_mode_flyout.jinja2" %}
+
 <aside id="offline_flyout" class="flyout">
   <div class="flyout-header">
     <h4><i class="fa fa-exclamation-triangle"></i>{{ _('Service Offline') }}</h4>

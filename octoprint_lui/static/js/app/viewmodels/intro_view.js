@@ -351,10 +351,16 @@ $(function ()  {
                         self.isFirstStep = true;
                     break;
                 case 5: $(".introjs-progress").css("display","inherit");
+                        $('#material-select').bind("change", self.refreshElements);
+                    break;
+                case 6: $('#material-select').unbind("change");
                     break;
                 case 6: $('#material-select').unbind("change", self.refreshElements);
                     break;
                 case 11: $(".introjs-progress").css("display","inherit");
+                        $('#material-select').bind("change", self.refreshElements);
+                    break;
+                case 12: $('#material-select').unbind("change");
                     break;
                 case 12: $('#material-select').unbind("change", self.refreshElements);
                     break;
@@ -369,7 +375,6 @@ $(function ()  {
 
         self.introInstance.onafterchange(function () {
             var step = self.currentStep();
-            console.log(self.introInstance._introItems[step-1].stepName);
             if(self.lastStep != step) {
                 var element = document.getElementById('introjs-container');
                 if(!ko.utils.domData.get(element, "__ko_boundElement")) {
@@ -419,6 +424,7 @@ $(function ()  {
             //Check if filament is loaded and skips steps when not needed.
             if(self.currentStep() == 1){
                 sendToApi('printer/had_first_start');
+                FIRST_START = false;
                 self.isFirstStep = false;
             }
 
@@ -437,6 +443,7 @@ $(function ()  {
             //Cancels the intro, sends to backend that intro has run.
             if(self.currentStep() == 1 && self.isFirstStep == true){
                 sendToApi('printer/had_first_start');
+                FIRST_START = false;
                 self.isFirstStep = false;
             }
             self.isTutorialStarted = false;
@@ -486,6 +493,9 @@ $(function ()  {
                     sendToApi("printer/immediate_cancel");
                     self.flyout.closeFlyout();
                     break;
+                case (step == 32 || step == 33):
+                    $('#material-select').unbind("change");
+                    break;
                 // For other steps
                 default : $('#print_icon').mousedown();
                     break;
@@ -519,6 +529,14 @@ $(function ()  {
                     , 100);
             }
         };
+
+        self.onShutdownOrDisconnectFlyout = function () {
+          self.introInstance.exit();
+        };
+
+        self.refreshElements = function () {
+            self.introInstance.refresh();
+        }
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS

@@ -1,4 +1,7 @@
 from __future__ import division
+
+__author__ = "Erik Heidstra <ErikHeidstra@live.nl>"
+
 import math
 
 for to_print in ['1mm', '100um']:
@@ -65,9 +68,11 @@ for to_print in ['1mm', '100um']:
 
     gCodeStart = [ 'G28', \
                 'T0', \
-                'M109', \
+                'M109 T0', \
+                'M109 T1', \
                 'M190', \
-                'M106 S255' ]
+                'M107', \
+                'G28' ]
 
     gCodeEnd =  [ 'G1 Z20 F600', \
                 'G28 X0 Y0', \
@@ -118,7 +123,7 @@ for to_print in ['1mm', '100um']:
 
     def smallcircle(nPi, steps, r, xoffset, yoffset, eoffset):
     
-            # Length of a segment of the circle
+        # Length of a segment of the circle
         l_p = r * nPi * math.pi / steps
 
         # Amount to extrude per segment

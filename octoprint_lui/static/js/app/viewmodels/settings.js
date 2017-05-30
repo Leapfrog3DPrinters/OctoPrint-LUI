@@ -35,6 +35,11 @@ $(function () {
         self.server_diskspace_warning_str = sizeObservable(self.server_diskspace_warning);
         self.server_diskspace_critical_str = sizeObservable(self.server_diskspace_critical);
 
+        self.plugins_lui_zoffset = ko.observable();
+        self.plugins_lui_action_door = ko.observable();
+        self.plugins_lui_action_filament = ko.observable();
+        self.plugins_lui_debug_lui = ko.observable();
+        
         self.settings = undefined;
         self.lastReceivedSettings = undefined;
 
@@ -113,9 +118,11 @@ $(function () {
                     title: gettext("Turn on auto shutdown"),
                     text: gettext("You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine.")
                 };
+
+                // Wait for the toggle animation
                 setTimeout(function(){
                     self.flyout.showWarning(data.title, data.text)
-                }, 500)
+                }, 200)
             }
 
             self.sendAutoShutdownStatus(!toggle);
@@ -124,7 +131,7 @@ $(function () {
 
         self.sendAutoShutdownStatus = function(toggle)
         {
-            sendToApi("printer/auto_shutdown/" + toggle ? "on" : "off");
+            sendToApi("printer/auto_shutdown/" + (toggle ? "on" : "off"));
         }
 
         self.feature_modelSizeDetection.subscribeChanged(function(newValue, oldValue){
@@ -146,7 +153,6 @@ $(function () {
         };
 
         self.requestData = function (local) {
-
             console.log("Requesting settings");
 
             // handle old parameter format
@@ -310,7 +316,6 @@ $(function () {
                         }
                     }
                 },
-                terminalFilters: function(value) { self.terminalFilters($.extend(true, [], value)) },
                 temperature: {
                     profiles: function(value) { self.temperature_profiles($.extend(true, [], value)); }
                 },
@@ -392,6 +397,7 @@ $(function () {
 
         self.onAllBound = function(allViewModels) {
             self.allViewModels = allViewModels;
+            self.requestData();
         }
 
         self.onEventSettingsUpdated = function () {

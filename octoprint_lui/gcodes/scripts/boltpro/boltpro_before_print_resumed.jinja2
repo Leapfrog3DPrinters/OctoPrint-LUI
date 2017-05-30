@@ -1,0 +1,31 @@
+{% if paused_position %}
+{% if paused_print_mode < 2 %}
+G28 X0 Y0
+{% if paused_position['t'] == 0 %}
+{% snippet 'bolt_wipe_right.jinja2' %};									Wiping T0
+{% else %}
+{% snippet 'bolt_wipe_left.jinja2' %};									Wiping T1
+{% endif %}
+{% else %}
+M605 S3 U0;																Put in  mirror mode, but don't alter target temperatures
+G28 X0 Y0
+{% snippet 'bolt_wipe_left.jinja2' %};									Wiping in mirror mode
+{% endif %}
+M605 S{{ paused_print_mode }};												Restore print mode
+{% if paused_print_mode < 2 %}
+T{{ paused_position['t'] }};											Set tool (only for normal and full control modes)
+{% endif %}						
+G28 X0
+G1 Z{{ paused_position['z'] }} F1000;									Return to last known position (z)	
+G1 X{{ paused_position['x'] }} Y{{ paused_position['y'] }} F10000;		Return to last known position (x,y)
+G1 E2 F6000;															Prime a little (after wiping retract)
+{% if paused_position['e'] %}
+G92 E{{ paused_position['e'] }};										Reset E coordinate
+{% endif %}
+{% if paused_position['f'] %}
+G1 F{{ paused_position['f'] }};											Reset to last known speed
+{% endif %}
+{% else %}
+G28 X0 Y0
+G1 F10000
+{% endif %}

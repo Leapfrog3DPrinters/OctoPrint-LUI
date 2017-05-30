@@ -14,6 +14,7 @@ $(function () {
         self.movingToHeadSwapPositionInfo = null;
 
         self.isHeadMaintenanceFlyoutOpen = false;
+        self.isSavingMaterial = ko.observable(false);
 
         self.showHeadMaintenance = function () {
 
@@ -24,9 +25,11 @@ $(function () {
 
             self.flyout.showConfirmationFlyout(dialog, true)
                 .done(function () {
-                    self.isHeadMaintenanceFlyoutOpen = true;
-                    self.moveToHeadMaintenancePosition();
-                    self.flyout.showFlyout('head_maintenance').always(self.afterHeadMaintenance);
+                    self.filament.requestData().always(function () {
+                        self.isHeadMaintenanceFlyoutOpen = true;
+                        self.moveToHeadMaintenancePosition();
+                        self.flyout.showFlyout('head_maintenance', true).always(self.afterHeadMaintenance);
+                    });
                 });
         };
 
@@ -61,6 +64,9 @@ $(function () {
         self.afterHeadMaintenance = function () {
             sendToApi("maintenance/head/finish");
             self.isHeadMaintenanceFlyoutOpen = false;
+
+            // Restore any filaments that couldn't be loaded (eg when there was a HT hot end required)
+            self.filament.requestData();
         };
 
         self.afterHeadSwap = function () {
@@ -154,8 +160,10 @@ $(function () {
         {
             // This function is bound to the change event of filament material and amount inputs
             // Therefore, we have to check if the controls are actually visible, to confirm the change was the user's own action
-            if (self.isHeadMaintenanceFlyoutOpen)
-                self.filament.updateFilament(this);
+            if (self.isHeadMaintenanceFlyoutOpen && !self.isSavingMaterial()) {
+                self.isSavingMaterial(true);
+                self.filament.updateFilament(this).always(function () { self.isSavingMaterial(false) });
+            }
         }
 
         self.onAfterBinding = function()
@@ -175,6 +183,14 @@ $(function () {
                 self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
                 self.introView.introInstance.refresh();
             }
+
+            // Notify the back-end we're in maintenance mode
+            sendToApi("maintenance/start");
+        }
+
+        self.onMaintenanceSettingsHidden = function () {
+            // Notify the back-end we're done with maintenance mode
+            sendToApi("maintenance/finish");
         }
 
         // Handle plugin messages
@@ -185,7 +201,6 @@ $(function () {
 
             var messageType = data['type'];
             switch (messageType) {
-
                 case "head_in_swap_position":
                     self.finishHeadSwap();
                     break;
@@ -194,22 +209,19 @@ $(function () {
                     var message = gettext("Please wait while the printer is being reconnected. Note that the printer will home automatically.");
                     self.poweringUpInfo = self.flyout.showInfo(title, message, true);
                     break;
+                case "powering_up_after_swap_failed":
+                    if (self.poweringUpInfo != undefined) {
+                        self.flyout.closeInfo(self.poweringUpInfo);
+                    }
+
+                    // Trigger a connection error flyout
+                    self.printerState.requestData();
+                    break;
                 case "is_homed":
                     if (self.poweringUpInfo != undefined) {
                         self.flyout.closeInfo(self.poweringUpInfo);
                     }
                     break;
-            }
-        }
-
-        self.onMaintenanceSettingsShown = function () {
-            //IntroJS
-            if (self.introView.isTutorialStarted) {
-                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
-                $('#maintenance_settings_flyout').one("transitionend", function () {
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
-                    self.introView.introInstance.refresh();
-                });
             }
         }
     }

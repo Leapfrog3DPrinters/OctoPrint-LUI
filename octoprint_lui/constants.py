@@ -2,6 +2,7 @@ class ClientMessages(object):
     
     FILAMENT_CHANGE_STARTED = "filament_change_started"
     FILAMENT_CHANGE_CANCELLED = "filament_change_cancelled"
+    FILAMENT_CHANGE_FINISHED = "filament_change_finished"
     FILAMENT_CHANGE_UNLOAD_STARTED = "filament_unload_started"
     FILAMENT_CHANGE_UNLOAD_FINISHED = "filament_unload_finished"
     FILAMENT_CHANGE_LOAD_STARTED = "filament_load_started"
@@ -19,9 +20,14 @@ class ClientMessages(object):
 
     TOOL_STATUS = "tool_status"
     TOOL_HEATING = "tool_heating"
+    TARGET_TEMP_ERROR = "target_temp_error"
+    TOOLS_CHANGED = "tools_changed"
 
     IS_HOMING = "is_homing"
     IS_HOMED = "is_homed"
+
+    MAINTENANCE_STARTED = "maintenance_started"
+    MAINTENANCE_FINISHED = "maintenance_finished"
 
     LEVELBED_COMPLETE = "levelbed_complete"
     LEVELBED_PROGRESS = "levelbed_progress"
@@ -34,6 +40,7 @@ class ClientMessages(object):
     
     HEAD_IN_SWAP_POSITION = "head_in_swap_position"
     POWERING_UP_AFTER_SWAP = "powering_up_after_swap"
+    POWERING_UP_AFTER_SWAP_FAILED = "powering_up_after_swap_failed"
 
     MEDIA_FOLDER_UPDATED = "media_folder_updated"
     MEDIA_FILE_COPY_PROGRESS = "media_file_copy_progress"
@@ -44,13 +51,25 @@ class ClientMessages(object):
     GCODE_COPY_FINISHED = "gcode_copy_complete"
     GCODE_COPY_FAILED = "gcode_copy_failed"
 
+    GCODE_COPY_ALL_PROGRESS = "gcode_copy_all_progress"
+    GCODE_COPY_ALL_FINISHED = "gcode_copy_all_complete"
+    GCODE_COPY_ALL_FAILED = "gcode_copy_all_failed"
+
     TIMELAPSE_COPY_PROGRESS = "timelapse_copy_progress"
     TIMELAPSE_COPY_FINISHED = "timelapse_copy_complete"
     TIMELAPSE_COPY_FAILED = "timelapse_copy_failed"
 
+    TIMELAPSE_COPY_ALL_PROGRESS = "timelapse_copy_all_progress"
+    TIMELAPSE_COPY_ALL_FINISHED = "timelapse_copy_all_complete"
+    TIMELAPSE_COPY_ALL_FAILED = "timelapse_copy_all_failed"
+
     LOGS_COPY_PROGRESS = "logs_copy_progress"
     LOGS_COPY_FINISHED = "logs_copy_complete"
     LOGS_COPY_FAILED = "logs_copy_failed"
+
+    LOGS_COPY_ALL_PROGRESS = "logs_copy_all_progress"
+    LOGS_COPY_ALL_FINISHED = "logs_copy_all_complete"
+    LOGS_COPY_ALL_FAILED = "logs_copy_all_failed"
 
     CLOUD_LOGIN_FAILED = "cloud_login_failed"
 
@@ -79,6 +98,10 @@ class ClientMessages(object):
     AUTO_FIRMWARE_UPDATE_FAILED = "auto_firmware_update_failed"
     AUTO_FIRMWARE_UPDATE_FINISHED = "auto_firmware_update_finished"
 
+class Platforms(object):
+    RaspberryPi = "RPi"
+    WindowsDebug = "WindowsDebug"
+    MacDebug = "MacDebug"
 
 class ToolStatuses(object):
     IDLE = 'IDLE'
@@ -125,3 +148,7 @@ class ExtrusionModes(object):
 class MovementModes(object):
     ABSOLUTE = "absolute"
     RELATIVE = "relative"
+    
+class HotEndTypes(object):
+    HIGH_TEMP = "ht"
+    LOW_TEMP = "lt"

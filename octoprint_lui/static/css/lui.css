@@ -109,6 +109,13 @@ a {
   height: 45px;
   padding-left: 1rem; }
 
+button {
+  border: 0px;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: inherit; }
+
+/* TODO: Replace below with leaner html5 <buttons> */
 .button-area {
   display: flex;
   flex: 1 1 100%; }
@@ -577,8 +584,6 @@ input[type=radio] {
 
 .Table-condensed .Table-item {
   padding: 0.3em 0.1em; }
-  .Table-condensed .Table-item input {
-    padding: 12px 5px !important; }
 
 #user-list .Table, #settings_plugin_networkmanager .Table {
   min-height: 13em;
@@ -899,7 +904,7 @@ input[type=radio] {
 
 input:not([type=submit]):not([type=file]) {
   font-size: 1em;
-  padding-left: 10px;
+  padding: 12px 5px !important;
   min-width: 0; }
 
 select {
@@ -1279,20 +1284,20 @@ pre code {
     display: inline-block; }
 
 /* Filament swap */
-.swap_process_step, .fd_swap_process_step {
+.swap_process_step {
   display: none;
   width: 100%; }
-  .swap_process_step.active, .fd_swap_process_step.active {
+  .swap_process_step.active {
     display: inline-block; }
 
-#swap-info, #fd-swap-info {
+#swap-info {
   display: none; }
-  #swap-info.active, #fd-swap-info.active {
+  #swap-info.active {
     display: flex; }
 
-#swap-load-unload, #fd-swap-load-unload {
+#swap-load-unload {
   display: none; }
-  #swap-load-unload.active, #fd-swap-load-unload.active {
+  #swap-load-unload.active {
     display: flex; }
 
 /* Filament Detection - Filament swap */

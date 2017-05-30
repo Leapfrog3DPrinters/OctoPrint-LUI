@@ -100,7 +100,7 @@ $(function ()  {
         self.gcodePreviews = [];
 
         self.isOnline = ko.pureComputed(function () {
-            return self.network.status.connection.ethernet() || self.network.status.connection.wifi();
+            return self.network.status.ethernet.connected() || self.network.status.wifi.connected();
         })
 
         self.formatFilamentHeader = function (tool) {
@@ -171,7 +171,7 @@ $(function ()  {
                 self.isLoadingFileList(false);
             });
 
-            if (origin = "local" && self.introView.isTutorialStarted) {
+            if (origin == "local" && self.introView.isTutorialStarted) {
                 self.isIntroFile(true);
                 var checkIfFileVisible = setInterval(function () {
                     if($('#print_files').is(":visible")) {
@@ -202,8 +202,11 @@ $(function ()  {
         self.loadFiles = function (origin, filter, path) {
             filter = filter || "";
             path = path || "";
-
-            return getFromApi("files/" + origin + "/" + path);
+            
+            if (filter)
+                return getFromApi("files/" + origin + "/" + path + "?filter=" + filter);
+            else
+                return getFromApi("files/" + origin + "/" + path);
         }
 
         // initialize list helper
@@ -529,7 +532,13 @@ $(function ()  {
                 return;
             }
 
+            // Errors are provided through socket messages
             sendToApi("usb/save/gcode/" + file.path);
+        }
+
+        self.copyAllToUsb = function () {
+            // Errors are provided through socket messages
+            sendToApi("usb/save_all/gcodes");
         }
 
         self.removeAllFiles = function()
@@ -1312,12 +1321,56 @@ $(function ()  {
                     case "gcode_copy_complete":
                         self.setProgressBar(0);
                         self.printerState.activities.remove(copying);
+                        
+                        $.notify({
+                            title: gettext("File copied"),
+                            text: _.sprintf(gettext('"%(filename)s" has been copied to your USB drive.'), { filename: filename = messageData["filename"] })
+                        },
+                            "success"
+                        );
                         break;
                     case "gcode_copy_failed":
                         self.setProgressBar(0);
                         self.printerState.activities.remove(copying);
+                        filename = messageData["filename"];
+                        $.notify({
+                            title: gettext("Error during file copy."),
+                            text: _.sprintf(gettext('Could not copy "%(filename)s" to your USB drive. Please ensure there is enough space available.'), { filename: messageData["filename"] })
+                        },
+                            "error"
+                        );
+                        break;
+                    case "gcode_copy_all_progress":
+                        self.setProgressBar(messageData.percentage);
+
+                        if (messageData.percentage < 100)
+                            self.printerState.activities.push(copying);
+                        else
+                            self.printerState.activities.remove(copying);
+
                         break;
 
+                    case "gcode_copy_all_complete":
+                        self.setProgressBar(0);
+                        self.printerState.activities.remove(copying);
+
+                        $.notify({
+                            title: gettext("All files copied copied"),
+                            text: _.sprintf(gettext('All G-code files have been copied to your USB drive.'))
+                        },
+                            "success"
+                        );
+                        break;
+                    case "gcode_copy_all_failed":
+                        self.setProgressBar(0);
+                        self.printerState.activities.remove(copying);
+                        $.notify({
+                            title: gettext("Error during file copy."),
+                            text: _.sprintf(gettext('One or more files failed to copy to your USB drive. Please ensure there is enough space available.'))
+                        },
+                            "error"
+                        );
+                        break;
                     case "demo_selected":
                         self.printAndChangeTab();
                         //IntroJS

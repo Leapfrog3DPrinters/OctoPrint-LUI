@@ -1612,9 +1612,13 @@ http://www.opensource.org/licenses/mit-license.php
 				.removeClass(kbcss.isCurrent + ' ' + kbcss.inputAutoAccepted)
 				// add 'ui-keyboard-autoaccepted' to inputs - see issue #66
 				.addClass((accepted || false) ? accepted === true ? '' : kbcss.inputAutoAccepted : '')
-				.val(val)
+				.val(val);
 				// trigger default change event - see issue #146
-				.trigger(kbevents.inputChange);
+		        //.trigger(kbevents.inputChange);
+
+		    // Above trigger doesn't always work, so use old-fashioned way (bypass jquery)
+			base.el.dispatchEvent(new Event(kbevents.inputChange));
+
 			// don't trigger an empty event - see issue #463
 			if (!o.alwaysOpen) {
 				// don't trigger beforeClose if keyboard is always open

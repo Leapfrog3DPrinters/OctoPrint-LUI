@@ -21,9 +21,9 @@ extruder:
   - - 0.0
     - 0.0
 heatedBed: true
-id: xcel
-model: Xcel
-name: Xcel
+id: xeed
+model: Xeed
+name: Xeed
 volume:
   custom_box: false
   depth: 220.0
@@ -46,9 +46,10 @@ modelSizeDetection: false
 doorSafety: true
 filamentDetection: true
 filamentQuickLoad: true
-dualX: true
+dualX: false
 materialMinTemp: 150
 materialMaxTemp: 275
+lowTempMax: 275
 filament:
   loadInitial:
     amount: 18

@@ -89,7 +89,28 @@ $(function() {
             })
         };
 
-        self.onSettingsShown = function() {
+        self.copyAllLogsToUsb = function () {
+            sendToApi('usb/save_all/logs')
+                .done(function () {
+                    $.notify(
+                        {
+                            title: gettext('Log files copied'),
+                            text: gettext('The log files have been copied to your USB drive.')
+                        },
+                        'success'
+                    );
+                }).fail(function () {
+                    $.notify(
+                        {
+                            title: gettext('Copying of log file failed'),
+                            text: gettext('One or more log files could not be copied. Please check if there is sufficient space available on the drive and try again.')
+                        },
+                        'error'
+                    );
+                })
+        };
+
+        self.onLogsSettingsShown = function() {
             self.requestData();
         };
     }

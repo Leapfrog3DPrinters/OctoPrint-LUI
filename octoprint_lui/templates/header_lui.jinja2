@@ -1,7 +1,7 @@
 <header id="header" class="app-header">
     <div class="header_logo" data-bind="touchClick: function () { location.reload(true); }">
         <a href="#" class="logo">
-            <img src="{{ url_for("plugin.lui.static", filename="img/logo.png") }}" width="60%" height="60%">
+            <img src="{{ url_for("plugin.lui.static", filename="img/logo.png") }}" width="50%" height="50%" style="margin-top: 8px">
         </a>
     </div>
 
@@ -33,11 +33,11 @@
   <!-- ko allowBindings: false -->
   <div id="ethernet_connectivity" class="network-status">
     <a href="#">
-      <i class="fa fa-plug ethernet-status" data-bind="visible: status.connection.ethernet()"></i>
+      <i class="fa fa-plug ethernet-status" data-bind="visible: status.ethernet.connected()"></i>
     </a>
   </div>
   <div id="wifi_connectivity" class="network-status">
-    <a href="#"><img src="" class="wifi-status" data-bind="attr: { src: status.connection.wifi() ? '{{ url_for("plugin.lui.static", filename="img/wifi.svg") }}' : '{{ url_for("plugin.lui.static", filename="img/wifi-slash.svg") }}' }" /></a>
+    <a href="#"><img src="" class="wifi-status" data-bind="attr: { src: status.wifi.connected() ? '{{ url_for("plugin.lui.static", filename="img/wifi.svg") }}' : '{{ url_for("plugin.lui.static", filename="img/wifi-slash.svg") }}' }" /></a>
   </div>
   <!-- /ko -->
   {% endif %}

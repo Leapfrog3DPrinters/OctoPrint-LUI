@@ -8,11 +8,22 @@ $(function () {
 
         self.serviceInfo = ko.observableArray();
 
+        self.serviceInfoMapping = {
+            create: function (options) {
+                var item = ko.mapping.fromJS(options.data);
+
+                item.authCode = ko.observable();
+                item.showAuthCodeForm = ko.observable(false);
+
+                return item;
+            }
+        };
+
         self._onServiceInfoUpdated = [];
 
         self.isOnline = ko.pureComputed(function()
         {
-            return self.network.status.connection.ethernet() || self.network.status.connection.wifi();
+            return self.network.status.ethernet.connected() || self.network.status.wifi.connected();
         })
 
         self.getCloudServiceIcon = function (service) {
@@ -33,8 +44,15 @@ $(function () {
         }
 
         self.loginService = function (service) {
-            getFromApi('cloud/' + service + '/login').done(function (data) {
-                var loginWindow = window.open(data.auth_url, "_blank");
+
+            // If we're local, present the user with a manual auth code entry
+            if (IS_LOCAL) {
+                self.getServiceInfo(service).showAuthCodeForm(true);
+            }
+            else {
+                var loginUrl = self.getServiceInfo(service).loginUrl();
+                var loginWindow = window.open(loginUrl, "_blank");
+
                 // Can't work with events here because we don't have control over the child's HTML
                 var timer = setInterval(checkChild, 500);
 
@@ -44,27 +62,27 @@ $(function () {
                         clearInterval(timer);
                     }
                 }
-            });
+            }
         }
 
+        self.authorizeService = function (service)
+        {
+            var authCode = self.getServiceInfo(service).authCode();
+            sendToApi('cloud/' + service + '/login', { "authCode": authCode }).done(self.requestData);
+        }
+        
         self.logoutService = function (service) {
-            getFromApi('cloud/' + service + '/logout').done(function (data) {
-                var logoutWindow = window.open(data.logout_url, "_blank");
-                // Can't work with events here because we don't have control over the child's HTML
-                var timer = setInterval(checkChild, 500);
+            sendToApi('cloud/' + service + '/logout').done(self.requestData);
+        }
 
-                function checkChild() {
-                    if (!logoutWindow || logoutWindow.closed) {
-                        self.requestData();
-                        clearInterval(timer);
-                    }
-                }
-            });
+        self.getServiceInfo = function (service)
+        {
+            return _.find(self.serviceInfo(), function (serviceInfo) { return serviceInfo.name() == service });
         }
 
         self.requestData = function () {
             getFromApi('cloud').done(function (response) {
-                ko.mapping.fromJS(response.services, {}, self.serviceInfo);
+                ko.mapping.fromJS(response.services, self.serviceInfoMapping, self.serviceInfo);
 
                 _.forEach(self._onServiceInfoUpdated, function (func) { func(); });
             });
@@ -104,10 +122,10 @@ $(function () {
         }
     }
 
-    OCTOPRINT_VIEWMODELS.push([
-      CloudViewModel,
-      ["loginStateViewModel", "flyoutViewModel", "networkmanagerViewModel"],
-      ['#cloud_settings_flyout_content']
-    ]);
+        OCTOPRINT_VIEWMODELS.push([
+          CloudViewModel,
+          ["loginStateViewModel", "flyoutViewModel", "networkmanagerViewModel"],
+          ['#cloud_settings_flyout_content']
+        ]);
 
 });

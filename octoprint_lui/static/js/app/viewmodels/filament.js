@@ -14,6 +14,8 @@ $(function ()  {
         self.filamentLoadProgress = ko.observable(0);
         self.forPurge = ko.observable(false);
 
+        self.targetTempErrorOpen = false;
+
         // Let's create an alias for the tools array, we're gonna use it a lot from here
         self.tools = self.toolInfo.tools;
 
@@ -24,15 +26,6 @@ $(function ()  {
 
         self.isProfileLocked = ko.observable(false);
 
-        self.preselectedTemperatureProfile = ko.observable(undefined); // Used for locked profile selection (paused filament swap)
-        self.preselectedTemperatureProfileName = ko.pureComputed(function () {
-            var profile = self.preselectedTemperatureProfile();
-            if (profile)
-                return profile.name;
-            else
-                return "None";
-        });
-
         self.selectedTemperatureProfile = ko.observable(undefined); // Used for free profile selection
         self.selectedTemperatureProfileName = ko.pureComputed(function () {
             var profile = self.selectedTemperatureProfile();
@@ -40,6 +33,21 @@ $(function ()  {
                 return profile.name;
             else
                 return "None";
+        });
+
+        self.newFilamentAmount = ko.observable(0);
+        self.newFilamentAmountMeter = ko.pureComputed({
+            read: function () {
+                    return self.newFilamentAmount() / 1000;
+                },
+            write: function (value) {
+                self.newFilamentAmount(value * 1000);
+            }
+        });
+
+        self.newFilamentAmountPercent = ko.pureComputed(function()
+        {
+            return (self.newFilamentAmount() / (FILAMENT_ROLL_LENGTH*1000) * 100).toFixed() + '%';
         });
 
         self.materialProfiles = ko.observableArray([]);
@@ -81,12 +89,27 @@ $(function ()  {
 
         }
 
+        self.getLoadButtonContents = function()
+        {
+            if (self.selectedTemperatureProfileName() == 'None')
+                return '<i class="fa fa-check"></i>' + gettext('Done');
+            else
+                return gettext('Load');
+        }
+
         self.toolText = ko.pureComputed(function () {
             if (self.tool() == "tool0")
                 return gettext("Right");
             else
                 return gettext("Left");
             });
+
+        self.getHotEndTypeName = function(hotEndType)
+        {
+            if (hotEndType == "ht") return gettext("(High-temp)");
+
+            return "";
+        }
 
         self.filamentLoadingText = ko.observable(undefined);
 
@@ -134,7 +157,7 @@ $(function ()  {
             } else {
                 return gettext("Delete");
             }
-            };
+        };
 
         // Views
         // ------------------
@@ -151,7 +174,7 @@ $(function ()  {
             if (!forPurge) {
                 self.filamentActionText(gettext("Swap"));
                 self.showUnload();
-                slider.noUiSlider.set(FILAMENT_ROLL_LENGTH);
+                self.newFilamentAmount(FILAMENT_ROLL_LENGTH * 1000);
 
                 $('#swap-load-unload').addClass('active');
                 $('#swap-info').removeClass('active');
@@ -180,17 +203,23 @@ $(function ()  {
             if (paused_materials.hasOwnProperty(tool)) {
                 if (paused_materials[tool] != "None") {
                     var material = self.materialProfiles().find(function (profile) { return profile.name == paused_materials[tool] });
-                    self.preselectedTemperatureProfile(material);
+                    self.selectedTemperatureProfile(material);
                     self.isProfileLocked(true);
                 }
             }
         };
 
+        self.editFilamentAmount = function()
+        {
+            $('#newFilamentAmountEditor').focus();
+        }
+
         // Below functions swap views for both filament swap and filament detection swap
         self.showUnload = function ()  {
-            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
-            $('#unload_filament,#fd_unload_filament').addClass('active');
-            $('#unload_cmd,#fd_unload_cmd').removeClass('disabled');
+            $('.swap_process_step').removeClass('active');
+            $('#unload_filament').addClass('active');
+            $('#unload_cmd').removeClass('disabled');
+
             //IntroJS
             if (self.introView.isTutorialStarted) {
                 if (self.tool() == "tool1") {
@@ -204,10 +233,10 @@ $(function ()  {
         };
 
         self.showLoad = function ()  {
-            $('#swap-info,#fd-swap-info').removeClass('active');
-            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
-            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
-            $('#load_filament,#fd_load_filament').addClass('active');
+            $('#swap-info').removeClass('active');
+            $('#swap-load-unload').addClass('active');
+            $('.swap_process_step').removeClass('active');
+            $('#load_filament').addClass('active');
             self.filamentLoading(false);
             //IntroJS
             if (self.introView.isTutorialStarted) {
@@ -221,20 +250,20 @@ $(function ()  {
         };
 
         self.showFinished = function ()  {
-            $('#swap-info,#fd-swap-info').removeClass('active')
-            $('#swap-load-unload,#fd-swap-load-unload').addClass('active');
-            $('.swap_process_step,.fd_swap_process_step').removeClass('active');
-            $('#finished_filament,#fd_finished_filament').addClass('active');
+            $('#swap-info').removeClass('active')
+            $('#swap-load-unload').addClass('active');
+            $('.swap_process_step').removeClass('active');
+            $('#finished_filament').addClass('active');
             };
 
         self.onToolHeating = function ()  {
-            $('#swap-info,#fd-swap-info').addClass('active');
-            $('#swap-load-unload,#fd-swap-load-unload').removeClass('active');
-        };
+            $('#swap-info').addClass('active')
+            $('#swap-load-unload').removeClass('active');
+            }
 
         self.hideToolLoading = function ()  {
-            $('#tool_loading,#fd_tool_loading').removeClass('active');
-        };
+            $('#tool_loading').removeClass('active');
+            }
 
         self.finishedLoading = function ()  {
             // We are finished close the flyout
@@ -259,6 +288,25 @@ $(function ()  {
             self.flyout.closeFlyoutAccept();
         };
 
+        self.showTargetTempError = function(tool, target, max)
+        {
+            if (!self.targetTempErrorOpen) {
+                self.targetTempErrorOpen = true;
+
+                var title = gettext("A temperature error occurred");
+
+                var message = gettext(_.sprintf("You are trying to print with the %(tool)s print head at %(target)d &deg;C, but the maximum print temperature for the current hot-end is %(max)d &deg;C.", {
+                    tool: tool == "tool1" ? gettext("left") : gettext("right"),
+                    target: target,
+                    max: max
+                }));
+
+                self.flyout.showWarning(title, message, false, function () {
+                    self.targetTempErrorOpen = false;
+                });
+            }
+        }
+
         self.startChangeFilament = function (tool) {
             return sendToApi("filament/" + tool + "/change/start");
         }
@@ -281,22 +329,14 @@ $(function ()  {
 
             var loadFor = loadFor || "swap";
             var materialProfileName = undefined;
+            var amount = 0;
 
-            if (loadFor == "purge")
-                amount = 0;
-            else if (slider.noUiSlider.get())
-                amount = slider.noUiSlider.get() * 1000;
-            else
-                amount = 0;
+            if (loadFor != "purge")
+                amount = self.newFilamentAmount();
 
             if (loadFor == "swap")
             {
-                var profile = undefined;
-
-                if (self.isProfileLocked())
-                    profile = self.preselectedTemperatureProfile();
-                else
-                    profile = self.selectedTemperatureProfile()
+                var profile = self.selectedTemperatureProfile()
 
                 materialProfileName = profile.name;
             }
@@ -338,18 +378,27 @@ $(function ()  {
             var profile = self.materialProfiles().find(function (profile) { return profile.name == materialProfileName });
 
             if (profile == undefined) {
-                return $.notify({
-                title: gettext("Filament updating warning"),
-                text: _.sprintf(gettext('Please select a material to update.'))},
-                    "warning"
-                )
+                $.notify({
+                    title: gettext("Filament updating warning"),
+                    text: _.sprintf(gettext('Please select a material to update.'))
+                },
+                   "warning"
+               );
+
+                return $.when();
+            }
+
+            if (!self.materialOkForHotEnd(materialProfileName, toolObj))
+            {
+                return $.when();
             }
 
             if (materialProfileName == "None") {
                 amount = 0;
+                toolObj.filament.amount(0);
             }
 
-            sendToApi("filament/" + toolObj.key(), {
+            return sendToApi("filament/" + toolObj.key(), {
                 amount: amount,
                 materialProfileName: materialProfileName
             }).done(function () {
@@ -421,6 +470,25 @@ $(function ()  {
             sendToApi("filament/" + tool + "/extrude/finish");
         }
 
+
+        self.materialOkForHotEnd = function(materialProfileName, toolObj)
+        {
+            var material = self.getMaterialByName(materialProfileName);
+
+            if (typeof toolObj == "string")
+                toolObj = self.toolInfo.getToolByKey(toolObj);
+
+            if (toolObj && material) {
+                if (toolObj.filament.hotEndType() == "lt")
+                    return material.extruder < LOW_TEMP_MAX;
+                else
+                    return true;
+            }
+            else
+                return false;
+        }
+
+
         // Handle plugin messages
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
@@ -445,12 +513,25 @@ $(function ()  {
                     if (!self.forPurge()) {
                         $.notify({
                             title: gettext("Filament loaded aborted!"),
-                            text: _.sprintf(gettext('Please re-run load filament procedure'), {})
-                        },
-                                        "warning"
-                                    );
+                            text: gettext('Please re-run load filament procedure')
+                        }, "warning");
                     }
                     self.requestData();
+                    break;
+                case "filament_change_finished":
+                    if (!self.forPurge()) {
+                        var material = messageData["filament"]["material"];
+                        var amount = messageData["filament"]["amount"];
+
+                        if(material != "None")
+                        {
+                            $.notify({
+                                title: gettext("Filament successfully loaded!"),
+                                text: _.sprintf(gettext('Filament with profile %(material)s and amount %(amount)s loaded'), { material: material, amount: self.getAmountString(amount) })
+                            },
+                                "success");
+                        }
+                    }
                     break;
                 case "filament_load_progress":
                     // Used for both loading and unloading
@@ -499,20 +580,22 @@ $(function ()  {
                     self.requestData();
                     break;
                 case "tool_heating":
-                    self.filamentInProgress(true);
-                    self.filamentLoading(true);
-                    self.filamentLoadProgress(0);
-                    self.onToolHeating();
-                    if (self.introView.isTutorialStarted) {
-                        if (self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect") || self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect")) {
-                            if (self.tool() == 'tool1') {
-                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
+                    if (self.filamentInProgress()) {
+                        self.filamentLoading(true);
+                        self.filamentLoadProgress(0);
+                        self.onToolHeating();
+
+                        if (self.introView.isTutorialStarted) {
+                            if (self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect") || self.introView.currentStep() == self.introView.getStepNumberByName("leftToolFilamentSelect")) {
+                                if (self.tool() == 'tool1') {
+                                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("leftToolFilamentLoading"));
+                                }
+                                else {
+                                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
+                                }
                             }
-                            else {
-                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("rightToolFilamentLoading"));
-                            }
+                            self.introView.introInstance.refresh();
                         }
-                        self.introView.introInstance.refresh();
                     }
                     break;
                 case "filament_extruding_started":
@@ -540,31 +623,47 @@ $(function ()  {
                     for (var i = 0; i < amounts.length; i++)
                         self.setFilamentAmount("tool" + i, amounts[i]);
                     break;
+                case "target_temp_error":
+                    var tool = messageData["tool"];
+                    var target = messageData["target"];
+                    var max = messageData["max"];
 
+                    self.showTargetTempError(tool, target, max);
+
+                    break;
+                case "tools_changed":
+                        self.fromResponse(messageData);
+                    break;
             }
         };
 
 
         self.copyMaterialProfiles = function ()  {
             // Copy the settings materials and add a "None" profile
-            self.materialProfiles(self.settings.temperature_profiles.slice(0));
-            self.materialProfiles.unshift({
+            var allProfiles = self.settings.temperature_profiles.slice(0);
+            allProfiles.unshift({
                 bed: 0,
                 extruder: 0,
                 name: "None"
             });
+
+            self.materialProfiles(allProfiles);
         };
+
+        self.getMaterialByName = function(name) {
+            return _.find(self.materialProfiles(), { name: name });
+        }
 
         self.onBeforeBinding = function () {
-            self.requestData();
+            
             self.tool("tool0");
-            self.copyMaterialProfiles();
-        };
 
-        self.onEventSettingsUpdated = function ()  {
-            self.copyMaterialProfiles();
-        };
+            self.settings.temperature_profiles.subscribe(self.copyMaterialProfiles);
 
+            self.toolInfo.onToolsUpdated(function () {
+                self.requestData();
+            });
+        }
 
         self.fromResponse = function (data) {
             if (data.filaments) {
@@ -574,12 +673,13 @@ $(function ()  {
                     // Back-end provides a sorted list, so we may use indices here
                     tools[i].filament.materialProfileName(data.filaments[i].materialProfileName);
                     tools[i].filament.amount(data.filaments[i].amount);
+                    tools[i].filament.hotEndType(data.filaments[i].hotEndType);
                 }
             }
         };
 
         self.requestData = function ()  {
-            getFromApi("filament").done(self.fromResponse);
+            return getFromApi("filament").done(self.fromResponse);
         };
 
         self.onMaterialsSettingsShown = function () {

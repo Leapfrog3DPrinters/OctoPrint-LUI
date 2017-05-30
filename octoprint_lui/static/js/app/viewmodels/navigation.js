@@ -88,15 +88,28 @@ $(function () {
 
         self.showSettingsTopic = function (topic, blocking, high_priority) {
             var settingsTopic = capitalize(topic);
-            callViewModels(self.allViewModels, "onSettingsShown");
-            callViewModels(self.allViewModels, "on" + settingsTopic + "SettingsShown");
+
+            // Wait for the opening transition to complete
+            // Don't rely on transitionend here, functionality is too critical
+            window.setTimeout(function () {
+                callViewModels(self.allViewModels, "onSettingsShown");
+                callViewModels(self.allViewModels, "on" + settingsTopic + "SettingsShown");
+            }, 300);
 
             return self.flyout.showFlyout(topic + '_settings', blocking, high_priority)
                 .done(function () {
-                    self.settings.saveData();
+                    // Only save if flyout has been accepted
+                    window.setTimeout(function () {
+                        self.settings.saveData();
+                    }, 300);
                 })
                 .always(function () {
-                    callViewModels(self.allViewModels, "onSettingsHidden");
+
+                    // Wait for the closing transition to complete
+                    window.setTimeout(function () {
+                        callViewModels(self.allViewModels, "onSettingsHidden");
+                        callViewModels(self.allViewModels, "on" + settingsTopic + "SettingsHidden");
+                    }, 300);
                 });
         };
 
@@ -113,6 +126,7 @@ $(function () {
                 switch (messageType) {
                     case "powerbutton_pressed":
                         self.requestSystemShutdown();
+                        callViewModels(self.allViewModels, "onShutdownOrDisconnectFlyout");
                 }
             }
         }

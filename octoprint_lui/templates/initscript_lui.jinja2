@@ -16,6 +16,8 @@
   var REQUIRE_OVERSCROLL = {%  if printer_profile["requireOverscroll"] -%} true; {% else %} false; {%- endif %}
   var RESERVED_USERNAMES = {{ reserved_usernames }};
   var EXTRUDER_HOT_THRESHOLD = 50; // The temperature after which an extruder is considered hot (so it shouldn't be touched)
+  var LOW_TEMP_MAX = {{ printer_profile["lowTempMax"] }};
+  var CLOUD_ENABLED = {%  if cloud_enabled -%} true; {% else %} false; {%- endif %}
 
   var SOCKJS_URI = "{{ url_for('index') }}" + "sockjs";
   var SOCKJS_DEBUG = DEBUG_LUI;
