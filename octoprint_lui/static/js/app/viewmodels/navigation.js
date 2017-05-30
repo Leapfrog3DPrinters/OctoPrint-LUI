@@ -206,8 +206,10 @@ $(function () {
                 switch (messageType) {
                     case "powerbutton_pressed":
                         self.requestSystemShutdown();
+                        break;
                     case "local_lock":
                         self.lock();
+                        break;
                     case "local_invalid_unlock_timer":
                         if (!$('#locallock_flyout').hasClass('active')) {
                             self.flyout.showFlyout("locallock", true);
