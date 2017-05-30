@@ -2703,9 +2703,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     return
 
                 # Else, poll if the port exists for 15 sec and connect
-                for attempt in range(15):
+                for wait in range(15):
                     if os.path.exists(port):
-                        self._logger.info("Serial port {0} found after {1} sec. Attempting to reconnect.".format(port, attempt))
+                        self._logger.info("Serial port {0} found after {1} sec. Attempting to reconnect in 2 sec.".format(port, wait))
+                        time.sleep(2)
                         self._printer.connect()
                         return
 
@@ -2715,6 +2716,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._logger.error("Could not reconnect to printer after 15 sec. Is the auxilary power up?")
                 self.printer_error_reason = "reconnect_failed"
                 self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP_FAILED)
+                self.connecting_after_maintenance = False
 
             else:
                 # Currently, this situation is not supported (only on RPi there's a powerbutton_handler)
@@ -3999,9 +4001,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.is_homing = False
         elif event == Events.ERROR:
             self.printer_error_reason = 'unknown_printer_error'
+            
             self.is_homed = False
             self.is_homing = False
-            if "error" in payload:
+
+            if self.connecting_after_maintenance:
+                self._logger.error("Could not reconnect after maintenance")
+                self.printer_error_reason = "reconnect_failed"
+                self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP_FAILED)
+                self.connecting_after_maintenance = False
+            elif "error" in payload:
                 statestring = payload["error"].lower()
                 if "mintemp" in statestring:
                     self.printer_error_reason = 'extruder_mintemp'
