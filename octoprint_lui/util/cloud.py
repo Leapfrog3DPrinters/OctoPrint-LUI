@@ -548,21 +548,57 @@ class OnedriveCloudService(CloudService):
                     session_type=ExtendedSession
                     )
 
-        try:
-            self._auth_provider.load_session(path=self._credential_path)
-            self._auth_provider.refresh_token()
-            self._logger.debug("OneDrive token refreshed")
-        except:
-            self._logger.exception("OneDrive: Could not refresh token")
+        self._load_credentials()
+        self._set_client()
 
     ## Private methods
 
-    def _get_client(self):
-        if not self._client:
-            self._client = onedrivesdk.OneDriveClient(self._api_base_url, self._auth_provider, self._http_provider)
-            self._logger.debug("OneDrive client created")
-            
-        return self._client
+    def _set_client(self):
+        if self._http_provider and self._auth_provider:
+            try:
+                self._client = onedrivesdk.OneDriveClient(self._api_base_url, self._auth_provider, self._http_provider)
+                self._logger.debug("OneDrive client created")
+                return True
+            except:
+                self._logger.exception("Could not create OneDrive client")
+           
+        return False
+
+    def _load_credentials(self):
+        try:
+            self._auth_provider.load_session(path=self._credential_path)
+            self._logger.debug("OneDrive credentials loaded")
+            return True
+        except:
+            self._logger.exception("Could not load OneDrive credentials")
+            return False
+
+    def _save_credentials(self):
+        try:
+            self._client.auth_provider.save_session(path=self._credential_path)
+            self._logger.debug("OneDrive credentials saved")
+            return True
+        except:
+            self._logger.exception("Could not save OneDrive credentials")
+            return False
+
+    def _refresh_credentials(self):
+        try:
+            self._auth_provider.refresh_token()
+            self._logger.debug("OneDrive token refreshed")
+            return True
+        except:
+            self._logger.exception("Could not refresh OneDrive credentials")
+            return False
+
+    def _delete_credentials(self):
+        try:
+            self._client.auth_provider.delete_session()
+            self._logger.debug("OneDrive credentials deleted")
+            return True
+        except:
+            self._logger.exception("Could not delete OneDrive credentials")
+            return False
 
     def _get_file_type(self, item):
         if item.folder:
@@ -576,49 +612,66 @@ class OnedriveCloudService(CloudService):
     def is_logged_in(self):
         return self._auth_provider.is_logged_in()
 
-    def get_auth_url(self, redirect_uri):
-        self._redirect_uri = redirect_uri;
-        auth_url = self._get_client().auth_provider.get_auth_url(self._redirect_uri)
+    #def get_auth_url(self, redirect_uri):
+    #    self._redirect_uri = redirect_uri;
+    #    auth_url = self._get_client().auth_provider.get_auth_url(self._redirect_uri)
 
-        return auth_url
+    #    return auth_url
 
     def handle_auth_response(self, request):
+        if not self._client:
+            self._logger.error("Could not handle OneDrive automatic authentication without client")
+            return False
+
         access_token = request.values.get("code")
-        auth_provider = self._get_client().auth_provider
         self._logger.debug("OneDrive access token received")
         try:
-            auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
-            self._access_token = access_token
-            auth_provider.save_session(path=self._credential_path)
-            self._logger.info("OneDrive authenticated")
-            return True
+            self._client.auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
         except Exception as e:
             self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
             return False
+
+        self._access_token = access_token
+        if self._set_client():
+            self._logger.info("OneDrive manually authenticated")
+        self._logger.info("OneDrive automatically authenticated")
 
     def handle_manual_auth_response(self, auth_code):
-        auth_provider = self._get_client().auth_provider
-        self._logger.debug("OneDrive access token received")
-        try:
-            auth_provider.authenticate(auth_code, self._redirect_uri, self._client_secret)
-            self._access_token = auth_code
-            auth_provider.save_session(path=self._credential_path)
-            self._logger.info("OneDrive authenticated")
-            return True
-        except Exception as e:
-            self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
+        if not self._client:
+            self._logger.error("Could not handle OneDrive manual authentication without client")
             return False
 
+        self._logger.debug("OneDrive access token received")
+        try:
+            self._client.auth_provider.authenticate(auth_code, self._redirect_uri, self._client_secret)
+        except Exception as e:
+            self._logger.debug("Could not manually authenticate OneDrive: {0}".format(e.message))
+            return False
+
+        self._access_token = auth_code
+        self._save_credentials()
+        if self._set_client():
+            self._logger.info("OneDrive manually authenticated")
+        return True
+
     def logout(self):
-        self._get_client().auth_provider.delete_session()
+        self._delete_credentials()
         self._logger.info("OneDrive disconnected")
 
     def list_files(self, path=None, filter=None):
-        
+        if not self._client:
+            self._logger.error("Could not list files without OneDrive client")
+            return []
+
         if path == None:
             path = ONEDRIVE
 
-        folder = self._get_client().drive.item_by_path(path[len(ONEDRIVE):] + "/").children.get()
+        try:
+            folder = self._client.drive.item_by_path(path[len(ONEDRIVE):] + "/").children.get()
+        except:
+            self._logger.exception("Could not list files of OneDrive")
+            return []
+
         items = []
         
         for f in folder:
@@ -639,9 +692,20 @@ class OnedriveCloudService(CloudService):
         return items
 
     def download_file(self, path, target_path, progress_callback = None):
-        file = self._get_client().drive.item_by_path(path[len(ONEDRIVE):]).request()
-        self._get_client().auth_provider.authenticate_request(file)
-        response = self._get_client().http_provider.download(file._headers, file.request_url, target_path, progress_callback)
+        if not self._client:
+            self._logger.error("Could not download file without OneDrive client")
+            return None
+
+        response = None
+
+        try:
+            file = self._client.drive.item_by_path(path[len(ONEDRIVE):]).request()
+            self._client.auth_provider.authenticate_request(file)
+            response = self._client.http_provider.download(file._headers, file.request_url, target_path, progress_callback)
+        except:
+            self._logger.exception("Could not download file from OneDrive")
+            return None
+
         return response
 
 class CloudConnect():
