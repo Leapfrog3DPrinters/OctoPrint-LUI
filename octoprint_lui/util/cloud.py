@@ -62,7 +62,7 @@ class DropboxCloudService(CloudService):
         self._id_tracker = {}
         self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
         self._load_credentials()
-
+        #TODO: self._refresh_credentials()
         if self._access_token:
             self._set_client()
 
@@ -70,6 +70,8 @@ class DropboxCloudService(CloudService):
         
     ## Private methods
     def _set_client(self):
+        # We can only create a client if we have an access token. Therefor, we can't use lazy loading. We need to set the client 
+        # when we have a new access token
         if not self._access_token:
             self._logger.error("Cannot set Dropbox client without access token")
             return False
@@ -299,7 +301,7 @@ class GoogleDriveCloudService(CloudService):
     def __init__(self, secrets, data_folder, default_redirect_uri):
         super(GoogleDriveCloudService, self).__init__(secrets, data_folder, default_redirect_uri)
         self._secrets = secrets
-        self._http = httplib2.Http()
+        self._http = None
         self._client = None
         self._client_secret = self._secrets.get('client_secret')
         self._client_id = self._secrets.get('client_id')
@@ -309,17 +311,36 @@ class GoogleDriveCloudService(CloudService):
         self._load_credentials()
         self._refresh_credentials()
         self._flow = self._flow_factory(self._redirect_uri)
+
+        if self._credentials and self._http:
+            self._set_client()
         
     ## Private methods
-    def _get_client(self):
-        if not self._client:
-            self._client = build('drive', 'v3', http=self._http)
-            self._logger.debug("Google Drive client created")
+    def _set_client(self):
+        if self._credentials and self._http:
+            try:
+                self._client = build('drive', 'v3', http=self._http)
+            except Exception:
+                self._logger.exception("Could not build Google Drive client")
+                return False
 
-        return self._client
+            self._logger.debug("Google Drive client created")
+        else:
+            self._logger.warning("Could not create Google Drive client. Are you authenticated?")
+
+        return True
+
+    def _authorize_http(self):
+        try:
+            self._http = self._credentials.authorize(httplib2.Http())
+        except Exception:
+            self._logger.exception("Could not authorize for Google Drive with existing credentials")
+            return False
+        
+        return True
 
     def _refresh_credentials(self):
-        if self._credentials:
+        if self._credentials and self._http:
             try:
                 self._credentials.refresh(self._http)
             except:
@@ -327,30 +348,44 @@ class GoogleDriveCloudService(CloudService):
 
     def _load_credentials(self):
         if os.path.isfile(self._credential_path):
-            with open(self._credential_path, "rb") as session_file:
-                import pickle
-                self._credentials = pickle.load(session_file)
+            try:
+                with open(self._credential_path, "rb") as session_file:
+                    import pickle
+                    self._credentials = pickle.load(session_file)
+            except OSError as e:
+                self._logger.exception("Could not load Google Drive credentials")
+                return None
             
-            if self._credentials.access_token_expired:
-                self._logger.warn("Google Drive credentials expired")
+            if not self._credentials:
+                self._logger.warn("Could not load Google Drive credentials")
+            elif self._credentials.access_token_expired:
+                self._logger.warn("Google Drive credentials expired. Deleting them.")
                 self._delete_credentials()
             else:
-                self._http = self._credentials.authorize(self._http)
+                self._logger.info("Google Drive credentials loaded")
+                self._authorize_http()
 
         return self._credentials
 
     def _delete_credentials(self):
         if os.path.isfile(self._credential_path):
-            os.unlink(self._credential_path)
-            self._logger.debug("Google Drive credentials deleted")
-        
+            try:
+                os.unlink(self._credential_path)
+                self._logger.debug("Google Drive credentials deleted")
+            except OSError:
+                self._logger.exception("Could not delete Google Drive credentials")
+            
+        self._http = None
         self._credentials = None
 
     def _save_credentials(self):
-        with open(self._credential_path, "wb") as session_file:
-            import pickle
-            pickle.dump(self._credentials, session_file, pickle.HIGHEST_PROTOCOL)
-            self._logger.debug("Google Drive credentials saved")
+        try:
+            with open(self._credential_path, "wb") as session_file:
+                import pickle
+                pickle.dump(self._credentials, session_file, pickle.HIGHEST_PROTOCOL)
+                self._logger.debug("Google Drive credentials saved")
+        except OSError:
+            self._logger.exception("Could not save Google Drive credentials")
 
     def _flow_factory(self, redirect_uri):
         return OAuth2WebServerFlow(client_id=self._client_id,
@@ -368,7 +403,7 @@ class GoogleDriveCloudService(CloudService):
     ## Public methods
 
     def is_logged_in(self):
-        return not self._credentials is None
+        return self._credentials is not None and self._client is not None
 
     def get_auth_url(self, redirect_uri):
         self._redirect_uri = redirect_uri
@@ -384,26 +419,36 @@ class GoogleDriveCloudService(CloudService):
         access_token = request.values.get("code")
         try:
             self._credentials = self._flow.step2_exchange(access_token)
-            self._http = self._credentials.authorize(self._http)
-            self._save_credentials()
-            self._logger.info("Google Drive authenticated")
-            return True
         except Exception as e:
-            self._logger.exception("Google Drive authentication failed: {0}".format(e.message))
+            self._logger.exception("Google Drive automatic authentication failed: {0}".format(e.message))
             return False
+
+        if self._authorize_http():
+            self._save_credentials()
+            self._logger.info("Google Drive automatically authenticated")
+            return self._set_client()
+        
+        return False
 
     def handle_manual_auth_response(self, auth_code):
         try:
             self._credentials = self._flow.step2_exchange(auth_code)
-            self._http = self._credentials.authorize(self._http)
-            self._save_credentials()
-            self._logger.info("Google Drive authenticated")
-            return True
         except Exception as e:
-            self._logger.exception("Google Drive authentication failed: {0}".format(e.message))
+            self._logger.exception("Google Drive manual authentication failed: {0}".format(e.message))
             return False
 
+        if self._authorize_http():
+            self._save_credentials()
+            self._logger.info("Google Drive manually authenticated")
+            return self._set_client()
+
+        return False
+
     def list_files(self, path = None, filter = None):
+
+        if not self._client:
+            self._logger.error("Could not retrieve file list from Google Drive. No client exists")
+            return []
 
         if path == None:
             path = GOOGLE_DRIVE
@@ -417,9 +462,14 @@ class GoogleDriveCloudService(CloudService):
 
         q = "(mimeType='application/vnd.google-apps.folder' or fileExtension='g' or fileExtension='gco' or fileExtension='gcode') and '{0}' in parents".format(path_id)
         
-        request = self._get_client().files().list(q=q, spaces='drive', fields="files(id, name, mimeType)").execute()
+        request = self._client.files().list(q=q, spaces='drive', fields="files(id, name, mimeType)").execute()
            
-        folder = request.get('files', [])
+        try:
+            folder = request.get('files', [])
+        except:
+            self._logger.exception("Could not retrieve file list from Google Drive.")
+            return []
+
         items = []
         
         for f in folder:
@@ -442,18 +492,29 @@ class GoogleDriveCloudService(CloudService):
         return items
 
     def download_file(self, path, target_path, progress_callback = None):
+        if not self._client:
+            self._logger.error("Could not download file from Google Drive. No client exists")
+            return False
+
         file_id = self._id_tracker[path]
-        request = self._get_client().files().get_media(fileId=file_id)
-        with open(target_path, 'wb') as fh:
-            downloader = MediaIoBaseDownload(fh, request)
-            done = False
-            while done is False:
-                status, done = downloader.next_chunk()
-                if progress_callback and callable(progress_callback):
-                    progress_callback(status.progress())
+        
+        try:
+            request = self._client.files().get_media(fileId=file_id)
+            with open(target_path, 'wb') as fh:
+                downloader = MediaIoBaseDownload(fh, request)
+                done = False
+                while done is False:
+                    status, done = downloader.next_chunk()
+                    if progress_callback and callable(progress_callback):
+                        progress_callback(status.progress())
+                
+            return True
+        except:
+            self._logger.exception("Could not download file from Google Drive")
+            return False
 
     def logout(self):
-        if self._credentials and not self._credentials.access_token_expired:
+        if self._credentials and self._http and not self._credentials.access_token_expired:
             try:
                 self._credentials.revoke(self._http)
                 self._logger.debug("Google Drive credentials revoked")
