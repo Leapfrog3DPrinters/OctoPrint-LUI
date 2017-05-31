@@ -914,8 +914,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
 
         for service in self.cloud_connect.get_available_services():
+            
+
             redirect_uri = '{base_url}/plugin/lui/cloud/{service}/login'.format(base_url=flask.request.url_root, service=service)
             login_url = '{cloud_login_url}?request_from=lui&service={service}&redirect_uri={redirect_uri}'.format(cloud_login_url=self.cloud_login_url, service=service, redirect_uri=redirect_uri)
+
+            #params = self.cloud_connect.get_auth_url_additional_params()
+            #for key, value in params.iteritems():
+            #    login_url += "&" + key + "=" + value
 
             info_obj.append({ 
                 "name": service,

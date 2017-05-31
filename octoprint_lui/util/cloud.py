@@ -34,8 +34,10 @@ class CloudService(object):
     def __init__(self, secrets, data_folder, default_redirect_uri):
         self._logger = logging.getLogger("octoprint.plugins.lui.cloud")
         self._redirect_uri = default_redirect_uri
-    def get_auth_url(self, redirect_uri):
-        pass
+    #def get_auth_url(self, redirect_uri):
+    #    pass
+    #def get_auth_url_additional_params(self, service):
+    #    return {}
     def handle_auth_response(self, request):
         pass
     def handle_manual_auth_response(self, auth_code):
@@ -61,15 +63,25 @@ class DropboxCloudService(CloudService):
         self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
         self._load_credentials()
 
+        if self._access_token:
+            self._set_client()
+
         self._flow = dropbox.client.DropboxOAuth2Flow(self._client_id, self._client_secret, self._redirect_uri, None, self._csrf)
         
     ## Private methods
-    def _get_client(self):
-        if not self._client:
-            self._client = dropbox.Dropbox(self._access_token)
-            self._logger.debug("Dropbox client created")
+    def _set_client(self):
+        if not self._access_token:
+            self._logger.error("Cannot set Dropbox client without access token")
+            return False
 
-        return self._client
+        try:
+            self._client = dropbox.Dropbox(self._access_token)
+        except dropbox.exceptions.DropboxException as e:
+            self._logger.error("Could not create Dropbox client. Authentication code correct? {0}".format(e.message))
+            return False
+
+        self._logger.debug("Dropbox client created")
+        return True
 
     def _load_credentials(self):
         if os.path.isfile(self._credential_path):
@@ -83,8 +95,11 @@ class DropboxCloudService(CloudService):
 
     def _delete_credentials(self):
         if os.path.isfile(self._credential_path):
-            os.unlink(self._credential_path)
-            self._logger.debug("Dropbox credentials deleted")
+            try:
+                os.unlink(self._credential_path)
+                self._logger.debug("Dropbox credentials deleted")
+            except OSError as e:
+                self._logger.error("Could not delete Dropbox credentials: {0}".format(e.message))
         
         self._access_token = None
 
@@ -107,44 +122,82 @@ class DropboxCloudService(CloudService):
     ## Public methods
 
     def is_logged_in(self):
-        return self._access_token is not None
+        return self._access_token is not None and self._client is not None
 
-    def get_auth_url(self, redirect_uri):
-        self._redirect_uri = redirect_uri
-        return self._flow.start()
+    #def get_auth_url(self, redirect_uri):
+    #    self._redirect_uri = redirect_uri
+    #    return self._flow.start()
+
+    #def get_auth_url_additional_params(self):
+    #    tmp_redirect_uri = self._flow.start() 
+
 
     def handle_auth_response(self, request):
         if not self._flow:
-            self._logger.error("Could not handle unrequested Dropbox authentication")
+            self._logger.error("Could not handle automatic Dropbox authentication without flow")
+            return False
+
+        auth_code = request.values.get("code")
+        error = request.values.get("error")
+        error_description = request.values.get('error_description')
+
+        if not auth_code:
+            self._logger.warning("Dropbox could not be automatically authenticated: code parameter missing")
+            return False
+
+        if error:
+            if error == "access_denied":
+                self._logger.warning("Dropbox could not be automatically authenticated: user clicked deny")
+            elif error_description:
+                self._logger.warning("Dropbox could not be automatically authenticated: {0} {1}".format(error, error_description))
+            else:
+                self._logger.warning("Dropbox could not be automatically authenticated: {0}".format(error))
+
             return False
 
         try:
-            self._access_token, _, _ = self._flow.finish(request.values)
-            self._logger.info("Dropbox authenticated")
-            return True
+            self._access_token, _ = self._flow._finish(auth_code, self._redirect_uri)
+        except dropbox.exceptions.HttpError as e:
+            self._logger.warning("Dropbox could not be automatically authenticated: {0}".format(e.body))
+            return False
         except Exception as e:
-            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
+            self._logger.warning("Dropbox could not be automatically authenticated: {0}".format(e.message))
             return False
 
-        self._client = self._get_client()
-        self._save_credentials()
-        return True
+        if self._access_token and self._set_client():
+            self._save_credentials()
+            self._logger.info("Dropbox authenticated by redirect")
+            return True
+
+        return False
 
     def handle_manual_auth_response(self, auth_code):
+        if not self._flow:
+            self._logger.error("Could not handle manual Dropbox authentication without flow")
+            return False
+
         try:
             self._access_token, _ = self._flow._finish(auth_code, self._redirect_uri)
             self._logger.info("Dropbox authenticated")
         except dropbox.exceptions.HttpError as e:
-            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.body))
+            self._logger.warning("Dropbox could not be manually authenticated: {0}".format(e.body))
+            return False
         except Exception as e:
-            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
+            self._logger.warning("Dropbox could not be manually authenticated: {0}".format(e.message))
             return False
 
-        self._client = self._get_client()
-        self._save_credentials()
-        return True
+        if self._access_token and self._set_client():
+            self._save_credentials()
+            self._logger.info("Dropbox authenticated by manual code entry")
+            return True
+
+        return False
 
     def list_files(self, path = None, filter = None):
+
+        if not self._client:
+            self._logger.error("Tried to fetch files, but no Dropbox client exists. Are you authenticated?")
+            return
 
         if path == None:
             path = DROPBOX
@@ -156,7 +209,18 @@ class DropboxCloudService(CloudService):
         else:
             path_id = self._id_tracker[path]
 
-        folder = self._get_client().files_list_folder(path_id).entries
+        folder = None
+
+        try:
+            folder = self._client.files_list_folder(path_id).entries
+        except dropbox.exceptions.HttpError as e:
+            self._logger.error("Failed to retrieve file list from Dropbox: {0}".format(e.body))
+        except Exception as e:
+            self._logger.exception("Failed to retrieve file list from Dropbox")
+
+        if folder is None:
+            return None
+
         items = []
         for f in folder:
             file_path = path + "/" + f.name
@@ -178,27 +242,50 @@ class DropboxCloudService(CloudService):
         return items
 
     def download_file(self, path, target_path, progress_callback = None):
+        if not self._client:
+            self._logger.error("Tried to download a file, but no Dropbox client exists. Are you authenticated?")
+            return
+
         file_id = self._id_tracker[path]
-        entry, response = self._get_client().files_download(file_id)
+
+        entry = None
+
+        try:
+            entry, response = self._client.files_download(file_id)
+        except dropbox.exceptions.HttpError as e:
+            self._logger.error("Failed to download file from Dropbox: {0}".format(e.body))
+        except Exception as e:
+            self._logger.exception("Failed to download file from Dropbox")
+
+        if not entry:
+            return False
+
+
         total_length = entry.size
         
         if total_length:
             total_length = int(total_length)
             dl = 0
         
-        with open(target_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=2**16):
-                if callable(progress_callback):
-                    dl += len(chunk)
-                    progress_callback(dl / total_length)
-                if chunk:
-                    f.write(chunk)
-                    f.flush()
+        try:
+            with open(target_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=2**16):
+                    if callable(progress_callback):
+                        dl += len(chunk)
+                        progress_callback(dl / total_length)
+                    if chunk:
+                        f.write(chunk)
+                        f.flush()
+        except OSError:
+            self._logger.exception("Could not download Dropbox file")
+            return False
+
+        return True
 
     def logout(self):
-        if self._access_token:
+        if self._access_token and self._client:
             try:
-                self._get_client().auth_token_revoke()
+                self._client.auth_token_revoke()
                 self._logger.debug("Dropbox auth token revoked")
             except Exception as e:
                 self._logger.debug("Could not revoke Dropbox auth token: %s" % e.message)
@@ -556,8 +643,12 @@ class CloudConnect():
     def is_logged_in(self, service):
         return self.get_service(service).is_logged_in()
 
-    def get_auth_url(self, service, redirect_uri):
-        return self.get_service(service).get_auth_url(redirect_uri)
+    # Deprecated, here for reference
+    #def get_auth_url(self, service, redirect_uri):
+    #    return self.get_service(service).get_auth_url(redirect_uri)
+
+    #def get_auth_url_additional_params(self, service):
+    #    return self.get_service(service).get_auth_url_additional_params()
 
     def handle_auth_response(self, service, request):
         return self.get_service(service).handle_auth_response(request)
