@@ -453,9 +453,6 @@ $(function ()  {
         self.beginHoming = function () {
             self.isHomingRequested(true);
             sendToApi('printer/homing/start');
-            if(FIRST_START){
-                self.introView.startIntro('firstPrint');
-            }
         };
 
         self.cancelAutoShutdown = function () {
@@ -610,6 +607,9 @@ $(function ()  {
                         self.isHoming(false);
                         //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
                         self.closeStartupFlyout();
+                        if(FIRST_START){
+                            self.introView.startIntro('firstPrint');
+                        }
                         break;
                     case "is_homing":
                         self.isHomed(false);

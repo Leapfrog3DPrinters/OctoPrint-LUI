@@ -311,8 +311,8 @@ $(function ()  {
                 element: '#mode_select',
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("Select one of the print modes. When you're ready, press <b>Start print</b> or if you don't want to print" +
-                " anything, press <b>Cancel</b>.") + "</div>",
+                "<div class=\"step-text\">" + gettext("Select one of the print modes. When you're ready, press <b>Start " +
+                    "print</b> or if you're not, press <b>Cancel</b>.") + "</div>",
                 position: 'bottom'
             },
             {
@@ -512,10 +512,6 @@ $(function ()  {
             return self.introInstance._introItems.find(x => x.stepName.toUpperCase() === stepName.toUpperCase()).step;
         };
 
-        self.onAllBound = function(allViewModels) {
-            self.allViewModels = allViewModels;
-        };
-
         self.onSyncOrMirrorWarningClose = function () {
             if(self.isTutorialStarted) {
                 self.introInstance.start();
@@ -536,7 +532,11 @@ $(function ()  {
 
         self.refreshElements = function () {
             self.introInstance.refresh();
-        }
+        };
+
+        self.onAllBound = function(allViewModels) {
+            self.allViewModels = allViewModels;
+        };
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS
