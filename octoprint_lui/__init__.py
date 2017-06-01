@@ -167,7 +167,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fw_version_info = None
         self.auto_firmware_update_started = False
         self.fetching_firmware_update = False
-        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.7.1 MACHINE_TYPE:Bolt Model:Bolt PROTOCOL_VERSION:1.0 \
+        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.8 MACHINE_TYPE:BoltPro Model:BoltPro PROTOCOL_VERSION:1.0 \
                              FIRMWARE_NAME:Marlin V1 EXTRUDER_COUNT:2 EXTRUDER_OFFSET_X:0.0 EXTRUDER_OFFSET_Y:0.0 \
                              BED_WIDTH_CORRECTION:0.0 HOTEND_TYPE_T0:ht"
         self.is_virtual = False
@@ -381,7 +381,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "lui": self._plugin_manager.get_plugin_info('lui'), 
             "networkmanager": self._plugin_manager.get_plugin_info('networkmanager'),
             "flasharduino":  self._plugin_manager.get_plugin_info('flasharduino'),
-            "gcoderender":  self._plugin_manager.get_plugin_info('gcoderender')
+            "gcoderender":  self._plugin_manager.get_plugin_info('gcoderender'),
+            "rgbstatus":  self._plugin_manager.get_plugin_info('rgbstatus')
             }
 
         # NOTE: The order of this array is used for functions! Keep it the same!
@@ -420,7 +421,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'G-code Render Module',
                 'identifier': 'gcoderender',
                 'version': plugin_infos["gcoderender"].version if plugin_infos["gcoderender"] else None,
-                'version_requirement': ">=1.0.0",
+                'version_requirement': ">=1.1.0",
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -430,13 +431,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'OctoPrint',
                 'identifier': 'octoprint',
                 'version': VERSION,
-                'version_requirement': ">=1.3.2",
+                'version_requirement': ">=1.3.3",
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
                 "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             }
         ]
+
+        # Optional plugins
+
+        if plugin_infos["rgbstatus"]:
+            self.update_info.append({
+                'name': 'RGB Status Module',
+                'identifier': 'rgbstatus',
+                'version': plugin_infos["rgbstatus"].version,
+                'version_requirement': ">=1.0.0",
+                'path': '{path}OctoPrint-rgbStatus'.format(path=self.update_basefolder),
+                'update': False,
+                'forced_update': False,
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+            });
 
     def _set_model(self):
         """Sets the model and platform variables"""
