@@ -1376,8 +1376,10 @@ $(function ()  {
                         //IntroJS
                         if (self.introView.isTutorialStarted){
                             self.isIntroFile(false);
-                            self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
-                            self.introView.introInstance.refresh();
+                            $('#mode_select_flyout').one('transitionend', function () {
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+                                self.introView.introInstance.refresh();
+                            });
                         }
                         break;
                 }
