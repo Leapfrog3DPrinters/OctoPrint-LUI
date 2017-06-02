@@ -68,6 +68,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.supported_models = ['bolt', 'boltpro', 'xeed', 'xcel']
         self.default_model = 'bolt'
         self.model = None
+        self.model_identified = False
         self.platform = None
         self.platform_info = None
         self.platform_info_file = None
@@ -278,6 +279,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Read model and prepare environment
         self.machine_info = self._get_machine_info()
         self._set_model()
+        self._set_platform()
+        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
         ##~ Read and output information about the platform, such as the image version.
         self._output_platform_info()
@@ -455,12 +458,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _set_model(self):
         """Sets the model and platform variables"""
-        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
+        model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
 
-        if not self.model in self.supported_models:
-            self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
+        if model in self.supported_models:
+            self.model = model
+            self.model_identified = True
+        else:
+            self._logger.error('Model {0} not found. Defaulting to {1}'.format(model, self.default_model))
             self.model = self.default_model
+            self.model_identified = False
 
+    def _set_platform(self):
         if sys.platform == "darwin":
             self.platform = Platforms.MacDebug
             mac_path = os.path.expanduser("~")
@@ -477,8 +485,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.update_basefolder = "/home/pi/"
             self.media_folder = "/media/pi/"
             self.platform_info_file = "/boot/lpfrgpi.json"
-
-        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
     def _init_model(self):
         """ Reads the printer profile and any machine specific configurations """
@@ -2507,8 +2513,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ## End cache methods
 
     def _firmware_update_required(self):
-
-        if not self.model in self.firmware_version_requirement:
+        if not self.model_identified:
+            self._logger.error('No firmware version check. Printer model was not identified.')
+            return False
+        elif not self.model in self.firmware_version_requirement:
             self._logger.debug('No firmware version check. Model not found in version requirement.')
             return False
         elif "firmware_version" in self.machine_info:
@@ -3912,11 +3920,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._update_from_m115_properties(line)
             self.machine_info = self._get_machine_info()
 
-            self.model = self.machine_info["machine_type"].lower() if "machine_type" in self.machine_info and self.machine_info["machine_type"] else "unknown"
-
-            if not self.model in self.supported_models:
-                self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
-                self.model = self.default_model
+            self._set_model()
 
             if oldModelName != self.model:
                 self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))

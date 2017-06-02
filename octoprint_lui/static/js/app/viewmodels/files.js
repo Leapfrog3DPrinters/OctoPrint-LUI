@@ -1165,7 +1165,7 @@ $(function ()  {
                 if (data.result.done) {
                     self.setProgressBar(0, "", false);
                     $.notify({
-                        title: gettext("File upload succesfull"),
+                        title: gettext("File upload succesful"),
                         text: _.sprintf(gettext('Uploaded file: "%(filename)s"'), { filename: filename })
                     },
                         "success"
