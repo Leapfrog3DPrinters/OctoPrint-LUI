@@ -5,7 +5,7 @@ from flask.ext.login import current_user
 
 # OneDrive
 import onedrivesdk
-from octoprint_lui.util.onedrive import ExtendedHttpProvider, ExtendedAuthProvider, ExtendedSession
+from octoprint_lui.util.onedrive import ExtendedHttpProvider, ExtendedAuthProvider
 
 # GoogleDrive
 from apiclient.discovery import build
@@ -424,9 +424,10 @@ class GoogleDriveCloudService(CloudService):
             return False
 
         if self._authorize_http():
-            self._save_credentials()
             self._logger.info("Google Drive automatically authenticated")
-            return self._set_client()
+            if self._set_client():
+                self._save_credentials()
+                return True
         
         return False
 
@@ -438,9 +439,11 @@ class GoogleDriveCloudService(CloudService):
             return False
 
         if self._authorize_http():
-            self._save_credentials()
             self._logger.info("Google Drive manually authenticated")
-            return self._set_client()
+
+            if self._set_client():
+                self._save_credentials()
+                return True
 
         return False
 
@@ -544,8 +547,7 @@ class OnedriveCloudService(CloudService):
         self._auth_provider = ExtendedAuthProvider(
                     http_provider=self._http_provider,
                     client_id=self._client_id,
-                    scopes=self._scopes,
-                    session_type=ExtendedSession
+                    scopes=self._scopes
                     )
 
         self._load_credentials()
@@ -565,6 +567,9 @@ class OnedriveCloudService(CloudService):
         return False
 
     def _load_credentials(self):
+        if not os.path.exists(self._credential_path):
+            return False
+
         try:
             self._auth_provider.load_session(path=self._credential_path)
             self._logger.debug("OneDrive credentials loaded")
@@ -575,7 +580,7 @@ class OnedriveCloudService(CloudService):
 
     def _save_credentials(self):
         try:
-            self._client.auth_provider.save_session(path=self._credential_path)
+            self._auth_provider.save_session(path=self._credential_path)
             self._logger.debug("OneDrive credentials saved")
             return True
         except:
@@ -593,7 +598,9 @@ class OnedriveCloudService(CloudService):
 
     def _delete_credentials(self):
         try:
-            self._client.auth_provider.delete_session()
+            self._auth_provider.delete_session()
+            if os.path.exists(self._credential_path):
+                os.unlink(self._credential_path)
             self._logger.debug("OneDrive credentials deleted")
             return True
         except:
@@ -612,47 +619,40 @@ class OnedriveCloudService(CloudService):
     def is_logged_in(self):
         return self._auth_provider.is_logged_in()
 
-    #def get_auth_url(self, redirect_uri):
-    #    self._redirect_uri = redirect_uri;
-    #    auth_url = self._get_client().auth_provider.get_auth_url(self._redirect_uri)
-
-    #    return auth_url
-
     def handle_auth_response(self, request):
-        if not self._client:
-            self._logger.error("Could not handle OneDrive automatic authentication without client")
-            return False
-
         access_token = request.values.get("code")
         self._logger.debug("OneDrive access token received")
         try:
-            self._client.auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
+            self._auth_provider.authenticate(access_token, self._redirect_uri, self._client_secret)
         except Exception as e:
             self._logger.debug("OneDrive not authenticated: {0}".format(e.message))
             return False
 
         self._access_token = access_token
+
         if self._set_client():
-            self._logger.info("OneDrive manually authenticated")
-        self._logger.info("OneDrive automatically authenticated")
+            self._logger.info("OneDrive automatically authenticated")
+            self._save_credentials()
+            return True
+
+        return False
 
     def handle_manual_auth_response(self, auth_code):
-        if not self._client:
-            self._logger.error("Could not handle OneDrive manual authentication without client")
-            return False
-
         self._logger.debug("OneDrive access token received")
         try:
-            self._client.auth_provider.authenticate(auth_code, self._redirect_uri, self._client_secret)
+            self._auth_provider.authenticate(auth_code, self._redirect_uri, self._client_secret)
         except Exception as e:
             self._logger.debug("Could not manually authenticate OneDrive: {0}".format(e.message))
             return False
 
         self._access_token = auth_code
-        self._save_credentials()
+        
         if self._set_client():
+            self._save_credentials()
             self._logger.info("OneDrive manually authenticated")
-        return True
+            return True
+        
+        return False        
 
     def logout(self):
         self._delete_credentials()
@@ -700,7 +700,7 @@ class OnedriveCloudService(CloudService):
 
         try:
             file = self._client.drive.item_by_path(path[len(ONEDRIVE):]).request()
-            self._client.auth_provider.authenticate_request(file)
+            self._auth_provider.authenticate_request(file)
             response = self._client.http_provider.download(file._headers, file.request_url, target_path, progress_callback)
         except:
             self._logger.exception("Could not download file from OneDrive")
@@ -767,13 +767,6 @@ class CloudConnect():
 
     def is_logged_in(self, service):
         return self.get_service(service).is_logged_in()
-
-    # Deprecated, here for reference
-    #def get_auth_url(self, service, redirect_uri):
-    #    return self.get_service(service).get_auth_url(redirect_uri)
-
-    #def get_auth_url_additional_params(self, service):
-    #    return self.get_service(service).get_auth_url_additional_params()
 
     def handle_auth_response(self, service, request):
         return self.get_service(service).handle_auth_response(request)

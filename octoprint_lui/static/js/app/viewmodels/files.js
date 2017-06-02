@@ -238,6 +238,11 @@ $(function ()  {
                     if (data["origin"] == "local" && data["type"] == "folder" && data["name"] == "calibration") {
                         return false;
                     }
+                    else if (data["type"] != "folder" && data["type"] != "machinecode")
+                    {
+                        // Hide everything that is not a folder nor a gcode
+                        return false;
+                    }
                     else {
                         var children_check = true;
                         if (data["children"]) {
@@ -961,7 +966,7 @@ $(function ()  {
             else if (data.origin == "cloud")
                 return "files_template_cloud_" + data.type
             else if (data.origin == "usb" && data.type == "machinecode")
-                return "files_template_usb_" + data.type;
+                return "files_template_usb_machinecode";
             else
                 return "files_template_" + data.type;
         };

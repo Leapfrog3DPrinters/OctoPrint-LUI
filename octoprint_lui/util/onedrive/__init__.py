@@ -64,30 +64,3 @@ class ExtendedHttpProvider(HttpProvider):
             custom_response = HttpResponse(response.status_code, response.headers, response.text)
 
         return custom_response
-
-class ExtendedSession(Session):
-#TODO: override save and load    
-    #def save_session(self, **save_session_kwargs):
-        """Save the current session.
-        
-        Args:
-            save_session_kwargs (dicr): To be used by implementation
-            of save_session, however save_session wants to use them. The
-            default implementation (this one) takes a relative or absolute
-            file path for pickle save location, under the name "path"
-        """
-        
-
-    #@staticmethod
-    #def load_session(**load_session_kwargs):
-        """Save the current session.
-                
-        Args:
-            load_session_kwargs (dict): To be used by implementation
-            of load_session, however load_session wants to use them. The
-            default implementation (this one) takes a relative or absolute
-            file path for pickle save location, under the name "path"
-
-        Returns:
-            :class:`Session`: The loaded session
-        """
