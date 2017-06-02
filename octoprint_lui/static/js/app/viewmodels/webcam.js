@@ -9,7 +9,7 @@ $(function ()  {
         self.files = parameters[4];
 
         self.defaultFps = 25;
-        self.defaultPostRoll = 0;
+        self.defaultPostRoll = 10;
         self.defaultInterval = 10;
         //self.defaultRetractionZHop = 0;
 
