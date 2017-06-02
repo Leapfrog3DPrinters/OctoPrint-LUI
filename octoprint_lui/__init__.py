@@ -243,6 +243,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         
         self.api_exceptions = [ "plugin.lui.webcamstream", 
                                 "plugin.lui.externaljs",
+                                "plugin.lui.redirect_to_login_proxy",
                                 "plugin.lui.connect_to_cloud_service_finished",
                                 "plugin.lui.logout_cloud_service",
                                ]
@@ -915,23 +916,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         for service in self.cloud_connect.get_available_services():
             
-
-            redirect_uri = '{base_url}/plugin/lui/cloud/{service}/login'.format(base_url=flask.request.url_root, service=service)
-            login_url = '{cloud_login_url}?request_from=lui&service={service}&redirect_uri={redirect_uri}'.format(cloud_login_url=self.cloud_login_url, service=service, redirect_uri=redirect_uri)
-
-            #params = self.cloud_connect.get_auth_url_additional_params()
-            #for key, value in params.iteritems():
-            #    login_url += "&" + key + "=" + value
-
             info_obj.append({ 
                 "name": service,
                 "friendlyName": service, #TODO: Use babel to get friendlyname
                 "loggedIn": self.cloud_connect.is_logged_in(service),
-                "loginUrl": login_url
+                "loginUrl": "/plugin/lui/cloud/{service}/redirect".format(service=service)
                 });
 
         return make_response(jsonify(services=info_obj))          
     
+    @BlueprintPlugin.route("/cloud/<string:service>/redirect", methods=["GET"])
+    def redirect_to_login_proxy(self, service):
+        
+        if not service in self.cloud_connect.get_available_services():
+            return make_response(jsonify({"message":"Invalid service"}), 400)
+
+        # The URL get back to in the end (LUI)
+        redirect_uri = '{base_url}/plugin/lui/cloud/{service}/login'.format(base_url=flask.request.url_root, service=service)
+
+        # Get token from our intermediate login service
+        login_url = self.cloud_connect.get_login_service_url(service, redirect_uri)
+
+        return redirect(login_url)
+
+
     @BlueprintPlugin.route("/cloud/<string:service>/login", methods=["GET"])
     def connect_to_cloud_service_finished(self, service):
         """

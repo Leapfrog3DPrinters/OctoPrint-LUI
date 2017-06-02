@@ -3,6 +3,14 @@ from octoprint.filemanager import get_file_type, valid_file_type
 from octoprint.filemanager.storage import StorageInterface, LocalFileStorage
 from flask.ext.login import current_user
 
+import hashlib
+import httplib2
+import pickle
+import os
+import logging
+
+import requests, json
+
 # OneDrive
 import onedrivesdk
 from octoprint_lui.util.onedrive import ExtendedHttpProvider, ExtendedAuthProvider
@@ -13,12 +21,9 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
-import httplib2
-import pickle
-import os
 from googleapiclient.http import MediaIoBaseDownload
 import io
-import logging
+
 
 # Dropbox
 import dropbox
@@ -709,9 +714,9 @@ class OnedriveCloudService(CloudService):
         return response
 
 class CloudConnect():
-    def __init__(self, data_folder, default_redirect_uri):
+    def __init__(self, data_folder, login_service_uri):
         self._data_folder = data_folder
-        self._default_redirect_uri = default_redirect_uri
+        self._login_service_uri = login_service_uri
 
         self._cloud_secrets = []
         self._logger = logging.getLogger(__name__)
@@ -751,11 +756,44 @@ class CloudConnect():
 
     def _service_factory(self, service):
         if service == ONEDRIVE and ONEDRIVE in self._cloud_secrets:
-            return OnedriveCloudService(self._cloud_secrets[ONEDRIVE], self._data_folder, self._default_redirect_uri)
+            return OnedriveCloudService(self._cloud_secrets[ONEDRIVE], self._data_folder, self._login_service_uri)
         elif service == GOOGLE_DRIVE and GOOGLE_DRIVE in self._cloud_secrets:
-            return GoogleDriveCloudService(self._cloud_secrets[GOOGLE_DRIVE], self._data_folder, self._default_redirect_uri)
+            return GoogleDriveCloudService(self._cloud_secrets[GOOGLE_DRIVE], self._data_folder, self._login_service_uri)
         elif service == DROPBOX and DROPBOX in self._cloud_secrets:
-            return DropboxCloudService(self._cloud_secrets[DROPBOX], self._data_folder, self._default_redirect_uri)
+            return DropboxCloudService(self._cloud_secrets[DROPBOX], self._data_folder, self._login_service_uri)
+    
+    def _get_token_and_key(self):
+       token_data = self._get_new_token()
+
+       if token_data:
+           token = token_data["token"]
+           key = self._hash_token(token)
+
+           return (token, key)
+
+    def _hash_token(self, token):
+        if "proxy" in self._cloud_secrets:
+            return hashlib.sha256(token + self._cloud_secrets["proxy"]).hexdigest()
+
+    def _get_new_token(self):
+        token_uri = self._login_service_uri + "?request_from=lui&need=token"
+
+        try:
+            response = requests.get(token_uri)
+        except requests.ConnectionError:
+            self._logger.warning("Could not get firmware version info. Could not connect to remote server.")
+            return None
+
+        if response.status_code == 200:
+            try:
+                return response.json()
+            except ValueError:
+                self._logger.warning("Could not decode login service token data")
+                return None
+        else:
+            self._logger.warning("Could not get token data. HTTP code: {0}".format(response.status_code))
+            return None
+
     ## Public methods
 
     def get_service(self, service):
@@ -767,6 +805,19 @@ class CloudConnect():
 
     def is_logged_in(self, service):
         return self.get_service(service).is_logged_in()
+    
+    def get_login_service_url(self, service, redirect_uri):
+
+        # Retrieve a token to access the intermediate login service
+        needed = self._get_token_and_key()
+
+        proxy_token = needed[0]
+        proxy_key = needed[1]
+
+        # The URL of the intermediate login service
+        login_url = '{cloud_login_url}?request_from=lui&proxy_token={proxy_token}&proxy_key={proxy_key}&service={service}&redirect_uri={redirect_uri}'.format(cloud_login_url=self._login_service_uri, proxy_token=proxy_token, proxy_key=proxy_key, service=service, redirect_uri=redirect_uri)
+
+        return login_url
 
     def handle_auth_response(self, service, request):
         return self.get_service(service).handle_auth_response(request)
