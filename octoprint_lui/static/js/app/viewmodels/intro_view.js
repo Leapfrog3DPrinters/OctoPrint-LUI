@@ -408,7 +408,7 @@ $(function ()  {
                         exitOnOverLayClick: false,
                         showBullets: false,
                         showButtons: false,
-                        keyboardNavigation: true
+                        keyboardNavigation: false
                     });
                     self.introInstance.start();
                     break;
@@ -452,7 +452,7 @@ $(function ()  {
         };
 
         self.doneButton = function () {
-            //Stops intro and resets flag
+            //Stops intro and resets flags
             self.isTutorialStarted = false;
             self.introInstance.exit();
             self.lastStep = 0;
