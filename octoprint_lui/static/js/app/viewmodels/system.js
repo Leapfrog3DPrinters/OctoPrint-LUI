@@ -96,6 +96,8 @@ $(function () {
                 title = gettext("Server disconnected");
                 message = gettext("The browser has been disconnected from the printer. Either the printer is turned off or the network connection failed. Trying to reconnect in the coming minutes.")
             }
+            
+            callViewModels(self.allViewModels, "onShutdownOrDisconnectFlyout");
 
             showOfflineFlyout(
                 title,
@@ -123,6 +125,10 @@ $(function () {
                 self.requestData();
             }
         };
+
+        self.onAllBound = function (allViewModels) {
+            self.allViewModels = allViewModels;
+        }
     }
 
     // view model class, parameters for constructor, container to bind to

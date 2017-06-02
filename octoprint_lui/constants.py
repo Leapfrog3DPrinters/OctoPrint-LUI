@@ -40,6 +40,7 @@ class ClientMessages(object):
     
     HEAD_IN_SWAP_POSITION = "head_in_swap_position"
     POWERING_UP_AFTER_SWAP = "powering_up_after_swap"
+    POWERING_UP_AFTER_SWAP_FAILED = "powering_up_after_swap_failed"
 
     MEDIA_FOLDER_UPDATED = "media_folder_updated"
     MEDIA_FILE_COPY_PROGRESS = "media_file_copy_progress"
@@ -50,13 +51,25 @@ class ClientMessages(object):
     GCODE_COPY_FINISHED = "gcode_copy_complete"
     GCODE_COPY_FAILED = "gcode_copy_failed"
 
+    GCODE_COPY_ALL_PROGRESS = "gcode_copy_all_progress"
+    GCODE_COPY_ALL_FINISHED = "gcode_copy_all_complete"
+    GCODE_COPY_ALL_FAILED = "gcode_copy_all_failed"
+
     TIMELAPSE_COPY_PROGRESS = "timelapse_copy_progress"
     TIMELAPSE_COPY_FINISHED = "timelapse_copy_complete"
     TIMELAPSE_COPY_FAILED = "timelapse_copy_failed"
 
+    TIMELAPSE_COPY_ALL_PROGRESS = "timelapse_copy_all_progress"
+    TIMELAPSE_COPY_ALL_FINISHED = "timelapse_copy_all_complete"
+    TIMELAPSE_COPY_ALL_FAILED = "timelapse_copy_all_failed"
+
     LOGS_COPY_PROGRESS = "logs_copy_progress"
     LOGS_COPY_FINISHED = "logs_copy_complete"
     LOGS_COPY_FAILED = "logs_copy_failed"
+
+    LOGS_COPY_ALL_PROGRESS = "logs_copy_all_progress"
+    LOGS_COPY_ALL_FINISHED = "logs_copy_all_complete"
+    LOGS_COPY_ALL_FAILED = "logs_copy_all_failed"
 
     CLOUD_LOGIN_FAILED = "cloud_login_failed"
 
@@ -87,9 +100,13 @@ class ClientMessages(object):
 
     LOCAL_LOCK = "local_lock"
     LOCAL_AUTO_LOCK_TIMER = "local_lock_timer"
-
     LOCAL_INVALID_UNLOCK_TIMER = "local_invalid_unlock_timer"
     LOCAL_INVALID_UNLOCK_RESET = "local_invalid_unlock_reset"
+
+class Platforms(object):
+    RaspberryPi = "RPi"
+    WindowsDebug = "WindowsDebug"
+    MacDebug = "MacDebug"
 
 class ToolStatuses(object):
     IDLE = 'IDLE'

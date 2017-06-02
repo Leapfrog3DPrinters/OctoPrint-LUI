@@ -9,7 +9,7 @@ $(function ()  {
         self.files = parameters[4];
 
         self.defaultFps = 25;
-        self.defaultPostRoll = 0;
+        self.defaultPostRoll = 10;
         self.defaultInterval = 10;
         //self.defaultRetractionZHop = 0;
 
@@ -151,7 +151,7 @@ $(function ()  {
                 height = 405;
             }
 
-            window.open('/plugin/lui/webcamstream', '_blank', 'menubar=no,status=no,toolbar=no,width='+width+'px,height='+height+'px')
+            window.open('/plugin/lui/webcamstream', '_wstream', 'menubar=no,status=no,toolbar=no,width='+width+'px,height='+height+'px')
         }
 
         self.requestData = function ()  {
@@ -247,6 +247,20 @@ $(function ()  {
                 }).fail(function ()  {
                     $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
                 }).always(function ()  {
+                    self.isCopying(false);
+                });
+        }
+
+        self.copyAllToUsb = function () {
+            self.isCopying(true);
+
+            sendToApi('usb/save_all/timelapses')
+                .done(function () {
+                    self.setProgressBar(0);
+                    $.notify({ title: gettext('Timelapses copied'), text: gettext('The timelapses have been copied to your USB drive.') }, 'success');
+                }).fail(function () {
+                    $.notify({ title: gettext('Copying of timelapse failed'), text: gettext('One or more timelapses could not be copied. Please check if there is sufficient space available on the drive and try again.') }, 'error');
+                }).always(function () {
                     self.isCopying(false);
                 });
         }
@@ -372,7 +386,18 @@ $(function ()  {
                     self.setProgressBar(0);
                     self.printerState.activities.remove('Copying');
                     break;
-
+                case "timelapse_copy_all_progress":
+                    self.setProgressBar(messageData.percentage);
+                    self.printerState.activities.push('Copying');
+                    break;
+                case "timelapse_copy_all_complete":
+                    self.setProgressBar(0);
+                    self.printerState.activities.remove('Copying');
+                    break;
+                case "timelapse_copy_all_failed":
+                    self.setProgressBar(0);
+                    self.printerState.activities.remove('Copying');
+                    break;
             }
         }
 

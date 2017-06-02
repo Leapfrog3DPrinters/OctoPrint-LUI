@@ -209,6 +209,7 @@ $(function () {
                 switch (messageType) {
                     case "powerbutton_pressed":
                         self.requestSystemShutdown();
+                        callViewModels(self.allViewModels, "onShutdownOrDisconnectFlyout");
                         break;
                     case "local_lock":
                         self.lock();

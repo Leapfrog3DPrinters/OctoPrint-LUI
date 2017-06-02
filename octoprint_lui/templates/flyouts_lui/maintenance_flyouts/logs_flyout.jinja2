@@ -4,7 +4,7 @@
 			<div class="Table-item">
 				{{ _('Log files') }}
 			</div>
-			<div class="Table-item">
+			<div class="Table-item" style="flex: 0 0 50px">
 			  <div id="sort" class="file_sort">
 			    <ul id="logs_menu" class="sort_menu">
 			      <li>
@@ -12,6 +12,10 @@
 			          <i class="fa fa-list"></i>
 			        </a>
 			        <ul>
+                <li>
+                  <a href="#" data-bind="touchClick: function () { copyAllLogsToUsb() }">
+                    <i class="fa fa-floppy-o"></i>{{ _('Save all') }}</a>
+                </li>
 			          <li class="menu_label">
 			            <span>
 			              <i class="fa fa-sort"></i>
@@ -19,10 +23,10 @@
 			            </span>
 			          </li>
 			          <li>
-			            <a href="#" data-bind="touchClick: function () { $root.listHelper.changeSorting('name'); }">{{ _('Name') }}</a>
+			            <a href="#" data-bind="touchClick: function () { listHelper.changeSorting('name'); }">{{ _('Name') }}</a>
 			          </li>
 			          <li>
-			            <a href="#" data-bind="touchClick: function () { $root.listHelper.changeSorting('modification'); }">{{ _('Changed date') }}</a>
+			            <a href="#" data-bind="touchClick: function () { listHelper.changeSorting('modification'); }">{{ _('Changed date') }}</a>
 			          </li>
 			        </ul>
 			      </li>

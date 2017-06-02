@@ -7,6 +7,7 @@ $(function () {
         self.flyout = parameters[2];
 
         self.autoShutdown = ko.observable(undefined);
+        self.rgbLightsEnabled = ko.observable(undefined);
 
         self.allViewModels = [];
 
@@ -114,6 +115,25 @@ $(function () {
             }
         });
 
+        self.getRgbLights = function () {
+            url = OctoPrint.getBlueprintUrl('rgbstatus') + 'status';
+            return OctoPrint.get(url).done(function (result) {
+                if(result.hasOwnProperty("lights_enabled"))
+                    self.rgbLightsEnabled(result.lights_enabled);
+            });
+        }
+
+        self.toggleRgbLights = function () {
+            url = OctoPrint.getBlueprintUrl('rgbstatus');
+
+            if(self.rgbLightsEnabled()) // We retrieve the old value here, so invert logic
+                OctoPrint.postJson(url + 'on');
+            else
+                OctoPrint.postJson(url + 'off');
+
+            return true;
+        }
+
         self.toggleAutoShutdown = function () {
             var toggle = self.autoShutdown();
 
@@ -124,14 +144,14 @@ $(function () {
                 };
 
                 // Wait for the toggle animation
-                setTimeout(function(){
+                setTimeout(function () {
                     self.flyout.showWarning(data.title, data.text)
                 }, 200)
             }
 
             self.sendAutoShutdownStatus(!toggle);
             return true;
-        }
+        };
 
         self.sendAutoShutdownStatus = function(toggle)
         {
@@ -158,6 +178,8 @@ $(function () {
 
         self.requestData = function (local) {
             console.log("Requesting settings");
+
+            self.getRgbLights();
 
             // handle old parameter format
             var callback = undefined;
