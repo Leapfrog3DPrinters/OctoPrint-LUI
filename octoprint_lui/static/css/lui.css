@@ -328,8 +328,11 @@ input[type=radio] {
 .app-header .header_login {
   /*margin-left: auto;*/ }
 
+#header_logo {
+  padding-right: 1em; }
+
 .header_status {
-  padding-right: 2em; }
+  padding-right: 1em; }
 
 .network-status {
   margin-right: 20px; }
@@ -975,7 +978,7 @@ select {
   background-color: #f2f2f2;
   display: flex;
   min-width: 0px;
-  font-size: 0.75em;
+  font-size: 0.89em;
   flex-wrap: nowrap;
   word-wrap: normal;
   margin-left: 1em; }
