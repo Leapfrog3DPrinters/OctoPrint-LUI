@@ -32,7 +32,7 @@
                 <div class="swap_process_step" id="load_filament">
                   <div id="material_swap" data-bind="visible: !isProfileLocked()">
                     {{ _('Please select the new filament material') }}
-                    <select class="select-material" data-bind="options: materialProfiles,
+                    <select id="material-select" class="select-material" data-bind="options: materialProfiles,
                                      optionsText: 'name',
                                      value: selectedTemperatureProfile,
                                      optionsCaption: '{{ _('Choose material') }}'">

@@ -62,6 +62,11 @@
                 </span>
               </li>
               <li>
+                <a href="#" data-bind="touchClick: function () { copyAllToUsb() }, css: { disabled: !files.isUsbAvailable() || isCopying() || listHelper.allSize() == 0 }">
+                  <i class="fa fa-floppy-o"></i>{{ _('Save all') }}
+                </a>
+              </li>
+              <li>
                 <a href="#" data-bind="touchClick: function () { removeAll() }, css: { disabled: !loginState.isAdmin() || listHelper.allSize() == 0 }">
                   <i class="fa fa-trash"></i>{{ _('Delete all') }}
                 </a>
@@ -88,7 +93,7 @@
   <!-- ko foreach: listHelper.paginatedItems -->
   <div class="Table-row">
     <div class="Table-item  Table-item-grow-2">
-      <span class="Table-ellipsis" data-bind="text: name" ></span>
+      <span class="Table-ellipsis" data-bind="text: name, attr: { title: name }" ></span>
     </div>
     <div class="Table-item">
       {% if local_addr %}
@@ -155,7 +160,7 @@
       <span data-bind="visible: processing">
         <i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>
       </span>
-      <span class="Table-ellipsis" data-bind="text: name"></span>
+      <span class="Table-ellipsis" data-bind="text: name, attr: { title: name }"></span>
     </div>
     <div class="Table-item">
       <ul class="button-area">

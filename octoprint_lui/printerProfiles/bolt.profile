@@ -52,6 +52,7 @@ dualX: true
 materialMinTemp: 150
 materialMaxTemp: 360
 lowTempMax: 275
+bedTempMax: 90
 filament:
   stepperTimeout: 300
   loadInitial:

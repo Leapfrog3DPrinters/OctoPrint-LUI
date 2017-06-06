@@ -294,9 +294,21 @@ $(function ()  {
                 self.targetTempErrorOpen = true;
 
                 var title = gettext("A temperature error occurred");
+                var friendlyTool = "";
+                switch (tool) {
+                    case "tool0":
+                        friendlyTool = gettext("right print head");
+                        break;
+                    case "tool1":
+                        friendlyTool = gettext("left print head");
+                        break;
+                    case "bed":
+                        friendlyTool = gettext("bed");
+                        break;
+                }
 
-                var message = gettext(_.sprintf("You are trying to print with the %(tool)s print head at %(target)d &deg;C, but the maximum print temperature for the current hot-end is %(max)d &deg;C.", {
-                    tool: tool == "tool1" ? gettext("left") : gettext("right"),
+                var message = gettext(_.sprintf("You are trying to print with a %(tool)s temperature of %(target)d &deg;C, but the maximum temperature is %(max)d &deg;C.", {
+                    tool: friendlyTool,
                     target: target,
                     max: max
                 }));

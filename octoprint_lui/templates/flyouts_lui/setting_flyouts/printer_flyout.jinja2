@@ -24,8 +24,21 @@
             </div>
         </div>
     </div>
-    {# {% if printer_profile["modelSizeDetection"] %}
-    <div class="Table-row">
+  {% if printer_profile["rgbLights"] %}
+  <div class="Table-row">
+    <div class="Table-item">
+      {{ _('Printer lighting') }}
+    </div>
+    <div class="Table-item">
+      <div class="check_toggle">
+        <input type="checkbox" data-bind="checked: rgbLightsEnabled, click: toggleRgbLights" id="settings-rgblights_enabled" />
+        <label for="settings-rgblights_enabled"></label>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {# {% if printer_profile["modelSizeDetection"] %}
+  <div class="Table-row">
         <div class="Table-item">
           {{ _('Check print dimensions') }}
         </div>

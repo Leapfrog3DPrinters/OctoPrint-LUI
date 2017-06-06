@@ -171,7 +171,7 @@ $(function ()  {
                 self.isLoadingFileList(false);
             });
 
-            if (origin = "local" && self.introView.isTutorialStarted) {
+            if (origin == "local" && self.introView.isTutorialStarted) {
                 self.isIntroFile(true);
                 var checkIfFileVisible = setInterval(function () {
                     if($('#print_files').is(":visible")) {
@@ -537,7 +537,13 @@ $(function ()  {
                 return;
             }
 
+            // Errors are provided through socket messages
             sendToApi("usb/save/gcode/" + file.path);
+        }
+
+        self.copyAllToUsb = function () {
+            // Errors are provided through socket messages
+            sendToApi("usb/save_all/gcodes");
         }
 
         self.removeAllFiles = function()
@@ -1164,7 +1170,7 @@ $(function ()  {
                 if (data.result.done) {
                     self.setProgressBar(0, "", false);
                     $.notify({
-                        title: gettext("File upload succesfull"),
+                        title: gettext("File upload succesful"),
                         text: _.sprintf(gettext('Uploaded file: "%(filename)s"'), { filename: filename })
                     },
                         "success"
@@ -1339,7 +1345,37 @@ $(function ()  {
                             "error"
                         );
                         break;
+                    case "gcode_copy_all_progress":
+                        self.setProgressBar(messageData.percentage);
 
+                        if (messageData.percentage < 100)
+                            self.printerState.activities.push(copying);
+                        else
+                            self.printerState.activities.remove(copying);
+
+                        break;
+
+                    case "gcode_copy_all_complete":
+                        self.setProgressBar(0);
+                        self.printerState.activities.remove(copying);
+
+                        $.notify({
+                            title: gettext("All files copied copied"),
+                            text: _.sprintf(gettext('All G-code files have been copied to your USB drive.'))
+                        },
+                            "success"
+                        );
+                        break;
+                    case "gcode_copy_all_failed":
+                        self.setProgressBar(0);
+                        self.printerState.activities.remove(copying);
+                        $.notify({
+                            title: gettext("Error during file copy."),
+                            text: _.sprintf(gettext('One or more files failed to copy to your USB drive. Please ensure there is enough space available.'))
+                        },
+                            "error"
+                        );
+                        break;
                     case "demo_selected":
                         self.printAndChangeTab();
                         //IntroJS

@@ -68,6 +68,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.supported_models = ['bolt', 'boltpro', 'xeed', 'xcel']
         self.default_model = 'bolt'
         self.model = None
+        self.model_identified = False
         self.platform = None
         self.platform_info = None
         self.platform_info_file = None
@@ -167,7 +168,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fw_version_info = None
         self.auto_firmware_update_started = False
         self.fetching_firmware_update = False
-        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.7.1 MACHINE_TYPE:Bolt Model:Bolt PROTOCOL_VERSION:1.0 \
+        self.virtual_m115 = "LEAPFROG_FIRMWARE:2.8 MACHINE_TYPE:BoltPro Model:BoltPro PROTOCOL_VERSION:1.0 \
                              FIRMWARE_NAME:Marlin V1 EXTRUDER_COUNT:2 EXTRUDER_OFFSET_X:0.0 EXTRUDER_OFFSET_Y:0.0 \
                              BED_WIDTH_CORRECTION:0.0 HOTEND_TYPE_T0:ht"
         self.is_virtual = False
@@ -279,6 +280,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Read model and prepare environment
         self.machine_info = self._get_machine_info()
         self._set_model()
+        self._set_platform()
+        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
         ##~ Read and output information about the platform, such as the image version.
         self._output_platform_info()
@@ -362,7 +365,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._on_media_folder_updated(None)
 
     def _init_powerbutton(self):
-        if self.platform == "RPi" and "hasPowerButton" in self.current_printer_profile and self.current_printer_profile["hasPowerButton"]:
+        if self.platform == Platforms.RaspberryPi and "hasPowerButton" in self.current_printer_profile and self.current_printer_profile["hasPowerButton"]:
             ## ~ Only initialise if it's not done yet.
             if not self.powerbutton_handler:
                 from octoprint_lui.util.powerbutton import PowerButtonHandler
@@ -382,7 +385,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "lui": self._plugin_manager.get_plugin_info('lui'), 
             "networkmanager": self._plugin_manager.get_plugin_info('networkmanager'),
             "flasharduino":  self._plugin_manager.get_plugin_info('flasharduino'),
-            "gcoderender":  self._plugin_manager.get_plugin_info('gcoderender')
+            "gcoderender":  self._plugin_manager.get_plugin_info('gcoderender'),
+            "rgbstatus":  self._plugin_manager.get_plugin_info('rgbstatus')
             }
 
         # NOTE: The order of this array is used for functions! Keep it the same!
@@ -421,7 +425,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'G-code Render Module',
                 'identifier': 'gcoderender',
                 'version': plugin_infos["gcoderender"].version if plugin_infos["gcoderender"] else None,
-                'version_requirement': ">=1.0.0",
+                'version_requirement': ">=1.1.0",
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -431,7 +435,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'name': 'OctoPrint',
                 'identifier': 'octoprint',
                 'version': VERSION,
-                'version_requirement': ">=1.3.2",
+                'version_requirement': ">=1.3.3",
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
@@ -439,32 +443,49 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             }
         ]
 
+        # Optional plugins
+
+        if plugin_infos["rgbstatus"]:
+            self.update_info.append({
+                'name': 'RGB Status Module',
+                'identifier': 'rgbstatus',
+                'version': plugin_infos["rgbstatus"].version,
+                'version_requirement': ">=1.0.0",
+                'path': '{path}OctoPrint-rgbStatus'.format(path=self.update_basefolder),
+                'update': False,
+                'forced_update': False,
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git pull origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+            });
+
     def _set_model(self):
         """Sets the model and platform variables"""
-        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
+        model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
 
-        if not self.model in self.supported_models:
-            self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
+        if model in self.supported_models:
+            self.model = model
+            self.model_identified = True
+        else:
+            self._logger.error('Model {0} not found. Defaulting to {1}'.format(model, self.default_model))
             self.model = self.default_model
+            self.model_identified = False
 
+    def _set_platform(self):
         if sys.platform == "darwin":
-            self.platform = "MacDebug"
+            self.platform = Platforms.MacDebug
             mac_path = os.path.expanduser("~")
             self.update_basefolder = "{mac_path}/lpfrg/".format(mac_path=mac_path)
             self.media_folder = "{mac_path}/lpfrg/GCODE/".format(mac_path=mac_path)
             self.platform_info_file = "{mac_path}/lpfrg/lpfrgplatform.json".format(mac_path=mac_path)
         elif sys.platform == "win32":
-            self.platform = "WindowsDebug"
+            self.platform = Platforms.WindowsDebug
             self.update_basefolder = "C:\\Users\\erikh\\OneDrive\\Programmatuur\\"
             self.media_folder = "C:\\Tijdelijk\\usb\\"
             self.platform_info_file = "C:\\Tijdelijk\\lpfrgplatform.json"
         else:
-            self.platform = "RPi"
+            self.platform = Platforms.RaspberryPi
             self.update_basefolder = "/home/pi/"
             self.media_folder = "/media/pi/"
             self.platform_info_file = "/boot/lpfrgpi.json"
-
-        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
     def _init_model(self):
         """ Reads the printer profile and any machine specific configurations """
@@ -487,7 +508,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
 
     def _read_hostname(self):
-        if self.platform == "RPi" and self.platform_info:
+        if self.platform == Platforms.RaspberryPi and self.platform_info:
             image_version = LooseVersion(self.platform_info["image_version"])
             if image_version >= LooseVersion("1.2.0"):
                 with open('/etc/hostname', 'r') as hostname_file:
@@ -630,7 +651,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return True
 
     def _disable_ssh(self):
-        if self.platform == "RPi" and not self.debug and os.path.exists("/etc/init/ssh.conf"):
+        if self.platform == Platforms.RaspberryPi and not self.debug and os.path.exists("/etc/init/ssh.conf"):
             try:
                 octoprint_lui.util.execute("sudo mv /etc/init/ssh.conf /etc/init/ssh.conf.disabled")
             except:
@@ -647,7 +668,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         required_chromium_arguments = ["--touch-events", "--disable-pinch"]
 
-        if self.platform == "RPi" and not self.platform_info:
+        if self.platform == Platforms.RaspberryPi and not self.platform_info:
             # If we don't have platform_info, it means we are < image v1.1
 
             # Read current arguments
@@ -1922,12 +1943,39 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Saves a file to the usb drive. source_type must be either 'gcode', 'timelapse' or 'log'
         """
+
+        result = False
+
         if source_type == "gcode":
-            return self._copy_gcode_to_usb(path)
+            result = self._copy_gcode_to_usb(path)
         elif source_type == "timelapse":
-            return self._copy_timelapse_to_usb(path)
+            result = self._copy_timelapse_to_usb(path)
         elif source_type == "log":
-            return self._copy_log_to_usb(path)
+            result = self._copy_log_to_usb(path)
+
+        if result:
+            return make_response(jsonify(), 200)
+        else:
+            return make_response(jsonify({ "message" : "File error during copying" }), 500)
+
+    @BlueprintPlugin.route("/usb/save_all/<string:source_type>", methods=["POST"])
+    def save_all_to_usb(self, source_type):
+        """
+        Saves a file to the usb drive. source_type must be either 'gcode', 'timelapse' or 'log'
+        """
+        result = False
+
+        if source_type == "gcodes":
+            result = self._copy_all_gcodes_to_usb()
+        elif source_type == "timelapses":
+            result = self._copy_all_timelapses_to_usb()
+        elif source_type == "logs":
+            result = self._copy_all_logs_to_usb()
+
+        if result:
+            return make_response(jsonify(), 200)
+        else:
+            return make_response(jsonify({ "message" : "File error during copying" }), 500)
 
     # End API
 
@@ -2047,6 +2095,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if flash_plugin:
             if hasattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file'):
+                self._logger.info("Flash firmware started")
                 self.intended_disconnect = True
                 _, port, _, _ = self._printer.get_current_connection()
                 if not port:
@@ -2058,9 +2107,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
                 return getattr(flash_plugin.__plugin_implementation__, 'do_flash_hex_file')(board, programmer, port, baudrate, firmware_path, ext_path)
             else:
-                self._logger.warning("Could not flash firmware. FlashArduino plugin not up to date.")
+                self._logger.error("Could not flash firmware. FlashArduino plugin not up to date.")
         else:
-            self._logger.warning("Could not flash firmware. FlashArduino plugin not loaded.")
+            self._logger.error("Could not flash firmware. FlashArduino plugin not loaded.")
 
     def _check_version_requirement(self, current_version, requirement):
         """Helper function that checks if a given version matches a version requirement"""
@@ -2480,8 +2529,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ## End cache methods
 
     def _firmware_update_required(self):
-
-        if not self.model in self.firmware_version_requirement:
+        if not self.model_identified:
+            self._logger.error('No firmware version check. Printer model was not identified.')
+            return False
+        elif not self.model in self.firmware_version_requirement:
             self._logger.debug('No firmware version check. Model not found in version requirement.')
             return False
         elif "firmware_version" in self.machine_info:
@@ -2673,14 +2724,44 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         if self.powerbutton_handler:
             self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP)
-            # Enable auxiliary power. This will fully reset the printer, so full homing is required after.
-            self.powerbutton_handler.enableAuxPower()
+            
+            # Enable auxiliary power. This will fully reset the printer, so full homing is required after. 
+            self.powerbutton_handler.enableAuxPower() 
             self._logger.debug("Auxiliary power up after maintenance")
-            time.sleep(5) # Give it 5 sec to power up
-            #TODO: Maybe a loop with some retries instead of a 5-sec-timer?
-            #TODO: Or monitor if /dev/ttyUSB0 exists?
             self.connecting_after_maintenance = True
-            self._printer.connect()
+
+            # On a RPi, we wait until the port becomes available
+            if self.platform == Platforms.RaspberryPi:
+                port = self._settings.global_get(["serial", "port"])
+                if not port:
+                    port = '/dev/ttyUSB0'
+
+                # Reconnect straight away on a virtual port
+                if port == "VIRTUAL":
+                    self._printer.connect()
+                    return
+
+                # Else, poll if the port exists for 15 sec and connect
+                for wait in range(15):
+                    if os.path.exists(port):
+                        self._logger.info("Serial port {0} found after {1} sec. Attempting to reconnect in 2 sec.".format(port, wait))
+                        time.sleep(2)
+                        self._printer.connect()
+                        return
+
+                    time.sleep(1)
+
+                # If we reach here, reconnecting failed
+                self._logger.error("Could not reconnect to printer after 15 sec. Is the auxilary power up?")
+                self.printer_error_reason = "reconnect_failed"
+                self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP_FAILED)
+                self.connecting_after_maintenance = False
+
+            else:
+                # Currently, this situation is not supported (only on RPi there's a powerbutton_handler)
+                # yet, provide for unforeseen circumstances
+                time.sleep(5)
+                self._printer.connect()
 
     def _auto_home_after_maintenance(self):
         """
@@ -2720,7 +2801,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futurePath == currentPath and futureFilename == currentFilename and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
 
-        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
+        futureFullPath = os.path.join(futurePath, futureFilename)
 
         def download_progress(progress):
             self._send_client_message(ClientMessages.MEDIA_FILE_COPY_PROGRESS, { "percentage" : progress*100 })
@@ -2749,20 +2830,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r
 
+    # Begin file backup/copying methods
+
     def _select_usb_file(self, path):
         target = "usb"
 
         #TODO: Feels like it's not really secure. Fix
         path = os.path.join(self.media_folder, path)
         if not (os.path.exists(path) and os.path.isfile(path)):
-            return make_response(jsonify({ "message": "File not found on '%s': %s" % (target, filename) }), 404)
+            return make_response(jsonify({ "message": "File not found: %s" % (path) }), 404)
 
         # selects/loads a file
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
             return make_response(jsonify({ "message": "Cannot select {filename} for printing, not a machinecode file".format(**locals()) }), 415)
 
         # Now the full path is known, remove any folder names from file name
-        _, filename = self._file_manager.split_path("usb", path)
+        _, filename = self._file_manager.split_path("usb", path) # The file storages expect forward slashes
         upload = octoprint.filemanager.util.DiskFileWrapper(filename, path, move = False)
 
         # determine current job
@@ -2789,7 +2872,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
 
-        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
+        futureFullPath = os.path.join(futurePath, futureFilename)
 
         def on_selected_usb_file_copy():
             percentage = (float(os.path.getsize(futureFullPath)) / float(os.path.getsize(path))) * 100.0
@@ -2845,12 +2928,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         return r
 
+    def _copy_all_gcodes_to_usb(self):
+        uploads_folder = self._settings.global_get_basefolder("uploads")
+        valid_file_callback = lambda f: octoprint.filemanager.valid_file_type(f, type="machinecode")
+
+        return self._copy_all_files_to_usb(uploads_folder, "Leapfrog-gcodes", valid_file_callback,  ClientMessages.GCODE_COPY_ALL_PROGRESS , ClientMessages.GCODE_COPY_ALL_FINISHED, ClientMessages.GCODE_COPY_ALL_FAILED)
+
+    def _copy_all_timelapses_to_usb(self):
+        timelapse_folder = self._settings.global_get_basefolder("timelapse")
+        valid_file_callback = lambda f: octoprint.util.is_allowed_file(f, ["mpg", "mpeg", "mp4"])
+
+        return self._copy_all_files_to_usb(timelapse_folder, "Leapfrog-timelapses", valid_file_callback,  ClientMessages.TIMELAPSE_COPY_ALL_PROGRESS , ClientMessages.TIMELAPSE_COPY_ALL_FINISHED, ClientMessages.TIMELAPSE_COPY_ALL_FAILED)
+
+    def _copy_all_logs_to_usb(self):
+        logs_folder = self._settings.global_get_basefolder("logs")
+
+        return self._copy_all_files_to_usb(logs_folder, "Leapfrog-logs", None,  ClientMessages.LOGS_COPY_ALL_PROGRESS , ClientMessages.LOGS_COPY_ALL_FINISHED, ClientMessages.LOGS_COPY_ALL_FAILED)
+
     def _copy_gcode_to_usb(self, filename):
-        if not self.is_media_mounted:
-            return make_response(jsonify({ "message": "Could not access the media folder" }), 400)
 
         if not octoprint.filemanager.valid_file_type(filename, type="machinecode"):
-            return make_response(jsonify(error="Not allowed to copy this file"), 400)
+            self._logger.error("Tried to backup a non-gcode file to the gcodes folder on the USB drive")
+            return False
 
         uploads_folder = self._settings.global_get_basefolder("uploads")
         src_path = os.path.join(uploads_folder, filename)
@@ -2858,27 +2957,77 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return self._copy_file_to_usb(filename, src_path, "Leapfrog-gcodes", ClientMessages.GCODE_COPY_PROGRESS , ClientMessages.GCODE_COPY_FINISHED, ClientMessages.GCODE_COPY_FAILED)
 
     def _copy_timelapse_to_usb(self, filename):
-        if not self.is_media_mounted:
-            return make_response(jsonify({ "message": "Could not access the media folder"}), 400)
 
         if not octoprint.util.is_allowed_file(filename, ["mpg", "mpeg", "mp4"]):
-            return make_response(jsonify(error="Not allowed to copy this file"), 400)
+            self._logger.error("Tried to backup a non-timelapse file to the timelapse folder on the USB drive")
+            return False
 
         timelapse_folder = self._settings.global_get_basefolder("timelapse")
         src_path = os.path.join(timelapse_folder, filename)
 
         return self._copy_file_to_usb(filename, src_path, "Leapfrog-timelapses", ClientMessages.TIMELAPSE_COPY_PROGRESS, ClientMessages.TIMELAPSE_COPY_FINISHED, ClientMessages.TIMELAPSE_COPY_FAILED)
-
+       
     def _copy_log_to_usb(self, filename):
-        if not self.is_media_mounted:
-            return make_response(jsonify(error="Could not access the media folder"), 400)
 
         logs_folder = self._settings.global_get_basefolder("logs")
         src_path = os.path.join(logs_folder, filename)
 
         return self._copy_file_to_usb(filename, src_path, "Leapfrog-logs", ClientMessages.LOGS_COPY_PROGRESS, ClientMessages.LOGS_COPY_FINISHED, ClientMessages.LOGS_COPY_FAILED)
 
+    def _copy_all_files_to_usb(self, src_folder, dst_folder, valid_file_callback, message_progress, message_complete, message_failed):
+        """
+        Backup all files that match a give predicate in a given folder to the mounted media folder.
+        """
+        if not self.is_media_mounted:
+            self._logger.warn("Tried to backup files to {0} while no USB media is present".format(dst_folder))
+            return False
+
+        # If there's nothing to copy, return True by default
+        result = True 
+
+        files = os.listdir(src_folder)
+
+        i = 0
+        n = float(len(files))
+
+        for filename in files:
+            src_path = os.path.join(src_folder, filename)
+
+            # Don't try to copy directories
+            if os.path.isdir(src_path):
+                continue
+
+            # Don't copy hidden files
+            if filename.startswith("."):
+                continue
+
+            # Check if we have a valid file according to the supplied predicate
+            # continue to the next file if not
+            if callable(valid_file_callback) and not valid_file_callback(filename):
+                self._logger.warn("Could not copy {0} to USB. Invalid filetype.".format(filename))
+                continue
+
+            # Copy the file and keep track of the result
+            result = result and self._copy_file_to_usb(filename, src_path, dst_folder, None, None, None)
+
+            i += 1
+
+            if message_progress:
+                percentage = (i / n) * 100
+                self._send_client_message(message_progress, {  "percentage" : percentage })
+
+        if result and message_complete:
+            self._send_client_message(message_complete)
+        elif not result and message_failed:
+            self._send_client_message(message_failed)
+
+        return result
+
     def _copy_file_to_usb(self, filename, src_path, dst_folder, message_progress, message_complete, message_failed):
+        if not self.is_media_mounted:
+            self._logger.warn("Tried to backup {0} while no USB media is present".format(filename))
+            return False
+
         # Loop through all directories in the media folder and find the mount with most free space
         bytes_available = 0
         drive_folder = None
@@ -2890,7 +3039,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 continue
 
             #Check disk space
-            if self.platform == 'WindowsDebug':
+            if self.platform == Platforms.WindowsDebug:
                 mount_bytes_available = 14 * 1024 * 1024 * 1024;
             else:
                 disk_info = os.statvfs(mount_path)
@@ -2904,10 +3053,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         filesize = os.path.getsize(src_path)
 
         if filesize > bytes_available:
-            return make_response(jsonify({ "message": "Insuffient space available on USB drive", "filename": filename }), 400)
+            self._logger.error("Insuffient space available on USB drive to copy file {0}".format(filename))
+            return False
 
         if drive_folder is None:
-            return make_response(jsonify({ "message": "Insuffient space available on USB drive", "filename": filename }), 400)
+            self._logger.error("Insuffient space available on USB drive to copy file {0}".format(filename))
+            return False
 
         folder_path = os.path.join(drive_folder, dst_folder)
         new_full_path = os.path.join(folder_path, filename)
@@ -2923,7 +3074,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             else:
                 percentage = 0
             self._logger.debug("File copy progress: %f" % percentage)
-            self._send_client_message(message_progress, { "percentage" : percentage, "filename": filename })
+            if message_progress:
+                self._send_client_message(message_progress, { "percentage" : percentage, "filename": filename })
 
         is_copying = True
 
@@ -2931,7 +3083,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return is_copying
 
         def file_copying_finished():
-            self._send_client_message(message_complete, { "filename": filename })
+            if message_complete:
+                self._send_client_message(message_complete, { "filename": filename })
 
         # Start monitoring copy status
         timer = RepeatedTimer(1, on_file_copy, run_first = False, condition = is_copying_file, on_finish = file_copying_finished)
@@ -2945,13 +3098,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             shutil.copy2(src_path, new_full_path)
         except Exception as e:
             timer.cancel()
-            self._send_client_message(message_failed, { "filename": filename })
-            return make_response(jsonify({ "message" : "File error during copying: %s" % e.message, "filename": filename }), 500)
+            if message_failed:
+                self._send_client_message(message_failed, { "filename": filename })
+            self._logger.exception("Error during file copy of {0}".format(filename))
+            return False
         finally:
             is_copying = False
 
-        return make_response(jsonify(), 200)
+        return True
 
+    # End file backup/copying methods
+    
     # Filament change helpers
 
     def _load_filament(self, tool, amount, material_name):
@@ -3526,7 +3683,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._prevent_overheating(tool, data['target'])
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
-                stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
+                
+                # We make an exception for the bed tool status
+                # there's no "temperature residency" here, which makes the status go
+                # to ready as soon as the temperature is within the window. While the firmware
+                # only "releases" the M190 if actual > target.
+                if tool == "bed":
+                    prev_status = self.tools[tool]["status"]
+                    stabilizing = delta > 0 and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
+                else:
+                    stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
 
                 # process the status
                 if in_window and stabilizing:
@@ -3550,27 +3716,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Checks if the target temperature of a given tool matches the installed hot end max temperature
         """
 
-        if tool == "bed":
-            return
+        if self._printer.is_printing():
 
-        # Find the maximum temp for the current tool
-        if tool in self.tools and self.tools[tool]["hotend_type"] == HotEndTypes.HIGH_TEMP:
-            maxTemp = self.current_printer_profile.get("materialMaxTemp", 360)
-        else:
-            maxTemp = self.current_printer_profile.get("lowTempMax", 275)
+            if tool == "bed":
+                maxTemp = self.current_printer_profile.get("bedTempMax", 90)
+            elif tool in self.tools and self.tools[tool]["hotend_type"] == HotEndTypes.HIGH_TEMP:
+                maxTemp = self.current_printer_profile.get("materialMaxTemp", 360)
+            else:
+                maxTemp = self.current_printer_profile.get("lowTempMax", 275)
 
-        if target > maxTemp:
-                self._logger.warn("Tried to set target temperature {tool} at {target}. Max: {max}".format(
-                    tool=tool,
-                    target=target,
-                    max=maxTemp
-                ))
+            if target > maxTemp:
+                    self._logger.warn("Tried to set target temperature {tool} at {target}. Max: {max}".format(
+                        tool=tool,
+                        target=target,
+                        max=maxTemp
+                    ))
 
-                # Cancel any heating running procedures and the print itself
-                self._immediate_cancel()
+                    # Cancel any heating running procedures and the print itself
+                    self._immediate_cancel()
 
-                # Notify front-end
-                self._send_client_message(ClientMessages.TARGET_TEMP_ERROR, { "tool": tool, "target": target, "max": maxTemp  })
+                    # Notify front-end
+                    self._send_client_message(ClientMessages.TARGET_TEMP_ERROR, { "tool": tool, "target": target, "max": maxTemp  })
         
 
     def change_status(self, tool, new_status):
@@ -3779,11 +3945,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._update_from_m115_properties(line)
             self.machine_info = self._get_machine_info()
 
-            self.model = self.machine_info["machine_type"].lower() if "machine_type" in self.machine_info and self.machine_info["machine_type"] else "unknown"
-
-            if not self.model in self.supported_models:
-                self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
-                self.model = self.default_model
+            self._set_model()
 
             if oldModelName != self.model:
                 self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
@@ -3883,9 +4045,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.is_homing = False
         elif event == Events.ERROR:
             self.printer_error_reason = 'unknown_printer_error'
+            
             self.is_homed = False
             self.is_homing = False
-            if "error" in payload:
+
+            if self.connecting_after_maintenance:
+                self._logger.error("Could not reconnect after maintenance")
+                self.printer_error_reason = "reconnect_failed"
+                self._send_client_message(ClientMessages.POWERING_UP_AFTER_SWAP_FAILED)
+                self.connecting_after_maintenance = False
+            elif "error" in payload:
                 statestring = payload["error"].lower()
                 if "mintemp" in statestring:
                     self.printer_error_reason = 'extruder_mintemp'
