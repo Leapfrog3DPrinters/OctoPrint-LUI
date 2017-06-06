@@ -512,18 +512,6 @@ $(function ()  {
             return self.introInstance._introItems.find(x => x.stepName.toUpperCase() === stepName.toUpperCase()).step;
         };
 
-        self.onSyncOrMirrorWarningClose = function () {
-            if(self.isTutorialStarted) {
-                var checkWarningFlyoutClosed = setInterval(function () {
-                        if (!$('.warning_flyout').length) {
-                            clearInterval(checkWarningFlyoutClosed);
-                            self.introInstance.showIntro();
-                        }
-                    }
-                    , 100);
-            }
-        };
-
         self.onShutdownOrDisconnectFlyout = function () {
           self.introInstance.exit();
         };

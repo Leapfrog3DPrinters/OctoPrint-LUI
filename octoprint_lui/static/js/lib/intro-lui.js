@@ -1081,13 +1081,14 @@
               parentElm.appendChild(container);
           if (overlayLayer)
               parentElm.appendChild(overlayLayer);
+
+          var topPos = targetElement.element.offsetTop;
+
+          if (this._options.scrollToElement === true) {
+              parentElm.scrollTop = topPos - this._options.scrollPadding;
+          }
         }
 
-      var topPos = targetElement.element.offsetTop;
-
-      if (this._options.scrollToElement === true) {
-        parentElm.scrollTop = topPos - this._options.scrollPadding;
-      }
 
       if (typeof (this._introAfterChangeCallback) !== 'undefined') {
         this._introAfterChangeCallback.call(this, targetElement.element);

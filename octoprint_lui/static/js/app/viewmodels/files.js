@@ -169,18 +169,10 @@ $(function ()  {
             })
             .always(function () {
                 self.isLoadingFileList(false);
+
             });
 
-            if (origin == "local" && self.introView.isTutorialStarted) {
-                self.isIntroFile(true);
-                var checkIfFileVisible = setInterval(function () {
-                    if($('#print_files').is(":visible")) {
-                        self.introView.introInstance.refresh();
-                        self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectFile"));
-                    }
-                    clearInterval(checkIfFileVisible);
-                }, 100);
-            }
+            
         };
 
         self.browseUsbForFirmware = function ()  {
@@ -372,7 +364,19 @@ $(function ()  {
                 self.changeFolderByPath(switchToPath);
             }
 
-            self.focusOnFile(filenameToFocus, locationToFocus);
+            // IntroJS
+            if (self.introView.isTutorialStarted) {
+                self.isIntroFile(true);
+
+                setTimeout(function () {
+                    self.introView.introInstance.refresh();
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectFile"));
+                }, 100);
+            }
+            else {
+                self.focusOnFile(filenameToFocus, locationToFocus);
+            }
+
 
             if (response.free != undefined) {
                 self.freeSpace(response.free);
@@ -889,13 +893,12 @@ $(function ()  {
 
         self.printerState.printMode.subscribeChanged(function(newValue, oldValue){
             if ((newValue == "sync" || newValue == "mirror") && (oldValue == "normal")) {
-                //IntroJS
-                self.introView.introInstance.hideIntro();
                 self.showSyncMirrorWarning();
             }
         });
 
-        self.showSyncMirrorWarning = function() {
+        self.showSyncMirrorWarning = function () {
+            
             var title = gettext("Sync or Mirror print");
 
             var grid = "<div class='Table-row'><div class='Table-item'>";
@@ -918,7 +921,18 @@ $(function ()  {
             var message = "";
             message += grid;
             message += info;
-            self.flyout.showWarning(title, message, false);
+
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                self.introView.introInstance.hideIntro();
+            }
+
+            self.flyout.showWarning(title, message, false, function () {
+                //IntroJS
+                if (self.introView.isTutorialStarted) {
+                    self.introView.introInstance.showIntro();
+                }
+            });
         };
 
         self.refreshCurrentFolder = function (data)
@@ -1372,18 +1386,8 @@ $(function ()  {
                         );
                         break;
                     case "demo_selected":
+                        self.isIntroFile(false);
                         self.printAndChangeTab();
-                        //IntroJS
-                        if (self.introView.isTutorialStarted){
-                            self.isIntroFile(false);
-                            var isEnoughFilamentVisible = self.enoughFilament.subscribe(function (newValue) {
-                                if(newValue) {
-                                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
-                                    self.introView.introInstance.refresh();
-                                    isEnoughFilamentVisible.dispose();
-                                }
-                            });
-                        }
                         break;
                 }
             }

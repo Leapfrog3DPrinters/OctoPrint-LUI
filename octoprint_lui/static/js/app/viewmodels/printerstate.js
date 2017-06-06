@@ -347,6 +347,18 @@ $(function ()  {
             self.printMode("normal");
             self.forcePrint(false);
             self.flyout.showFlyout("mode_select");
+            
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+
+                $('#mode_select_flyout').one("transitionend", function () {
+                    self.introView.introInstance.refresh();
+
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 300);
+                });
+            }
+
         };
 
         self.pause = function () {
