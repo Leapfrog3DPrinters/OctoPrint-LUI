@@ -890,7 +890,7 @@ $(function ()  {
         self.printerState.printMode.subscribeChanged(function(newValue, oldValue){
             if ((newValue == "sync" || newValue == "mirror") && (oldValue == "normal")) {
                 //IntroJS
-                self.introView.introInstance.exit();
+                self.introView.introInstance.hideIntro();
                 self.showSyncMirrorWarning();
             }
         });
@@ -1376,11 +1376,13 @@ $(function ()  {
                         //IntroJS
                         if (self.introView.isTutorialStarted){
                             self.isIntroFile(false);
-                            var isEnoughFilamentVisible = self.enoughFilament.subscribe(function () {
-                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
-                                self.introView.introInstance.refresh();
-                                isEnoughFilamentVisible.dispose();
-                            })
+                            var isEnoughFilamentVisible = self.enoughFilament.subscribe(function (newValue) {
+                                if(newValue) {
+                                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+                                    self.introView.introInstance.refresh();
+                                    isEnoughFilamentVisible.dispose();
+                                }
+                            });
                         }
                         break;
                 }

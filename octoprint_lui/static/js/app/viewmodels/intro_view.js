@@ -316,17 +316,7 @@ $(function ()  {
                 position: 'bottom'
             },
             {
-                //31
-                stepName: "tutorialDone",
-                intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
-                "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("Good Job!<br>The printer is now printing the first print. " +
-                "Watch how the object magically appears in  front of you.<br>") +
-                "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
-                "data-bind=\"touchClick: function(){ doneButton() }\">" + gettext("Done") + "</a></div></div>"
-            },
-            {
-                 //32
+                 //31
                 stepName: "leftToolWrongFilament",
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -334,12 +324,22 @@ $(function ()  {
                 "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('leftToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
             },
             {
-                 //33
+                 //32
                 stepName: "rightToolWrongFilament",
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Please select PLA filament when loading the filament.<br>") +
                 "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('rightToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
+            },
+            {
+                //33
+                stepName: "tutorialDone",
+                intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
+                "<div class=\"step-text\">" + gettext("Good Job!<br>The printer is now printing the first print. " +
+                "Watch how the object magically appears in  front of you.<br>") +
+                "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
+                "data-bind=\"touchClick: function(){ doneButton() }\">" + gettext("Done") + "</a></div></div>"
             }
         ];
 
@@ -387,9 +387,9 @@ $(function ()  {
                 self.lastStep = step;
             }
             switch (self.currentStep()){
-                case 32: $(".introjs-progress").css("display","none");
+                case 31: $(".introjs-progress").css("display","none");
                     break;
-                case 33: $(".introjs-progress").css("display","none");
+                case 32: $(".introjs-progress").css("display","none");
                     break;
             }
         });
@@ -408,7 +408,7 @@ $(function ()  {
                         exitOnOverLayClick: false,
                         showBullets: false,
                         showButtons: false,
-                        keyboardNavigation: false
+                        keyboardNavigation: true
                     });
                     self.introInstance.start();
                     break;
@@ -493,7 +493,7 @@ $(function ()  {
                     sendToApi("printer/immediate_cancel");
                     self.flyout.closeFlyout();
                     break;
-                case (step == 32 || step == 33):
+                case (step == 31 || step == 32):
                     $('#material-select').unbind("change");
                     break;
                 // For other steps
@@ -514,12 +514,10 @@ $(function ()  {
 
         self.onSyncOrMirrorWarningClose = function () {
             if(self.isTutorialStarted) {
-                self.introInstance.start();
                 var checkWarningFlyoutClosed = setInterval(function () {
                         if (!$('.warning_flyout').length) {
                             clearInterval(checkWarningFlyoutClosed);
-                            self.introInstance.goToStep(self.getStepNumberByName("selectPrintMode"));
-                            self.introInstance.refresh();
+                            self.introInstance.showIntro();
                         }
                     }
                     , 100);
