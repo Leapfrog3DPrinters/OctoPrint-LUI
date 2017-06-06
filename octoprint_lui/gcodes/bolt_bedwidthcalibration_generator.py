@@ -9,20 +9,20 @@ for to_print in ['1mm', '100um']:
     filename = r'bolt_bedwidthcalibration_{0}.gcode'.format(to_print)
 
     if to_print == '100um':
-        n_lines = 11    # The number of lines to draw. Must be uneven (so 0 can be in the center)!
-        draw_y = True   # Whether or not to draw the horizontal y-axis lines
+        n_lines_x = 11    # The number of lines to draw. Must be uneven (so 0 can be in the center)!
+        n_lines_y = 17   # Whether or not to draw the horizontal y-axis lines
         offset = 0.1    # Difference between each line in mm (the accuracy of the calibration)
         xdiff = 10      # Distance between vertical lines in mm
         ydiff = 10      # Distance between horizontal lines in mm
-        xymin = 140     # The y position of the bottom of the vertical lines
+        xymin = 190     # The y position of the bottom of the vertical lines
         yymin = 10      # The y position of the last (bottom) horizontal line
     elif to_print == '1mm':
-        n_lines = 17    # The number of lines to draw. Must be uneven (so 0 can be in the center)!
-        draw_y = False  # Whether or not to draw the horizontal y-axis lines
+        n_lines_x = 17    # The number of lines to draw. Must be uneven (so 0 can be in the center)!
+        n_lines_y = 0   # Whether or not to draw the horizontal y-axis lines
         offset = 1      # Difference between each line in mm (the accuracy of the calibration)
         xdiff = 15      # Distance between vertical lines in mm
         ydiff = 15      # Distance between horizontal lines in mm
-        xymin = 230     # The y position of the bottom of the vertical lines 
+        xymin = 260     # The y position of the bottom of the vertical lines 
         yymin = 50      # (not used here) The y position of the last (bottom) horizontal line
 
 
@@ -33,12 +33,12 @@ for to_print in ['1mm', '100um']:
 
     # X-Axis calibration settings: Vertical lines
     xheight = 50                            # The height of the vertical lines
-    xwidth = xdiff*(n_lines-1)              # The total width of the vertical lines
+    xwidth = xdiff*(n_lines_x-1)              # The total width of the vertical lines
     xxmin = x_min + (bed_width-xwidth) / 2  # The x position of the first (left) line (calculated as such that the 0 line is at the center of the bed)
     xymax = xymin+xheight                   # The y position of the top of the vertical lines
 
     # Y-Axis calibration settings: Horizontal lines
-    yheight = ydiff*(n_lines-1)             # The total height of the horizontal lines
+    yheight = ydiff*(n_lines_y-1)             # The total height of the horizontal lines
     ywidth = 50                             # The width of the horizontal (y-axis calibration) lines
     yxmin = x_min + (bed_width-ywidth) / 2  # The x position of the horizontal lines (calculated as such that the center of the line is at the center of the bed)
     yxmax = yxmin + ywidth                  # The x position of the right edge of the horizontal lines
@@ -169,61 +169,11 @@ for to_print in ['1mm', '100um']:
             gCodeLines.extend(wipe[T])
             # Wiping resets e to 0
             e = 0
-
-            # Y-axis
-            if draw_y:
-                for j in range(n_lines):
-                    y1 = yymax - j * ydiff
-
-                    if T == 0 and j == (n_lines-1)/2 :
-                        # Draw a small circle when we're in the middle
-                        gCodeLines.append(';Begin circle')
-                    
-                        # Draw circle (2pi, 50 steps, 4 mm radius, at 10mm x-offset)
-                        circle, e = smallcircle(2, 50, 4, yxmin - 10, y1, e)
-                        gCodeLines.extend(circle)
-                    
-                        # Retract
-                        e -= e_r
-                        gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r)) 
-                    elif T == 1:
-                        # For tool1, start with an offset, which gets smaller towards the middle line
-                        y1 = y1 - (j-((n_lines-1)/2))*offset
-
-                    x1 = yxmin
-                    y2 = y1
-                    x2 = yxmax
-
-                    gCodeLines.append(';Horizontal line #{0:d} Tool {1:d}'.format(j, T))
-       
-                    # Move to position   
-                    gCodeLines.append('G1 X{0:0.3f} Y{1:0.3f} F{2:0.3f}'.format(x1, y1, f_m))
-                
-                    # Hop
-                    if j == 0:
-                        gCodeLines.append('G1 Z{0:0.3f} F{1:0.3f}'.format(lz, f_z))
-                    
-                    # Prime
-                    e += e_p    
-                    gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r))
-                   
-                
-                    # Print line
-                    e += e_yp
-                    gCodeLines.append('G1 X{0:0.3f} Y{1:0.3f} E{2:0.3f} F{3:0.3f}'.format(x2, y2, e, f_p))
-                
-                    # Retract
-                    e -= e_r
-                    gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r)) 
-
-            # Z-hopping
-            gCodeLines.append('G1 Z{0:0.3f} F{1:0.3f}'.format(lz+z, f_z))
-
             # X-axis
-            for j in range(n_lines):
+            for j in range(n_lines_x):
                 x1 = j * xdiff + xxmin
             
-                if T == 0 and j == (n_lines-1)/2:
+                if T == 0 and j == (n_lines_x-1)/2:
                     # Draw a small circle when we're in the middle
                     gCodeLines.append(';Begin circle')
                 
@@ -236,7 +186,7 @@ for to_print in ['1mm', '100um']:
                     gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r)) 
                 elif T == 1:
                     # For tool1, start with an offset, which gets smaller towards the middle line
-                    x1 = x1 + (j-((n_lines-1)/2))*offset
+                    x1 = x1 + (j-((n_lines_x-1)/2))*offset
             
                 y1 = xymin 
 
@@ -263,6 +213,56 @@ for to_print in ['1mm', '100um']:
                 # Retract
                 e -= e_r
                 gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r)) 
+
+            # Z-hopping
+            gCodeLines.append('G1 Z{0:0.3f} F{1:0.3f}'.format(lz+z, f_z))
+
+            # Y-axis
+            for j in range(n_lines_y):
+                y1 = yymax - j * ydiff
+
+                if T == 0 and j == (n_lines_y-1)/2 :
+                    # Draw a small circle when we're in the middle
+                    gCodeLines.append(';Begin circle')
+                    
+                    # Draw circle (2pi, 50 steps, 4 mm radius, at 10mm x-offset)
+                    circle, e = smallcircle(2, 50, 4, yxmin - 10, y1, e)
+                    gCodeLines.extend(circle)
+                    
+                    # Retract
+                    e -= e_r
+                    gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r)) 
+                elif T == 1:
+                    # For tool1, start with an offset, which gets smaller towards the middle line
+                    y1 = y1 - (j-((n_lines_y-1)/2))*offset
+
+                x1 = yxmin
+                y2 = y1
+                x2 = yxmax
+
+                gCodeLines.append(';Horizontal line #{0:d} Tool {1:d}'.format(j, T))
+       
+                # Move to position   
+                gCodeLines.append('G1 X{0:0.3f} Y{1:0.3f} F{2:0.3f}'.format(x1, y1, f_m))
+                
+                # Hop
+                if j == 0:
+                    gCodeLines.append('G1 Z{0:0.3f} F{1:0.3f}'.format(lz, f_z))
+                    
+                # Prime
+                e += e_p    
+                gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r))
+                   
+                
+                # Print line
+                e += e_yp
+                gCodeLines.append('G1 X{0:0.3f} Y{1:0.3f} E{2:0.3f} F{3:0.3f}'.format(x2, y2, e, f_p))
+                
+                # Retract
+                e -= e_r
+                gCodeLines.append('G1 E{0:0.3f} F{1:0.3f}'.format(e, f_r)) 
+
+            
 
     with open(filename,'w') as file:
         for line in gCodeStart:
