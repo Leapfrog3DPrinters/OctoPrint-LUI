@@ -3,7 +3,7 @@ T0
 M109 T0
 M109 T1
 M190
-M106 S255
+M107
 G28
 ;Begin Tool 0
 T0
