@@ -353,14 +353,14 @@ $(function ()  {
                 case 5: $(".introjs-progress").css("display","inherit");
                         $('#material-select').bind("change", self.refreshElements);
                     break;
-                case 6: $('#material-select').unbind("change");
+                case 6: $('#material-select').unbind("change", self.refreshElements);
                     break;
                 case 6: $('#material-select').unbind("change", self.refreshElements);
                     break;
                 case 11: $(".introjs-progress").css("display","inherit");
                         $('#material-select').bind("change", self.refreshElements);
                     break;
-                case 12: $('#material-select').unbind("change");
+                case 12: $('#material-select').unbind("change", self.refreshElements);
                     break;
                 case 12: $('#material-select').unbind("change", self.refreshElements);
                     break;
