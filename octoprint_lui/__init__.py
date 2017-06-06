@@ -2636,9 +2636,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(ClientMessages.CALIBRATION_FINISHED, { "calibration_type": self.calibration_type})
             self.calibration_type = None
             self._restore_timelapse()
-        elif event == Events.PRINT_FAILED or event == Events.ERROR:
+        elif event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.ERROR:
             self._send_client_message(ClientMessages.CALIBRATION_FAILED, { "calibration_type": self.calibration_type})
             self.calibration_type = None
+            maxZ = self.current_printer_profile.get("boundaries", {}).get("maxZ", 20)
+            self._execute_printer_script("after_print", { "jog_down": self._printer._currentZ < maxZ })
             self._restore_timelapse()
 
 
@@ -4088,18 +4090,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if (event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
             self._reset_current_print_extrusion_amount()
             self._save_filament_to_db()
-            # TODO: Move commands below to gcode script
-            self._set_print_mode(PrintModes.NORMAL)
-
-            if "boundaries" in self.current_printer_profile and "maxZ" in self.current_printer_profile["boundaries"]:
-               maxZ = self.current_printer_profile["boundaries"]["maxZ"]
-            else:
-               maxZ = 20
-
-            if self._printer._currentZ < maxZ:
-                self._printer.jog({ 'z': 20 })
-
-            self._printer.home(['x', 'y'])
+            
+            maxZ = self.current_printer_profile.get("boundaries", {}).get("maxZ", 20)
+            self._execute_printer_script("after_print", { "jog_down": self._printer._currentZ < maxZ })
 
         if (event == Events.PRINT_DONE and self.auto_shutdown and not was_calibration):
             config = self._settings.global_get(["webcam", "timelapse"], merged=True)
