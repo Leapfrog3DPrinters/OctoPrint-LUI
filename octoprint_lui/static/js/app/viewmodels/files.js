@@ -1376,7 +1376,11 @@ $(function ()  {
                         //IntroJS
                         if (self.introView.isTutorialStarted){
                             self.isIntroFile(false);
-                            self.checkNotEnoughFilamentVisible();
+                            var isEnoughFilamentVisible = self.enoughFilament.subscribe(function () {
+                                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+                                self.introView.introInstance.refresh();
+                                isEnoughFilamentVisible.dispose();
+                            })
                         }
                         break;
                 }
@@ -1387,16 +1391,6 @@ $(function ()  {
             //IntroJS
             self.introView.introInstance.exit();
             self.flyout.closeFlyout();
-        };
-
-        self.checkNotEnoughFilamentVisible = function () {
-            var EnoughFilamentVisible = setInterval(function () {
-                if(!$('#not-enough-filament').is(':visible')){
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
-                    self.introView.introInstance.refresh();
-                    clearInterval(EnoughFilamentVisible);
-                }
-            }, 100);
         };
 
         self.selectDemoFile = function () {
