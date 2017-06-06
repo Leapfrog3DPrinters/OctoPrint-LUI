@@ -3700,27 +3700,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Checks if the target temperature of a given tool matches the installed hot end max temperature
         """
 
-        if tool == "bed":
-            return
+        if self._printer.is_printing():
 
-        # Find the maximum temp for the current tool
-        if tool in self.tools and self.tools[tool]["hotend_type"] == HotEndTypes.HIGH_TEMP:
-            maxTemp = self.current_printer_profile.get("materialMaxTemp", 360)
-        else:
-            maxTemp = self.current_printer_profile.get("lowTempMax", 275)
+            if tool == "bed":
+                maxTemp = self.current_printer_profile.get("bedTempMax", 90)
+            elif tool in self.tools and self.tools[tool]["hotend_type"] == HotEndTypes.HIGH_TEMP:
+                maxTemp = self.current_printer_profile.get("materialMaxTemp", 360)
+            else:
+                maxTemp = self.current_printer_profile.get("lowTempMax", 275)
 
-        if target > maxTemp:
-                self._logger.warn("Tried to set target temperature {tool} at {target}. Max: {max}".format(
-                    tool=tool,
-                    target=target,
-                    max=maxTemp
-                ))
+            if target > maxTemp:
+                    self._logger.warn("Tried to set target temperature {tool} at {target}. Max: {max}".format(
+                        tool=tool,
+                        target=target,
+                        max=maxTemp
+                    ))
 
-                # Cancel any heating running procedures and the print itself
-                self._immediate_cancel()
+                    # Cancel any heating running procedures and the print itself
+                    self._immediate_cancel()
 
-                # Notify front-end
-                self._send_client_message(ClientMessages.TARGET_TEMP_ERROR, { "tool": tool, "target": target, "max": maxTemp  })
+                    # Notify front-end
+                    self._send_client_message(ClientMessages.TARGET_TEMP_ERROR, { "tool": tool, "target": target, "max": maxTemp  })
         
 
     def change_status(self, tool, new_status):
