@@ -3667,7 +3667,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._prevent_overheating(tool, data['target'])
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
-                stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
+                
+                # We make an exception for the bed tool status
+                # there's no "temperature residency" here, which makes the status go
+                # to ready as soon as the temperature is within the window. While the firmware
+                # only "releases" the M190 if actual > target.
+                if tool == "bed":
+                    prev_status = self.tools[tool]["status"]
+                    stabilizing = delta > 0 and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
+                else:
+                    stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
 
                 # process the status
                 if in_window and stabilizing:
