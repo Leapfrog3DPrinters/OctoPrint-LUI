@@ -2785,7 +2785,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futurePath == currentPath and futureFilename == currentFilename and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
 
-        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
+        futureFullPath = os.path.join(futurePath, futureFilename)
 
         def download_progress(progress):
             self._send_client_message(ClientMessages.MEDIA_FILE_COPY_PROGRESS, { "percentage" : progress*100 })
@@ -2822,14 +2822,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #TODO: Feels like it's not really secure. Fix
         path = os.path.join(self.media_folder, path)
         if not (os.path.exists(path) and os.path.isfile(path)):
-            return make_response(jsonify({ "message": "File not found on '%s': %s" % (target, filename) }), 404)
+            return make_response(jsonify({ "message": "File not found: %s" % (path) }), 404)
 
         # selects/loads a file
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
             return make_response(jsonify({ "message": "Cannot select {filename} for printing, not a machinecode file".format(**locals()) }), 415)
 
         # Now the full path is known, remove any folder names from file name
-        _, filename = self._file_manager.split_path("usb", path)
+        _, filename = self._file_manager.split_path("usb", path) # The file storages expect forward slashes
         upload = octoprint.filemanager.util.DiskFileWrapper(filename, path, move = False)
 
         # determine current job
@@ -2856,7 +2856,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
 
-        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
+        futureFullPath = os.path.join(futurePath, futureFilename)
 
         def on_selected_usb_file_copy():
             percentage = (float(os.path.getsize(futureFullPath)) / float(os.path.getsize(path))) * 100.0
