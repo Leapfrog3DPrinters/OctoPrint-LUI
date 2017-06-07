@@ -21,7 +21,7 @@ $(function ()  {
                 stepName: "helloStep",
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("<b>Welcome to your new Bolt.</b><br />This tutorial will guide you through " +
+                "<div class=\"step-text\">" + gettext("<b>Welcome to your new Leapfrog Bolt 3D printer.</b><br />This tutorial will guide you through " +
                     "the steps you have to take to start printing your creations.<br />") +
                 "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                 "class=\"introjs-button next-button\" data-bind=\"touchClick: function (){ beginButton() }\">" + gettext("Continue") + "</a>" +

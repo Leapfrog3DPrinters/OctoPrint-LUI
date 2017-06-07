@@ -293,7 +293,7 @@ $(function ()  {
             if (!self.targetTempErrorOpen) {
                 self.targetTempErrorOpen = true;
 
-                var title = gettext("A temperature error occurred");
+                var title = gettext("A temperature error has occurred.");
                 var friendlyTool = "";
                 switch (tool) {
                     case "tool0":

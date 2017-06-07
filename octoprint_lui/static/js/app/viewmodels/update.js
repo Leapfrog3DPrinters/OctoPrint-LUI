@@ -145,7 +145,7 @@ $(function ()  {
             } else { // Development behaviour
                 title = gettext("Update: ") + name;
                 text = gettext("You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed.");
-                question = gettext("Do want to update ") + name + "?";
+                question = gettext("Do you want to update ") + name + "?";
             }
             var dialog = { 'title': title, 'text': text, 'question': question };
             self.flyout.showConfirmationFlyout(dialog)
@@ -332,7 +332,7 @@ $(function ()  {
                 // Could not retrieve latest version information
                 $.notify({
                     title: gettext("Could not retrieve update information"),
-                    text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities. '), {})
+                    text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities.'), {})
                 },
                         "error"
                     );
@@ -512,7 +512,7 @@ $(function ()  {
                 case "internet_offline":
                     $.notify({
                         title: gettext("Printer offline"),
-                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities. '), {})
+                        text: _.sprintf(gettext('The printer seems not connected to the internet. Please make sure the network has internet capabilities.'), {})
                     },
                         "error"
                     )
