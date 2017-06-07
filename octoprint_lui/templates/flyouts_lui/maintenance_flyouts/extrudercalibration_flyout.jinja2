@@ -281,7 +281,7 @@
         <div class="Table-item">{{ _('Status') }}</div>
         <div class="Table-item Table-item-grow-4">
           <div class="progress progress-striped progress-animate">
-            <span id="calibration-progress" class="bg-main" data-bind="text: toolInfo.isHeating() || toolInfo.isStabilizing() ? 'Heating' : 'Printing', css: {'bg-orange': toolInfo.isHeating() || toolInfo.isStabilizing()}, style: {width: toolInfo.totalProgress() + '%'}"></span>
+            <span id="calibration-progress" class="bg-main" data-bind="text: toolInfo.printingStatusString, css: {'bg-orange': toolInfo.isHeating() || toolInfo.isStabilizing()}, style: {width: toolInfo.totalProgress() + '%'}"></span>
           </div>
         </div>
       </div>
