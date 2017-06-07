@@ -627,6 +627,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ Check if OctoPrint branch is still on development and change it to master
             if debug mode is not on. This will install and restart service. 
         """
+        if self._settings.get_boolean(["allow_octoprint_branches"]):
+            self._logger.debug('Skipping Octoprint branch check. Current branch: {0}'.format(octoprint.__branch__))
+            return True
+
         self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
 
         if not "master" in octoprint.__branch__:
@@ -2307,6 +2311,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "force_first_run": False,
             "debug_bundling" : False,
             "skip_version_sanity_check": False,
+            "allow_octoprint_branches": False,
             "cloud": {
                 "enabled" : False
                 },
