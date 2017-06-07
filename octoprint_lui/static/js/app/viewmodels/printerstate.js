@@ -347,6 +347,18 @@ $(function ()  {
             self.printMode("normal");
             self.forcePrint(false);
             self.flyout.showFlyout("mode_select");
+            
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+
+                $('#mode_select_flyout').one("transitionend", function () {
+                    self.introView.introInstance.refresh();
+
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 300);
+                });
+            }
+
         };
 
         self.pause = function () {
@@ -453,9 +465,6 @@ $(function ()  {
         self.beginHoming = function () {
             self.isHomingRequested(true);
             sendToApi('printer/homing/start');
-            if(FIRST_START){
-                self.introView.startIntro('firstPrint');
-            }
         };
 
         self.cancelAutoShutdown = function () {
@@ -610,6 +619,9 @@ $(function ()  {
                         self.isHoming(false);
                         //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
                         self.closeStartupFlyout();
+                        if(FIRST_START){
+                            self.introView.startIntro('firstPrint');
+                        }
                         break;
                     case "is_homing":
                         self.isHomed(false);

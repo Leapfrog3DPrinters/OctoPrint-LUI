@@ -180,11 +180,8 @@ $(function () {
         self.onMaintenanceSettingsShown = function () {
             //IntroJS
             if (self.introView.isTutorialStarted) {
-                // Wait for the transition to complete, then wait for a little bit more and then, finally, move the helper layer
-                $('#maintenance_settings_flyout').one("transitionend", function () {
-                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
-                    self.introView.introInstance.refresh();
-                });
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("goToCalibrateBed"));
+                self.introView.introInstance.refresh();
             }
 
             // Notify the back-end we're in maintenance mode
