@@ -72,6 +72,9 @@ $(function () {
 
                     self.flyout.closeFlyout();
                     self.settings.saveLockSettings();
+                    if(!IS_LOCAL && !self.loginState.loggedIn){
+                        self.showLoginFlyout();
+                    }
                 }
             );
         };
@@ -190,6 +193,9 @@ $(function () {
             getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
                 if (self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
             });
+            if(!IS_LOCAL){
+                self.showLoginFlyout()
+            }
         }
 
         self.fromResponse = function (data) {
