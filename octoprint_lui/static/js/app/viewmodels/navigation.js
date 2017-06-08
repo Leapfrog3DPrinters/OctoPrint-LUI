@@ -187,11 +187,9 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
-            if(IS_LOCAL) {
-                getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
-                    if (self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
-                });
-            }
+            getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
+                if (self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
+            });
         }
 
         self.fromResponse = function (data) {
