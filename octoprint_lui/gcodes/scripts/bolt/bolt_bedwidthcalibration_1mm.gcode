@@ -5,20 +5,21 @@ M109 T1
 M190
 M107
 G28
+G90
 ;Begin Tool 0
 T0
 G1 Z0.300 F1800.000
 G92 E0; zero extruder
-G1 Y-33 F12000; move to front of machine
+G1 Y-33.00 F12000; move to front of machine
 G1 E15 F6000; extrude 15 mm fast
 G1 E30 F150 ; extrude another 15 mm slow
 G1 E28 F6000 ; retract 2mm
 G4 S2; wait for 2 seconds
 ; perform wipe sequence
-G1 X308 F12000
-G1 X330 F12000
-G1 X308 F12000
-G1 X330 F12000
+G1 X310.000 F12000
+G1 X328.000 F12000
+G1 X310.000 F12000
+G1 X328.000 F12000
 G92 E0; zero extruder
 ;Vertical line #0 Tool 0
 G1 X26.500 Y260.000 F12000.000
@@ -164,16 +165,16 @@ G1 Z0.300 F1800.000
 T1
 G1 Z0.450 F1800.000
 G92 E0; zero extruder
-G1 Y-33 F12000; move to front of machine
+G1 Y-33.00 F12000; move to front of machine
 G1 E15 F6000; extrude 15 mm fast
 G1 E30 F150 ; extrude another 15 mm slow
 G1 E28 F6000 ; retract 2mm
 G4 S2; wait for 2 seconds
 ; perform wipe sequence
-G1 X-17 F12000
-G1 X-37 F12000
-G1 X-17 F12000
-G1 X-37 F12000
+G1 X-17.000 F12000
+G1 X-35.000 F12000
+G1 X-17.000 F12000
+G1 X-35.000 F12000
 G92 E0; zero extruder
 ;Vertical line #0 Tool 1
 G1 X18.500 Y260.000 F12000.000

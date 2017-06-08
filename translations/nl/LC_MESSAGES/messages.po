@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
 "POT-Creation-Date: 2017-06-07 12:21+0200\n"
-"PO-Revision-Date: 2017-06-07 12:36+0200\n"
+"PO-Revision-Date: 2017-06-07 16:13+0200\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
@@ -59,7 +59,7 @@ msgstr "Printen"
 
 #: octoprint_lui/static/js/app/main.js:93
 msgid "Paused"
-msgstr "Gepauseerd"
+msgstr "Gepauzeerd"
 
 #: octoprint_lui/static/js/app/main.js:94
 msgid "Closed"
@@ -372,7 +372,7 @@ msgstr "Filament update waarschuwing"
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:409
 msgid "Please select a material to update."
-msgstr "Selecteer een materiaal op bij te werken."
+msgstr "Selecteer een materiaal om bij te werken."
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:432
 msgid "Filament information updated"
@@ -1012,11 +1012,11 @@ msgstr "Onderhoudspositie"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:37
 msgid "You are about to move the printer to the hot end swap position. This will turn off the power of the printer temporarily, shutting down the LED lights with it."
-msgstr "U staat op het punt om de printer naar de positie brengen op de printkoppen te vervangen. Dit zal de printer homen op alle assen en tijdelijk de stroom op de printer uit zetten, hierdoor zullen de LEDs uitgaan. Controleer of er geen print op het bed staat."
+msgstr "U staat op het punt om de printer naar de positie brengen om de hot-ends te vervangen. Dit zal de printer homen op alle assen en tijdelijk de stroom op de printer uitzetten, waardoor de verlichting uit zal gaan. Controleer of er geen print op het bed staat."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:39
 msgid "Hot end swap position"
-msgstr "Printkoppen vervangen"
+msgstr "Hot-ends vervangen"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:50
 msgid "You are about to move the printer to the clean bed position. This move will home all axis! Make sure there is no print on the bed."
