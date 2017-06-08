@@ -43,16 +43,20 @@ $(function () {
     self.closeWarning = function(warningVm)
     {
         self.warnings.remove(warningVm);
+        self.setOverlay();
 
-        //IntroJS
-        if (warningVm.warning_title == gettext("Sync or Mirror print")) {
-                callViewModels(self.allViewModels, "onSyncOrMirrorWarningClose");
-        }
+        if (warningVm.callback)
+            warningVm.callback();
     };
 
     self.closeLastWarning = function()
     {
-        self.warnings.pop();
+        var warningVm = self.warnings.pop();
+
+        if (warningVm.callback)
+            warningVm.callback();
+
+        self.setOverlay();
     }
 
     self.showInfo = function (title, message, blocking, callback) {

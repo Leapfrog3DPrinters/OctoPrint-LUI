@@ -216,6 +216,8 @@ $(function ()  {
                 sendToApi("files/unselect");
             }
 
+            
+
             self.flyout.closeFlyoutAccept();
         };
 

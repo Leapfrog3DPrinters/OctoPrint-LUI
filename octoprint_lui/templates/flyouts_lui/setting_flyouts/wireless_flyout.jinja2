@@ -101,7 +101,7 @@
             </div>
           </div>
           <div class="Table-row">
-            <div class="Table-item" data-bind="text: ethernetConnectionText"></div>
+            <div class="Table-item" data-bind="text: status.ethernet.connected() ? '{{ _('Connected') }}' : '{{ _('Disconnected') }}'"></div>
           </div>
         </div>
         <div id="networkmanager_details" class="Table" data-bind="visible: connectionDetailsEditorVisible, css: { disabled: working }">

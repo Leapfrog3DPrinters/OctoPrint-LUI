@@ -21,7 +21,7 @@ $(function ()  {
                 stepName: "helloStep",
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("<b>Welcome to your new Bolt.</b><br />This tutorial will guide you through " +
+                "<div class=\"step-text\">" + gettext("<b>Welcome to your new Leapfrog Bolt 3D printer.</b><br />This tutorial will guide you through " +
                     "the steps you have to take to start printing your creations.<br />") +
                 "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                 "class=\"introjs-button next-button\" data-bind=\"touchClick: function (){ beginButton() }\">" + gettext("Continue") + "</a>" +
@@ -311,22 +311,12 @@ $(function ()  {
                 element: '#mode_select',
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("Select one of the print modes. When you're ready, press <b>Start print</b> or if you don't want to print" +
-                " anything, press <b>Cancel</b>.") + "</div>",
+                "<div class=\"step-text\">" + gettext("Select one of the print modes. When you're ready, press <b>Start " +
+                    "print</b> or if you're not, press <b>Cancel</b>.") + "</div>",
                 position: 'bottom'
             },
             {
-                //31
-                stepName: "tutorialDone",
-                intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
-                "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("Good Job!<br>The printer is now printing the first print. " +
-                "Watch how the object magically appears in  front of you.<br>") +
-                "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
-                "data-bind=\"touchClick: function(){ doneButton() }\">" + gettext("Done") + "</a></div></div>"
-            },
-            {
-                 //32
+                 //31
                 stepName: "leftToolWrongFilament",
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
@@ -334,12 +324,22 @@ $(function ()  {
                 "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('leftToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
             },
             {
-                 //33
+                 //32
                 stepName: "rightToolWrongFilament",
                 intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Please select PLA filament when loading the filament.<br>") +
                 "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('rightToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
+            },
+            {
+                //33
+                stepName: "tutorialDone",
+                intro: "<div class=\"step-header\">" + gettext("Your First Print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
+                "<div class=\"step-text\">" + gettext("Good Job!<br>The printer is now printing the first print. " +
+                "Watch how the object magically appears in  front of you.<br>") +
+                "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
+                "data-bind=\"touchClick: function(){ doneButton() }\">" + gettext("Done") + "</a></div></div>"
             }
         ];
 
@@ -353,12 +353,16 @@ $(function ()  {
                 case 5: $(".introjs-progress").css("display","inherit");
                         $('#material-select').bind("change", self.refreshElements);
                     break;
-                case 6: $('#material-select').unbind("change");
+                case 6: $('#material-select').unbind("change", self.refreshElements);
+                    break;
+                case 6: $('#material-select').unbind("change", self.refreshElements);
                     break;
                 case 11: $(".introjs-progress").css("display","inherit");
                         $('#material-select').bind("change", self.refreshElements);
                     break;
-                case 12: $('#material-select').unbind("change");
+                case 12: $('#material-select').unbind("change", self.refreshElements);
+                    break;
+                case 12: $('#material-select').unbind("change", self.refreshElements);
                     break;
                 case 15: self.introInstance.refresh();
                          $('#settings_icon').mousedown();
@@ -383,9 +387,9 @@ $(function ()  {
                 self.lastStep = step;
             }
             switch (self.currentStep()){
-                case 32: $(".introjs-progress").css("display","none");
+                case 31: $(".introjs-progress").css("display","none");
                     break;
-                case 33: $(".introjs-progress").css("display","none");
+                case 32: $(".introjs-progress").css("display","none");
                     break;
             }
         });
@@ -448,7 +452,7 @@ $(function ()  {
         };
 
         self.doneButton = function () {
-            //Stops intro and resets flag
+            //Stops intro and resets flags
             self.isTutorialStarted = false;
             self.introInstance.exit();
             self.lastStep = 0;
@@ -489,7 +493,7 @@ $(function ()  {
                     sendToApi("printer/immediate_cancel");
                     self.flyout.closeFlyout();
                     break;
-                case (step == 32 || step == 33):
+                case (step == 31 || step == 32):
                     $('#material-select').unbind("change");
                     break;
                 // For other steps
@@ -508,31 +512,17 @@ $(function ()  {
             return self.introInstance._introItems.find(x => x.stepName.toUpperCase() === stepName.toUpperCase()).step;
         };
 
-        self.onAllBound = function(allViewModels) {
-            self.allViewModels = allViewModels;
-        };
-
-        self.onSyncOrMirrorWarningClose = function () {
-            if(self.isTutorialStarted) {
-                self.introInstance.start();
-                var checkWarningFlyoutClosed = setInterval(function () {
-                        if (!$('.warning_flyout').length) {
-                            clearInterval(checkWarningFlyoutClosed);
-                            self.introInstance.goToStep(self.getStepNumberByName("selectPrintMode"));
-                            self.introInstance.refresh();
-                        }
-                    }
-                    , 100);
-            }
-        };
-
         self.onShutdownOrDisconnectFlyout = function () {
           self.introInstance.exit();
         };
 
         self.refreshElements = function () {
             self.introInstance.refresh();
-        }
+        };
+
+        self.onAllBound = function(allViewModels) {
+            self.allViewModels = allViewModels;
+        };
     }
     // This is how our plugin registers itself with the application, by adding some configuration
     // information to the global variable ADDITIONAL_VIEWMODELS

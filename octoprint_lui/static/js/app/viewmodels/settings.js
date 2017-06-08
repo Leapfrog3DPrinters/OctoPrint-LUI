@@ -116,6 +116,11 @@ $(function () {
         });
 
         self.getRgbLights = function () {
+            var printerProfile = self.printerProfiles.currentProfileData();
+
+            if (!printerProfile["rgbLights"])
+                return;
+
             url = OctoPrint.getBlueprintUrl('rgbstatus') + 'status';
             return OctoPrint.get(url).done(function (result) {
                 if(result.hasOwnProperty("lights_enabled"))

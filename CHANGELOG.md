@@ -2,6 +2,20 @@
 
 Changelog for OctoPrint-LUI. 
 
+## 1.2.0
+
+- New: Support for high temperature hot ends
+- New: Ability to configure static IP addresses
+- New: Copy all G-codes and timelapses to a USB drive
+- New: Bolt Pro support including LED status indication
+- New: Introductory tutorial for creating your first 3D print
+- Improved: Longer timelapse post roll
+- Improved: Current print status
+- Improved: G-code previews are now rendered faster
+- Improved: "Head maintenance" allows to pre-heat
+- Improved: Video scaling of livestream
+- Improved: Many bug fixes and performance improvements
+
 ## 1.1.1
 
 - Improved: Feedback when copying file to USB

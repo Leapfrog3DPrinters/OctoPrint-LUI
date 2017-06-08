@@ -50,6 +50,7 @@ dualX: false
 materialMinTemp: 150
 materialMaxTemp: 275
 lowTempMax: 275
+rgbLights: false
 filament:
   loadInitial:
     amount: 18

@@ -68,6 +68,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.supported_models = ['bolt', 'boltpro', 'xeed', 'xcel']
         self.default_model = 'bolt'
         self.model = None
+        self.model_identified = False
         self.platform = None
         self.platform_info = None
         self.platform_info_file = None
@@ -284,6 +285,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Read model and prepare environment
         self.machine_info = self._get_machine_info()
         self._set_model()
+        self._set_platform()
+        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
         ##~ Read and output information about the platform, such as the image version.
         self._output_platform_info()
@@ -461,12 +464,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _set_model(self):
         """Sets the model and platform variables"""
-        self.model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
+        model = self.machine_info['machine_type'].lower() if 'machine_type' in self.machine_info and self.machine_info['machine_type'] else 'unknown'
 
-        if not self.model in self.supported_models:
-            self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
+        if model in self.supported_models:
+            self.model = model
+            self.model_identified = True
+        else:
+            self._logger.error('Model {0} not found. Defaulting to {1}'.format(model, self.default_model))
             self.model = self.default_model
+            self.model_identified = False
 
+    def _set_platform(self):
         if sys.platform == "darwin":
             self.platform = Platforms.MacDebug
             mac_path = os.path.expanduser("~")
@@ -483,8 +491,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.update_basefolder = "/home/pi/"
             self.media_folder = "/media/pi/"
             self.platform_info_file = "/boot/lpfrgpi.json"
-
-        self._logger.info("Platform: {platform}, model: {model}".format(platform=self.platform, model=self.model))
 
     def _init_model(self):
         """ Reads the printer profile and any machine specific configurations """
@@ -627,6 +633,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """ Check if OctoPrint branch is still on development and change it to master
             if debug mode is not on. This will install and restart service. 
         """
+        if self._settings.get_boolean(["allow_octoprint_branches"]):
+            self._logger.debug('Skipping Octoprint branch check. Current branch: {0}'.format(octoprint.__branch__))
+            return True
+
         self._logger.debug('Checking branch of OctoPrint. Current branch: {0}'.format(octoprint.__branch__))
 
         if not "master" in octoprint.__branch__:
@@ -1312,9 +1322,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._disable_timelapse()
 
         if calibration_type == "bed_width_small":
-            calibration_src_filename = "bolt_bedwidthcalibration_100um.gcode"
+            calibration_src_filename = self.model + "_bedwidthcalibration_100um.gcode"
         elif calibration_type == "bed_width_large":
-            calibration_src_filename = "bolt_bedwidthcalibration_1mm.gcode"
+            calibration_src_filename = self.model + "_bedwidthcalibration_1mm.gcode"
 
         abs_path = self._copy_calibration_file(calibration_src_filename)
 
@@ -2356,6 +2366,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "force_first_run": False,
             "debug_bundling" : False,
             "skip_version_sanity_check": False,
+            "allow_octoprint_branches": False,
             "cloud": {
                 "enabled" : False
                 },
@@ -2564,8 +2575,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     ## End cache methods
 
     def _firmware_update_required(self):
-
-        if not self.model in self.firmware_version_requirement:
+        if not self.model_identified:
+            self._logger.error('No firmware version check. Printer model was not identified.')
+            return False
+        elif not self.model in self.firmware_version_requirement:
             self._logger.debug('No firmware version check. Model not found in version requirement.')
             return False
         elif "firmware_version" in self.machine_info:
@@ -2630,7 +2643,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         calibration_dst_filename = "calibration.gcode"
         calibration_dst_relpath = "calibration"
         calibration_dst_path = octoprint.server.fileManager.join_path(octoprint.filemanager.FileDestinations.LOCAL, calibration_dst_relpath, calibration_dst_filename)
-        calibration_src_path = os.path.join(self._basefolder, "gcodes", calibration_src_filename)
+        calibration_src_path = os.path.join(self._basefolder, "gcodes", "scripts", self.model, calibration_src_filename)
         self._logger.debug("Calibration destination path: {0}".format(calibration_dst_path))
         upload = octoprint.filemanager.util.DiskFileWrapper(calibration_src_filename, calibration_src_path, move = False)
 
@@ -2685,9 +2698,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(ClientMessages.CALIBRATION_FINISHED, { "calibration_type": self.calibration_type})
             self.calibration_type = None
             self._restore_timelapse()
-        elif event == Events.PRINT_FAILED or event == Events.ERROR:
+        elif event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.ERROR:
             self._send_client_message(ClientMessages.CALIBRATION_FAILED, { "calibration_type": self.calibration_type})
             self.calibration_type = None
+            maxZ = self.current_printer_profile.get("boundaries", {}).get("maxZ", 20)
+            self._execute_printer_script("after_print", { "jog_down": self._printer._currentZ < maxZ })
             self._restore_timelapse()
 
 
@@ -2834,7 +2849,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futurePath == currentPath and futureFilename == currentFilename and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
 
-        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
+        futureFullPath = os.path.join(futurePath, futureFilename)
 
         def download_progress(progress):
             self._send_client_message(ClientMessages.MEDIA_FILE_COPY_PROGRESS, { "percentage" : progress*100 })
@@ -2871,14 +2886,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #TODO: Feels like it's not really secure. Fix
         path = os.path.join(self.media_folder, path)
         if not (os.path.exists(path) and os.path.isfile(path)):
-            return make_response(jsonify({ "message": "File not found on '%s': %s" % (target, filename) }), 404)
+            return make_response(jsonify({ "message": "File not found: %s" % (path) }), 404)
 
         # selects/loads a file
         if not octoprint.filemanager.valid_file_type(path, type="machinecode"):
             return make_response(jsonify({ "message": "Cannot select {filename} for printing, not a machinecode file".format(**locals()) }), 415)
 
         # Now the full path is known, remove any folder names from file name
-        _, filename = self._file_manager.split_path("usb", path)
+        _, filename = self._file_manager.split_path("usb", path) # The file storages expect forward slashes
         upload = octoprint.filemanager.util.DiskFileWrapper(filename, path, move = False)
 
         # determine current job
@@ -2905,7 +2920,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if futurePath == currentPath and futureFilename == currentFilename and target == currentOrigin and (self._printer.is_printing() or self._printer.is_paused()):
             return make_response(jsonify({ "message": "Trying to overwrite file that is currently being printed: %s" % currentFilename }), 409)
 
-        futureFullPath = self._file_manager.join_path(FileDestinations.LOCAL, futurePath, futureFilename)
+        futureFullPath = os.path.join(futurePath, futureFilename)
 
         def on_selected_usb_file_copy():
             percentage = (float(os.path.getsize(futureFullPath)) / float(os.path.getsize(path))) * 100.0
@@ -3716,7 +3731,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 self._prevent_overheating(tool, data['target'])
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
-                stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
+                
+                # We make an exception for the bed tool status
+                # there's no "temperature residency" here, which makes the status go
+                # to ready as soon as the temperature is within the window. While the firmware
+                # only "releases" the M190 if actual > target.
+                if tool == "bed":
+                    prev_status = self.tools[tool]["status"]
+                    stabilizing = delta > 0 and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
+                else:
+                    stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
 
                 # process the status
                 if in_window and stabilizing:
@@ -3740,27 +3764,27 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Checks if the target temperature of a given tool matches the installed hot end max temperature
         """
 
-        if tool == "bed":
-            return
+        if self._printer.is_printing():
 
-        # Find the maximum temp for the current tool
-        if tool in self.tools and self.tools[tool]["hotend_type"] == HotEndTypes.HIGH_TEMP:
-            maxTemp = self.current_printer_profile.get("materialMaxTemp", 360)
-        else:
-            maxTemp = self.current_printer_profile.get("lowTempMax", 275)
+            if tool == "bed":
+                maxTemp = self.current_printer_profile.get("bedTempMax", 90)
+            elif tool in self.tools and self.tools[tool]["hotend_type"] == HotEndTypes.HIGH_TEMP:
+                maxTemp = self.current_printer_profile.get("materialMaxTemp", 360)
+            else:
+                maxTemp = self.current_printer_profile.get("lowTempMax", 275)
 
-        if target > maxTemp:
-                self._logger.warn("Tried to set target temperature {tool} at {target}. Max: {max}".format(
-                    tool=tool,
-                    target=target,
-                    max=maxTemp
-                ))
+            if target > maxTemp:
+                    self._logger.warn("Tried to set target temperature {tool} at {target}. Max: {max}".format(
+                        tool=tool,
+                        target=target,
+                        max=maxTemp
+                    ))
 
-                # Cancel any heating running procedures and the print itself
-                self._immediate_cancel()
+                    # Cancel any heating running procedures and the print itself
+                    self._immediate_cancel()
 
-                # Notify front-end
-                self._send_client_message(ClientMessages.TARGET_TEMP_ERROR, { "tool": tool, "target": target, "max": maxTemp  })
+                    # Notify front-end
+                    self._send_client_message(ClientMessages.TARGET_TEMP_ERROR, { "tool": tool, "target": target, "max": maxTemp  })
         
 
     def change_status(self, tool, new_status):
@@ -3969,11 +3993,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._update_from_m115_properties(line)
             self.machine_info = self._get_machine_info()
 
-            self.model = self.machine_info["machine_type"].lower() if "machine_type" in self.machine_info and self.machine_info["machine_type"] else "unknown"
-
-            if not self.model in self.supported_models:
-                self._logger.warn('Model {0} not found. Defaulting to {1}'.format(self.model, self.default_model))
-                self.model = self.default_model
+            self._set_model()
 
             if oldModelName != self.model:
                 self._logger.debug("Printer model changed. Old model: {0}. New model: {1}".format(oldModelName, self.model))
@@ -4132,18 +4152,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if (event == Events.PRINT_CANCELLED or event == Events.PRINT_DONE or event == Events.ERROR):
             self._reset_current_print_extrusion_amount()
             self._save_filament_to_db()
-            # TODO: Move commands below to gcode script
-            self._set_print_mode(PrintModes.NORMAL)
-
-            if "boundaries" in self.current_printer_profile and "maxZ" in self.current_printer_profile["boundaries"]:
-               maxZ = self.current_printer_profile["boundaries"]["maxZ"]
-            else:
-               maxZ = 20
-
-            if self._printer._currentZ < maxZ:
-                self._printer.jog({ 'z': 20 })
-
-            self._printer.home(['x', 'y'])
+            
+            maxZ = self.current_printer_profile.get("boundaries", {}).get("maxZ", 20)
+            self._execute_printer_script("after_print", { "jog_down": self._printer._currentZ < maxZ })
 
         if (event == Events.PRINT_DONE and self.auto_shutdown and not was_calibration):
             config = self._settings.global_get(["webcam", "timelapse"], merged=True)

@@ -333,7 +333,7 @@ $(function ()  {
 
         self.enableForcePrint = function () {
             var title = gettext("By-pass print analysis");
-            var message = "<i class='fa fa-exclamation-triangle'></i>" + gettext(" You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. This could potentially damage your printer.");
+            var message = "<i class='fa fa-exclamation-triangle'></i> " + gettext("You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. This could potentially damage your printer.");
             var question = gettext("Do you want to by-pass the print analysis and start the print?");
             var dialog = {title: title, text: message, question: question};
             self.flyout.showConfirmationFlyout(dialog, true)
@@ -347,6 +347,18 @@ $(function ()  {
             self.printMode("normal");
             self.forcePrint(false);
             self.flyout.showFlyout("mode_select");
+            
+            //IntroJS
+            if (self.introView.isTutorialStarted) {
+                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("selectPrintMode"));
+
+                $('#mode_select_flyout').one("transitionend", function () {
+                    self.introView.introInstance.refresh();
+
+                    setTimeout(function () { self.introView.introInstance.refresh() }, 300);
+                });
+            }
+
         };
 
         self.pause = function () {
@@ -453,9 +465,6 @@ $(function ()  {
         self.beginHoming = function () {
             self.isHomingRequested(true);
             sendToApi('printer/homing/start');
-            if(FIRST_START){
-                self.introView.startIntro('firstPrint');
-            }
         };
 
         self.cancelAutoShutdown = function () {
@@ -610,6 +619,9 @@ $(function ()  {
                         self.isHoming(false);
                         //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
                         self.closeStartupFlyout();
+                        if(FIRST_START){
+                            self.introView.startIntro('firstPrint');
+                        }
                         break;
                     case "is_homing":
                         self.isHomed(false);

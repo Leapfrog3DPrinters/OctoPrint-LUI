@@ -1081,13 +1081,14 @@
               parentElm.appendChild(container);
           if (overlayLayer)
               parentElm.appendChild(overlayLayer);
+
+          var topPos = targetElement.element.offsetTop;
+
+          if (this._options.scrollToElement === true) {
+              parentElm.scrollTop = topPos - this._options.scrollPadding;
+          }
         }
 
-      var topPos = targetElement.element.offsetTop;
-
-      if (this._options.scrollToElement === true) {
-        parentElm.scrollTop = topPos - this._options.scrollPadding;
-      }
 
       if (typeof (this._introAfterChangeCallback) !== 'undefined') {
         this._introAfterChangeCallback.call(this, targetElement.element);
@@ -1367,6 +1368,28 @@
       this._hintCloseCallback.call(this, stepId);
     }
   };
+
+  /**
+   * Hides intro
+   *
+   * @api private
+   * @method _hideIntro
+   */
+  function _hideIntro() {
+      $('#introjs-container').hide();
+      $('.introjs-overlay').hide();
+  }
+
+  /**
+   * Shows intro
+   *
+   * @api private
+   * @method _showIntro
+   */
+  function _showIntro() {
+      $('#introjs-container').show();
+      $('.introjs-overlay').show();
+  }
 
   /**
    * Hide all hints
@@ -1855,6 +1878,14 @@
     },
     showHints: function () {
       _showHints.call(this);
+      return this;
+    },
+    showIntro: function () {
+      _showIntro.call(this);
+      return this;
+    },
+    hideIntro: function () {
+      _hideIntro.call(this);
       return this;
     }
   };
