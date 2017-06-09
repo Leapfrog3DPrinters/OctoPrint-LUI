@@ -193,7 +193,7 @@ $(function () {
             getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
                 if (self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
             });
-            if(!IS_LOCAL){
+            if(!IS_LOCAL && !self.loginState.loggedIn && !self.settings.locallock_enabled){
                 self.showLoginFlyout()
             }
         }
