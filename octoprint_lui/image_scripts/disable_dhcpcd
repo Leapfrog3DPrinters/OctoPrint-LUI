@@ -1,0 +1,84 @@
+#!/bin/bash
+
+###
+#
+# This script purges dhcpcd as it conflicts with setting
+# a static IP address trough NetworkManager. For image v1.0
+# the purge is executed immediately. For v1.1, the script
+# makes root writable, reboots, purges dhcpcd, makes root ro again
+# and reboots again. For >= v1.2, does nothing.
+#
+###
+
+autostart="/home/pi/.config/openbox/autostart"
+imageinfo="/boot/lpfrgpi.json"
+
+do_start()
+{
+    if ! dpkg -l | grep -q "dhcpcd"; then
+        echo "dhcpcd not found. Nothing to do."
+        exit 0
+    elif [ ! -f "$imageinfo" ]; then
+        # No image info, we are < v1.1
+        echo "Image version < 1.1, going to purge dhcpcd"
+        do_disable_dhcpcd
+        echo "Purging done. Please reboot."
+        exit 3
+    elif grep -q "\"image_version\"\: \"1.1.0\"" "$imageinfo"; then
+        # V1.1
+        echo "Image version == 1.1, going to purge dhcpcd on the next reboot"
+        do_install
+        echo "Installation done. Please reboot."
+        exit 3
+    else
+        echo "Image version > 1.1. Nothing to do."
+        exit 0
+    fi
+}
+
+do_install() {
+    # Ensures script runs on next startup
+    if ! grep -i -q "disable_dhcpcd" "$autostart"; then
+        # Makes root read-writable again on next reboot
+        sudo sed -i "s@boot=overlay @@" /boot/cmdline.txt
+        sudo sed -i "s@root_readonly=\"yes\"@root_readonly=\"no\"@" /boot/octopi.txt
+
+        # Append script to autostart file
+        sudo sed -i '1 i\/home/pi/scripts/disable_dhcpcd run' "$autostart"
+
+        echo "Script installed."
+    else
+        echo "Script is already installed."
+    fi
+}
+
+do_uninstall() {
+    # Don't run script on next boot anymore
+    sudo sed -i '/disable_dhcpcd/d' "$autostart"
+
+    # Makes root read-writable again on next reboot
+    sudo sed -i '1s@^@boot=overlay @' /boot/cmdline.txt
+    sudo sed -i "s@root_readonly=\"no\"@root_readonly=\"yes\"@" /boot/octopi.txt
+
+    echo "Script uninstalled"
+}
+
+do_disable_dhcpcd() {
+    sudo apt-get -y purge dhcpcd5
+
+    echo "Reboot"
+}
+
+key="$1"
+
+case $key in
+    "run")
+    do_disable_dhcpcd
+    do_uninstall
+    sudo reboot
+    ;;
+
+    *)
+    do_start
+    ;;
+esac

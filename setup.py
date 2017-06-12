@@ -41,7 +41,7 @@ plugin_requires = ["tinydb>=3.2.0","RPi.GPIO","cssmin", "dropbox", "onedrivesdk"
 
 # Additional package data to install for this plugin. The subfolders "templates", "static" and "translations" will
 # already be installed automatically if they exist.
-plugin_additional_data = ["gcodes", "printerProfiles"]
+plugin_additional_data = ["gcodes", "printerProfiles", "image_scripts"]
 
 # Any additional python packages you need to install with your plugin that are not contains in <plugin_package>.*
 plugin_addtional_packages = []

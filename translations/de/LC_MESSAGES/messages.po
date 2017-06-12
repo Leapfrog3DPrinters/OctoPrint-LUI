@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-06-07 12:21+0200\n"
+"POT-Creation-Date: 2017-06-12 08:52+0200\n"
 "PO-Revision-Date: 2017-04-10 09:36+0200\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -70,13 +70,13 @@ msgstr "Datei auf SD-Karte transferieren"
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:81
 #: octoprint_lui/static/js/app/viewmodels/system.js:94
-#: octoprint_lui/static/js/app/viewmodels/update.js:593
+#: octoprint_lui/static/js/app/viewmodels/update.js:579
 msgid "Service restarting"
 msgstr "Dienst startet neu"
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:82
 #: octoprint_lui/static/js/app/viewmodels/system.js:95
-#: octoprint_lui/static/js/app/viewmodels/update.js:594
+#: octoprint_lui/static/js/app/viewmodels/update.js:580
 msgid ""
 "The background service of the printer is restarting. This is common after"
 " a software update. Printer will be available in a couple of minutes."
@@ -87,13 +87,13 @@ msgstr ""
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:84
 #: octoprint_lui/static/js/app/viewmodels/system.js:97
-#: octoprint_lui/static/js/app/viewmodels/update.js:596
+#: octoprint_lui/static/js/app/viewmodels/update.js:582
 msgid "Server disconnected"
 msgstr "Verbindung zum Server abgebrochen"
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:85
 #: octoprint_lui/static/js/app/viewmodels/system.js:98
-#: octoprint_lui/static/js/app/viewmodels/update.js:597
+#: octoprint_lui/static/js/app/viewmodels/update.js:583
 msgid ""
 "The browser has been disconnected from the printer. Either the printer is"
 " turned off or the network connection failed. Trying to reconnect in the "
@@ -523,7 +523,7 @@ msgstr "Dies wird die derzeit ausgewählte Datei nicht löschen."
 #: octoprint_lui/static/js/app/viewmodels/navigation.js:38
 #: octoprint_lui/static/js/app/viewmodels/navigation.js:54
 #: octoprint_lui/static/js/app/viewmodels/navigation.js:80
-#: octoprint_lui/static/js/app/viewmodels/update.js:149
+#: octoprint_lui/static/js/app/viewmodels/update.js:144
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:233
 msgid "Do you want to continue?"
 msgstr "Möchten Sie fortfahren?"
@@ -1545,26 +1545,26 @@ msgstr "Wartezustand"
 msgid "Ready"
 msgstr "Fertig"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:47
-#: octoprint_lui/static/js/app/viewmodels/update.js:55
-#: octoprint_lui/static/js/app/viewmodels/update.js:79
+#: octoprint_lui/static/js/app/viewmodels/update.js:45
+#: octoprint_lui/static/js/app/viewmodels/update.js:53
+#: octoprint_lui/static/js/app/viewmodels/update.js:77
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:107
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:34
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:166
 msgid "Update"
 msgstr "Update"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:49
-#: octoprint_lui/static/js/app/viewmodels/update.js:57
-#: octoprint_lui/static/js/app/viewmodels/update.js:81
+#: octoprint_lui/static/js/app/viewmodels/update.js:47
+#: octoprint_lui/static/js/app/viewmodels/update.js:55
+#: octoprint_lui/static/js/app/viewmodels/update.js:79
 msgid "Up-to-date"
 msgstr "Auf dem neuesten Stand"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:147
+#: octoprint_lui/static/js/app/viewmodels/update.js:142
 msgid "Update software"
 msgstr "Software updaten"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:148
+#: octoprint_lui/static/js/app/viewmodels/update.js:143
 msgid ""
 "You are about to update the printer software. This will take some time "
 "and will restart the printer background service when completed."
@@ -1573,11 +1573,11 @@ msgstr ""
 "kann ein wenig dauern und wird den Hintergunddienst, nach Abschluss des "
 "Updates, neu starten "
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:152
+#: octoprint_lui/static/js/app/viewmodels/update.js:146
 msgid "Update: "
 msgstr "Update:"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:153
+#: octoprint_lui/static/js/app/viewmodels/update.js:147
 msgid ""
 "You are about to update a component of the User Interface. This will take"
 " some time and will restart the printer background service when "
@@ -1587,50 +1587,59 @@ msgstr ""
 "kann ein wenig dauern und wird den Hintergunddienst, nach Abschluss des "
 "Updates, neu starten. "
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:154
+#: octoprint_lui/static/js/app/viewmodels/update.js:148
 #, fuzzy
 msgid "Do you want to update "
 msgstr "Update durchführen"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:164
-#: octoprint_lui/static/js/app/viewmodels/update.js:182
-#: octoprint_lui/static/js/app/viewmodels/update.js:570
+#: octoprint_lui/static/js/app/viewmodels/update.js:158
+#: octoprint_lui/static/js/app/viewmodels/update.js:176
+#: octoprint_lui/static/js/app/viewmodels/update.js:556
 msgid "Update failed."
 msgstr "Update fehlgeschlagen."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:165
-#: octoprint_lui/static/js/app/viewmodels/update.js:183
+#: octoprint_lui/static/js/app/viewmodels/update.js:159
+#: octoprint_lui/static/js/app/viewmodels/update.js:177
+#: octoprint_lui/static/js/app/viewmodels/update.js:543
 #: octoprint_lui/static/js/app/viewmodels/update.js:557
-#: octoprint_lui/static/js/app/viewmodels/update.js:571
 msgid "Please check the logs."
 msgstr "Überprüfen Sie die Logs."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:193
+#: octoprint_lui/static/js/app/viewmodels/update.js:187
 msgid "Updating firmware"
 msgstr "Firmware aktualisieren"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:194
+#: octoprint_lui/static/js/app/viewmodels/update.js:188
 msgid "The firmware is updating, please wait until the update is completed..."
 msgstr ""
 "Firmware wird aktualisiert. Bitte warten Sie bis die Updates "
 "abgeschlossen wurden... "
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:250
+#: octoprint_lui/static/js/app/viewmodels/update.js:238
 msgid "Updating"
 msgstr "Update wird durchgeführt."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:251
+#: octoprint_lui/static/js/app/viewmodels/update.js:239
 msgid "System is updating, please wait until the updates are completed..."
 msgstr ""
 "System wird aktualisiert. Bitte warten Sie bis die Updates abgeschlossen "
 "wurden... "
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:327
-#: octoprint_lui/static/js/app/viewmodels/update.js:398
+#: octoprint_lui/static/js/app/viewmodels/update.js:245
+#, fuzzy
+msgid "Rebooting"
+msgstr "Neustart"
+
+#: octoprint_lui/static/js/app/viewmodels/update.js:246
+msgid "To complete the updates, the system will reboot itself."
+msgstr ""
+
+#: octoprint_lui/static/js/app/viewmodels/update.js:321
+#: octoprint_lui/static/js/app/viewmodels/update.js:390
 msgid "Firmware update found"
 msgstr "Firmware-Update wurde gefunden."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:328
+#: octoprint_lui/static/js/app/viewmodels/update.js:322
 msgid ""
 "A firmware update has been found, but this requires a software update "
 "first."
@@ -1638,16 +1647,16 @@ msgstr ""
 "Ein Firmware-Update wurde gefunden, aber dies erfordert zunächst ein "
 "Software-Update."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:329
+#: octoprint_lui/static/js/app/viewmodels/update.js:323
 msgid "Would you like to update the printer software?"
 msgstr "Möchten Sie ein Update für die Software durchführen?"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:348
+#: octoprint_lui/static/js/app/viewmodels/update.js:341
 msgid "Could not retrieve update information"
 msgstr "Update-Informationen konnten nicht wiederhergestellt werden"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:349
-#: octoprint_lui/static/js/app/viewmodels/update.js:539
+#: octoprint_lui/static/js/app/viewmodels/update.js:342
+#: octoprint_lui/static/js/app/viewmodels/update.js:525
 #, fuzzy
 msgid ""
 "The printer seems not connected to the internet. Please make sure the "
@@ -1656,7 +1665,7 @@ msgstr ""
 "Der Drucker scheint nicht mit dem Internet verbunden zu sein. Bitte "
 "stellen Sie sicher, dass ihr Netzwerk mit dem Internet verbunden ist."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:399
+#: octoprint_lui/static/js/app/viewmodels/update.js:391
 #, python-format
 msgid ""
 "The USB drive you inserted contains a firmware update with filename "
@@ -1665,19 +1674,19 @@ msgstr ""
 "Das USB-Speichermedium enthält ein Firmware-Update mit dem Dateinamen "
 "\"%(filename)s\"."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:400
+#: octoprint_lui/static/js/app/viewmodels/update.js:392
 msgid "Would you like to install this update?"
 msgstr "Möchten Sie dieses Update installieren?"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:538
+#: octoprint_lui/static/js/app/viewmodels/update.js:524
 msgid "Printer offline"
 msgstr "Drucker ist offline"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:547
+#: octoprint_lui/static/js/app/viewmodels/update.js:533
 msgid "Update server offline"
 msgstr "Update-Server ist offline"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:548
+#: octoprint_lui/static/js/app/viewmodels/update.js:534
 msgid ""
 "The update server seems to be offline. Please retry updating after or "
 "check the status at github.com/Leapfrog3DPrinters"
@@ -1686,15 +1695,15 @@ msgstr ""
 "neu oder überprüfen Sie den momenatnen Staus unter "
 "github.com/Leapfrog3DPrinters"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:556
+#: octoprint_lui/static/js/app/viewmodels/update.js:542
 msgid "Update fetching failed."
 msgstr "Abrufen Update ist fehlgeschlagen"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:579
+#: octoprint_lui/static/js/app/viewmodels/update.js:565
 msgid "Update completed."
 msgstr "Update abgeschlossen."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:580
+#: octoprint_lui/static/js/app/viewmodels/update.js:566
 msgid "Going to restart the service to finish the updates."
 msgstr "Der Dienst zur Abschließung des Updates wird neu gestartet."
 
@@ -3004,6 +3013,16 @@ msgstr "Erneut scannen"
 msgid "Wired"
 msgstr "Verkabelt"
 
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:104
+#, fuzzy
+msgid "Connected"
+msgstr "Verbinden"
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:104
+#, fuzzy
+msgid "Disconnected"
+msgstr "Verbindung trennen"
+
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:111
 #, fuzzy
 msgid "Connect to network"
@@ -3037,15 +3056,15 @@ msgid "IP address:"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:172
-msgid "DNS Server 1:"
+msgid "Default gateway:"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:180
-msgid "DNS Server 2:"
+msgid "DNS Server 1:"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:188
-msgid "Default gateway:"
+msgid "DNS Server 2:"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:196
@@ -3306,25 +3325,4 @@ msgstr "Druckauftrag wird abgebrochen"
 
 #~ msgid "Bed leveling "
 #~ msgstr "Kalibrierung der Druckunterlage"
-
-#~ msgid ""
-#~ "The printer could not connect to "
-#~ "the cloud service. Please try again "
-#~ "and ensure authorize the printer to "
-#~ "access to your files."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "<b>Welcome to your new Bolt.</b><br "
-#~ "/>This tutorial will guide you through"
-#~ " the steps you have to take to"
-#~ " start printing your creations.<br />"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Select one of the print modes. "
-#~ "When you're ready, press <b>Start "
-#~ "print</b> or if you don't want to"
-#~ " print anything, press <b>Cancel</b>."
-#~ msgstr ""
 

@@ -169,6 +169,14 @@
           </div>
           <div class="Table-row" data-bind="visible: !connectionDetails.ipv4.autoSettings()">
             <div class="Table-item">
+              {{ _('Default gateway:') }}
+            </div>
+            <div class="Table-item">
+              <input type="text" data-bind="value: connectionDetails.ipv4.gateway, css: { disabled: connectionDetails.ipv4.autoSettings() }" />
+            </div>
+          </div>
+          <div class="Table-row" data-bind="visible: !connectionDetails.ipv4.autoSettings()">
+            <div class="Table-item">
               {{ _('DNS Server 1:') }}
             </div>
             <div class="Table-item">
@@ -181,14 +189,6 @@
             </div>
             <div class="Table-item">
               <input type="text" data-bind="value: connectionDetails.ipv4.dns2, css: { disabled: connectionDetails.ipv4.autoSettings() }" />
-            </div>
-          </div>
-          <div class="Table-row" data-bind="visible: !connectionDetails.ipv4.autoSettings()">
-            <div class="Table-item">
-              {{ _('Default gateway:') }}
-            </div>
-            <div class="Table-item">
-              <input type="text" data-bind="value: connectionDetails.ipv4.gateway, css: { disabled: connectionDetails.ipv4.autoSettings() }" />
             </div>
           </div>
           <div class="Table-row">

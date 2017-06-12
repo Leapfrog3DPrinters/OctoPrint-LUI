@@ -88,6 +88,7 @@ class ClientMessages(object):
     GITHUB_OFFLINE = "github_offline"
     INTERNET_OFFLINE = "internet_offline"
     FORCED_UPDATE = "forced_update"
+    FORCED_REBOOT = "forced_reboot"
     UPDATE_ERROR = "update_error"
     UPDATE_SUCCESS = "update_success"
     UPDATE_FETCH_ERROR = "update_fetch_error"

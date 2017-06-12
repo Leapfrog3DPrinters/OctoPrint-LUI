@@ -62,6 +62,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Global
         self.debug = False
         self.auto_shutdown = False
+        self.reboot_requested = False
         self.maintenance_mode = False
 
         ##~ Model specific
@@ -221,6 +222,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetching_updates = False
         self.installing_updates = False
         self.git_lock = threading.RLock()
+        self.updates_completed_hooks = []
 
         ##~ Changelog
         self.changelog_filename = 'CHANGELOG.md'
@@ -508,7 +510,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _read_hostname(self):
         if self.platform == Platforms.RaspberryPi and self.platform_info:
-            image_version = LooseVersion(self.platform_info["image_version"])
+            image_version = LooseVersion(self.platform_info.get("image_version", "1.0"))
             if image_version >= LooseVersion("1.2.0"):
                 with open('/etc/hostname', 'r') as hostname_file:
                     try:
@@ -558,6 +560,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             first_run_results.append(self._add_server_commands())
             first_run_results.append(self._disable_ssh())
             first_run_results.append(self._set_chromium_args())
+            first_run_results.append(self._disable_dhcpcd())
 
             # Clean up caches
             first_run_results.append(self._clean_webassets())
@@ -720,6 +723,61 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         else:
             self._logger.info("Not on old RPi image, so skipping chromium command line update")
         return True
+
+    def _disable_dhcpcd(self):
+        """
+        Runs a bash script on the image that purges dhcpcd, as it is known to conflict with 
+        setting a static IP through NetworkManager. Only applicable to images < v1.1
+        """
+
+        if self.platform == Platforms.RaspberryPi:
+            
+            if self.platform_info:
+                image_version = LooseVersion(self.platform_info.get("image_version", "1.0"))
+
+                if image_version >= LooseVersion("1.2.0"):
+                    self._logger.info("Image version >= 1.2.0, no need to disable dhcpcd")
+                    return True
+
+            self._logger.info("Image version < 1.2.0. Disabling dhcpcd...")
+            script_target_path = "/home/pi/scripts/disable_dhcpcd"
+
+            # Copy the bash script to writable folder if we don't have it already
+            if not os.path.exists(script_target_path):
+                self._logger.info("Copying disable_dhcpcd script")
+
+                script_source_path = os.path.join(self._basefolder, "image_scripts/disable_dhcpcd")
+
+                try:
+                    shutil.copy2(script_source_path, script_target_path)
+                except OSError as e:
+                    self._logger.exception("Could not copy disable_dhcpcd script")
+                    return False
+
+            # Set execution bits
+            import stat
+            try:
+                st = os.stat(script_target_path)
+                os.chmod(script_target_path, st.st_mode | stat.S_IEXEC)
+            except OSError as e:
+                self._logger.exception("Could not set permissions for disable_dhcpcd script")
+                return False
+
+            # Execute the script, and plan a reboot if requested.
+            returncode, out, _ = octoprint_lui.util.execute(script_target_path, None, False)
+            self._logger.debug("Disable_dhcpcd output: {}".format(out))
+
+            if returncode == 0:
+                self._logger.info("Disable dhcpcd succeeded")
+            elif returncode == 3:
+                self._logger.info("Disable dhcpcd succeeded. Reboot required.")
+                self.reboot_requested = True
+            else:
+                self._logger.error("The disable_dhcpcd script failed. Error code: {}".format(returncode))
+                return False
+
+        return True
+
 
     def _clean_webassets(self):
         """ 
@@ -2135,6 +2193,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(ClientMessages.FORCED_UPDATE)
 
             self._update_plugins("all")
+        else:
+            # Nothing to update. Trigger completed hooks
+            self._call_hooks(self.updates_completed_hooks)
 
     def _update_plugins(self, plugin):
         if self.installing_updates:
@@ -2183,9 +2244,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # We're closing the thread, so release the lock
         self.installing_updates = False
+        
+        # If we have any hooks, execute them now
+        self._call_hooks(self.updates_completed_hooks)
 
         # And let's just restart the service also
-        return self._perform_service_restart()
+        self._perform_service_restart()
 
     def _fetch_update_info_list(self, force):
         self._logger.debug("Starting fetch thread. Forced: {0}".format(force))
@@ -4166,11 +4230,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # The first run may have determined we need forced updates. This needs some UI interaction, so perform
         # this action as soon as the client is connected.
         if event == Events.CLIENT_OPENED:
-            self._perform_forced_updates()
+            # If a reboot was requested, perform it straight after the updates
+            self.updates_completed_hooks.append(self._perform_forced_reboot)
+            self._perform_forced_updates() # Will perform the forced reboot on completion, if necessary
 
         #if (event == Events.SETTINGS_UPDATED):
         #    self._update_hostname()
         # This function is not enabled yet as the readonly file system doesn't allow us to change the hostname yet
+
+    def _perform_forced_reboot(self):
+        if self.reboot_requested:
+            self._logger.info("Performing a forced reboot")
+            self._send_client_message(ClientMessages.FORCED_REBOOT)
+            self._perform_system_reboot()
 
     def _update_hostname(self):
         """ Updates the hostname of the environment"""
@@ -4270,9 +4342,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.warn("Restart stderr:\n%s" % e.stderr)
             raise exceptions.RestartFailed()
 
+    def _perform_system_reboot(self):
+        """
+        Reboot the system
+        """
+        self._logger.info("Rebooting...")
+        try:
+            octoprint_lui.util.execute("sudo reboot")
+        except exceptions.ScriptError as e:
+            self._logger.exception("Error while rebooting")
+            self._logger.warn("Reboot stdout:\n%s" % e.stdout)
+            self._logger.warn("Reboot stderr:\n%s" % e.stderr)
+            raise exceptions.RestartFailed()
+
     def _perform_sytem_shutdown(self):
         """
-        Perform a restart of the octoprint service restart
+        Perform a shutdown of the system
         """
 
         self._logger.info("Shutting down...")
@@ -4289,8 +4374,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         for method in hooks:
             if callable(method):
                 method(*args, **kwargs)
-
-
 
 __plugin_name__ = "Leapfog UI"
 def __plugin_load__():
