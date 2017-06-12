@@ -551,11 +551,13 @@ $(function ()  {
                 self.errorReason(data.printerErrorReason);
                 self.erroredExtruder(data.printerErrorExtruder);
                 self.showPrinterErrorFlyout();
+                self.introView.exit();
             }
             else {
                 self.closePrinterErrorFlyout();
                 self.erroredExtruder(undefined);
                 self.errorReason(undefined);
+                self.introView.exit();
             }
 
             if(data.maintenanceMode)
