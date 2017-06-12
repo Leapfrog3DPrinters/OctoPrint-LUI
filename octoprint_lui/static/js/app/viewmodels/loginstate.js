@@ -92,6 +92,9 @@ $(function () {
                     $.notify({title: gettext("Logout successful"), text: gettext("You are now logged out")}, "success");
                     self.fromResponse(response);
                     self.flyout.closeFlyoutAccept();
+                    if(self.settings.locallock_enabled) {
+                        self.flyout.showFlyout('locallock');
+                    }
                 });
         };
 
