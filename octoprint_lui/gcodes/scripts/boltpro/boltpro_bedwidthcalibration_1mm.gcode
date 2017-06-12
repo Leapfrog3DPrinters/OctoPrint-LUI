@@ -16,9 +16,9 @@ G1 E30 F150 ; extrude another 15 mm slow
 G1 E28 F6000 ; retract 2mm
 G4 S2; wait for 2 seconds
 ; perform wipe sequence
-G1 X319.000 F12000
+G1 X308.000 F12000
 G1 X337.000 F12000
-G1 X319.000 F12000
+G1 X308.000 F12000
 G1 X337.000 F12000
 G92 E0; zero extruder
 ;Vertical line #0 Tool 0
@@ -171,9 +171,9 @@ G1 E30 F150 ; extrude another 15 mm slow
 G1 E28 F6000 ; retract 2mm
 G4 S2; wait for 2 seconds
 ; perform wipe sequence
-G1 X-17.000 F12000
+G1 X-6.000 F12000
 G1 X-35.000 F12000
-G1 X-17.000 F12000
+G1 X-6.000 F12000
 G1 X-35.000 F12000
 G92 E0; zero extruder
 ;Vertical line #0 Tool 1
