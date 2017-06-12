@@ -92,7 +92,7 @@ $(function () {
         {
             $.notify({
                 title: gettext("Could not connect to cloud service."),
-                text: gettext("The printer could not connect to the cloud service. Please try again and ensure authorize the printer to access to your files.")
+                text: gettext("The printer could not connect to the cloud service. Please try again and ensure you authorize LUI to access to your files.")
             }, "error");
         }
 

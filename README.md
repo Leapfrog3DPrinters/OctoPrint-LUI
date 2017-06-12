@@ -21,3 +21,9 @@ Install via this URL:
 
     https://github.com/Leapfrog3DPrinters/OctoPrint-LUI/archive/master.zip
 
+After downloading, activate the OctoPrint virtual environment and install the plugin using
+
+~~~~python setup.py install~~~~
+
+## Gcode scripts
+On the first startup after every update, LUI copies all machine related gcode scripts (from the gcodes/scripts folder) to the OctoPrint scripts folder (usually ~/.octoprint/scripts). The Bolt/BoltPro wiping and extruder calibration scripts can be generated using gcodes/bolt_scripts_generator.py.

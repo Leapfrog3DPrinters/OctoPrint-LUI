@@ -9,7 +9,6 @@
       <div class="gcode_files">
         <div class="file_header">
           <div class="browse_modes">
-            {%  if local_addr -%}
             <div class="button-area">
               <ul>
                 <li class="button load-button" data-bind="touchClick: function () { browseOrigin('local') }, css: { 'secondary-button': currentOrigin() == 'local' }">
@@ -45,7 +44,6 @@
               </ul>
             </div>
             {% endif %}
-            {%- endif %}
             {% if not local_addr or debug_lui  %}
             <div class="button-area">
               <ul>
@@ -65,15 +63,13 @@
             <form class="form-search" data-bind="submit: performSearch">
               <div class="file-search-input-container">
                 <input type="text" class="input-block search-query" data-bind="value: searchQuery, valueUpdate: 'input'" placeholder="{{ _('Search...') }}" style="width: 100%;" />
-                  <div class="button-area" data-bind="visible: searchQuery()">
-                    <ul>
+                    <ul class="button-area" data-bind="visible: searchQuery()">
                       <li class="button">
                         <a href="#" data-bind="touchClick: function () { clearQuery() }">
                           <i class="fa fa-remove">  </i>
                         </a>
                       </li>
                     </ul>
-                  </div>
                 </div>
             </form>
           </div>

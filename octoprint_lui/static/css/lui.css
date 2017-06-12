@@ -328,8 +328,11 @@ input[type=radio] {
 .app-header .header_login {
   /*margin-left: auto;*/ }
 
+#header_logo {
+  padding-right: 1em; }
+
 .header_status {
-  padding-right: 2em; }
+  padding-right: 1em; }
 
 .network-status {
   margin-right: 20px; }
@@ -1371,7 +1374,7 @@ ul.height-calibrator {
   ul.height-calibrator li {
     text-align: left;
     width: 300px;
-    height: 30px;
+    height: 19px;
     list-style-type: none;
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 40%, #434A54 40%, #434A54 60%, rgba(255, 255, 255, 0) 60%); }
     ul.height-calibrator li:hover {
@@ -1380,7 +1383,7 @@ ul.height-calibrator {
       background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 40%, #A9CC3C 40%, #A9CC3C 60%, rgba(255, 255, 255, 0) 60%); }
     ul.height-calibrator li i {
       left: -30px;
-      top: 3px;
+      top: -7px;
       position: relative;
       text-decoration: none;
       font-style: normal;
