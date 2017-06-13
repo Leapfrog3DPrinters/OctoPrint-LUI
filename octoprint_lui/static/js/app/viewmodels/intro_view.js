@@ -525,9 +525,9 @@ $(function ()  {
             self.introInstance.exit();
         }
 
-        self.onTabChange = function (current) {
+        self.onTabChange = function (currentTab) {
             if(self.isTutorialStarted) {
-                if (current != "#settings") {
+                if (currentTab != "#settings") {
                     return;
                 }
                 setTimeout(function () {
