@@ -392,8 +392,8 @@ $(function () {
     // Allow components to react to tab change
     var tabs = $('.icon-bar a');
     tabs.on('mousedown', function (e) {
-        var current = e.target.hash;
-        callViewModels(allViewModels, "onTabChange", [current]);
+        var currentTab = e.target.hash;
+        callViewModels(allViewModels, "onTabChange", [currentTab]);
     });
 
     //~~ view model binding

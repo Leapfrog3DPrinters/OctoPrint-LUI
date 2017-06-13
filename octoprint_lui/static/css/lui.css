@@ -92,6 +92,7 @@ a {
   border-top: 3px solid #FF9734; }
 
 .icon-bar i {
+  pointer-events:none;
   display: block;
   font-size: 2rem;
   color: #ffffff;
