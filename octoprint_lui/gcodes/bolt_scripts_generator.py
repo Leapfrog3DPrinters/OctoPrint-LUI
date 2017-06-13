@@ -28,7 +28,8 @@ w_p = 0.39      # Extrusion width
 
 n_layers = 1    # Number of layers to print. One is fine.
 
-gCodeStart = [ 'G28', \
+gCodeStart = [ '; This script is auto-generated with bolt_scripts_generator', \
+             'G28', \
             'T0', \
             'M109 T0', \
             'M109 T1', \
