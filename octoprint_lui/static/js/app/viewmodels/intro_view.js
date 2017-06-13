@@ -523,11 +523,16 @@ $(function ()  {
             self.introInstance.exit();
         };
 
-        self.onAfterTabChange = function (current, previous) {
-            if (current != "#settings") {
-                return;
+        self.onTabChange = function (current) {
+            if(self.isTutorialStarted) {
+                if (current != "#settings") {
+                    return;
+                }
+                setTimeout(function () {
+                    self.introInstance.goToStep(self.getStepNumberByName("goToMaintenance"));
+                    self.refreshElements();
+                }, 300);
             }
-            self.introInstance.goToStep(self.getStepNumberByName('goToMaintenance'));
         };
 
         self.refreshElements = function () {
