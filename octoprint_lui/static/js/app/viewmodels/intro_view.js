@@ -523,6 +523,10 @@ $(function ()  {
             self.introInstance.exit();
         };
 
+        self.onServerDisconnect = function () {
+            self.introInstance.exit();
+        }
+
         self.onTabChange = function (current) {
             if(self.isTutorialStarted) {
                 if (current != "#settings") {

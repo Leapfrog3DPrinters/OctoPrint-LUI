@@ -1395,7 +1395,7 @@ $(function ()  {
 
         self.checkIntroCancel = function () {
             //IntroJS
-            self.introView.introInstance.exit();
+            self.introView.exitButton();
             self.flyout.closeFlyout();
         };
 
