@@ -2344,6 +2344,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return update_info
 
     def _is_update_needed(self, path):
+        """ Checks if the local commit of a git path is up-to-date with the remote commit in the current branch."""
+
         branch_name = None
         with self.git_lock:
             try:
