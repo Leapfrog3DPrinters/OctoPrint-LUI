@@ -159,7 +159,7 @@ $(function ()  {
                 intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("There is PLA filament detected in both extruders. We will now" +
-                    " calibrate the printer to make sure that the bed and the extruders are aligned.") +
+                    " calibrate the printer to make sure that the bed and the extruders are aligned. Normally this is only needed for the first print after maintenance or after moving the printer.") +
                 "</div><div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                 " class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('goToSettings')) }\">" + gettext("Next") + "</a></div></div>"
             },
@@ -169,7 +169,7 @@ $(function ()  {
                 element: "#settings_icon",
                 intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("The calibration is part of the maintenance flyout located in the " +
+                "<div class=\"step-text\">" + gettext("The calibration functions are part of the maintenance flyout located in the " +
                     "settings tab. To get there, press <i class=\"fa fa-gears\"></i><br>Settings</br>") + "</div>",
                 position: 'top'
             },
@@ -293,7 +293,8 @@ $(function ()  {
                 element: $('.print_status').find('.button-area')[0],
                 intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("The printer is now calibrated and ready to print. " +
+                "<div class=\"step-text\">" + gettext("The printer is now calibrated and ready to print. Normally the " +
+                    "calibration is only needed for the first print after maintenance or after moving the printer. " +
                     "Now we will select the demo print job (the GCODE file) for the printer. To select the print job, " +
                     "press <i class=\"fa fa-file\"></i> <b>Select print job</b>.") + "</div>"
             },
@@ -472,14 +473,11 @@ $(function ()  {
 
             switch (true) {
                 //Extruder Calibration Exit
-                case (step > 20 && step < 28):
+                case (step > 19 && step < 28):
                     callViewModels(self.allViewModels, 'onExtruderCalibrationIntroExit');
-                    self.flyout.closeFlyout();
-                    break;
-                case (step == 21):
-                    self.flyout.closeFlyout();
-                    self.flyout.closeFlyout();
-                    $('#print_icon').mousedown();
+                        if(step > 20 && step < 28){
+                            self.flyout.closeFlyout();
+                        }
                     break;
                 //Swap Filament Exit
                 case (step > 2 && step < 8 || step > 8 && step < 14):
@@ -535,7 +533,7 @@ $(function ()  {
                 setTimeout(function () {
                     self.introInstance.goToStep(self.getStepNumberByName("goToMaintenance"));
                     self.refreshElements();
-                }, 300);
+                }, 200);
             }
         };
 

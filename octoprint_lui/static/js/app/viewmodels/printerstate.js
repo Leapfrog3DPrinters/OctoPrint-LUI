@@ -557,7 +557,6 @@ $(function ()  {
                 self.closePrinterErrorFlyout();
                 self.erroredExtruder(undefined);
                 self.errorReason(undefined);
-                self.introView.introInstance.exit();
             }
 
             if(data.maintenanceMode)
