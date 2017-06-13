@@ -354,8 +354,6 @@ $(function ()  {
 
                 $('#mode_select_flyout').one("transitionend", function () {
                     self.introView.introInstance.refresh();
-
-                    setTimeout(function () { self.introView.introInstance.refresh() }, 500);
                 });
             }
 

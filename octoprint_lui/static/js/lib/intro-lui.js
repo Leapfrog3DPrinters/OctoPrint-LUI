@@ -744,6 +744,22 @@
     }
   }
 
+  function _updateTooltipPosition(referenceLayer)
+  {
+      if (!referenceLayer) return;
+      if (!this._introItems[this._currentStep]) return;
+
+      //prevent error when `this._currentStep` in undefined
+      var currentElement = this._introItems[this._currentStep];
+
+      var oldHelperNumberLayer = referenceLayer.querySelector('.introjs-helperNumberLayer'),
+          oldtooltipLayer = referenceLayer.querySelector('.introjs-tooltip'),
+          oldArrowLayer = referenceLayer.querySelector('.introjs-arrow'),
+          oldtooltipContainer = referenceLayer.querySelector('.introjs-tooltip');
+
+      _placeTooltip.call(this, currentElement.element, oldtooltipLayer, oldArrowLayer, oldHelperNumberLayer, false);
+  }
+
   /**
    * Add disableinteraction layer and adjust the size and position of the layer
    *
@@ -1788,9 +1804,11 @@
       return this;
     },
     refresh: function() {
-      // re-align intros
+        // re-align intros
+       var referenceLayer = document.querySelector('.introjs-tooltipReferenceLayer');
       _setHelperLayerPosition.call(this, document.querySelector('.introjs-helperLayer'));
-      _setHelperLayerPosition.call(this, document.querySelector('.introjs-tooltipReferenceLayer'));
+      _setHelperLayerPosition.call(this, referenceLayer);
+      _updateTooltipPosition.call(this, referenceLayer);
 
       //re-align hints
       _reAlignHints.call(this);
