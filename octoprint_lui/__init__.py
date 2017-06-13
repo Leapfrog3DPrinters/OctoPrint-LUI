@@ -537,18 +537,40 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _first_run(self):
         """Checks if it is the first run of a new version and updates any material if necessary"""
+
+        needs_first_run = False
+        # First determine if we need a firstrun. That's the case if: ...
+        
+        # 1. The first run is forced in config.yaml 
         force_first_run = self._settings.get_boolean(["force_first_run"])
-        had_first_run_version =  self._settings.get(["had_first_run"])
 
-        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile")
+        if force_first_run:
+            self._logger.debug("Forcing first run for debugging.")
+            needs_first_run = True
 
-        if force_first_run or not had_first_run_version or LooseVersion(had_first_run_version) < LooseVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
-            if force_first_run:
-                self._logger.debug("Simulating first run for debugging.")
-            elif not os.path.exists(profile_dst_path):
+        # 2. or LUI or OctoPrint has been updated
+        had_first_run_versions =  self._settings.get(["had_first_run"])
+        
+        if had_first_run_versions and ":" in had_first_run_versions:
+            versions = had_first_run_versions.split(":")
+
+            had_first_run_version_lui = versions[0]
+            had_first_run_version_octoprint = versions[1]
+
+            needs_first_run = LooseVersion(had_first_run_version_lui) < LooseVersion(self.plugin_version) or \
+                LooseVersion(had_first_run_version_octoprint) < LooseVersion(octoprint.__version__)
+        else:
+            needs_first_run = True
+
+        # 3. or no printer profile data has been found
+        if not needs_first_run:
+            profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile")
+            if not os.path.exists(profile_dst_path):
+                needs_first_run = True
                 self._logger.info("Printer profile not found. Simulating first run.")
-            else:
-                self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
+
+        if needs_first_run:
+            self._logger.info("First run of LUI version {0} or OctoPrint version {1}.".format(self.plugin_version, octoprint.__display_version__))
 
             first_run_results = []
 
@@ -571,7 +593,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             first_run_results.append(self._migrate_filament_db())
 
             if not False in first_run_results:
-                self._settings.set(["had_first_run"], self.plugin_version)
+                self._settings.set(["had_first_run"], self.plugin_version + ":" + octoprint.__version__)
                 self._settings.save()
                 self._logger.info("First run completed")
             else:
