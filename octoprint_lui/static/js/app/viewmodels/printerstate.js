@@ -539,10 +539,10 @@ $(function ()  {
 
             // This fromResponse method is also called after a firmware update and printer error/disconnect
 
-
-
             if (!self.isHomed()) {
                 self.showStartupFlyout();
+            } else if (FIRST_START) {
+                self.introView.startIntro('firstPrint');
             }
 
             if (data.printerErrorReason) {
@@ -616,10 +616,12 @@ $(function ()  {
                     case "is_homed":
                         self.isHomed(true);
                         self.isHoming(false);
-                        //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
-                        self.closeStartupFlyout();
-                        if(FIRST_START){
-                            self.introView.startIntro('firstPrint');
+                        if (self.flyout.isFlyoutOpen("startup")) {
+                            self.closeStartupFlyout();
+
+                            if (FIRST_START) {
+                                self.introView.startIntro('firstPrint');
+                            }
                         }
                         break;
                     case "is_homing":

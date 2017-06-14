@@ -106,7 +106,7 @@ $(function ()  {
 
         self.getHotEndTypeName = function(hotEndType)
         {
-            if (hotEndType == "ht") return gettext("(High-temp)");
+            if (hotEndType == "ht") return gettext("(HT)");
 
             return "";
         }

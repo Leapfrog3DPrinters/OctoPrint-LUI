@@ -33,6 +33,12 @@
     border: 0 !important;
 }
 
+.introjs-lang-select
+{
+    font-size: 1.5rem;
+    width:90%;
+}
+
 /*
  Buttons style
 */

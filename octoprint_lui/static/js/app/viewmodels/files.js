@@ -365,7 +365,7 @@ $(function ()  {
             }
 
             // IntroJS
-            if (self.introView.isTutorialStarted) {
+            if (self.introView.isTutorialStarted && self.introView.currentStepName() == "browseLocal") {
                 self.isIntroFile(true);
 
                 setTimeout(function () {

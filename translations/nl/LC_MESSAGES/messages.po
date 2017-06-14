@@ -8,16 +8,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-06-12 08:52+0200\n"
-"PO-Revision-Date: 2017-06-07 16:13+0200\n"
+"POT-Creation-Date: 2017-06-14 16:14+0200\n"
+"PO-Revision-Date: 2017-06-14 16:34+0200\n"
 "Last-Translator: \n"
 "Language: nl\n"
 "Language-Team: nl\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.2.0\n"
+"X-Generator: Poedit 2.0.2\n"
 
 #: octoprint_lui/static/js/app/main.js:84
 msgid "Offline"
@@ -70,38 +71,27 @@ msgstr "Bestand overdragen naar SD"
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:81
 #: octoprint_lui/static/js/app/viewmodels/system.js:94
-#: octoprint_lui/static/js/app/viewmodels/update.js:579
+#: octoprint_lui/static/js/app/viewmodels/update.js:603
 msgid "Service restarting"
 msgstr "Service herstarten"
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:82
 #: octoprint_lui/static/js/app/viewmodels/system.js:95
-#: octoprint_lui/static/js/app/viewmodels/update.js:580
-msgid ""
-"The background service of the printer is restarting. This is common after"
-" a software update. Printer will be available in a couple of minutes."
-msgstr ""
-"De achtergrondservice van de printer is aan het herstarten. Dit is "
-"normaal na een software-update. De printer is binnen enkele minuten weer "
-"beschikbaar."
+#: octoprint_lui/static/js/app/viewmodels/update.js:604
+msgid "The background service of the printer is restarting. This is common after a software update. Printer will be available in a couple of minutes."
+msgstr "De achtergrondservice van de printer is aan het herstarten. Dit is normaal na een software-update. De printer is binnen enkele minuten weer beschikbaar."
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:84
 #: octoprint_lui/static/js/app/viewmodels/system.js:97
-#: octoprint_lui/static/js/app/viewmodels/update.js:582
+#: octoprint_lui/static/js/app/viewmodels/update.js:606
 msgid "Server disconnected"
 msgstr "Server niet bereikbaar"
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:85
 #: octoprint_lui/static/js/app/viewmodels/system.js:98
-#: octoprint_lui/static/js/app/viewmodels/update.js:583
-msgid ""
-"The browser has been disconnected from the printer. Either the printer is"
-" turned off or the network connection failed. Trying to reconnect in the "
-"coming minutes."
-msgstr ""
-"De browser kan de printer niet bereiken. De printer is uitgeschakeld of "
-"het netwerk niet gekoppeld. De browser probeert de komende minuten "
-"opnieuw te verbinden."
+#: octoprint_lui/static/js/app/viewmodels/update.js:607
+msgid "The browser has been disconnected from the printer. Either the printer is turned off or the network connection failed. Trying to reconnect in the coming minutes."
+msgstr "De browser kan de printer niet bereiken. De printer is uitgeschakeld of het netwerk niet gekoppeld. De browser probeert de komende minuten opnieuw te verbinden."
 
 #: octoprint_lui/static/js/app/util/dataupdate_light.js:186
 msgid "Print job started"
@@ -258,12 +248,8 @@ msgid "Could not connect to cloud service."
 msgstr "Kan niet verbinden met clouddienst."
 
 #: octoprint_lui/static/js/app/viewmodels/cloud.js:97
-msgid ""
-"The printer could not connect to the cloud service. Please try again and "
-"ensure you authorize LUI to access to your files."
-msgstr ""
-"De printer kon geen verbinding maken met met de clouddienst. Zorg ervoor "
-"dat u LUI toegang geeft tot uw bestanden en probeer het nogmaals."
+msgid "The printer could not connect to the cloud service. Please try again and ensure you authorize LUI to access to your files."
+msgstr "De printer kon geen verbinding maken met met de clouddienst. Zorg ervoor dat u LUI toegang geeft tot uw bestanden en probeer het nogmaals."
 
 #: octoprint_lui/static/js/app/viewmodels/connection.js:35
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/cloud_flyout.jinja2:29
@@ -288,44 +274,40 @@ msgstr "rechts"
 msgid "left"
 msgstr "links"
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:196
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:197
 msgid "Calibration stored"
 msgstr "Kalibratie opgeslagen"
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:196
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:197
 msgid "The printer has been calibrated successfully."
 msgstr "De printer is succesvol gekalibreerd."
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:200
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:201
 msgid "Calibration failed"
 msgstr "Kalibratie mislukt"
 
-#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:200
-msgid ""
-"An error has occured while storing the calibration settings. Please try "
-"again."
-msgstr ""
-"Er is een fout opgetreden tijdens het opslaan van de kalibratie-"
-"instellingen. Probeer het opnieuw."
+#: octoprint_lui/static/js/app/viewmodels/extrudercalibration.js:201
+msgid "An error has occured while storing the calibration settings. Please try again."
+msgstr "Er is een fout opgetreden tijdens het opslaan van de kalibratie-instellingen. Probeer het opnieuw."
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:88
+#: octoprint_lui/static/js/app/viewmodels/filament.js:85
 msgid "Swap right"
 msgstr "Wissel rechts"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:90
+#: octoprint_lui/static/js/app/viewmodels/filament.js:87
 msgid "Swap left"
 msgstr "Wissel links"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:98
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:375
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:104
+#: octoprint_lui/static/js/app/viewmodels/filament.js:95
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:389
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:108
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:135
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:139
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:164
 msgid "Done"
 msgstr "Gereed"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:100
+#: octoprint_lui/static/js/app/viewmodels/filament.js:97
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:45
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:336
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:337
@@ -334,108 +316,108 @@ msgstr "Gereed"
 msgid "Load"
 msgstr "Laden"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:105
+#: octoprint_lui/static/js/app/viewmodels/filament.js:102
 #: octoprint_lui/static/js/app/viewmodels/toolinfo.js:219
 msgid "Right"
 msgstr "Rechts"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:107
+#: octoprint_lui/static/js/app/viewmodels/filament.js:104
 #: octoprint_lui/static/js/app/viewmodels/toolinfo.js:217
 msgid "Left"
 msgstr "Links"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:112
-msgid "(High-temp)"
+#: octoprint_lui/static/js/app/viewmodels/filament.js:109
+msgid "(HT)"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:159
+#: octoprint_lui/static/js/app/viewmodels/filament.js:156
 msgid "Loaded"
 msgstr "Geladen"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:161
+#: octoprint_lui/static/js/app/viewmodels/filament.js:158
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:319
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:376
 msgid "Delete"
 msgstr "Verwijder"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:180
+#: octoprint_lui/static/js/app/viewmodels/filament.js:175
 msgid "Swap"
 msgstr "Wissel"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:189
+#: octoprint_lui/static/js/app/viewmodels/filament.js:184
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:109
 msgid "Purge"
 msgstr "Purge"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:308
+#: octoprint_lui/static/js/app/viewmodels/filament.js:296
 #, fuzzy
 msgid "A temperature error has occurred."
 msgstr "Er is een temperatuurfout opgetreden."
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:312
+#: octoprint_lui/static/js/app/viewmodels/filament.js:300
 msgid "right print head"
 msgstr "rechter printkop"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:315
+#: octoprint_lui/static/js/app/viewmodels/filament.js:303
 msgid "left print head"
 msgstr "linker printkop"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:318
+#: octoprint_lui/static/js/app/viewmodels/filament.js:306
 msgid "bed"
 msgstr "bed"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:408
+#: octoprint_lui/static/js/app/viewmodels/filament.js:394
 msgid "Filament updating warning"
 msgstr "Filament update waarschuwing"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:409
+#: octoprint_lui/static/js/app/viewmodels/filament.js:395
 msgid "Please select a material to update."
 msgstr "Selecteer een materiaal om bij te werken."
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:432
+#: octoprint_lui/static/js/app/viewmodels/filament.js:418
 msgid "Filament information updated"
 msgstr "Filamentinformatie bijgewerkt"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:433
+#: octoprint_lui/static/js/app/viewmodels/filament.js:419
 #, python-format
 msgid "New material: %(material)s. New amount: %(amount)s"
 msgstr "Nieuw materiaal: %(material)s. Nieuwe hoeveelheid: %(amount)s"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:440
+#: octoprint_lui/static/js/app/viewmodels/filament.js:426
 msgid "Filament information updated failed"
 msgstr "Filament aanpassen mislukt"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:441
+#: octoprint_lui/static/js/app/viewmodels/filament.js:427
 msgid "Please check the logs for more info."
 msgstr "Raadpleeg de logs voor meer informatie."
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:542
+#: octoprint_lui/static/js/app/viewmodels/filament.js:527
 msgid "Filament loaded aborted!"
 msgstr "Filament laden afgebroken!"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:543
+#: octoprint_lui/static/js/app/viewmodels/filament.js:528
 msgid "Please re-run load filament procedure"
 msgstr "Doe de filamentprocedure opnieuw"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:556
+#: octoprint_lui/static/js/app/viewmodels/filament.js:541
 msgid "Filament successfully loaded!"
 msgstr "Filament geladen"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:557
+#: octoprint_lui/static/js/app/viewmodels/filament.js:542
 #, python-format
 msgid "Filament with profile %(material)s and amount %(amount)s loaded"
 msgstr "Nieuw %(material)s geladen met hoeveelheid: %(amount)s"
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:570
+#: octoprint_lui/static/js/app/viewmodels/filament.js:554
 msgid "Unloading filament..."
 msgstr "Filament uitladen ..."
 
-#: octoprint_lui/static/js/app/viewmodels/filament.js:576
+#: octoprint_lui/static/js/app/viewmodels/filament.js:560
 msgid "Loading filament..."
 msgstr "Filament laden..."
 
 #: octoprint_lui/static/js/app/viewmodels/filamentdetection.js:70
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:432
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:430
 msgid "Cancel print"
 msgstr "Print afbreken"
 
@@ -496,12 +478,8 @@ msgid "Could not open folder"
 msgstr "Kon de map niet openen"
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:429
-msgid ""
-"The folder could not be opened. Please check if your printer is connected"
-" to the internet."
-msgstr ""
-"The map kon niet worden geopend. Controleer of uw printer is verbonden "
-"met het internet."
+msgid "The folder could not be opened. Please check if your printer is connected to the internet."
+msgstr "The map kon niet worden geopend. Controleer of uw printer is verbonden met het internet."
 
 #: octoprint_lui/static/js/app/viewmodels/files.js:563
 msgid "You have opted to delete all print jobs."
@@ -517,7 +495,7 @@ msgstr "Dit zal het geselecteerde bestand niet verwijderen."
 #: octoprint_lui/static/js/app/viewmodels/navigation.js:38
 #: octoprint_lui/static/js/app/viewmodels/navigation.js:54
 #: octoprint_lui/static/js/app/viewmodels/navigation.js:80
-#: octoprint_lui/static/js/app/viewmodels/update.js:144
+#: octoprint_lui/static/js/app/viewmodels/update.js:149
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:233
 msgid "Do you want to continue?"
 msgstr "Wilt u doorgaan?"
@@ -563,202 +541,179 @@ msgstr "Bestand succesvol verwijderd"
 msgid "Removed file: \"%(filename)s\""
 msgstr "Bestand verwijderd: \"%(filename)s\""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:815
+#: octoprint_lui/static/js/app/viewmodels/files.js:820
 #, python-format
 msgid "Size check %(mode)s mode failed"
 msgstr "Dimensie controle voor %(mode)s mode mislukt"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:860
+#: octoprint_lui/static/js/app/viewmodels/files.js:865
 msgid "Object exceeds print area in width. "
 msgstr "Object is breder dan het printoppervlak."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:861
-#: octoprint_lui/static/js/app/viewmodels/files.js:885
+#: octoprint_lui/static/js/app/viewmodels/files.js:866
+#: octoprint_lui/static/js/app/viewmodels/files.js:890
 msgid "Print area width"
 msgstr "Breedte printoppervlak"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:861
+#: octoprint_lui/static/js/app/viewmodels/files.js:866
 msgid "Object width"
 msgstr "Objectbreedte"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:865
+#: octoprint_lui/static/js/app/viewmodels/files.js:870
 msgid "Object exceeds print area in depth."
 msgstr "Object is dieper dan het printoppervlak."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:866
-#: octoprint_lui/static/js/app/viewmodels/files.js:890
+#: octoprint_lui/static/js/app/viewmodels/files.js:871
+#: octoprint_lui/static/js/app/viewmodels/files.js:895
 msgid "Print area depth"
 msgstr "Diepte printeroppervlak"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:866
+#: octoprint_lui/static/js/app/viewmodels/files.js:871
 msgid "Object depth"
 msgstr "Objectdiepte"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:870
+#: octoprint_lui/static/js/app/viewmodels/files.js:875
 msgid "Object exceeds print area in height."
 msgstr "Object is hoger dan het print volume."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:871
-#: octoprint_lui/static/js/app/viewmodels/files.js:895
+#: octoprint_lui/static/js/app/viewmodels/files.js:876
+#: octoprint_lui/static/js/app/viewmodels/files.js:900
 msgid "Print area height"
 msgstr "Hoogte printgebied"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:871
+#: octoprint_lui/static/js/app/viewmodels/files.js:876
 msgid "Object height"
 msgstr "Objecthoogte"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:884
+#: octoprint_lui/static/js/app/viewmodels/files.js:889
 msgid "Object positioned outside print area in width."
 msgstr "Object is buiten het printoppervlak gepositioneerd in de breedte."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:885
 #: octoprint_lui/static/js/app/viewmodels/files.js:890
 #: octoprint_lui/static/js/app/viewmodels/files.js:895
+#: octoprint_lui/static/js/app/viewmodels/files.js:900
 msgid "Object position"
 msgstr "Objectpositie"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:889
+#: octoprint_lui/static/js/app/viewmodels/files.js:894
 msgid "Object positioned outside print area in depth."
 msgstr "Object is buiten het printoppervlak gepositioneerd in de diepte."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:894
+#: octoprint_lui/static/js/app/viewmodels/files.js:899
 msgid "Object positioned outside print area in heigth."
 msgstr "Object is buiten het printoppervlak gepositioneerd in de hoogte."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:904
+#: octoprint_lui/static/js/app/viewmodels/files.js:909
 msgid "Please fix the dimension of the job or try a different print mode."
 msgstr "Pas uw print dimensies aan of selecteer een andere printmodus."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:922
+#: octoprint_lui/static/js/app/viewmodels/files.js:927
 msgid "Dual nozzle print"
 msgstr "Dubbel extrusie print"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:923
-msgid ""
-"The job selected uses both nozzles to print, therefore only normal mode "
-"is available."
-msgstr ""
-"De geselecteerde printopdracht gebruikt beide extruders, daarom kan de "
-"opdracht alleen in standaard modus worden geprint."
+#: octoprint_lui/static/js/app/viewmodels/files.js:928
+msgid "The job selected uses both nozzles to print, therefore only normal mode is available."
+msgstr "De geselecteerde printopdracht gebruikt beide extruders, daarom kan de opdracht alleen in standaard modus worden geprint."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:939
+#: octoprint_lui/static/js/app/viewmodels/files.js:944
 msgid "Sync or Mirror print"
 msgstr "Sync of Mirror print"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:956
+#: octoprint_lui/static/js/app/viewmodels/files.js:961
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:321
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:74
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:121
 msgid "Info"
 msgstr "Informatie"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:957
-msgid ""
-"To ensure that a sync or mirror mode succeeds please make sure that the "
-"print is sliced on the left side of the build volume using one nozzle."
-msgstr ""
-"Zorg ervoor dat de print is gesliced op de linkerhelft van het bed en "
-"gebruikmaakt van 1 printkop."
+#: octoprint_lui/static/js/app/viewmodels/files.js:962
+msgid "To ensure that a sync or mirror mode succeeds please make sure that the print is sliced on the left side of the build volume using one nozzle."
+msgstr "Zorg ervoor dat de print is gesliced op de linkerhelft van het bed en gebruikmaakt van 1 printkop."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1139
+#: octoprint_lui/static/js/app/viewmodels/files.js:1144
 msgid "USB drive removed"
 msgstr "USB-stick verwijderd"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1140
+#: octoprint_lui/static/js/app/viewmodels/files.js:1145
 msgid "A USB drive was disconnected from the printer."
 msgstr "Een USB-stick is uit de machine verwijderd. "
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1150
+#: octoprint_lui/static/js/app/viewmodels/files.js:1155
 msgid "You have inserted a USB drive."
 msgstr "U heeft een USB-stick geplaatst."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1151
+#: octoprint_lui/static/js/app/viewmodels/files.js:1156
 msgid "Would you like to browse through the files?"
 msgstr "Wilt u door de bestanden heen bladeren?"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1152
-#: octoprint_lui/static/js/app/viewmodels/files.js:1164
+#: octoprint_lui/static/js/app/viewmodels/files.js:1157
+#: octoprint_lui/static/js/app/viewmodels/files.js:1169
 msgid "USB drive inserted"
 msgstr "USB-stick geplaatst"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1165
+#: octoprint_lui/static/js/app/viewmodels/files.js:1170
 msgid "A USB drive was found. Go to the files tab to load your files."
-msgstr ""
-"U heeft een USB stick geplaatst. Ga naar de 'Opdrachten'-tab om bestanden"
-" te laden. "
+msgstr "U heeft een USB stick geplaatst. Ga naar de 'Opdrachten'-tab om bestanden te laden. "
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1226
+#: octoprint_lui/static/js/app/viewmodels/files.js:1231
 msgid "File upload succesful"
 msgstr "Bestand succesvol geüpload"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1227
+#: octoprint_lui/static/js/app/viewmodels/files.js:1232
 #, python-format
 msgid "Uploaded file: \"%(filename)s\""
 msgstr "Bestand geüpload: \"%(filename)s\""
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1237
+#: octoprint_lui/static/js/app/viewmodels/files.js:1242
 msgid "Failed to upload file"
 msgstr "Bestand upload mislukt"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1238
-msgid ""
-"Could not upload the file. Make sure that it is a GCODE file and has the "
-"extension \".gcode\", \".gco.\" or \".g\""
-msgstr ""
-"Kan het bestand niet uploaden. Zorg ervoor dat het een GCODE bestand is "
-"met de extensie \".gcode\", \".gco\" of \".g\"."
+#: octoprint_lui/static/js/app/viewmodels/files.js:1243
+msgid "Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco.\" or \".g\""
+msgstr "Kan het bestand niet uploaden. Zorg ervoor dat het een GCODE bestand is met de extensie \".gcode\", \".gco\" of \".g\"."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1266
+#: octoprint_lui/static/js/app/viewmodels/files.js:1271
 msgid "Invalid filetype"
 msgstr "Ongeldig bestandstype"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1267
+#: octoprint_lui/static/js/app/viewmodels/files.js:1272
 msgid "Please select a file with extension \".gcode\", \".gco.\" or \".g\"."
 msgstr "Selecteer een bestand met de extensie \".gocde\", \".gco\", of \".g\"."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1341
+#: octoprint_lui/static/js/app/viewmodels/files.js:1346
 msgid "Copying"
 msgstr "Kopiëren"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1385
+#: octoprint_lui/static/js/app/viewmodels/files.js:1390
 msgid "File copied"
 msgstr "Gcodebestand gekopieerd"
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1386
+#: octoprint_lui/static/js/app/viewmodels/files.js:1391
 #, python-format
 msgid "\"%(filename)s\" has been copied to your USB drive."
 msgstr "Het gcodebestand is naar uw USB-stick gekopieerd."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1396
-#: octoprint_lui/static/js/app/viewmodels/files.js:1427
+#: octoprint_lui/static/js/app/viewmodels/files.js:1401
+#: octoprint_lui/static/js/app/viewmodels/files.js:1432
 msgid "Error during file copy."
 msgstr "Er is een fout opgetreden tijdens het kopiëren van het bestand."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1397
+#: octoprint_lui/static/js/app/viewmodels/files.js:1402
 #, python-format
-msgid ""
-"Could not copy \"%(filename)s\" to your USB drive. Please ensure there is"
-" enough space available."
-msgstr ""
-"Het bestand \"%(filename)s\" kon niet naar uw USB-stick worden "
-"gekopieerd. Zorg ervoor dat er genoeg ruimte beschikbaar is en probeer "
-"het nogmaals."
+msgid "Could not copy \"%(filename)s\" to your USB drive. Please ensure there is enough space available."
+msgstr "Het bestand \"%(filename)s\" kon niet naar uw USB-stick worden gekopieerd. Zorg ervoor dat er genoeg ruimte beschikbaar is en probeer het nogmaals."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1417
+#: octoprint_lui/static/js/app/viewmodels/files.js:1422
 msgid "All files copied copied"
 msgstr "Alle bestanden zijn gekopieerd."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1418
+#: octoprint_lui/static/js/app/viewmodels/files.js:1423
 msgid "All G-code files have been copied to your USB drive."
 msgstr "Alle G-code bestanden zijn naar uw USB stick gekopieerd."
 
-#: octoprint_lui/static/js/app/viewmodels/files.js:1428
-msgid ""
-"One or more files failed to copy to your USB drive. Please ensure there "
-"is enough space available."
-msgstr ""
-"Een of meer bestanden konden niet naar uw USB-stick worden gekopieerd. "
-"Zorg ervoor dat er genoeg ruimte beschikbaar is en probeer het nogmaals."
+#: octoprint_lui/static/js/app/viewmodels/files.js:1433
+msgid "One or more files failed to copy to your USB drive. Please ensure there is enough space available."
+msgstr "Een of meer bestanden konden niet naar uw USB-stick worden gekopieerd. Zorg ervoor dat er genoeg ruimte beschikbaar is en probeer het nogmaals."
 
 #: octoprint_lui/static/js/app/viewmodels/flyout.js:138
 msgid "Are you sure?"
@@ -782,7 +737,7 @@ msgstr "Bevestig"
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:177
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:201
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:227
-#: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:123
+#: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:118
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/auto_shutdown_flyout.jinja2:23
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/shutdown_confirmation_flyout.jinja2:28
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:146
@@ -804,154 +759,87 @@ msgstr "Afbreken"
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:163
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:173
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:185
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:196
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:207
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:217
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:228
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:239
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:249
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:260
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:270
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:280
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:290
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:300
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:311
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:322
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:332
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:342
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:352
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:361
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:370
-#: octoprint_lui/templates/flyouts_lui/setting_flyouts/tutorials_flyout.jinja2:13
-msgid "Your First Print"
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:198
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:209
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:220
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:230
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:241
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:252
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:262
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:273
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:283
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:293
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:303
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:313
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:324
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:336
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:346
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:356
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:366
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:375
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:384
+msgid "How to 3D print"
 msgstr "Uw eerste 3D-print"
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:25
-#, fuzzy
-msgid ""
-"<b>Welcome to your new Leapfrog Bolt 3D printer.</b><br />This tutorial "
-"will guide you through the steps you have to take to start printing your "
-"creations.<br />"
-msgstr ""
-"<b>Welkom bij uw nieuwe Leapfrog Bolt 3D printer.</b><br />Deze tutorial "
-"zal u door de stappen leiden om uw creaties de printen.</br >"
+msgid "<b>Welcome to your new Leapfrog Bolt Pro 3D printer.</b><br />This tutorial will guide you through the steps you have to take to start printing in 3D.<br />"
+msgstr "<b>Welkom bij uw nieuwe Leapfrog Bolt 3D printer.</b><br />Deze tutorial zal u door de stappen leiden om uw eerste 3D-print te maken.</br >"
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:28
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:355
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:364
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:369
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:378
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:135
 msgid "Continue"
 msgstr "Doorgaan"
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:39
-msgid ""
-"For our first print, we need PLA filament in both extruders. Press <i "
-"class=\"fa fa-refresh\"></i><b> Swap left</b> to load filament in the "
-"left extruder."
-msgstr ""
-"Voor de eerste print hebben we PLA filament nodig in beide extruders. "
-"Druk op <i class=\"fa fa-refresh\"></i><b> Wissel links</b> om filament "
-"te laden in de linker extruder."
+msgid "For our first print, we need PLA filament in both extruders. Press <i class=\"fa fa-refresh\"></i><b> Swap left</b> to load filament in the left extruder."
+msgstr "Voor de eerste print hebben we PLA filament nodig in beide extruders. Druk op <i class=\"fa fa-refresh\"></i><b> Wissel links</b> om filament te laden in de linker extruder."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:51
-msgid ""
-"First we have to unload the non PLA filament. Press <i class=\"fa fa-"
-"arrow-up\"></i><b> Unload</b> to unload filament from the left extruder."
-msgstr ""
-"Eerst moeten we het huidige filament verwijderen. Druk op <i class=\"fa "
-"fa-arrow-up\"></i><b> Uitladen</b> om het filament te verwijderen uit de "
-"linker extruder."
+msgid "First we have to unload the non PLA filament. Press <i class=\"fa fa-arrow-up\"></i><b> Unload</b> to unload filament from the left extruder."
+msgstr "Eerst moeten we het huidige filament verwijderen. Druk op <i class=\"fa fa-arrow-up\"></i><b> Uitladen</b> om het filament te verwijderen uit de linker extruder."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:63
-msgid ""
-"The left extruder is now unloading the filament. When something goes "
-"wrong you can press Abort to cancel the process."
-msgstr ""
-"De linker extruder is nu het filament aan het uitladen. Wanneer er iets "
-"misgaat drukt u op Annuleren om de procedure te stoppen."
+msgid "The left extruder is now unloading the filament. When something goes wrong you can press Abort to cancel the process."
+msgstr "De linker extruder is nu het filament aan het uitladen. Wanneer er iets misgaat drukt u op Annuleren om de procedure te stoppen."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:74
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:142
-msgid ""
-"Select PLA as filament material and provide the approximate amount that "
-"is on the spool. This way the printer knows what kind of filament you "
-"want to load."
-msgstr ""
-"Selecteer PLA als filamentmateriaal en geeft een schatting van de hoeveel"
-" materiaal op de spoel."
+msgid "Select PLA as filament material and provide the approximate amount that is on the spool. This way the printer knows what kind of filament you want to load."
+msgstr "Selecteer PLA als filamentmateriaal en geeft een schatting van de hoeveel materiaal op de spoel."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:86
-msgid ""
-"The left extruder is now loading your filament. When something goes wrong"
-" you can press Abort to cancel the process."
-msgstr ""
-"De linker extruder laadt nu uw filament. Wanneer er iets misgaat kunt u "
-"op Annuleren drukken om het proces te stoppen."
+msgid "The left extruder is now loading your filament. When something goes wrong you can press Abort to cancel the process."
+msgstr "De linker extruder laadt nu uw filament. Wanneer er iets misgaat kunt u op Annuleren drukken om het proces te stoppen."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:97
-msgid ""
-"We are now done loading filament in the left extruder. If you are not "
-"satisfied with the amount of filament that came out of the nozzle, you "
-"can press <b>Extrude more filament</b>.If you are ready for the next "
-"step, press <b>Done</b>."
-msgstr ""
-"We zijn nu klaar met het laden van filament in de linker extruder. Als er"
-" te weinig filament uit de nozzle kwam kunt u op <b>Extrudeer meer "
-"filament</b> drukken. Voor de volgende stap drukt u op <b>Gereed</b>."
+msgid "Please check if the filament came out of the nozzle. If you are not satisfied with the amount of filament that came out of the nozzle, you can press <b>Extrude more filament</b>.If you are ready for the next step, press <b>Done</b>."
+msgstr "Controleer of het filament uit de printkop is gekomen. Als u niet tevreden bent met de hoeveelheid filament kunt u op <b>Extrudeer meer filament</b> drukken. Als u klaar bent voor de volgende stap, drukt u op <b>Klaar</b>."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:108
-msgid ""
-"For our first print, we also need PLA filament in the right extruder. "
-"Press <i class=\"fa fa-refresh\"></i><b> Swap right </b> to load filament"
-" in the right extruder."
-msgstr ""
-"Voor onze eerste print hebben we ook PLA filament nodig in de rechter "
-"extruder. Druk op <i class=\"fa fa-refresh\"></i><b> Wissel rechts </b> "
-"om filament te laden in de rechter extruder."
+msgid "For our first print, we also need PLA filament in the right extruder. Press <i class=\"fa fa-refresh\"></i><b> Swap right </b> to load filament in the right extruder."
+msgstr "Voor onze eerste print hebben we ook PLA filament nodig in de rechter extruder. Druk op <i class=\"fa fa-refresh\"></i><b> Wissel rechts </b> om filament te laden in de rechter extruder."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:119
-msgid ""
-"First we have to unload the non PLA filament. Press <i class=\"fa fa-"
-"arrow-up\"></i><b>Unload</b> to unload filament from the right extruder."
-msgstr ""
-"Eerst moeten we het huidige filament verwijderen. Druk op <i class=\"fa "
-"fa-arrow-up\"></i><b> uitladen</b> om het filament te verwijderen uit de "
-"rechter extruder."
+msgid "First we have to unload the non PLA filament. Press <i class=\"fa fa-arrow-up\"></i><b>Unload</b> to unload filament from the right extruder."
+msgstr "Eerst moeten we het huidige filament verwijderen. Druk op <i class=\"fa fa-arrow-up\"></i><b> uitladen</b> om het filament te verwijderen uit de rechter extruder."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:131
-msgid ""
-"The right extruder is now unloading the filament. When something goes "
-"wrong you can press Abort to cancel the process."
-msgstr ""
-"De rechter extruder is nu het filament aan het uitladen. Wanneer er iets "
-"misgaat drukt u op Annuleren om de procedure te stoppen."
+msgid "The right extruder is now unloading the filament. When something goes wrong you can press Abort to cancel the process."
+msgstr "De rechter extruder is nu het filament aan het uitladen. Wanneer er iets misgaat drukt u op Annuleren om de procedure te stoppen."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:154
-msgid ""
-"The right extruder is loading filament. When something goes wrong you can"
-" press Abort to cancel the process."
-msgstr ""
-"De rechter extruder laadt nu uw filament. Wanneer er iets misgaat kunt u "
-"op Annuleren drukken om het proces te stoppen."
+msgid "The right extruder is loading filament. When something goes wrong you can press Abort to cancel the process."
+msgstr "De rechter extruder laadt nu uw filament. Wanneer er iets misgaat kunt u op Annuleren drukken om het proces te stoppen."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:165
-msgid ""
-"We are now done loading filament. If you are not satisfied with the "
-"amount of filament that came out of the nozzle, you can press <b>Extrude "
-"more filament</b>. If you are ready for the next step, press <b>Done</b>."
-msgstr ""
-"We zijn nu klaar met het laden van filament. Als er te weinig filament "
-"uit de nozzle kwam kunt u op <b>Extrudeer meer filament</b> drukken. Voor"
-" de volgende stap drukt u op <b>Gereed</b>."
+msgid "Please check if the filament came out of the nozzle. If you are not satisfied with the amount of filament that came out of the nozzle, you can press <b>Extrude more filament</b>. If you are ready for the next step, press <b>Done</b>."
+msgstr "Controleer of het filament uit de printkop is gekomen. Als u niet tevreden bent met de hoeveelheid filament kunt u op <b>Extrudeer meer filament</b> drukken. Als u klaar bent voor de volgende stap, drukt u op <b>Klaar</b>."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:175
-msgid ""
-"There is filament detected in both extruders. We will now calibrate the "
-"printer to make sure that the bed and the extruders are aligned."
-msgstr ""
-"Er is PLA filament gedetecteerd in beide extruders. We zullen nu de "
-"printer kalibreren om ervoor te zorgen dat het bed en de printkoppen zijn"
-" uitgelijnd."
+msgid "There is PLA filament detected in both extruders. We will now calibrate the printer to make sure that the bed and the extruders are aligned. Normally this is only needed for the first print after maintenance or after moving the printer."
+msgstr "Er is PLA filament gedetecteerd in beide extruders. We zullen nu de printer kalibreren om ervoor te zorgen dat het bed en de printkoppen zijn uitgelijnd. Normaal gesproken voert u deze procedure alleen uit wanneer u onderhoud hebt gepleegd aan de printkoppen of wanneer u de printer hebt verplaatst."
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:178
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:107
@@ -961,135 +849,78 @@ msgid "Next"
 msgstr "Volgende"
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:187
-msgid ""
-"The calibration wizard is located in the maintenance flyout. To go there,"
-" press <i class=\"fa fa-wrench\"></i><b>Maintenance</b>."
-msgstr ""
-"De kalibratieprocedure vindt u in onderhoudsmodus. Om daar te komen drukt"
-" u op <i class=\"fa fa-wrench\"></i><b>Onderhoud</b>."
+msgid "The calibration functions are part of the maintenance menu located in the settings tab. To get there, press <i class=\"fa fa-gears\"></i><br>Settings</br>"
+msgstr "De kalibratieprocedure vindt u in het onderhoudsmenu onder instellingen. Om daar te komen drukt u op <i class=\"fa fa-gears\"></i><b>Instellingen</b>."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:198
-msgid ""
-"First we will calibrate the bed. This will make sure the printed object "
-"will adhere to the bed. Press <b>Calibrate bed</b> to continue."
-msgstr ""
-"Eerst zullen we het bed kalibreren. Dit zorgt er voor dat het geprinte "
-"object gehecht zal blijven aan het bed. Druk op <b>Bed kalibreren</b> om "
-"verder te gaan."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:200
+msgid "The calibration wizard is located in the maintenance menu. To go there, press <i class=\"fa fa-wrench\"></i><b>Maintenance</b>."
+msgstr "De kalibratieprocedure vindt u in onderhoudsmenu. Om daar te komen drukt u op <i class=\"fa fa-wrench\"></i><b>Onderhoud</b>."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:209
-msgid ""
-"Before pressing <b>Continue calibration</b>, check that the print bed is "
-"empty."
-msgstr ""
-"Controleer of het bed leeg is voordat u op <b>Kalibratie vervolgen</b> "
-"drukt."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:211
+msgid "First we will calibrate the bed. This will make sure the printed object will adhere to the bed. Press <b>Calibrate bed</b> to continue."
+msgstr "Eerst zullen we het bed kalibreren. Dit zorgt er voor dat het geprinte object gehecht zal blijven aan het bed. Druk op <b>Bed kalibreren</b> om verder te gaan."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:219
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:222
+msgid "Before pressing <b>Continue calibration</b>, check that the print bed is empty."
+msgstr "Controleer of het bed leeg is voordat u op <b>Kalibratie vervolgen</b> drukt."
+
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:232
 msgid "When the bed is level, press <b>Done</b> to continue."
 msgstr "Wanneer het bed vlak is drukt u op <b>Gereed</b/> om door te gaan."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:230
-msgid ""
-"To align the extruders, press <b>Calibrate extruders</b>. This will start"
-" the extruder calibration wizard."
-msgstr ""
-"Om de extruders uit te lijnen drukt u op <b>Extruderkalibratie</b>. Dit "
-"zal de kalibratieprocedure starten."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:243
+msgid "To align the extruders, press <b>Calibrate extruders</b>. This will start the extruder calibration wizard."
+msgstr "Om de extruders uit te lijnen drukt u op <b>Extruderkalibratie</b>. Dit zal de kalibratieprocedure starten."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:241
-msgid ""
-"The calibration wizard will calibrate the Y axis in one step and the X "
-"axis in two steps. To start the first calibration print, press <b>Start "
-"calibration</b>."
-msgstr ""
-"De kalibratieprocedure zal de X-as in twee stappen kalibreren en de Y-as "
-"in één stap. Hiervoor worden meerdere patronen afgedrukt. Om de "
-"kalibratieprint te starten drukt u op <b>Start kalibratie</b>."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:254
+msgid "The calibration wizard will calibrate the Y axis in one step and the X axis in two steps. To start the first calibration print, press <b>Start calibration</b>."
+msgstr "De kalibratieprocedure zal de X-as in twee stappen kalibreren en de Y-as in één stap. Hiervoor worden meerdere patronen afgedrukt. Om de kalibratieprint te starten drukt u op <b>Start kalibratie</b>."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:251
-msgid ""
-"The printer is now printing the first X axis calibration print. This "
-"allows to calibrate the X axis with a precision of 1 mm."
-msgstr ""
-"De printer drukt nu het eerste kalibratiepatroon af voor de ruwe X-as "
-"kalibratie. Hiermee kunt u de X-as op 1 mm nauwkeurig kalibreren."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:264
+msgid "The printer is now printing the first X axis calibration print. This allows to calibrate the X axis with a precision of 1 mm."
+msgstr "De printer drukt nu het eerste kalibratiepatroon af voor de ruwe X-as kalibratie. Hiermee kunt u de X-as op 1 mm nauwkeurig kalibreren."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:262
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:292
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:275
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:305
 msgid "Select the best aligned vertical line on the bed. Then, press <b>Next</b>."
-msgstr ""
-"Kies de verticale lijn die het beste overlapt. Daarna drukt u op "
-"<b>Volgende</b>."
+msgstr "Kies de verticale lijn die het beste overlapt. Daarna drukt u op <b>Volgende</b>."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:272
-msgid ""
-"Now we will start the second calibration print. This will allow to "
-"calibrate both the X and Y axes with a precision of 0.1 mm."
-msgstr ""
-"Nu zal het tweede kalibratiepatroon worden geprint. Hiermee kunt u de X- "
-"en Y-as tot 0.1 mm nauwkeurig kalibreren."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:285
+msgid "Now we will start the second calibration print. This will allow to calibrate both the X and Y axes with a precision of 0.1 mm."
+msgstr "Nu zal het tweede kalibratiepatroon worden geprint. Hiermee kunt u de X- en Y-as tot 0.1 mm nauwkeurig kalibreren."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:282
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:295
 msgid "The printer is now printing the second calibration print."
 msgstr "Het tweede calibratiepatroon wordt geprint."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:302
-msgid ""
-"Select the best aligned hortizontal line on the bed. Then, press "
-"<b>Next</b>."
-msgstr ""
-"Kies de horizontale lijn die het beste overlapt. Druk vervolgens op "
-"<b>Volgende</b>."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:315
+msgid "Select the best aligned hortizontal line on the bed. Then, press <b>Next</b>."
+msgstr "Kies de horizontale lijn die het beste overlapt. Druk vervolgens op <b>Volgende</b>."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:313
-msgid ""
-"Good job, the printer is now calibrated and ready to print. Now we will "
-"select the demo print job (the GCODE file) for the printer. To select the"
-" print job, press <i class=\"fa fa-file\"></i> <b>Select print job</b>."
-msgstr ""
-"Goed werk, de printer is nu gekalibreerd en klaar om te printen. We "
-"zullen nu de demo-printopdracht starten. Om de printopdracht de "
-"selecteren drukt u op <i class=\"fa fa-file\"></i> <b>Selecteer "
-"printopdracht</b>."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:326
+msgid "The printer is now calibrated and ready to print. Normally the calibration is only needed for the first print after maintenance or after moving the printer. Now we will select the demo print job (the GCODE file) for the printer. To select the print job, press <i class=\"fa fa-file\"></i> <b>Select print job</b>."
+msgstr "De printer is nu gekalibreerd en klaar om te printen. Normaal gesproken is de kalibratie alleen noodzakelijk na onderhoud aan de printkoppen of wanneer u de printer heeft verplaatst. We zullen nu de demo-printopdracht selecteren. Druk op <i class=\"fa fa-file\"></i> <b>Selecteer printopdracht</b>."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:324
-msgid ""
-"Now we can select a GCODE file that's saved on the printer. There is a "
-"sample print you can try out."
-msgstr ""
-"We kunnen nu een G-codebestand selecteren dat is opgeslagen op de "
-"printer. Er is een voorbeeldopdracht die u kunt uitproberen."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:338
+msgid "Now we can select a GCODE file that's saved on the printer. There is a sample print you can try out."
+msgstr "We kunnen nu een G-codebestand selecteren dat is opgeslagen op de printer. Er is een voorbeeldopdracht die u kunt uitproberen."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:334
-msgid ""
-"Select the file and press on the <i class=\"fa fa-play\"></i> button next"
-" to it."
-msgstr ""
-"Selecteer het bestand en druk op de <i class=\"fa fa-play\"></i> knop "
-"ernaast."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:348
+msgid "Select the file and press on the <i class=\"fa fa-play\"></i> button next to it."
+msgstr "Selecteer het bestand en druk op de <i class=\"fa fa-play\"></i> knop ernaast."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:344
-#, fuzzy
-msgid ""
-"Select one of the print modes. When you're ready, press <b>Start "
-"print</b> or if you're not, press <b>Cancel</b>."
-msgstr ""
-"Kies één van de printmodi. Wanneer u klaar bent drukt u op <b>Start "
-"print</b>. Druk op <b>Annuleren</b> als u niets wilt printen."
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:358
+msgid "Select one of the print modes. When you're ready, press <b>Start print</b> or if you're not, press <b>Cancel</b>."
+msgstr "Kies één van de printmodi. Wanneer u klaar bent drukt u op <b>Start print</b>. Druk op <b>Annuleren</b> als u niets wilt printen."
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:354
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:363
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:368
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:377
 msgid "Please select PLA filament when loading the filament.<br>"
 msgstr "Selecteer alstublieft PLA filament<br />"
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:372
-msgid ""
-"Good Job!<br>The printer is now printing the first print. Watch how the "
-"object magically appears in  front of you.<br>"
-msgstr ""
-"Goed werk!<br />De printer zal nu beginnen aan de printopdracht. "
-"Aanschouw hoe het object voor u verschijnt.<br />"
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:386
+msgid "Good Job!<br>The printer is now printing the first print. Watch how the object magically appears before you.<br>"
+msgstr "Goed werk!<br />De printer zal nu beginnen aan de printopdracht. Bekijk hoe het object voor u verschijnt.<br />"
 
 #: octoprint_lui/static/js/app/viewmodels/loginstate.js:28
 #: octoprint_lui/static/js/app/viewmodels/usersettings.js:43
@@ -1155,12 +986,8 @@ msgid "Copying of log file failed"
 msgstr "Kopiëren logbestand mislukt"
 
 #: octoprint_lui/static/js/app/viewmodels/logs.js:89
-msgid ""
-"The log file could not be copied. Please check if there is sufficient "
-"space available on the drive and try again."
-msgstr ""
-"Het logbestand kon niet worden gekopieerd. Gelieve de vrije schijfruimte "
-"te controleren op de USB stick en opnieuw proberen."
+msgid "The log file could not be copied. Please check if there is sufficient space available on the drive and try again."
+msgstr "Het logbestand kon niet worden gekopieerd. Gelieve de vrije schijfruimte te controleren op de USB stick en opnieuw proberen."
 
 #: octoprint_lui/static/js/app/viewmodels/logs.js:101
 msgid "Log files copied"
@@ -1171,18 +998,12 @@ msgid "The log files have been copied to your USB drive."
 msgstr "De logbestanden zijn naar uw USB-stick gekopieerd."
 
 #: octoprint_lui/static/js/app/viewmodels/logs.js:110
-msgid ""
-"One or more log files could not be copied. Please check if there is "
-"sufficient space available on the drive and try again."
-msgstr ""
-"Een of meer logbestanden kon niet worden gekopieerd. Zorg ervoor dat er "
-"genoeg ruimte beschikbaar is en probeer het nogmaals."
+msgid "One or more log files could not be copied. Please check if there is sufficient space available on the drive and try again."
+msgstr "Een of meer logbestanden kon niet worden gekopieerd. Zorg ervoor dat er genoeg ruimte beschikbaar is en probeer het nogmaals."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:21
 msgid "You are about to move the printer to the head maintenance position."
-msgstr ""
-"U staat op het punt om de printkoppen naar de onderhoudspositie te "
-"verplaatsen."
+msgstr "U staat op het punt om de printkoppen naar de onderhoudspositie te verplaatsen."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:23
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:59
@@ -1192,28 +1013,16 @@ msgid "Maintenance position"
 msgstr "Onderhoudspositie"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:37
-msgid ""
-"You are about to move the printer to the hot end swap position. This will"
-" turn off the power of the printer temporarily, shutting down the LED "
-"lights with it."
-msgstr ""
-"U staat op het punt om de printer naar de positie brengen om de hot-ends "
-"te vervangen. Dit zal de printer homen op alle assen en tijdelijk de "
-"stroom op de printer uitzetten, waardoor de verlichting uit zal gaan. "
-"Controleer of er geen print op het bed staat."
+msgid "You are about to move the printer to the hot end swap position. This will turn off the power of the printer temporarily, shutting down the LED lights with it."
+msgstr "U staat op het punt om de printer naar de positie brengen om de hot-ends te vervangen. Dit zal de printer homen op alle assen en tijdelijk de stroom op de printer uitzetten, waardoor de verlichting uit zal gaan. Controleer of er geen print op het bed staat."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:39
 msgid "Hot end swap position"
 msgstr "Hot-ends vervangen"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:50
-msgid ""
-"You are about to move the printer to the clean bed position. This move "
-"will home all axis! Make sure there is no print on the bed."
-msgstr ""
-"U staat op het punt om de printer naar de positie te brengen om het bed "
-"schoon te maken. Dit zal de printer homen op alle assen. Controleer of er"
-" geen print op het bed staat."
+msgid "You are about to move the printer to the clean bed position. This move will home all axis! Make sure there is no print on the bed."
+msgstr "U staat op het punt om de printer naar de positie te brengen om het bed schoon te maken. Dit zal de printer homen op alle assen. Controleer of er geen print op het bed staat."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:51
 msgid "Do want to continue?"
@@ -1226,12 +1035,8 @@ msgid "Clean bed position"
 msgstr "Bed schoonmaken"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:60
-msgid ""
-"Press OK when you are done with cleaning the bed. This will home the "
-"printer."
-msgstr ""
-"Druk op Ok wanneer u klaar bent met het schoonmaken van het bed. Dit zal "
-"de printer homen. "
+msgid "Press OK when you are done with cleaning the bed. This will home the printer."
+msgstr "Druk op Ok wanneer u klaar bent met het schoonmaken van het bed. Dit zal de printer homen. "
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:113
 msgid "Clean bed"
@@ -1249,40 +1054,26 @@ msgstr "Onderhoud printkoppen"
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:120
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:148
 msgid "The printhead is moving towards the maintenance position."
-msgstr ""
-"De printer verplaatst zich nu naar de positie om onderhoud te doen aan de"
-" extruders."
+msgstr "De printer verplaatst zich nu naar de positie om onderhoud te doen aan de extruders."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:130
-msgid ""
-"One of the print heads has not cooled down yet. Print head maintenance "
-"may cause serious injury. It is adviced to wait for the print heads to "
-"cool down."
-msgstr ""
-"Een van de extruders is nog niet afgekoeld. Het plegen van "
-"extruderonderhoud terwijl de extruder warm is kan serieus letsel "
-"veroorzaken. We adviseren om de extruders te laten afkoelen."
+msgid "One of the print heads has not cooled down yet. Print head maintenance may cause serious injury. It is adviced to wait for the print heads to cool down."
+msgstr "Een van de extruders is nog niet afgekoeld. Het plegen van extruderonderhoud terwijl de extruder warm is kan serieus letsel veroorzaken. We adviseren om de extruders te laten afkoelen."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:131
 msgid "Are you sure you want to continue?"
 msgstr "Weet u zeker dat u door wilt gaan?"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:155
-msgid ""
-"Press OK when you are done with the print head maintenance. This will "
-"home the printer."
-msgstr ""
-"Druk op Ok wanneer u klaar bent met het onderhoud. Dit zal de printer "
-"homen."
+msgid "Press OK when you are done with the print head maintenance. This will home the printer."
+msgstr "Druk op Ok wanneer u klaar bent met het onderhoud. Dit zal de printer homen."
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:221
 msgid "Reconnecting to printer"
 msgstr "Opnieuw verbinden met de printer"
 
 #: octoprint_lui/static/js/app/viewmodels/maintenance.js:222
-msgid ""
-"Please wait while the printer is being reconnected. Note that the printer"
-" will home automatically."
+msgid "Please wait while the printer is being reconnected. Note that the printer will home automatically."
 msgstr "Wacht tot dat de printer verbonden is. De printer zal automatisch homen."
 
 #: octoprint_lui/static/js/app/viewmodels/navigation.js:36
@@ -1366,96 +1157,82 @@ msgid "Could not restore printer connection"
 msgstr "Kan de printerconnectie niet herstellen"
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:246
-msgid ""
-"The printer connection could not be restored. Please consult your "
-"printer's manual"
-msgstr ""
-"De printerconnectie kon niet worden hersteld. Raadpleeg de handleiding "
-"van uw printer."
+msgid "The printer connection could not be restored. Please consult your printer's manual"
+msgstr "De printerconnectie kon niet worden hersteld. Raadpleeg de handleiding van uw printer."
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:342
 msgid "By-pass print analysis"
 msgstr "Dimensieanalyse uitschakelen"
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:343
-msgid ""
-"You are trying to start a print while the analysis has not been completed"
-" yet. This enables you to start a print in a mode that might not be "
-"supported. This could potentially damage your printer."
-msgstr ""
-"U probeert een printopdracht te starten terwijl de analyse nog niet "
-"voltooid is. Hierdoor kunt u een printopdracht starten in een modus die "
-"misschien niet ondersteund is. Dit kan leiden tot mislukte prints."
+msgid "You are trying to start a print while the analysis has not been completed yet. This enables you to start a print in a mode that might not be supported. This could potentially damage your printer."
+msgstr "U probeert een printopdracht te starten terwijl de analyse nog niet voltooid is. Hierdoor kunt u een printopdracht starten in een modus die misschien niet ondersteund is. Dit kan leiden tot mislukte prints."
 
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:344
 msgid "Do you want to by-pass the print analysis and start the print?"
 msgstr "Wilt u de dimensieanalyse uitschakelen?"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:388
-msgid ""
-"Please load filament in both the left and right extruder before you "
-"resume your print."
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:386
+msgid "Please load filament in both the left and right extruder before you resume your print."
 msgstr "Laad filament in de linker en rechter extruder voordat u doorgaat."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:406
-msgid ""
-"Please load filament in the required extruders before you resume your "
-"print."
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:404
+msgid "Please load filament in the required extruders before you resume your print."
 msgstr "Laad filament in de extruders voordat u doorgaat."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:410
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:408
 msgid "Cannot resume print"
 msgstr "Kan de printopdracht niet hervatten"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:421
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:419
 msgid "Print pausing"
 msgstr "Print wordt gepauzeerd"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:422
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:420
 msgid "Please wait while the print is being paused."
 msgstr "Wacht totdat de printer is gehomed."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:433
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:431
 #, python-format
 msgid "You are about to cancel %(filename)s."
 msgstr "U staat op het punt op %(filename)s af te breken."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:434
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:432
 msgid "Are you sure you want to cancel this print?"
 msgstr "Weet u zeker dat u deze printopdracht wil afbreken?"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:435
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:433
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:23
 msgid "Yes"
 msgstr "Ja"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:436
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:434
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_detection_flyout.jinja2:38
 msgid "No"
 msgstr "Nee"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:443
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:441
 msgid "Print cancelling"
 msgstr "Printopdracht wordt geannuleerd"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:444
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:442
 msgid "Please wait while the print is being cancelled."
 msgstr "Wacht totdat de print is geannuleerd."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:487
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:485
 msgid "Door open"
 msgstr "Deur open"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:488
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:486
 msgid "Please close the door before you continue printing."
 msgstr "Sluit de deur om de printopdracht te hervatten."
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:620
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:626
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:619
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:625
 msgid "Previewing"
 msgstr "Voorvertoning"
 
-#: octoprint_lui/static/js/app/viewmodels/printerstate.js:704
+#: octoprint_lui/static/js/app/viewmodels/printerstate.js:703
 msgid "Creating preview"
 msgstr "Creëren van voorvertoning"
 
@@ -1475,12 +1252,8 @@ msgstr "\" bestaat al. Zorg ervoor dat elk profiel een unieke naam heeft."
 
 #: octoprint_lui/static/js/app/viewmodels/settings.js:80
 #, python-format
-msgid ""
-"\" must have an extruder temperature between %(mintemp)s &deg;C and "
-"%(maxtemp)s &deg;C."
-msgstr ""
-"\" moet een extrudertemperatuur tussen %(mintemp)s &deg;C en %(maxtemp)s "
-"&deg;C hebben."
+msgid "\" must have an extruder temperature between %(mintemp)s &deg;C and %(maxtemp)s &deg;C."
+msgstr "\" moet een extrudertemperatuur tussen %(mintemp)s &deg;C en %(maxtemp)s &deg;C hebben."
 
 #: octoprint_lui/static/js/app/viewmodels/settings.js:86
 msgid "\" must have a bed temperature of at least 0 &deg;C."
@@ -1491,28 +1264,16 @@ msgid "Turn on auto shutdown"
 msgstr "Automatisch afsluiten inschakelen"
 
 #: octoprint_lui/static/js/app/viewmodels/settings.js:146
-msgid ""
-"You are about to turn on auto shutdown. This will turn off the printer "
-"when the current job or next job that is started is finished. This "
-"setting resets after a shutdown of the machine."
-msgstr ""
-"U staat op het punt op \"automatisch uitschakelen\" aan te zetten. Dit "
-"zal de printer na het afronden van de huidige print of volgende print "
-"automatisch afsluiten."
+msgid "You are about to turn on auto shutdown. This will turn off the printer when the current job or next job that is started is finished. This setting resets after a shutdown of the machine."
+msgstr "U staat op het punt op \"automatisch uitschakelen\" aan te zetten. Dit zal de printer na het afronden van de huidige print of volgende print automatisch afsluiten."
 
 #: octoprint_lui/static/js/app/viewmodels/settings.js:167
 msgid "Disable print analysis"
 msgstr "Printanalyse uitschakelen"
 
 #: octoprint_lui/static/js/app/viewmodels/settings.js:168
-msgid ""
-"You are about to disable the print analysis feature. Doing so will allow "
-"you to print without the print check. This could result in bad prints "
-"and/or potential damages to the printer."
-msgstr ""
-"U staat op het punt om printanalyse uit te schakelen. Hierdoor kunt u "
-"printopdrachten uitvoeren voordat deze geanalyseerd zijn. Dit kan "
-"resulteren in mislukte prints of schade aan de printer."
+msgid "You are about to disable the print analysis feature. Doing so will allow you to print without the print check. This could result in bad prints and/or potential damages to the printer."
+msgstr "U staat op het punt om printanalyse uit te schakelen. Hierdoor kunt u printopdrachten uitvoeren voordat deze geanalyseerd zijn. Dit kan resulteren in mislukte prints of schade aan de printer."
 
 #: octoprint_lui/static/js/app/viewmodels/settings.js:547
 #, python-format
@@ -1535,9 +1296,7 @@ msgstr "Het commando \"%(command)s\" is succesvol uitgevoerd"
 #: octoprint_lui/static/js/app/viewmodels/system.js:64
 #, python-format
 msgid "The command \"%(command)s\" could not be executed. Please check logs."
-msgstr ""
-"Het commando \"%(command)s\" kon niet worden uitgevoerd.. Raadpleeg de "
-"logbestanden."
+msgstr "Het commando \"%(command)s\" kon niet worden uitgevoerd.. Raadpleeg de logbestanden."
 
 #: octoprint_lui/static/js/app/viewmodels/terminal.js:25
 #, python-format
@@ -1578,155 +1337,130 @@ msgstr "Inactief"
 msgid "Ready"
 msgstr "Gereed"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:45
-#: octoprint_lui/static/js/app/viewmodels/update.js:53
-#: octoprint_lui/static/js/app/viewmodels/update.js:77
+#: octoprint_lui/static/js/app/viewmodels/update.js:47
+#: octoprint_lui/static/js/app/viewmodels/update.js:55
+#: octoprint_lui/static/js/app/viewmodels/update.js:79
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:107
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:34
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:166
 msgid "Update"
 msgstr "Update"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:47
-#: octoprint_lui/static/js/app/viewmodels/update.js:55
-#: octoprint_lui/static/js/app/viewmodels/update.js:79
+#: octoprint_lui/static/js/app/viewmodels/update.js:49
+#: octoprint_lui/static/js/app/viewmodels/update.js:57
+#: octoprint_lui/static/js/app/viewmodels/update.js:81
 msgid "Up-to-date"
 msgstr "Up-to-date"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:142
+#: octoprint_lui/static/js/app/viewmodels/update.js:147
 msgid "Update software"
 msgstr "Update software"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:143
-msgid ""
-"You are about to update the printer software. This will take some time "
-"and will restart the printer background service when completed."
-msgstr ""
-"U staat op het punt om de printersoftware the updaten. Dit zal enkele "
-"minuten in beslag nemen en de achtergrondservice van de printer "
-"herstarten wanneer de update voltooid is."
+#: octoprint_lui/static/js/app/viewmodels/update.js:148
+msgid "You are about to update the printer software. This will take some time and will restart the printer background service when completed."
+msgstr "U staat op het punt om de printersoftware the updaten. Dit zal enkele minuten in beslag nemen en de achtergrondservice van de printer herstarten wanneer de update voltooid is."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:146
+#: octoprint_lui/static/js/app/viewmodels/update.js:152
 msgid "Update: "
 msgstr "Update: "
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:147
-msgid ""
-"You are about to update a component of the User Interface. This will take"
-" some time and will restart the printer background service when "
-"completed."
+#: octoprint_lui/static/js/app/viewmodels/update.js:153
+msgid "You are about to update a component of the User Interface. This will take some time and will restart the printer background service when completed."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:148
-#, fuzzy
+#: octoprint_lui/static/js/app/viewmodels/update.js:154
 msgid "Do you want to update "
 msgstr "Wilt u het volgende component updaten:"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:158
-#: octoprint_lui/static/js/app/viewmodels/update.js:176
-#: octoprint_lui/static/js/app/viewmodels/update.js:556
+#: octoprint_lui/static/js/app/viewmodels/update.js:164
+#: octoprint_lui/static/js/app/viewmodels/update.js:182
+#: octoprint_lui/static/js/app/viewmodels/update.js:580
 msgid "Update failed."
 msgstr "Update mislukt."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:159
-#: octoprint_lui/static/js/app/viewmodels/update.js:177
-#: octoprint_lui/static/js/app/viewmodels/update.js:543
-#: octoprint_lui/static/js/app/viewmodels/update.js:557
+#: octoprint_lui/static/js/app/viewmodels/update.js:165
+#: octoprint_lui/static/js/app/viewmodels/update.js:183
+#: octoprint_lui/static/js/app/viewmodels/update.js:567
+#: octoprint_lui/static/js/app/viewmodels/update.js:581
 msgid "Please check the logs."
 msgstr "Raadpleeg de logs voor meer informatie."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:187
+#: octoprint_lui/static/js/app/viewmodels/update.js:193
 msgid "Updating firmware"
 msgstr "Firmware wordt geüpdatet"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:188
+#: octoprint_lui/static/js/app/viewmodels/update.js:194
 msgid "The firmware is updating, please wait until the update is completed..."
 msgstr "De firmware wordt bijgewerkt, wacht tot de update is voltooid ..."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:238
+#: octoprint_lui/static/js/app/viewmodels/update.js:250
 msgid "Updating"
 msgstr "Updaten"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:239
+#: octoprint_lui/static/js/app/viewmodels/update.js:251
 msgid "System is updating, please wait until the updates are completed..."
 msgstr "Printer wordt bijgewerkt, wacht tot de updates zijn voltooid ..."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:245
-#, fuzzy
+#: octoprint_lui/static/js/app/viewmodels/update.js:257
 msgid "Rebooting"
 msgstr "Herstarten"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:246
+#: octoprint_lui/static/js/app/viewmodels/update.js:258
 msgid "To complete the updates, the system will reboot itself."
-msgstr ""
+msgstr "Om de updates af te ronden zal de printer opnieuw opstarten."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:321
-#: octoprint_lui/static/js/app/viewmodels/update.js:390
+#: octoprint_lui/static/js/app/viewmodels/update.js:334
+#: octoprint_lui/static/js/app/viewmodels/update.js:405
 msgid "Firmware update found"
 msgstr "Firmware-update gevonden"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:322
-msgid ""
-"A firmware update has been found, but this requires a software update "
-"first."
-msgstr ""
-"Een firmware-update is gevonden, maar dit vereist eerst een software-"
-"update."
+#: octoprint_lui/static/js/app/viewmodels/update.js:335
+msgid "A firmware update has been found, but this requires a software update first."
+msgstr "Een firmware-update is gevonden, maar dit vereist eerst een software-update."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:323
+#: octoprint_lui/static/js/app/viewmodels/update.js:336
 msgid "Would you like to update the printer software?"
 msgstr "Wilt u de printersoftware updaten?"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:341
+#: octoprint_lui/static/js/app/viewmodels/update.js:355
 msgid "Could not retrieve update information"
 msgstr "Kan geen update-informatie verkrijgen."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:342
-#: octoprint_lui/static/js/app/viewmodels/update.js:525
-#, fuzzy
-msgid ""
-"The printer seems not connected to the internet. Please make sure the "
-"network has internet capabilities."
-msgstr ""
-"De printer lijkt niet verbonden met het internet. Controleer of het "
-"netwerk op het internet is aangesloten."
+#: octoprint_lui/static/js/app/viewmodels/update.js:356
+#: octoprint_lui/static/js/app/viewmodels/update.js:549
+msgid "The printer seems not connected to the internet. Please make sure the network has internet capabilities."
+msgstr "De printer lijkt niet verbonden met het internet. Controleer of het netwerk op het internet is aangesloten."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:391
+#: octoprint_lui/static/js/app/viewmodels/update.js:406
 #, python-format
-msgid ""
-"The USB drive you inserted contains a firmware update with filename "
-"\"%(filename)s\"."
+msgid "The USB drive you inserted contains a firmware update with filename \"%(filename)s\"."
 msgstr "De USB-stick bevat een firmware-update: \"%(filename)s\"."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:392
+#: octoprint_lui/static/js/app/viewmodels/update.js:407
 msgid "Would you like to install this update?"
 msgstr "Wilt u deze update installeren?"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:524
+#: octoprint_lui/static/js/app/viewmodels/update.js:548
 msgid "Printer offline"
 msgstr "Printer offline"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:533
+#: octoprint_lui/static/js/app/viewmodels/update.js:557
 msgid "Update server offline"
 msgstr "Update server offline"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:534
-msgid ""
-"The update server seems to be offline. Please retry updating after or "
-"check the status at github.com/Leapfrog3DPrinters"
-msgstr ""
-"De updateserver lijkt offline te zijn. Controleer de status bij "
-"github.com/Leapfrog3DPrinters"
+#: octoprint_lui/static/js/app/viewmodels/update.js:558
+msgid "The update server seems to be offline. Please retry updating after or check the status at github.com/Leapfrog3DPrinters"
+msgstr "De updateserver lijkt offline te zijn. Controleer de status bij github.com/Leapfrog3DPrinters"
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:542
+#: octoprint_lui/static/js/app/viewmodels/update.js:566
 msgid "Update fetching failed."
 msgstr "Update binnenhalen mislukt."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:565
+#: octoprint_lui/static/js/app/viewmodels/update.js:589
 msgid "Update completed."
 msgstr "Update voltooid."
 
-#: octoprint_lui/static/js/app/viewmodels/update.js:566
+#: octoprint_lui/static/js/app/viewmodels/update.js:590
 msgid "Going to restart the service to finish the updates."
 msgstr "De achtergrondservice wordt opnieuw opgestart om de updates te voltooien."
 
@@ -1812,12 +1546,8 @@ msgid "Copying of timelapse failed"
 msgstr "Kopiëren van timelapse mislukt"
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:269
-msgid ""
-"The timelapse could not be copied. Please check if there is sufficient "
-"space available on the drive and try again."
-msgstr ""
-"De timelapse kon niet worden gekopieerd. Gelieve de vrije schuifruimte te"
-" controleren op de USB stick en opnieuw proberen."
+msgid "The timelapse could not be copied. Please check if there is sufficient space available on the drive and try again."
+msgstr "De timelapse kon niet worden gekopieerd. Gelieve de vrije schuifruimte te controleren op de USB stick en opnieuw proberen."
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:281
 msgid "Timelapses copied"
@@ -1828,12 +1558,8 @@ msgid "The timelapses have been copied to your USB drive."
 msgstr "De timelapsevideo's zijn naar uw USB-stick gekopieerd."
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:283
-msgid ""
-"One or more timelapses could not be copied. Please check if there is "
-"sufficient space available on the drive and try again."
-msgstr ""
-"Een of meer timelapsevideo's konden niet worden gekopieerd. Zorg ervoor "
-"dat er genoeg ruimte beschikbaar is en probeer het nogmaals."
+msgid "One or more timelapses could not be copied. Please check if there is sufficient space available on the drive and try again."
+msgstr "Een of meer timelapsevideo's konden niet worden gekopieerd. Zorg ervoor dat er genoeg ruimte beschikbaar is en probeer het nogmaals."
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:342
 msgid "Capturing timelapse postroll"
@@ -1850,9 +1576,7 @@ msgstr "%(minutes)d min"
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:351
 #, python-format
-msgid ""
-"Now capturing timelapse post roll, this will take approximately "
-"%(duration)s"
+msgid "Now capturing timelapse post roll, this will take approximately %(duration)s"
 msgstr "De postroll van de timelapsevideo wordt nu opgenomen, een moment geduld..."
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:353
@@ -1862,12 +1586,8 @@ msgstr "%(seconds)d sec"
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:354
 #, python-format
-msgid ""
-"Now capturing timelapse post roll, this will take approximately "
-"%(duration)s..."
-msgstr ""
-"De postroll van de timelapse video wordt nu opgenomen. Dit duurt ongeveer"
-" %(duration)s..."
+msgid "Now capturing timelapse post roll, this will take approximately %(duration)s..."
+msgstr "De postroll van de timelapse video wordt nu opgenomen. Dit duurt ongeveer %(duration)s..."
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:366
 msgid "Rendering timelapse"
@@ -1875,13 +1595,8 @@ msgstr "Renderen timelapse"
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:367
 #, python-format
-msgid ""
-"Now rendering timelapse %(movie_prefix)s. Due to performance reasons it "
-"is not recommended to start a print job while a movie is still rendering."
-msgstr ""
-"%(movie_prefix)s timelapse aan het renderen. Wegens prestatieredenen is "
-"het niet aan te raden om een printopdracht te starten terwijl de printer "
-"aan het renderen is."
+msgid "Now rendering timelapse %(movie_prefix)s. Due to performance reasons it is not recommended to start a print job while a movie is still rendering."
+msgstr "%(movie_prefix)s timelapse aan het renderen. Wegens prestatieredenen is het niet aan te raden om een printopdracht te starten terwijl de printer aan het renderen is."
 
 #: octoprint_lui/static/js/app/viewmodels/webcam.js:374
 msgid "Rendering failed"
@@ -2029,7 +1744,7 @@ msgstr "Extruderkalibratie"
 
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:375
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:5
-#: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:132
+#: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:127
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:85
 msgid "Start print"
 msgstr "Start print"
@@ -2131,18 +1846,12 @@ msgid "Swapping filament:"
 msgstr "Filament wisselen:"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:18
-msgid ""
-"Please wait while the printer is heating and until the command has been "
-"executed."
+msgid "Please wait while the printer is heating and until the command has been executed."
 msgstr "Wacht totdat de printer klaar is met opwarmen en de actie is uitgevoerd."
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:25
-msgid ""
-"Please press unload to release the filament from the extruder. The spool "
-"that you are unloading has"
-msgstr ""
-"Druk op Uitladen om het filament uit de extruder te laden. De spoel die "
-"wordt uitgeladen heeft"
+msgid "Please press unload to release the filament from the extruder. The spool that you are unloading has"
+msgstr "Druk op Uitladen om het filament uit de extruder te laden. De spoel die wordt uitgeladen heeft"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:25
 msgid "left."
@@ -2168,40 +1877,29 @@ msgstr "Materiaal:"
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:46
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:37
 msgid "To print this material you need a high temperature hot end."
-msgstr ""
-"Om dit materiaal te printen hebt u een hot-end voor hoge temperatuur "
-"nodig nodig."
+msgstr "Om dit materiaal te printen hebt u een hot-end voor hoge temperatuur nodig nodig."
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:50
 msgid "Select how much filament is on the spool:"
 msgstr "Selecteer hoeveel filament er op de spoel zit:"
 
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:73
-msgid ""
-"Insert the filament in the filament drawer past both wheels of the "
-"extruder feeder in the drawer."
+msgid "Insert the filament in the filament drawer past both wheels of the extruder feeder in the drawer."
 msgstr "Voer het filament in de filamentlade in to voorbij de twee wielen."
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:75
-msgid ""
-"Load filament through the side panel. When the filament reaches the print"
-" head press \"Load\" to load the filament in the head. To improve grip "
-"apply pressure on the filament after pressing \"Load\"."
-msgstr ""
-"Laad het filament door het zijpaneel. Wanneer het filament het print "
-"hoofd heeft bereikt, druk op \"Laden\" op het filament in het hoofd te "
-"laden. Om grip te verbeteren, voer druk uit op het filament tijdens het "
-"laden."
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:78
+msgid "Load filament through the side panel. When the filament reaches the print head press \"Load\" to load the filament in the head. To improve grip apply pressure on the filament after pressing \"Load\"."
+msgstr "Laad het filament door het zijpaneel. Wanneer het filament het print hoofd heeft bereikt, druk op \"Laden\" op het filament in het hoofd te laden. Om grip te verbeteren, voer druk uit op het filament tijdens het laden."
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:94
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:98
 msgid "Extrude more filament"
 msgstr "Extrudeer meer filament"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:97
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:101
 msgid "Stop extruding"
 msgstr "Stop extruderen"
 
-#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:111
+#: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:115
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:281
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:100
 msgid "Status"
@@ -2242,8 +1940,8 @@ msgid "You have selected "
 msgstr "U heeft "
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:10
-msgid " to print."
-msgstr " geselecteerd om te printen."
+msgid " to print. Please ensure the bed is empty before you continue."
+msgstr " geselecteerd om te printen. Controleer of er geen print op het bed staat voordat u doorgaat."
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:41
 msgid "Printing mode"
@@ -2277,23 +1975,13 @@ msgstr "Er is niet genoeg filament om de printopdracht te voltooien in "
 msgid " mode."
 msgstr " modus."
 
-#: octoprint_lui/templates/flyouts_lui/file_flyouts/mode_select_flyout.jinja2:115
-msgid "Are you sure you want to start this print?"
-msgstr "Weet u zeker dat u deze printopdracht wil starten?"
-
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/auto_shutdown_flyout.jinja2:5
 msgid "Preparing to auto shutdown ... "
 msgstr "Voorbereiden op automatisch afsluiten"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/auto_shutdown_flyout.jinja2:10
-msgid ""
-"Time-lapse is still being rendered. Waiting on completion of render to "
-"start auto-shutdown. Shutting down the printer during time-lapse render "
-"will result in a failed time-lapse."
-msgstr ""
-"Timelapsevideo is nog aan het renderen. Nadat de timelapsevideo is "
-"gerenderd zal de printer automatisch afsluiten. De printer afsluiten "
-"tijdens een timelapserender kan de render laten mislukken."
+msgid "Time-lapse is still being rendered. Waiting on completion of render to start auto-shutdown. Shutting down the printer during time-lapse render will result in a failed time-lapse."
+msgstr "Timelapsevideo is nog aan het renderen. Nadat de timelapsevideo is gerenderd zal de printer automatisch afsluiten. De printer afsluiten tijdens een timelapserender kan de render laten mislukken."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/auto_shutdown_flyout.jinja2:15
 msgid "Print is about to shut down. Shutting down in: "
@@ -2334,13 +2022,8 @@ msgid "Maintenance mode"
 msgstr "Onderhoudsmodus"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/maintenance_mode_flyout.jinja2:12
-#, fuzzy
-msgid ""
-"The printer is currently in maintenance mode. Please finish the "
-"maintenance on the printer before you continue."
-msgstr ""
-"De printer is op dit moment in onderhoudsmodus. Rond deze af voordat u "
-"verdergaat."
+msgid "The printer is currently in maintenance mode. Please finish the maintenance on the printer before you continue."
+msgstr "De printer is op dit moment in onderhoudsmodus. Rond deze af voordat u verdergaat."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:6
 msgid "The right print head seems to be disconnected."
@@ -2351,20 +2034,12 @@ msgid "The left print head seems to be disconnected."
 msgstr "De linker extruder lijkt niet verbonden."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:16
-msgid ""
-"Please ensure that the right print head is properly connected and press "
-"restore."
-msgstr ""
-"Controleer of de rechter extruder correct verbonden is en druk op "
-"Herstellen."
+msgid "Please ensure that the right print head is properly connected and press restore."
+msgstr "Controleer of de rechter extruder correct verbonden is en druk op Herstellen."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:19
-msgid ""
-"Please ensure that the left print head is properly connected and press "
-"restore."
-msgstr ""
-"Controleer of de linker extruder correct verbonden is en druk op "
-"Herstellen."
+msgid "Please ensure that the left print head is properly connected and press restore."
+msgstr "Controleer of de linker extruder correct verbonden is en druk op Herstellen."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:30
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:46
@@ -2373,26 +2048,16 @@ msgstr "Er is een temperatuurfout opgetreden."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:36
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:52
-msgid ""
-"Please ensure that the ambient temperature of the printer is within "
-"specifications (see the printer's manual) and the print heads are "
-"properly connected."
-msgstr ""
-"Zorg ervoor dat de omgevingstemperatuur van de printer binnen de "
-"specificaties valt (zie handleiding van de printer) en de extruders goed "
-"zijn aangesloten."
+msgid "Please ensure that the ambient temperature of the printer is within specifications (see the printer's manual) and the print heads are properly connected."
+msgstr "Zorg ervoor dat de omgevingstemperatuur van de printer binnen de specificaties valt (zie handleiding van de printer) en de extruders goed zijn aangesloten."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:62
 msgid "An unkown error has occured"
 msgstr "Er is een onbekende fout opgetreden"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:68
-msgid ""
-"An unknown error has occured while communicating with your printer. You "
-"can try to restore the connection."
-msgstr ""
-"Er is een onbekende fout opgetreden tijdens de communicatie met de "
-"printer. U kunt de printercommunicatie proberen te herstellen."
+msgid "An unknown error has occured while communicating with your printer. You can try to restore the connection."
+msgstr "Er is een onbekende fout opgetreden tijdens de communicatie met de printer. U kunt de printercommunicatie proberen te herstellen."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:74
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:102
@@ -2404,36 +2069,20 @@ msgid "The printer failed to reconnect"
 msgstr "Het is niet gelukt om opnieuw met de printer te verbinden"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:96
-msgid ""
-"If you changed any wiring, please check again if everything is properly "
-"connected. You can try to restore the connection."
-msgstr ""
-"Als u een onderdeel hebt vervangen of de bedrading hebt aangepast, "
-"controleer dan of alles goed verbonden is. U kunt proberen de verbinding "
-"te herstellen."
+msgid "If you changed any wiring, please check again if everything is properly connected. You can try to restore the connection."
+msgstr "Als u een onderdeel hebt vervangen of de bedrading hebt aangepast, controleer dan of alles goed verbonden is. U kunt proberen de verbinding te herstellen."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_remote_flyout.jinja2:12
-msgid ""
-"An error has occured while communicating with your printer. Action needs "
-"to be taken on the printer before remote access is possible."
-msgstr ""
-"Er is een fout opgetreden tijdens de communicatie met uw printer. Er is "
-"een handeling op de printer nodig voordat er vanaf afstand controle over "
-"mogelijk is."
+msgid "An error has occured while communicating with your printer. Action needs to be taken on the printer before remote access is possible."
+msgstr "Er is een fout opgetreden tijdens de communicatie met uw printer. Er is een handeling op de printer nodig voordat er vanaf afstand controle over mogelijk is."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/shutdown_confirmation_flyout.jinja2:5
 msgid "Shutdown system"
 msgstr "Printer afsluiten"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/shutdown_confirmation_flyout.jinja2:10
-msgid ""
-"A print job is currently busy. Would you like to use auto-shutdown when "
-"your printjob finishes or would you like to cancel the print and shutdown"
-" immediately?"
-msgstr ""
-"Er is een print opdracht bezig. Wilt u de printer automatisch "
-"uitschakelen na het voltooien van de print of wilt u de print afbreken en"
-" de printer direct afsluiten?"
+msgid "A print job is currently busy. Would you like to use auto-shutdown when your printjob finishes or would you like to cancel the print and shutdown immediately?"
+msgstr "Er is een print opdracht bezig. Wilt u de printer automatisch uitschakelen na het voltooien van de print of wilt u de print afbreken en de printer direct afsluiten?"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/shutdown_confirmation_flyout.jinja2:18
 #: octoprint_lui/templates/flyouts_lui/login_flyouts/login_flyout.jinja2:50
@@ -2441,12 +2090,8 @@ msgid "Auto-shutdown"
 msgstr "Auto-uitschakelen"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:10
-msgid ""
-"Before you can start using the printer, a homing sequence needs to be "
-"executed. This means the bed will move to its upper position."
-msgstr ""
-"Voordat de printer gebruikt kan worden moet de printer worden gehomed. "
-"Het bed van de printer zal naar de bovenste positie verplaatsen."
+msgid "Before you can start using the printer, a homing sequence needs to be executed. This means the bed will move to its upper position."
+msgstr "Voordat de printer gebruikt kan worden moet de printer worden gehomed. Het bed van de printer zal naar de bovenste positie verplaatsen."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:15
 msgid "Please confirm there is no print on the bed."
@@ -2462,21 +2107,15 @@ msgid "Please wait while the printer is homing."
 msgstr "Wacht totdat de printer is gehomed."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:10
-msgid ""
-"The printer just started up. Action needs to be taken on the printer "
-"before remote access is possible."
-msgstr ""
-"De printer is zojuist opgestart. De printer moet worden gehomed voordat "
-"er vanaf afstand controle over mogelijk is."
+msgid "The printer just started up. Action needs to be taken on the printer before remote access is possible."
+msgstr "De printer is zojuist opgestart. De printer moet worden gehomed voordat er vanaf afstand controle over mogelijk is."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:4
 msgid "Update required"
 msgstr "Update vereist"
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:14
-msgid ""
-"The firmware of your printer is outdated. Please update your firmware to "
-"version "
+msgid "The firmware of your printer is outdated. Please update your firmware to version "
 msgstr "De firmware van uw printer is verouderd. Update de firmware naar versie "
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:14
@@ -2484,18 +2123,12 @@ msgid " or higher."
 msgstr " of hoger."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:17
-msgid ""
-"A software component of your printer is outdated. Please connect your "
-"printer to the internet and update the software before you continue."
+msgid "A software component of your printer is outdated. Please connect your printer to the internet and update the software before you continue."
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:24
-msgid ""
-"If you are unable to update the firmware automatically, please visit "
-"support.lpfrg.com to download and update the firmware manually."
-msgstr ""
-"Als u niet in staat bent de firmware automatisch te updaten kunt u op "
-"support.lpfrg.com de laatste firmware downloaden."
+msgid "If you are unable to update the firmware automatically, please visit support.lpfrg.com to download and update the firmware manually."
+msgstr "Als u niet in staat bent de firmware automatisch te updaten kunt u op support.lpfrg.com de laatste firmware downloaden."
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:49
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:3
@@ -2533,13 +2166,8 @@ msgid ", do you want to log out?"
 msgstr "wilt u uitloggen?"
 
 #: octoprint_lui/templates/flyouts_lui/login_flyouts/login_flyout.jinja2:53
-msgid ""
-"Auto-shutdown is enabled. The printer will automatically shutdown after a"
-" print is finished. To change this behaviour visit the Printer section in"
-" the Settings."
-msgstr ""
-"Automatisch uitschakelen is ingeschakeld. De printer zal automatisch "
-"uitschakelen nadat de printopdracht voltooid is."
+msgid "Auto-shutdown is enabled. The printer will automatically shutdown after a print is finished. To change this behaviour visit the Printer section in the Settings."
+msgstr "Automatisch uitschakelen is ingeschakeld. De printer zal automatisch uitschakelen nadat de printopdracht voltooid is."
 
 #: octoprint_lui/templates/flyouts_lui/login_flyouts/login_flyout.jinja2:58
 msgid "Reboot"
@@ -2570,18 +2198,8 @@ msgid "Bed leveling"
 msgstr "Bed levelen"
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:43
-msgid ""
-"Select the corner you would like to calibrate. The extruder will move "
-"into this position. You may adjust the bed by turning the knob below the "
-"bed. Place a piece of paper between the bed and the nozzle and adjust the"
-" bed until there is friction between the paper and the nozzle. Repeat "
-"this for every corner."
-msgstr ""
-"Selecteer de hoek die u wilt kalibreren. De extruder zal naar deze "
-"positie verplaatsen. Het bed kan gekalibreerd worden door aan de knop aan"
-" de onderkant te draaien. Plaats een vel papier tussen het bed en de "
-"nozzle en draai aan de knop totdat het papier frictie ondervindt als u "
-"deze over het bed beweegt. Herhaal dit voor iedere hoek."
+msgid "Select the corner you would like to calibrate. The extruder will move into this position. You may adjust the bed by turning the knob below the bed. Place a piece of paper between the bed and the nozzle and adjust the bed until there is friction between the paper and the nozzle. Repeat this for every corner."
+msgstr "Selecteer de hoek die u wilt kalibreren. De extruder zal naar deze positie verplaatsen. Het bed kan gekalibreerd worden door aan de knop aan de onderkant te draaien. Plaats een vel papier tussen het bed en de nozzle en draai aan de knop totdat het papier frictie ondervindt als u deze over het bed beweegt. Herhaal dit voor iedere hoek."
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:76
 msgid "Level bed"
@@ -2592,26 +2210,16 @@ msgid "Z-offset wizard"
 msgstr "Z-offset wizard"
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:102
-msgid ""
-"The print bed is currently being leveled. Please wait for the process to "
-"complete."
-msgstr ""
-"Het printbed wordt op dit moment geleveld. Gelieve te wachten totdat het "
-"proces voltooid is."
+msgid "The print bed is currently being leveled. Please wait for the process to complete."
+msgstr "Het printbed wordt op dit moment geleveld. Gelieve te wachten totdat het proces voltooid is."
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:120
 msgid "Bed levelling has completed"
 msgstr "Bed levelen is voltooid"
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:12
-msgid ""
-"Make sure the print bed is empty and calibrated. Also ensure both "
-"extruders are loaded with differently colored filament. Apply a print "
-"adhesive to the bed and press Start calibration."
-msgstr ""
-"Controleer of er geen print op het bed staat en zorg ervoor dat het bed "
-"gekalibreerd is. Twee verschillende kleuren in de extruders is gewenst. "
-"Gebruik printspray op het bed en druk op Start kalibratie."
+msgid "Make sure the print bed is empty and calibrated. Also ensure both extruders are loaded with differently colored filament. Apply a print adhesive to the bed and press Start calibration."
+msgstr "Controleer of er geen print op het bed staat en zorg ervoor dat het bed gekalibreerd is. Twee verschillende kleuren in de extruders is gewenst. Gebruik printspray op het bed en druk op Start kalibratie."
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:19
 msgid " Please load filament in the "
@@ -2742,12 +2350,7 @@ msgid "Z-offset"
 msgstr "Z-offset"
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/zoffset_flyout.jinja2:9
-msgid ""
-"Place a 0.05 flusher between the nozzle and the bed. Press the button "
-"Start Calibration, the bed will home and then move close to the nozzle. "
-"Use the up arrow until the nozzle is against the flusher. You can use the"
-" down arrow if you think you are too close. Press \"Save\" to save the "
-"new z-offset."
+msgid "Place a 0.05 flusher between the nozzle and the bed. Press the button Start Calibration, the bed will home and then move close to the nozzle. Use the up arrow until the nozzle is against the flusher. You can use the down arrow if you think you are too close. Press \"Save\" to save the new z-offset."
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/zoffset_flyout.jinja2:15
@@ -2773,12 +2376,8 @@ msgid "Cloud settings"
 msgstr "Cloudinstellingen"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/cloud_flyout.jinja2:44
-msgid ""
-"Use the buttons below to connect or disconnect cloud services. Make sure "
-"your printer is connected to the internet before you continue."
-msgstr ""
-"Gebruik onderstaande knoppen om met clouddiensten te verbdingen. Zorg "
-"ervoor dat uw printer is verbonden met het internet."
+msgid "Use the buttons below to connect or disconnect cloud services. Make sure your printer is connected to the internet before you continue."
+msgstr "Gebruik onderstaande knoppen om met clouddiensten te verbdingen. Zorg ervoor dat uw printer is verbonden met het internet."
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/cloud_flyout.jinja2:72
 msgid "Please visit cloud.lpfrg.com/login to obtain an authorization code."
@@ -2825,12 +2424,8 @@ msgid "Add profile"
 msgstr "Profiel toevoegen"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/printer_flyout.jinja2:5
-msgid ""
-"Name of this OctoPrint instance, will be shown in the navigation bar and "
-"broadcast on the network"
-msgstr ""
-"Naam van de OctoPrint-sessie. Deze zal worden getoond in de navigatiebalk"
-" en over het netwerk worden verstuurd"
+msgid "Name of this OctoPrint instance, will be shown in the navigation bar and broadcast on the network"
+msgstr "Naam van de OctoPrint-sessie. Deze zal worden getoond in de navigatiebalk en over het netwerk worden verstuurd"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/printer_flyout.jinja2:7
 msgid "Title"
@@ -2861,19 +2456,15 @@ msgid "Debug mode"
 msgstr "Debugmodus"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/printer_flyout.jinja2:110
-msgid ""
-"This will require a system restart to take effect. This mode is for "
-"debugging and special support request. This mode can change user "
-"experience dramatically!"
-msgstr ""
-"De printer moet hiervoor opnieuw opgestart worden. Deze modus is alleen "
-"voor debugdoeleinden en speciale supportaanvragen. Deze modus zal de "
-"gebruikerservaring beïnvloeden!"
+msgid "This will require a system restart to take effect. This mode is for debugging and special support request. This mode can change user experience dramatically!"
+msgstr "De printer moet hiervoor opnieuw opgestart worden. Deze modus is alleen voor debugdoeleinden en speciale supportaanvragen. Deze modus zal de gebruikerservaring beïnvloeden!"
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/tutorials_flyout.jinja2:13
+msgid "Your First Print"
+msgstr "Uw eerste 3D-print"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/tutorials_flyout.jinja2:28
-msgid ""
-"The tutorial will guide you through the steps you have to take to print "
-"your first print."
+msgid "The tutorial will guide you through the steps you have to take to print your first print."
 msgstr "Deze tutorial leidt u door de stappen om uw eerste 3D-print te maken."
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/tutorials_flyout.jinja2:29
@@ -3008,14 +2599,12 @@ msgid "Wired"
 msgstr "Ethernet"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:104
-#, fuzzy
 msgid "Connected"
-msgstr "Verbinden"
+msgstr "Verbonden"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:104
-#, fuzzy
 msgid "Disconnected"
-msgstr "Verbinding verbreken"
+msgstr "Niet verbonden"
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:111
 msgid "Connect to network"
@@ -3086,28 +2675,16 @@ msgid "Loading files..."
 msgstr "Bestanden laden..."
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:147
-msgid ""
-"There are no files on your printer yet. You can load files from a USB "
-"drive."
-msgstr ""
-"Er zijn nog geen bestanden op uw printer. U kunt bestanden van een USB-"
-"stick laden."
+msgid "There are no files on your printer yet. You can load files from a USB drive."
+msgstr "Er zijn nog geen bestanden op uw printer. U kunt bestanden van een USB-stick laden."
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:149
-msgid ""
-"There are no files on your printer yet. Click upload to load a file from "
-"your computer.."
-msgstr ""
-"Er zijn nog geen bestanden op uw printer. U kunt bestanden van uw "
-"computer uploaden."
+msgid "There are no files on your printer yet. Click upload to load a file from your computer.."
+msgstr "Er zijn nog geen bestanden op uw printer. U kunt bestanden van uw computer uploaden."
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:161
-msgid ""
-"The printer appears to be offline. Connect the printer to the internet "
-"before you browse cloud storage services."
-msgstr ""
-"De printer lijkt offline te zijn. Verbind te printer met internet om door"
-" uw bestanden in de cloud te kunnen bladeren."
+msgid "The printer appears to be offline. Connect the printer to the internet before you browse cloud storage services."
+msgstr "De printer lijkt offline te zijn. Verbind te printer met internet om door uw bestanden in de cloud te kunnen bladeren."
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:221
 msgid "Connect to cloud services"
@@ -3122,7 +2699,6 @@ msgid "Est. Print Time:"
 msgstr "Geschatte printtijd:"
 
 #: octoprint_lui/templates/tabs_lui/files_lui.jinja2:284
-#, fuzzy
 msgid "Analyzing job"
 msgstr "Printopdracht analyseren"
 
@@ -3315,3 +2891,8 @@ msgstr "Printopdracht annuleren"
 #~ msgid "Bed leveling "
 #~ msgstr "Bed levelen"
 
+#~ msgid "Are you sure you want to start this print?"
+#~ msgstr "Weet u zeker dat u deze printopdracht wil starten?"
+
+#~ msgid "(High-temp)"
+#~ msgstr ""

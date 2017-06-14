@@ -8,12 +8,24 @@ $(function ()  {
 
         self.flyout = parameters[0];
         self.toolInfo = parameters[1];
+        self.settings = parameters[2];
 
         self.allViewModels = undefined;
 
         self.requiredMaterial = 'PLA';
 
         self.introInstance = introJs('#introjs-container');
+
+        var lang_dropdown = "";
+
+        if (FIRST_START)
+        {
+            lang_dropdown = "<br /><select class=\"introjs-lang-select\" data-bind=\"value: settings.appearance_defaultLanguage, event: { change: onLanguageSelect }\">";
+            _.forEach(AVAILABLE_LOCALES, function (locale, key) {
+                lang_dropdown += "<option value=\"" + key + "\">" + locale.display + "</option>";
+            });
+            lang_dropdown += "</select>";
+        }
 
         var firstPrintSteps = [
             {
@@ -23,6 +35,7 @@ $(function ()  {
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("<b>Welcome to your new Leapfrog Bolt Pro 3D printer.</b><br />This tutorial will guide you through " +
                     "the steps you have to take to start printing in 3D.<br />") +
+                 lang_dropdown +
                 "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                 "class=\"introjs-button next-button\" data-bind=\"touchClick: function (){ beginButton() }\">" + gettext("Continue") + "</a>" +
                 "<a id=\"cancelButton\" role=\"button\" class=\"introjs-button\"" +
@@ -170,7 +183,7 @@ $(function ()  {
                 intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The calibration functions are part of the maintenance menu located in the " +
-                    "settings tab. To get there, press <i class=\"fa fa-gears\"></i><br>Settings</br>") + "</div>",
+                    "settings tab. To get there, press <i class=\"fa fa-gears\"></i><b>Settings</b>") + "</div>",
                 position: 'top-right-aligned',
                 noMargins: true,
                 highlightClass: 'introjs-no-borders'
@@ -350,7 +363,7 @@ $(function ()  {
                 intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Good Job!<br>The printer is now printing the first print. " +
-                "Watch how the object magically appears before you.<br>") +
+                "Watch how the object magically appears in front of you.<br>") +
                 "<div class=\"introjs-tooltipbuttons\"><a id=\"doneButton\" role=\"button\" class=\"introjs-button\"" +
                 "data-bind=\"touchClick: function(){ doneButton() }\">" + gettext("Done") + "</a></div></div>"
             }
@@ -449,6 +462,13 @@ $(function ()  {
             }
         };
 
+        self.onLanguageSelect = function () {
+            self.settings.saveData()
+                .done(function () {
+                    location.reload(true);
+                });
+        }
+
         self.cancelButton = function () {
             //Cancels the intro, sends to backend that intro has run.
             if(self.currentStep() == 1 && self.isFirstStep == true){
@@ -515,9 +535,14 @@ $(function ()  {
             return self.introInstance._currentStep+1;
         };
 
+        self.currentStepName = function () {
+            return self.introInstance._introItems[self.introInstance._currentStep].stepName;
+        }
+
         self.getStepNumberByName = function (stepName) {
             return self.introInstance._introItems.find(x => x.stepName.toUpperCase() === stepName.toUpperCase()).step;
         };
+
 
         self.onShutdownOrDisconnectFlyout = function () {
             self.introInstance.exit();
@@ -556,7 +581,7 @@ $(function ()  {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        [ "flyoutViewModel", "toolInfoViewModel"],
+        [ "flyoutViewModel", "toolInfoViewModel", "settingsViewModel"],
 
         // Finally, this is the list of all elements we want this view model to be bound to.
         [ ]

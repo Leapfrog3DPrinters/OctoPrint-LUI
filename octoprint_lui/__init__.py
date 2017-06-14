@@ -255,9 +255,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def initialize(self):
 
-		#~~ check if first start
-        self.first_start = self._settings.get_boolean(["first_start"])
-
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
         self.plugin_version = self._plugin_manager.get_plugin_info('lui').version
@@ -2547,7 +2544,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "printer_profile": self.current_printer_profile,
             "reserved_usernames": self.reserved_usernames,
             "cloud_enabled": self.cloud_enabled,
-            "first_start": self.first_start
+            "first_start": self._settings.get_boolean(["first_start"])
         }
 
         args.update(render_kwargs)
