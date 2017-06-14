@@ -169,9 +169,11 @@ $(function ()  {
                 element: "#settings_icon",
                 intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("The calibration functions are part of the maintenance flyout located in the " +
+                "<div class=\"step-text\">" + gettext("The calibration functions are part of the maintenance menu located in the " +
                     "settings tab. To get there, press <i class=\"fa fa-gears\"></i><br>Settings</br>") + "</div>",
-                position: 'top'
+                position: 'top-right-aligned',
+                noMargins: true,
+                highlightClass: 'introjs-no-borders'
             },
             {
                 //16
@@ -179,7 +181,7 @@ $(function ()  {
                 element: '#maintenance',
                 intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("The calibration wizard is located in the maintenance flyout. " +
+                "<div class=\"step-text\">" + gettext("The calibration wizard is located in the maintenance menu. " +
                     "To go there, press <i class=\"fa fa-wrench\"></i><b>Maintenance</b>.") + "</div>",
                 position: 'bottom'
             },

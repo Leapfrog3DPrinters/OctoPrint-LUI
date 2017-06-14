@@ -72,6 +72,10 @@ a {
 .visibleflex {
   display: flex; }
 
+.icon-bar {
+  /* If we let flexbox determine the height, we get rounding errors with IntroJS, so fix it to 60px */
+  height: 60px; }
+
 .icon-bar a {
   text-align: center;
   font-size: 0.9em;
@@ -92,7 +96,7 @@ a {
   border-top: 3px solid #FF9734; }
 
 .icon-bar i {
-  pointer-events:none;
+  pointer-events: none;
   display: block;
   font-size: 2rem;
   color: #ffffff;
