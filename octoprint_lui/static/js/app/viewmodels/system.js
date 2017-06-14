@@ -96,8 +96,6 @@ $(function () {
                 title = gettext("Server disconnected");
                 message = gettext("The browser has been disconnected from the printer. Either the printer is turned off or the network connection failed. Trying to reconnect in the coming minutes.")
             }
-            
-            callViewModels(self.allViewModels, "onShutdownOrDisconnectFlyout");
 
             showOfflineFlyout(
                 title,

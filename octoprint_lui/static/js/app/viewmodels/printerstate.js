@@ -354,8 +354,6 @@ $(function ()  {
 
                 $('#mode_select_flyout').one("transitionend", function () {
                     self.introView.introInstance.refresh();
-
-                    setTimeout(function () { self.introView.introInstance.refresh() }, 300);
                 });
             }
 
@@ -551,6 +549,7 @@ $(function ()  {
                 self.errorReason(data.printerErrorReason);
                 self.erroredExtruder(data.printerErrorExtruder);
                 self.showPrinterErrorFlyout();
+                self.introView.introInstance.exit();
             }
             else {
                 self.closePrinterErrorFlyout();

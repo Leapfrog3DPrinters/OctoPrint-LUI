@@ -725,6 +725,11 @@ $(function ()  {
             return sufficient;
         });
 
+        self.enoughFilament.subscribe(function () {
+            if (self.introView.isTutorialStarted)
+                window.setTimeout(function () { self.introView.introInstance.refresh(); }, 0);
+        });
+
         self.evaluatePrintDimensions = function (data, mode, notify) {
             // This functionality is temporarily disabled for 1.0.8
             return true;
@@ -1395,7 +1400,7 @@ $(function ()  {
 
         self.checkIntroCancel = function () {
             //IntroJS
-            self.introView.introInstance.exit();
+            self.introView.exitButton();
             self.flyout.closeFlyout();
         };
 

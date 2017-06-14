@@ -510,6 +510,13 @@
         _checkRight(targetOffset, tooltipLayerStyleLeft, tooltipOffset, windowSize, tooltipLayer);
         tooltipLayer.style.bottom = (targetOffset.height +  20) + 'px';
         break;
+    case 'top-right-aligned':
+        arrowLayer.className = 'introjs-arrow bottom-right';
+
+        var tooltipLayerStyleRight = 5;
+        _checkLeft(targetOffset, tooltipLayerStyleRight, tooltipOffset, tooltipLayer);
+        tooltipLayer.style.bottom = (targetOffset.height + 20) + 'px';
+        break;
       case 'right':
         tooltipLayer.style.left = (targetOffset.width + 20) + 'px';
         if (targetOffset.top + tooltipOffset.height > windowSize.height) {
@@ -731,17 +738,33 @@
       var elementPosition = _getOffset(currentElement.element, translatedParent, isFixed);
       var widthHeightPadding = 10;
 
-      if (currentElement.position == 'floating') {
+      if (currentElement.position == 'floating' || currentElement.noMargins) {
         widthHeightPadding = 0;
       }
 
       //set new position to helper layer
       helperLayer.setAttribute('style', 'width: ' + (elementPosition.width  + widthHeightPadding)  + 'px; ' +
                                         'height:' + (elementPosition.height + widthHeightPadding)  + 'px; ' +
-                                        'top:'    + (elementPosition.top    - 5)   + 'px;' +
-                                        'left: ' +  (elementPosition.left   - 5) + 'px;');
+                                        'top:'    + (elementPosition.top    - (widthHeightPadding / 2))   + 'px;' +
+                                        'left: ' + (elementPosition.left    - (widthHeightPadding / 2)) + 'px;');
 
     }
+  }
+
+  function _updateTooltipPosition(referenceLayer)
+  {
+      if (!referenceLayer) return;
+      if (!this._introItems[this._currentStep]) return;
+
+      //prevent error when `this._currentStep` in undefined
+      var currentElement = this._introItems[this._currentStep];
+
+      var oldHelperNumberLayer = referenceLayer.querySelector('.introjs-helperNumberLayer'),
+          oldtooltipLayer = referenceLayer.querySelector('.introjs-tooltip'),
+          oldArrowLayer = referenceLayer.querySelector('.introjs-arrow'),
+          oldtooltipContainer = referenceLayer.querySelector('.introjs-tooltip');
+
+      _placeTooltip.call(this, currentElement.element, oldtooltipLayer, oldArrowLayer, oldHelperNumberLayer, false);
   }
 
   /**
@@ -1788,9 +1811,11 @@
       return this;
     },
     refresh: function() {
-      // re-align intros
+        // re-align intros
+       var referenceLayer = document.querySelector('.introjs-tooltipReferenceLayer');
       _setHelperLayerPosition.call(this, document.querySelector('.introjs-helperLayer'));
-      _setHelperLayerPosition.call(this, document.querySelector('.introjs-tooltipReferenceLayer'));
+      _setHelperLayerPosition.call(this, referenceLayer);
+      _updateTooltipPosition.call(this, referenceLayer);
 
       //re-align hints
       _reAlignHints.call(this);

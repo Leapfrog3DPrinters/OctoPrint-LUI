@@ -28,6 +28,11 @@
   visibility: hidden;
 }
 
+.introjs-helperLayer.introjs-no-borders
+{
+    border: 0 !important;
+}
+
 /*
  Buttons style
 */
