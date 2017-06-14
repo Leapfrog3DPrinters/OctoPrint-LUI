@@ -1287,6 +1287,11 @@ pre code {
     display: inline-block; }
 
 /* Filament swap */
+.explain img {
+  float: left;
+  padding-top: 10px;
+  width: 175px; }
+
 .swap_process_step {
   display: none;
   width: 100%; }
