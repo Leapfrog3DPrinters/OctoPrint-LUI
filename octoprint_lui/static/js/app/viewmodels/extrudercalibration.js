@@ -89,9 +89,10 @@ $(function ()  {
             //IntroJS
             if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startSmallCalibration"));
                     self.introView.introInstance.refresh();
-                }, 1000);
-                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startSmallCalibration"));
+                }, 100);
+
             }
         };
 
