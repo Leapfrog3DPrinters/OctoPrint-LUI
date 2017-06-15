@@ -1772,13 +1772,28 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._send_client_message("demo_selected")
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/local/lock", methods=["POST"])
-    def set_lock_settings(self, force = False):
+    @BlueprintPlugin.route("/printer/security/local_lock", methods=["GET"])
+    def get_lock_settings(self):
+        """
+        Gets the local lock saved settings
+        """
+        local_lock_code = self._settings.get(["local_lock_code"])
+        local_lock_enabled = self._settings.get(["local_lock_enabled"])
 
+        return make_response(jsonify({
+            'lockCode': local_lock_code,
+            'lockEnabled': local_lock_enabled
+        }), 200)
+
+    @BlueprintPlugin.route("/printer/security/auto_local_lock/<string:toggle>", methods=["POST"])
+    def auto_local_lock(self, toggle):
+        """
+        Sets auto-local-lock either on or off
+        """
         data = request.json
         lock_code = data.get("lockCode")
-        lock_enabled = data.get("lockEnabled")
         lock_timeout = int(data.get("lockTimeout"))
+        lock_enabled = toggle == "on"
 
         self._settings.set(["local_lock_code"], lock_code)
         self._settings.set(["local_lock_enabled"], lock_enabled)
@@ -1792,34 +1807,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if(lock_timeout > 0):
                 self._local_auto_lock_start(lock_timeout)
 
+        self._send_client_message(ClientMessages.AUTO_LOCAL_LOCK_TOGGLE, {"toggle": lock_enabled})
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/local/lock/immediate", methods=["POST"])
-    def force_local_lock(self):
+    @BlueprintPlugin.route("/printer/security/local_lock/immediate_lock", methods=["POST"])
+    def immediate_lock_frontend(self):
+        """
+        Cancels auto lock timer and locks printer.
+        """
         if self.local_auto_lock_timer:
             self.local_auto_lock_timer.cancel()
             self.local_auto_lock_timer = None
         self._send_client_message(ClientMessages.LOCAL_LOCK)
         return make_response(jsonify(), 200)
 
-    @BlueprintPlugin.route("/printer/security/local/lock/invalid", methods=["POST"])
+    @BlueprintPlugin.route("/printer/security/local_lock/invalid_code", methods=["POST"])
     def local_invalid_unlock_timer_start(self):
+        """
+        Starts invalid unlock timeout timer
+        """
         if self.local_invalid_unlock_timer:
             self.local_invalid_unlock_timer.cancel()
             self.local_invalid_unlock_timer = None
         self._local_invalid_unlock_start()
         return make_response(jsonify(), 200)
-
-    @BlueprintPlugin.route("/printer/security/local/lock", methods=["GET"])
-    def get_lock_settings(self):
-
-        local_lock_code = self._settings.get(["local_lock_code"])
-        local_lock_enabled = self._settings.get(["local_lock_enabled"])
-
-        return make_response(jsonify({
-            'lockCode': local_lock_code,
-            'lockEnabled': local_lock_enabled
-        }), 200)
 
     ## Files API
 
