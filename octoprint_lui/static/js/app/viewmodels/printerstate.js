@@ -241,7 +241,7 @@ $(function ()  {
             if (self.isConnecting()) {
                 $.notify({
                     title: gettext("Could not restore printer connection"),
-                    text: gettext('The printer connection could not be restored. Please consult your printer\'s manual')
+                    text: gettext('The printer connection could not be restored. Please consult your printer\'s manual.')
                 }, {
                     className: "error",
                     autoHide: false

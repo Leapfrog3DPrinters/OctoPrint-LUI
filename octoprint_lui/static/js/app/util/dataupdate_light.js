@@ -175,7 +175,7 @@ function DataUpdater(allViewModels) {
             } else if (type == "PrintStarted") {
                 $.notify({
                     title: gettext("Print job started"),
-                    text: _.sprintf(gettext(' Printing file: "%(filename)s"'), { filename: payload.filename })
+                    text: _.sprintf(gettext('Printing file: "%(filename)s"'), { filename: payload.filename })
                 },
                     "success"
                 )
@@ -196,7 +196,7 @@ function DataUpdater(allViewModels) {
             } else if (type == "PrintDone") {
                 $.notify({
                     title: gettext("Print job finished"),
-                    text: _.sprintf(gettext(' Finished file: "%(filename)s"'), { filename: payload.filename })
+                    text: _.sprintf(gettext('Finished file: "%(filename)s"'), { filename: payload.filename })
                 },
                     { 
                         className: "success",
@@ -206,7 +206,7 @@ function DataUpdater(allViewModels) {
             } else if (type == "PrintResumed") {
                 $.notify({
                     title: gettext("Print job resumed"),
-                    text: _.sprintf(gettext(' Resuming file: "%(filename)s"'), { filename: payload.filename })
+                    text: _.sprintf(gettext('Resuming file: "%(filename)s"'), { filename: payload.filename })
                 },
                     "success"
                 )

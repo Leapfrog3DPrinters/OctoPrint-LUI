@@ -548,14 +548,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # 2. or LUI or OctoPrint has been updated
         had_first_run_versions =  self._settings.get(["had_first_run"])
         
-        if had_first_run_versions and ":" in had_first_run_versions:
+        if not needs_first_run and had_first_run_versions and ":" in had_first_run_versions:
             versions = had_first_run_versions.split(":")
 
             had_first_run_version_lui = versions[0]
             had_first_run_version_octoprint = versions[1]
 
-            needs_first_run = LooseVersion(had_first_run_version_lui) < LooseVersion(self.plugin_version) or \
-                LooseVersion(had_first_run_version_octoprint) < LooseVersion(octoprint.__version__)
+            if LooseVersion(had_first_run_version_lui) < LooseVersion(self.plugin_version) or \
+                LooseVersion(had_first_run_version_octoprint) < LooseVersion(octoprint.__version__):
+                needs_first_run = True
         else:
             needs_first_run = True
 

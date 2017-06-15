@@ -550,7 +550,7 @@ $(function ()  {
 
             var text = gettext("You have opted to delete all print jobs.");
             if (self.selectedFile())
-                text += gettext(" This will not delete the currently selected file.");
+                text += gettext("This will not delete the currently selected file.");
 
             var question = gettext("Do you want to continue?");
             var title = gettext("Delete all jobs");
@@ -828,7 +828,7 @@ $(function ()  {
             // First check if the size is correct for the mode.
             var sizeTable = "";
             if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
-                info += gettext("Object exceeds print area in width. ");
+                info += gettext("Object exceeds print area in width.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object width') + "</div></div>";
                 sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);
             }
@@ -1196,7 +1196,7 @@ $(function ()  {
             function gcode_upload_fail(e, data) {
                 $.notify({
                     title: gettext("Failed to upload file"),
-                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\"'))
+                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\".'))
                 },
                     "error"
                 );

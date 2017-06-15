@@ -6,6 +6,8 @@ $(function ()  {
         self.isFirstStep = false;
         self.lastStep = 0;
 
+        self.isRefreshing = ko.observable(false);
+
         self.flyout = parameters[0];
         self.toolInfo = parameters[1];
         self.settings = parameters[2];
@@ -20,18 +22,18 @@ $(function ()  {
 
         if (FIRST_START)
         {
-            lang_dropdown = "<br /><select class=\"introjs-lang-select\" data-bind=\"value: settings.appearance_defaultLanguage, event: { change: onLanguageSelect }\">";
+            lang_dropdown = "<br /><select class=\"introjs-lang-select\" data-bind=\"visible: !isRefreshing(), value: settings.appearance_defaultLanguage, event: { change: onLanguageSelect }\">";
             _.forEach(AVAILABLE_LOCALES, function (locale, key) {
                 lang_dropdown += "<option value=\"" + key + "\">" + locale.display + "</option>";
             });
-            lang_dropdown += "</select>";
+            lang_dropdown += "</select><span data-bind=\"visible: isRefreshing\">" + gettext("Loading...") + "</span>";
         }
 
         var firstPrintSteps = [
             {
                 //1
                 stepName: "helloStep",
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("<b>Welcome to your new Leapfrog Bolt Pro 3D printer.</b><br />This tutorial will guide you through " +
                     "the steps you have to take to start printing in 3D.<br />") +
@@ -45,7 +47,7 @@ $(function ()  {
                 //2
                 stepName: "leftToolNoFilament",
                 element: '#tool1',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("For our first print, we need PLA filament in both extruders. " +
                     "Press <i class=\"fa fa-refresh\">" +
@@ -56,7 +58,7 @@ $(function ()  {
                 //3
                 stepName: "leftToolFilamentUnload",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("First we have to unload the non PLA filament. " +
                     "Press <i class=\"fa fa-arrow-up\">" +
@@ -67,7 +69,7 @@ $(function ()  {
                 //4
                 stepName: "leftToolFilamentUnloading",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The left extruder is now unloading the filament. When something goes" +
                     " wrong you can press Abort to cancel the process.") + "</div>",
@@ -77,7 +79,7 @@ $(function ()  {
                 //5
                 stepName: "leftToolFilamentSelect",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Select PLA as filament material and provide the approximate " +
                     "amount that is on the spool. This way the printer knows what kind of filament you want to load.") + "</div>",
@@ -88,7 +90,7 @@ $(function ()  {
                 //6
                 stepName: "leftToolFilamentLoading",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The left extruder is now loading your filament. When something goes" +
                     " wrong you can press Abort to cancel the process.") + "</div>",
@@ -98,7 +100,7 @@ $(function ()  {
                 //7
                 stepName: "leftToolFilamentDone",
                 element: '#finished_filament',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Please check if the filament came out of the nozzle. If you are not satisfied" +
                     " with the amount of filament that came out of the nozzle, you can press <b>Extrude more filament</b>." +
@@ -108,7 +110,7 @@ $(function ()  {
                 //8
                 stepName: "rightToolNoFilament",
                 element: '#tool0',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("For our first print, we also need PLA filament in the right extruder. " +
                     "Press <i class=\"fa fa-refresh\"></i><b> Swap right </b> to load filament in the right extruder.") + "</div>",
@@ -118,7 +120,7 @@ $(function ()  {
                 //9
                 stepName: "rightToolFilamentUnload",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("First we have to unload the non PLA filament. " +
                     "Press <i class=\"fa fa-arrow-up\">" +
@@ -129,7 +131,7 @@ $(function ()  {
                 //10
                 stepName: "rightToolFilamentUnloading",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The right extruder is now unloading the filament. When something goes" +
                     " wrong you can press Abort to cancel the process.") + "</div>",
@@ -139,7 +141,7 @@ $(function ()  {
                 //11
                 stepName: "rightToolFilamentSelect",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Select PLA as filament material and provide the approximate " +
                     "amount that is on the spool. This way the printer knows what kind of filament you want to load.") + "</div>",
@@ -150,7 +152,7 @@ $(function ()  {
                 //12
                 stepName: "rightToolFilamentLoading",
                 element: '#filament_loading',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The right extruder is loading filament. " +
                 "When something goes wrong you can press Abort to cancel the process.") + "</div>",
@@ -160,7 +162,7 @@ $(function ()  {
                 //13
                 stepName: "rightToolFilamentDone",
                 element: '#finished_filament',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Please check if the filament came out of the nozzle. If you are not " +
                     "satisfied with the amount of filament that came out of the nozzle, you can press <b>Extrude more filament</b>. " +
@@ -169,7 +171,7 @@ $(function ()  {
             {
                 //14
                 stepName: "bothToolsLoaded",
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("There is PLA filament detected in both extruders. We will now" +
                     " calibrate the printer to make sure that the bed and the extruders are aligned. Normally this is only needed for the first print after maintenance or after moving the printer.") +
@@ -180,10 +182,10 @@ $(function ()  {
                 //15
                 stepName: "goToSettings",
                 element: "#settings_icon",
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The calibration functions are part of the maintenance menu located in the " +
-                    "settings tab. To get there, press <i class=\"fa fa-gears\"></i><b>Settings</b>") + "</div>",
+                    "settings tab. To get there, press <i class=\"fa fa-gears\"></i><b>Settings</b>.") + "</div>",
                 position: 'top-right-aligned',
                 noMargins: true,
                 highlightClass: 'introjs-no-borders'
@@ -192,7 +194,7 @@ $(function ()  {
                 //16
                 stepName: "goToMaintenance",
                 element: '#maintenance',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The calibration wizard is located in the maintenance menu. " +
                     "To go there, press <i class=\"fa fa-wrench\"></i><b>Maintenance</b>.") + "</div>",
@@ -202,7 +204,7 @@ $(function ()  {
                 //17
                 stepName: "goToCalibrateBed",
                 element: '#bed_calibrate',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("First we will calibrate the bed. This will " +
                     "make sure the printed object will adhere to the bed. Press <b>Calibrate bed</b> to continue.") + "</div>",
@@ -212,7 +214,7 @@ $(function ()  {
                 //18
                 stepName: "continueBedCalibration",
                 element: $('#bedcalibration_flyout_content').find('.ok-button')[0],
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Before pressing <b>Continue calibration</b>, check that the print bed is empty.") + "</div>",
                 position: 'top'
@@ -221,7 +223,7 @@ $(function ()  {
                 //19
                 stepName: "calibrateBed",
                 element: '#bed_calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("When the bed is level, press <b>Done</b> to continue.") + "</div>",
                 position: 'top',
@@ -231,7 +233,7 @@ $(function ()  {
                 //20
                 stepName: "goToCalibrateExtruders",
                 element: $('#maintenance_control').find('.button')[2],
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("To align the extruders, press <b>Calibrate extruders</b>." +
                     " This will start the extruder calibration wizard.") + "</div>",
@@ -241,7 +243,7 @@ $(function ()  {
                 //21
                 stepName: "startLargeCalibration",
                 element: '#start-large-extruder-calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The calibration wizard will calibrate the Y axis in one step and the X axis in two steps. To start the first calibration print, press <b>Start calibration</b>.") + "</div>",
                 position: 'bottom'
@@ -250,7 +252,7 @@ $(function ()  {
                 //22
                 stepName: "printingLargeCalibration",
                 element: '#printing-extruder-calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The printer is now printing the first X axis calibration print. " +
                 "This allows to calibrate the X axis with a precision of 1 mm.") + "</div>",
@@ -260,7 +262,7 @@ $(function ()  {
                 //23
                 stepName: "largeCalibrationDone",
                 element: '#large-calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Select the best aligned vertical line on the bed. Then, press <b>Next</b>.") + "</div>",
                 position: 'bottom'
@@ -269,7 +271,7 @@ $(function ()  {
                 //24
                 stepName: "startSmallCalibration",
                 element: '#start-small-extruder-calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Now we will start the second calibration print. This will allow to calibrate both the X and Y axes with a precision of 0.1 mm.") + "</div>",
                 position: 'bottom'
@@ -278,7 +280,7 @@ $(function ()  {
                 //25
                 stepName: "printingSmallCalibration",
                 element: '#printing-extruder-calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The printer is now printing the second calibration print.") + "</div>",
                 position: 'bottom'
@@ -287,7 +289,7 @@ $(function ()  {
                 //26
                 stepName: "selectXSmall",
                 element: '#x-small-calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Select the best aligned vertical line on the bed. Then, press <b>Next</b>.") + "</div>",
                 position: 'bottom'
@@ -296,7 +298,7 @@ $(function ()  {
                 //27
                 stepName: "selectYSmall",
                 element: '#y-small-calibration',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Select the best aligned hortizontal line on the bed. " +
                 "Then, press <b>Next</b>.") + "</div>",
@@ -306,7 +308,7 @@ $(function ()  {
                 //28
                 stepName: "selectPrintJob",
                 element: $('.print_status').find('.button-area')[0],
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("The printer is now calibrated and ready to print. Normally the " +
                     "calibration is only needed for the first print after maintenance or after moving the printer. " +
@@ -317,7 +319,7 @@ $(function ()  {
                 //29
                 stepName: "browseLocal",
                 element: $('.browse_modes').find('.load-button')[0],
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Now we can select a GCODE file that's saved on the printer. " +
                 "There is a sample print you can try out.") + "</div>"
@@ -326,7 +328,7 @@ $(function ()  {
                 //30
                 stepName: "selectFile",
                 element: '#print_files',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Select the file and press on the <i class=\"fa fa-play\">" +
                 "</i> button next to it.") + "</div>"
@@ -335,7 +337,7 @@ $(function ()  {
                 //31
                 stepName: "selectPrintMode",
                 element: '#mode_select',
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Select one of the print modes. When you're ready, press <b>Start " +
                     "print</b> or if you're not, press <b>Cancel</b>.") + "</div>",
@@ -344,7 +346,7 @@ $(function ()  {
             {
                  //32
                 stepName: "leftToolWrongFilament",
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Please select PLA filament when loading the filament.<br>") +
                 "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('leftToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
@@ -352,7 +354,7 @@ $(function ()  {
             {
                  //33
                 stepName: "rightToolWrongFilament",
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Please select PLA filament when loading the filament.<br>") +
                 "<a id=\"nextButton\" style=\"left:25%;\" role=\"button\" class=\"introjs-button\" data-bind=\"touchClick: function (){ goToStepButton(getStepNumberByName('rightToolFilamentSelect')) }\">"  + gettext("Continue") + "</a></div>"
@@ -360,7 +362,7 @@ $(function ()  {
             {
                 //34
                 stepName: "tutorialDone",
-                intro: "<div class=\"step-header\">" + gettext("How to 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
+                intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
                 "<div class=\"step-text\">" + gettext("Good Job!<br>The printer is now printing the first print. " +
                 "Watch how the object magically appears in front of you.<br>") +
@@ -463,10 +465,15 @@ $(function ()  {
         };
 
         self.onLanguageSelect = function () {
+            self.isRefreshing(true);
             self.settings.saveData()
                 .done(function () {
                     location.reload(true);
+                })
+                .fail(function () {
+                    self.isRefreshing(false)
                 });
+            ;
         }
 
         self.cancelButton = function () {

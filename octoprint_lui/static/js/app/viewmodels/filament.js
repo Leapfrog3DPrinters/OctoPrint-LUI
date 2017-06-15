@@ -538,7 +538,7 @@ $(function ()  {
                         if(material != "None")
                         {
                             $.notify({
-                                title: gettext("Filament successfully loaded!"),
+                                title: gettext("Filament successfully loaded"),
                                 text: _.sprintf(gettext('Filament with profile %(material)s and amount %(amount)s loaded'), { material: material, amount: self.getAmountString(amount) })
                             },
                                 "success");
