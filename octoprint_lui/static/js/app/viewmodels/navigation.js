@@ -34,53 +34,39 @@ $(function () {
                 $('.overlay').removeClass('active');
         }
         
-        self.lock = function()
+        self.autoLock = function()
         {
             //TODO: Notify and lock backend
-            $.notify({title: gettext("Printer locked"), text: gettext("The interface is now locked")}, "warning");
-            if(IS_LOCAL) {
-                if (self.flyout.isFlyoutOpen('login')) {
-                    self.flyout.closeFlyout();
-                }
-                self.flyout.showFlyout('locallock');
-            }
-            self.localLockCode(undefined);
+            sendToApi("printer/security/auto_local_lock/"+ (self.settings.locallock_enabled ? "on" : "off"));
         };
 
         self.immediateLock = function () {
-            sendToApi("printer/security/local/lock/immediate");
+            sendToApi("printer/security/local_lock/immediate_lock");
         };
 
         self.unlock = function (code) {
             //TODO: Confirm code before unlocking
-            getFromApi("printer/security/local/lock").done(self.fromResponse).done(
+            getFromApi("printer/security/local_lock").done(self.fromResponse).done(
                 function () {
-                    if(self.settings.locallock_code() != code){
+                    if (self.settings.locallock_code() != code) {
+                        sendToApi("printer/security/local_lock/unlock");
+                    } else {
                         $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
-                        if(unlockTries > 1) {
+                        if (unlockTries > 1) {
                             unlockTries--;
-                        }
-                        else {
+                        } else {
                             self.startInvalidUnlockTimer();
                             self.triesTimeout(true);
                             self.invalidUnlockTimer(30);
                         }
+                    }
                     return;
-                    }
-
-                    $.notify({title: gettext("Printer unlocked"), text: gettext("The interface is now unlocked")});
-
-                    self.flyout.closeFlyout();
-                    self.settings.saveLockSettings();
-                    if(!IS_LOCAL && !self.loginState.loggedIn){
-                        self.showLoginFlyout();
-                    }
                 }
             );
         };
 
         self.startInvalidUnlockTimer = function () {
-            sendToApi('printer/security/local/lock/invalid');
+            sendToApi('printer/security/local_lock/invalid_unlock');
         }
 
         //TODO: Remove!
@@ -190,12 +176,15 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
-            getFromApi('printer/security/local/lock').done(self.fromResponse).done(function () {
-                if (self.settings.locallock_enabled()) self.flyout.showFlyout('locallock');
+
+            getFromApi('printer/security/local_lock').done(self.fromResponse).done(function () {
+                if(!IS_LOCAL && !self.loginState.loggedIn && !self.settings.locallock_enabled){
+                    self.showLoginFlyout();
+                }
+                if (self.settings.locallock_enabled()){
+                    self.flyout.showFlyout('locallock');
+                }
             });
-            if(!IS_LOCAL && !self.loginState.loggedIn && !self.settings.locallock_enabled){
-                self.showLoginFlyout()
-            }
         }
 
         self.fromResponse = function (data) {
@@ -215,17 +204,22 @@ $(function () {
                         self.requestSystemShutdown();
                         callViewModels(self.allViewModels, "onShutdownOrDisconnectFlyout");
                         break;
-                    case "local_lock":
-                        self.lock();
+                    case "local_lock_locked":
+                        self.flyout.showFlyout("locallock", true);
+                        break;
+                    case "local_lock_unlocked":
+                        self.flyout.closeFlyout("locallock");
+                        $.notify({title: gettext("Unlocked"), text: gettext("The interface is unlocked")});
+                        break;
+                    case "auto_local_lock_toggle":
+                        self.settings.locallock_auto_enabled(messageData.data);
                         break;
                     case "local_invalid_unlock_timer":
-                        if(IS_LOCAL) {
-                            if (!$('#locallock_flyout').hasClass('active')) {
-                                self.flyout.showFlyout("locallock", true);
-                            }
-                            self.invalidUnlockTimer(messageData.timer);
-                            self.triesTimeout(true);
+                        if (!$('#locallock_flyout').hasClass('active')) {
+                            self.flyout.showFlyout("locallock", true);
                         }
+                        self.invalidUnlockTimer(messageData.timer);
+                        self.triesTimeout(true);
                         break;
                     case "local_invalid_unlock_reset":
                         self.triesTimeout(false);

@@ -42,6 +42,7 @@ $(function () {
         self.plugins_lui_debug_lui = ko.observable();
         
         self.locallock_enabled = ko.observable(false);
+        self.locallock_auto_enabled = ko.observable(false);
         self.locallock_code = ko.observable(undefined);
         self.locallock_timeout = ko.observable(0);
 
@@ -561,27 +562,6 @@ $(function () {
 
         self.languageSelected = function(data) {
             return (data.language == self.appearance_defaultLanguage());
-        }
-
-        self.saveLockSettings = function () {
-            if(!self.locallock_enabled){
-                self.locallock_code(undefined);
-            }
-            else if (self.locallock_code() == undefined) {
-                self.locallock_enabled(false);
-            }
-
-            sendToApi("printer/security/local/lock",
-                {
-                    lockCode: self.locallock_code(),
-                    lockEnabled: self.locallock_enabled(),
-                    lockTimeout: self.locallock_timeout()
-                }
-            );
-
-            if(self.flyout.isFlyoutOpen('security_settings')){
-                self.flyout.closeFlyout();
-            }
         };
     }
 

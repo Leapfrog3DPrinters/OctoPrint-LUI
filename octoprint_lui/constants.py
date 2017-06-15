@@ -98,7 +98,9 @@ class ClientMessages(object):
     AUTO_FIRMWARE_UPDATE_FAILED = "auto_firmware_update_failed"
     AUTO_FIRMWARE_UPDATE_FINISHED = "auto_firmware_update_finished"
 
-    LOCAL_LOCK = "local_lock"
+    AUTO_LOCAL_LOCK_TOGGLE = "auto_local_lock_toggle"
+    LOCAL_LOCK_LOCKED = "local_lock_locked"
+    LOCAL_LOCK_UNLOCKED = "local_lock_unlocked"
     LOCAL_AUTO_LOCK_TIMER = "local_lock_timer"
     LOCAL_INVALID_UNLOCK_TIMER = "local_invalid_unlock_timer"
     LOCAL_INVALID_UNLOCK_RESET = "local_invalid_unlock_reset"
