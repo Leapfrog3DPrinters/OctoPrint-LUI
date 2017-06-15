@@ -1,0 +1,52 @@
+<aside id="setup_settings_flyout" class="flyout">
+    <div class="flyout-header">
+      <h4>{{ _('First start setup') }}</h4>
+      <span class="flyout-close" data-bind="touchClick: function () { flyout.closeFlyout() }"><i class="fa fa-times"></i></span>
+    </div>
+    <div class="flyout-body">
+        <!-- ko allowBindings: false -->
+      <div id="setup_settings_flyout_content" class="flyout_content">
+        <div id="tutorials">
+          <div class="Table">
+            <div class="Table-row Table-header">
+              <div class="Table-item">
+                {{ _('First start setup') }}
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <i class="fa fa-check fa-2x" data-bind="style: {color: languageSet() ? 'green' : '#be0000'}" style="flex: 0 0 80px;"></i>
+                <ul class="button-area">
+                  <li class="button">
+                    <a href="#" data-bind="touchClick: function () {}">
+                      <span>{{ _('Set language') }}</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <i class="fa fa-check fa-2x" data-bind="style: {color: connectionSet() ? 'green' : '#be0000'}" style="flex: 0 0 80px;"></i>
+                <ul class="button-area">
+                  <li class="button">
+                    <a href="#" data-bind="touchClick: function () {}">
+                      <span>{{ _('Connect to WIFI/Ethernet') }}</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="button-area">
+          <li class="button secondary-button">
+            <a href="#cancel" data-bind="touchClick: function () { flyout.closeFlyout() }">
+              <span>{{ _('Cancel') }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+        <!-- /ko -->
+    </div>
+</aside>
