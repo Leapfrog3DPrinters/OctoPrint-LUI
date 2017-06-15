@@ -541,7 +541,7 @@ $(function ()  {
 
             if (!self.isHomed()) {
                 self.showStartupFlyout();
-            } else if (FIRST_START) {
+            } else if (FIRST_START && IS_LOCAL) {
                 self.introView.startIntro('firstPrint');
             }
 
@@ -619,7 +619,7 @@ $(function ()  {
                         if (self.flyout.isFlyoutOpen("startup")) {
                             self.closeStartupFlyout();
 
-                            if (FIRST_START) {
+                            if (FIRST_START && IS_LOCAL) {
                                 self.introView.startIntro('firstPrint');
                             }
                         }

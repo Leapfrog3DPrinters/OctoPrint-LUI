@@ -2398,9 +2398,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "debug_bundling" : False,
             "skip_version_sanity_check": False,
             "allow_octoprint_branches": False,
-            "cloud": {
-                "enabled" : False
-                },
+            "cloud_enabled" : False,
 			"first_start": False
         }
 
