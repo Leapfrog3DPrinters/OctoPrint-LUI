@@ -10,19 +10,23 @@
 #
 ###
 
+source_nm_state_dir="/var/lib/NetworkManager"
+target_nm_state_dir="/home/etc/NetworkManager/state"
 autostart="/home/pi/.config/openbox/autostart"
 imageinfo="/boot/lpfrgpi.json"
 
 do_start()
 {
-    if ! dpkg -l | grep -q "dhcpcd"; then
-        echo "dhcpcd not found. Nothing to do."
+    if  ! dhcpcd_installed && state_writable ; then
+        echo "Dhcpcd not found. State already writable. Nothing to do."
         exit 0
     elif [ ! -f "$imageinfo" ]; then
         # No image info, we are < v1.1
         echo "Image version < 1.1, going to purge dhcpcd"
         do_disable_dhcpcd
-        echo "Purging done. Please reboot."
+		echo "Purging done. Moving NM state folder..."
+		do_move_nm_state
+        echo "Folder moved. Please reboot."
         exit 3
     elif grep -q "\"image_version\"\: \"1.1.0\"" "$imageinfo"; then
         # V1.1
@@ -63,10 +67,36 @@ do_uninstall() {
     echo "Script uninstalled"
 }
 
-do_disable_dhcpcd() {
-    sudo apt-get -y purge dhcpcd5
+do_move_nm_state() {
+	if ! state_writable ; then
+		sudo service NetworkManager stop
+		sudo mv "$source_nm_state_dir" "$target_nm_state_dir"
+		sudo ln -s "$target_nm_state_dir" "$source_nm_state_dir"
+		echo "State folder moved."
+	else
+		echo "State folder was already writable."
+	fi
+}
 
-    echo "Reboot"
+do_disable_dhcpcd() {
+	if dhcpcd_installed ; then
+		sudo apt-get -y purge dhcpcd5
+		echo "dhcpcd purged."
+	else
+		echo "dhcpcd was already disabled"
+	fi
+}
+
+dhcpcd_installed() {
+	dpkg -l | grep -q "dhcpcd"
+}
+
+state_writable() {
+	if [[ -L "$source_nm_state_dir" ]] && [[ -d "$target_nm_state_dir" ]]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 key="$1"
@@ -74,6 +104,7 @@ key="$1"
 case $key in
     "run")
     do_disable_dhcpcd
+	do_move_nm_state
     do_uninstall
     sudo reboot
     ;;

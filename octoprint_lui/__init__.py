@@ -766,7 +766,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if not os.path.exists(script_target_path):
                 self._logger.info("Copying disable_dhcpcd script")
 
-                script_source_path = os.path.join(self._basefolder, "image_scripts/disable_dhcpcd")
+                script_source_path = os.path.join(self._basefolder, "system_scripts/disable_dhcpcd")
 
                 try:
                     shutil.copy2(script_source_path, script_target_path)
