@@ -763,16 +763,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             script_target_path = "/home/pi/scripts/disable_dhcpcd"
 
             # Copy the bash script to writable folder if we don't have it already
-            if not os.path.exists(script_target_path):
-                self._logger.info("Copying disable_dhcpcd script")
+            self._logger.info("Copying disable_dhcpcd script")
 
-                script_source_path = os.path.join(self._basefolder, "system_scripts/disable_dhcpcd")
+            script_source_path = os.path.join(self._basefolder, "system_scripts/disable_dhcpcd")
 
-                try:
-                    shutil.copy2(script_source_path, script_target_path)
-                except OSError as e:
-                    self._logger.exception("Could not copy disable_dhcpcd script")
-                    return False
+            try:
+                shutil.copy2(script_source_path, script_target_path)
+            except OSError as e:
+                self._logger.exception("Could not copy disable_dhcpcd script")
+                return False
 
             # Set execution bits
             import stat

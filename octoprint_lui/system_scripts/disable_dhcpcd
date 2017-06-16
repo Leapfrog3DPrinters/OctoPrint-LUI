@@ -104,7 +104,7 @@ key="$1"
 case $key in
     "run")
     do_disable_dhcpcd
-	do_move_nm_state
+    do_move_nm_state
     do_uninstall
     sudo reboot
     ;;
