@@ -148,7 +148,7 @@
               <input type="password" data-bind="value: connectionDetails.psk" />
             </div>
           </div>
-          <!-- ko if: connectionDetails.isWireless -->
+          <!-- ko if: connectionDetails.isWireless && !connectionDetails.newConnection -->
           <div class="Table-row">
             <div class="Table-item">
               {{ _('Auto connect:') }}
