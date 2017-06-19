@@ -13,6 +13,7 @@
 #
 ###
 
+script_name="june2017_patch"
 source_nm_state_dir="/var/lib/NetworkManager"
 target_nm_state_dir="/home/etc/NetworkManager/state"
 autostart="/home/pi/.config/openbox/autostart"
@@ -56,13 +57,13 @@ do_start()
 
 do_install() {
     # Ensures script runs on next startup
-    if ! grep -i -q "disable_dhcpcd" "$autostart"; then
+    if ! grep -i -q "$script_name" "$autostart"; then
         # Makes root read-writable again on next reboot
         sudo sed -i "s@boot=overlay @@" /boot/cmdline.txt
         sudo sed -i "s@root_readonly=\"yes\"@root_readonly=\"no\"@" /boot/octopi.txt
 
         # Append script to autostart file
-        sudo sed -i '1 i\/home/pi/scripts/disable_dhcpcd run' "$autostart"
+        sudo sed -i '1 i\/home/pi/scripts/$script_name run' "$autostart"
 
         echo "Script installed."
     else
@@ -72,7 +73,7 @@ do_install() {
 
 do_uninstall() {
     # Don't run script on next boot anymore
-    sudo sed -i '/disable_dhcpcd/d' "$autostart"
+    sudo sed -i '/$script_name/d' "$autostart"
 
     # Makes root read-writable again on next reboot
     if ! grep -q "boot=overlay" /boot/cmdline.txt ; then
