@@ -580,7 +580,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             first_run_results.append(self._add_server_commands())
             first_run_results.append(self._disable_ssh())
             first_run_results.append(self._set_chromium_args())
-            first_run_results.append(self._disable_dhcpcd())
+            first_run_results.append(self._june2017_patch())
 
             # Clean up caches
             first_run_results.append(self._clean_webassets())
@@ -744,10 +744,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("Not on old RPi image, so skipping chromium command line update")
         return True
 
-    def _disable_dhcpcd(self):
+    def _june2017_patch(self):
         """
-        Runs a bash script on the image that purges dhcpcd, as it is known to conflict with 
-        setting a static IP through NetworkManager. Only applicable to images < v1.1
+        Runs a bash script on the image that applies patches to lpfrg images < v1.1. 
+        It purges dhcpcd, as it is known to conflict with setting a static IP through NetworkManager.
+        Also updates branding images and makes the NetworkManager state folder writable (so state
+        is maintained across boots)
         """
 
         if self.platform == Platforms.RaspberryPi:
@@ -756,21 +758,31 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 image_version = LooseVersion(self.platform_info.get("image_version", "1.0"))
 
                 if image_version >= LooseVersion("1.2.0"):
-                    self._logger.info("Image version >= 1.2.0, no need to disable dhcpcd")
+                    self._logger.info("Image version >= 1.2.0, no need to run june2017_patch")
                     return True
 
-            self._logger.info("Image version < 1.2.0. Disabling dhcpcd...")
-            script_target_path = "/home/pi/scripts/disable_dhcpcd"
+            self._logger.info("Image version < 1.2.0. Running june2017_patch...")
 
             # Copy the bash script to writable folder if we don't have it already
-            self._logger.info("Copying disable_dhcpcd script")
+            self._logger.info("Copying june2017_patch script")
 
-            script_source_path = os.path.join(self._basefolder, "system_scripts/disable_dhcpcd")
+            script_target_path = "/home/pi/scripts/june2017_patch"
+            script_images_target_path = "/home/pi/scripts/images"
+
+            script_source_path = os.path.join(self._basefolder, "system_scripts/june2017_patch")
+            script_images_source_path = os.path.join(self._basefolder, "system_scripts/images")
 
             try:
                 shutil.copy2(script_source_path, script_target_path)
             except OSError as e:
-                self._logger.exception("Could not copy disable_dhcpcd script")
+                self._logger.exception("Could not copy june2017_patch script")
+                return False
+
+            try:
+                shutil.rmtree(script_images_target_path, True)
+                shutil.copytree(script_images_source_path, script_images_target_path)
+            except OSError as e:
+                self._logger.exception("Could not copy june2017_patch script images")
                 return False
 
             # Set execution bits
@@ -779,20 +791,20 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 st = os.stat(script_target_path)
                 os.chmod(script_target_path, st.st_mode | stat.S_IEXEC)
             except OSError as e:
-                self._logger.exception("Could not set permissions for disable_dhcpcd script")
+                self._logger.exception("Could not set permissions for june2017_patch script")
                 return False
 
             # Execute the script, and plan a reboot if requested.
             returncode, out, _ = octoprint_lui.util.execute(script_target_path, None, False)
-            self._logger.debug("Disable_dhcpcd output: {}".format(out))
+            self._logger.debug("june2017_patch output: {}".format(out))
 
             if returncode == 0:
-                self._logger.info("Disable dhcpcd succeeded")
+                self._logger.info("june2017_patch succeeded")
             elif returncode == 3:
-                self._logger.info("Disable dhcpcd succeeded. Reboot required.")
+                self._logger.info("june2017_patch succeeded. Reboot required.")
                 self.reboot_requested = True
             else:
-                self._logger.error("The disable_dhcpcd script failed. Error code: {}".format(returncode))
+                self._logger.error("The june2017_patch script failed. Error code: {}".format(returncode))
                 return False
 
         return True
@@ -4261,6 +4273,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.reboot_requested:
             self._logger.info("Performing a forced reboot")
             self._send_client_message(ClientMessages.FORCED_REBOOT)
+
+            # Give the user some time to read the message
+            time.sleep(10)
+
             self._perform_system_reboot()
 
     def _update_hostname(self):
