@@ -505,6 +505,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Override tools dict with default values
         self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
 
+
     def _read_hostname(self):
         if self.platform == Platforms.RaspberryPi and self.platform_info:
             image_version = LooseVersion(self.platform_info.get("image_version", "1.0"))
@@ -587,6 +588,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             # Load printer specific data
             first_run_results.append(self._update_printer_scripts_profiles())
+            first_run_results.append(self._configure_rgbstatus_plugin())
             first_run_results.append(self._configure_local_user())
             first_run_results.append(self._migrate_filament_db())
 
@@ -921,6 +923,41 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return False
 
         # By default return success
+        return True
+
+    def _configure_rgbstatus_plugin(self):
+        """ Enables or disables the rgbstatus plugin based on the printer profile setting"""        
+        
+        rgbstatusplugin = self._plugin_manager.get_plugin_info('rgbstatus', require_enabled=False)
+        rgbinstalled = self._printer._printerProfileManager.get_current_or_default().get("rgbLights", False)
+
+        if rgbstatusplugin:
+            disabled_list = list(self._settings.global_get(["plugins", "_disabled"]))
+
+            if rgbinstalled:
+                self._logger.info("RGBStatus plugin installed and RGB leds available. Enabling plugin.")
+                if "rgbstatus" in disabled_list:
+                    disabled_list.remove("rgbstatus")
+                    self._settings.global_set(["plugins", "_disabled"], disabled_list)
+                    self._settings.save(force=True)
+
+                    try:
+                        self._plugin_manager.enable_plugin("rgbstatus")
+                    except:
+                        self._logger.warn("Couldn't enable rgbstatus plugin right away. Will be enabled on next boot.")
+            else:
+                self._logger.info("RGBStatus plugin installed, but no RGB leds available. Disabling plugin.")
+                
+                if not "rgbstatus" in disabled_list:
+                    disabled_list.append("rgbstatus")
+                    self._settings.global_set(["plugins", "_disabled"], disabled_list)
+                    self._settings.save(force=True)
+
+                    try:
+                        self._plugin_manager.disable_plugin("rgbstatus")
+                    except:
+                        self._logger.warn("Couldn't disable rgbstatus plugin right away. Will be disabled on next boot.")
+
         return True
 
     def _configure_local_user(self):
