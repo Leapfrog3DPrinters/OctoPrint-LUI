@@ -63,7 +63,7 @@ do_install() {
         sudo sed -i "s@root_readonly=\"yes\"@root_readonly=\"no\"@" /boot/octopi.txt
 
         # Append script to autostart file
-        sudo sed -i '1 i\/home/pi/scripts/$script_name run' "$autostart"
+        sudo sed -i "1 i\/home/pi/scripts/$script_name run" "$autostart"
 
         echo "Script installed."
     else
@@ -73,7 +73,7 @@ do_install() {
 
 do_uninstall() {
     # Don't run script on next boot anymore
-    sudo sed -i '/$script_name/d' "$autostart"
+    sudo sed -i "/$script_name/d" "$autostart"
 
     # Makes root read-writable again on next reboot
     if ! grep -q "boot=overlay" /boot/cmdline.txt ; then
@@ -135,14 +135,15 @@ do_update_branding() {
 		fi
 		
 		if [ -d "/usr/share/plymouth/themes/lpfrg/" ]; then
-
+			sudo cp -f /home/pi/scripts/images/splash-portrait.png /usr/share/plymouth/themes/lpfrg/splash.png
 			sudo cp -f /home/pi/scripts/images/splash-portrait.png /usr/share/plymouth/themes/lpfrg/splash-portrait.png
+			sudo cp -f /home/pi/scripts/images/splash-shutdown-portrait.png /usr/share/plymouth/themes/lpfrg/splash-shutdown.png
 			sudo cp -f /home/pi/scripts/images/splash-shutdown-portrait.png /usr/share/plymouth/themes/lpfrg/splash-shutdown-portrait.png
 
 			echo "Updating initramfs..."
 
 			kernelv=$(uname -r)
-			update-initramfs -c -k $kernelv
+			sudo update-initramfs -u -k $kernelv
 
 		fi
 
