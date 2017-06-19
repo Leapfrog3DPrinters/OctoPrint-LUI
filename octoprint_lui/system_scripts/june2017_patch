@@ -29,6 +29,8 @@ run_sequence()
 
 splash()
 {
+	export DISPLAY=:0
+	export XAUTHORITY=/home/pi/.Xauthority
     feh --bg-max /home/pi/scripts/images/lpfrg-updates.png &
 }
 
