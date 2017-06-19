@@ -210,20 +210,18 @@ $(function ()  {
 
             if (self.isPrintingCalibration()) {
                 sendToApi("printer/immediate_cancel");
+            } else if (self.calibrationProcessStarted()) {
+                self.restoreState();
             }
-
-            if (self.calibrationProcessStarted()) {
-                console.log("Unselecting file");
-                sendToApi("files/unselect");
-            }
-
-            
 
             self.flyout.closeFlyoutAccept();
         };
 
         self.restoreState = function()
         {
+            if (self.calibrationProcessStarted())
+                sendToApi("files/unselect");
+
             self.isPrintingCalibration(false);
             self.calibrationProcessStarted(false);
             self.largeCalibrationCompleted(false);

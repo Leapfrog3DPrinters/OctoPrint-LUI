@@ -2776,8 +2776,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.ERROR:
             self._send_client_message(ClientMessages.CALIBRATION_FAILED, { "calibration_type": self.calibration_type})
             self.calibration_type = None
-            maxZ = self.current_printer_profile.get("boundaries", {}).get("maxZ", 20)
-            self._execute_printer_script("after_print", { "jog_down": self._printer._currentZ < maxZ })
             self._restore_timelapse()
 
 
