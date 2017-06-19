@@ -24,8 +24,8 @@ do_start()
         # No image info, we are < v1.1
         echo "Image version < 1.1, going to purge dhcpcd"
         do_disable_dhcpcd
-		echo "Purging done. Moving NM state folder..."
-		do_move_nm_state
+        echo "Purging done. Moving NM state folder..."
+        do_move_nm_state
         echo "Folder moved. Please reboot."
         exit 3
     elif grep -q "\"image_version\"\: \"1.1.0\"" "$imageinfo"; then
@@ -61,42 +61,60 @@ do_uninstall() {
     sudo sed -i '/disable_dhcpcd/d' "$autostart"
 
     # Makes root read-writable again on next reboot
-    sudo sed -i '1s@^@boot=overlay @' /boot/cmdline.txt
+	if ! grep -q "boot=overlay" /boot/cmdline.txt ; then
+		sudo sed -i '1s@^@boot=overlay @' /boot/cmdline.txt
+	fi
+
     sudo sed -i "s@root_readonly=\"no\"@root_readonly=\"yes\"@" /boot/octopi.txt
 
     echo "Script uninstalled"
 }
 
 do_move_nm_state() {
-	if ! state_writable ; then
-		sudo service NetworkManager stop
-		sudo mv "$source_nm_state_dir" "$target_nm_state_dir"
-		sudo ln -s "$target_nm_state_dir" "$source_nm_state_dir"
-		echo "State folder moved."
-	else
-		echo "State folder was already writable."
-	fi
+    if ! state_writable ; then
+        sudo service NetworkManager stop
+
+        if [ -d "$source_nm_state_dir" ] && [ ! -d "$target_nm_state_dir" ]; then
+            sudo mv "$source_nm_state_dir" "$target_nm_state_dir"
+            echo "State folder moved."
+        else
+            sudo mkdir -p "$target_nm_state_dir"
+            echo "State folder created."
+        fi
+
+
+        if [ -d "$source_nm_state_dir" ]; then
+            sudo rm -r "$source_nm_state_dir"
+			echo "Old state folder deleted."
+        fi
+
+        sudo ln -s "$target_nm_state_dir" "$source_nm_state_dir"
+		echo "State folder link created."
+        
+    else
+        echo "State folder was already writable."
+    fi
 }
 
 do_disable_dhcpcd() {
-	if dhcpcd_installed ; then
-		sudo apt-get -y purge dhcpcd5
-		echo "dhcpcd purged."
-	else
-		echo "dhcpcd was already disabled"
-	fi
+    if dhcpcd_installed ; then
+        sudo apt-get -y purge dhcpcd5
+        echo "dhcpcd purged."
+    else
+        echo "dhcpcd was already disabled"
+    fi
 }
 
 dhcpcd_installed() {
-	dpkg -l | grep -q "dhcpcd"
+    dpkg -l | grep -q "dhcpcd"
 }
 
 state_writable() {
-	if [[ -L "$source_nm_state_dir" ]] && [[ -d "$target_nm_state_dir" ]]; then
-		return 0
-	else
-		return 1
-	fi
+    if [[ -L "$source_nm_state_dir" ]] && [[ -d "$target_nm_state_dir" ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 key="$1"
