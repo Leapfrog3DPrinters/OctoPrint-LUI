@@ -174,7 +174,7 @@ $(function () {
                 self.flyout.showFlyout("locallock", true);
             }
             if(!IS_LOCAL && !self.loginState.loggedIn()){
-                self.flyout.showLoginFlyout();
+                self.showLoginFlyout();
             }
         }
 
