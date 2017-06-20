@@ -13,7 +13,7 @@ $(function () {
         self.numUpdates = ko.observable(0);
 
         self.isLocalLocked = ko.observable(false);
-        self.localLockCode = ko.observable(undefined);
+        self.givenLockCode = ko.observable(undefined);
         self.triesTimeout = ko.observable(false);
         self.invalidUnlockTimer = ko.observable(0);
 
@@ -32,42 +32,32 @@ $(function () {
                 $('.overlay').addClass('active');
             else
                 $('.overlay').removeClass('active');
-        }
-        
-        self.autoLock = function()
-        {
-            //TODO: Notify and lock backend
-            sendToApi("printer/security/auto_local_lock/"+ (self.settings.locallock_enabled ? "on" : "off"));
         };
 
-        self.immediateLock = function () {
-            sendToApi("printer/security/local_lock/immediate_lock");
+        self.lock = function () {
+            sendToApi("printer/security/local_lock/lock");
         };
 
         self.unlock = function (code) {
             //TODO: Confirm code before unlocking
-            getFromApi("printer/security/local_lock").done(self.fromResponse).done(
-                function () {
-                    if (self.settings.locallock_code() != code) {
-                        sendToApi("printer/security/local_lock/unlock");
-                    } else {
-                        $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
-                        if (unlockTries > 1) {
-                            unlockTries--;
-                        } else {
-                            self.startInvalidUnlockTimer();
-                            self.triesTimeout(true);
-                            self.invalidUnlockTimer(30);
-                        }
-                    }
-                    return;
+            if (self.settings.locallock_code() == code) {
+                self.flyout.closeFlyout("locallock");
+            } else {
+                $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
+                if (unlockTries > 1) {
+                    unlockTries--;
+                } else {
+                    self.startInvalidUnlockTimer();
+                    self.triesTimeout(true);
+                    self.invalidUnlockTimer(30);
                 }
-            );
+            }
+            return;
         };
 
         self.startInvalidUnlockTimer = function () {
             sendToApi('printer/security/local_lock/invalid_unlock');
-        }
+        };
 
         //TODO: Remove!
         self.doDebuggingAction = function ()  {
@@ -176,22 +166,6 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
-
-            getFromApi('printer/security/local_lock').done(self.fromResponse).done(function () {
-                if(!IS_LOCAL && !self.loginState.loggedIn && !self.settings.locallock_enabled){
-                    self.showLoginFlyout();
-                }
-                if (self.settings.locallock_enabled()){
-                    self.flyout.showFlyout('locallock');
-                }
-            });
-        }
-
-        self.fromResponse = function (data) {
-            if(data.lockEnabled){
-                self.settings.locallock_enabled(data.lockEnabled);
-                self.settings.locallock_code(data.lockCode);
-            }
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -209,10 +183,6 @@ $(function () {
                         break;
                     case "local_lock_unlocked":
                         self.flyout.closeFlyout("locallock");
-                        $.notify({title: gettext("Unlocked"), text: gettext("The interface is unlocked")});
-                        break;
-                    case "auto_local_lock_toggle":
-                        self.settings.locallock_auto_enabled(messageData.data);
                         break;
                     case "local_invalid_unlock_timer":
                         if (!$('#locallock_flyout').hasClass('active')) {
@@ -232,6 +202,13 @@ $(function () {
 
         self.onAllBound = function (allViewModels) {
             self.allViewModels = allViewModels;
+
+            if(self.settings.locallock_enabled){
+                self.flyout.showFlyout("locallock", true);
+            }
+            if(!IS_LOCAL && !self.loginState.loggedIn){
+                self.flyout.showLoginFlyout();
+            }
         }
     }
 

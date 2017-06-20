@@ -4,6 +4,7 @@ $(function () {
 
         self.loginState = parameters[0];
         self.settings = parameters[1];
+        self.flyout = parameters[2];
 
         // initialize list helper
         self.listHelper = new ItemListHelper(
@@ -311,7 +312,38 @@ $(function () {
             var currentValue = self.settings.locallock_enabled;
             self.settings.locallock_enabled(!currentValue);
             return true;
-        }
+        };
+
+        self.toggleAutoLocalLock = function (toggle) {
+            if (!toggle) {
+                var data = {
+                    title: gettext("Turn on auto lock"),
+                    text: gettext("You are about to turn on auto lock. This will lock the interface after the timeout. ")
+                };
+                self.flyout.showWarning(data.title, data.text);
+            }
+
+            self.sendAutoShutdownStatus(!toggle);
+        };
+
+        self.sendAutoLockStatus = function (toggle) {
+            sendToApi("printer/security/local_lock/auto/" + (toggle ? "on" : "off"));
+        };
+
+        self.saveLockSettings = function () {
+            sendToApi("printer/security/local_lock/save_settings", {
+                localLockCode: self.settings.locallock_code(),
+                localLockEnabled: self.settings.locallock_enabled(),
+                localLockTimeout: self.settings.locallock_timeout()
+            }).done(function () {
+                if(self.settings.locallock_timeout() > 0){
+                    sendToApi("printer/security/local_lock/auto/on");
+                }
+                else {
+                    sendToApi("printer/security/local_lock/auto/off");
+                }
+            });
+        };
 
         self.toggleShowCode = function (isReadable) {
             self.isCodeReadable(!isReadable);
@@ -319,12 +351,13 @@ $(function () {
 
         self.onSecuritySettingsHidden = function () {
             self.isCodeReadable(false);
-        }
+            self.saveLockSettings();
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([
         SecurityViewModel,
-        ["loginStateViewModel", "settingsViewModel", "navigationViewModel"],
+        ["loginStateViewModel", "settingsViewModel", "navigationViewModel", "flyoutViewModel"],
         ["#security_settings_flyout_content"]
     ]);
 });

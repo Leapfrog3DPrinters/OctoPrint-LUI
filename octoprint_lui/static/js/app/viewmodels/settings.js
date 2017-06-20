@@ -7,6 +7,7 @@ $(function () {
         self.flyout = parameters[2];
 
         self.autoShutdown = ko.observable(undefined);
+        self.autoLocalLock = ko.observable(undefined);
         self.rgbLightsEnabled = ko.observable(undefined);
 
         self.allViewModels = [];
@@ -41,8 +42,8 @@ $(function () {
         self.plugins_lui_action_filament = ko.observable();
         self.plugins_lui_debug_lui = ko.observable();
         
-        self.locallock_enabled = ko.observable(false);
-        self.locallock_auto_enabled = ko.observable(false);
+        self.locallock_enabled = ko.observable(undefined);
+        self.locallock_auto_enabled = ko.observable(undefined);
         self.locallock_code = ko.observable(undefined);
         self.locallock_timeout = ko.observable(0);
 
@@ -354,7 +355,11 @@ $(function () {
                 plugins:
                     {
                         lui: {
-                            autoShutdown: function (value) { self.autoShutdown(value); }
+                            autoShutdown: function (value) { self.autoShutdown(value); },
+                            autoLocalLock: function (value) { self.autoLocalLock(value); },
+                            locallock_code: function (value) { self.locallock_code(value); },
+                            locallock_enabled: function (value) { self.locallock_enabled(value); },
+                            locallock_timeout: function (value) { self.locallock_timeout(value); }
                         }
                     }
             };
