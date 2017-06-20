@@ -209,7 +209,7 @@ $(function ()  {
             OctoPrint.printer.setBedTargetTemperature(0);
 
             if (self.isPrintingCalibration()) {
-                sendToApi("printer/immediate_cancel");
+                sendToApi("printer/immediate_cancel"); // Triggers cancel event, which in turn triggers restoreState
             } else if (self.calibrationProcessStarted()) {
                 self.restoreState();
             }

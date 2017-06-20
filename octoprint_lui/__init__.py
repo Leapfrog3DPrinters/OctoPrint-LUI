@@ -133,7 +133,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.temperature_window = [-6, 10] # Below, Above target temp
 
         # If we're in the window, but the temperature delta is greater than this value, consider the status to be 'stabilizing'
-        self.instable_temperature_delta = 3
+        self.instable_temperature_delta = 2
 
         self.heating_callback_mutex = threading.RLock()
         self.heating_callbacks = {}
