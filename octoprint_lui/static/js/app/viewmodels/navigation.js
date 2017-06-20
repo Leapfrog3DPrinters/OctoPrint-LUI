@@ -167,15 +167,6 @@ $(function () {
             self.flyout.infos.subscribe(self.setOverlay);
             self.flyout.flyouts.subscribe(self.setOverlay);
             self.flyout.confirmation_title.subscribe(self.setOverlay);
-
-            self.settings.requestData();
-
-             if(self.settings.locallock_enabled){
-                self.flyout.showFlyout("locallock", true);
-            }
-            if(!IS_LOCAL && !self.loginState.loggedIn()){
-                self.showLoginFlyout();
-            }
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -212,6 +203,15 @@ $(function () {
 
         self.onAllBound = function (allViewModels) {
             self.allViewModels = allViewModels;
+
+            self.settings.requestData();
+
+             if(self.settings.locallock_enabled){
+                self.flyout.showFlyout("locallock", true);
+            }
+            if(!IS_LOCAL && self.loginState.loggedIn){
+                self.showLoginFlyout();
+            }
         }
     }
 

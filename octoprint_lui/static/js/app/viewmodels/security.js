@@ -342,6 +342,9 @@ $(function () {
                 else {
                     sendToApi("printer/security/local_lock/auto/off");
                 }
+                if(!self.settings.locallock_enabled()){
+                    sendToApi("printer/security/local_lock/unlock");
+                }
             });
         };
 
