@@ -142,6 +142,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.tool_defaults = {
                 "status":  ToolStatuses.IDLE,
+                "previous_target": 0,
+                "reached_target": False,
                 "filament_amount": 0,
                 "filament_material_name": self.default_material_name,
                 "last_sent_filament_amount": 0,
@@ -3796,7 +3798,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if tool == 'time':
                 continue
 
+            toolobj = None
             has_target = data['target'] > 0
+
+            if tool in self.tools:
+                toolobj = self.tools[tool]
+
+                if data['target'] != toolobj['previous_target']:
+                    toolobj['reached_target'] = not has_target
 
             if not has_target and data["actual"] <= 35:
                 status = ToolStatuses.IDLE
@@ -3805,15 +3814,18 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
                 
+                if delta <= 0:
+                    toolobj['reached_target'] = True
+
                 # We make an exception for the bed tool status
                 # there's no "temperature residency" here, which makes the status go
                 # to ready as soon as the temperature is within the window. While the firmware
                 # only "releases" the M190 if actual > target.
                 if tool == "bed":
                     prev_status = self.tools[tool]["status"]
-                    stabilizing = delta > 0 and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
+                    stabilizing = not toolobj['reached_target'] and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
                 else:
-                    stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
+                    stabilizing = self.tool_status_stabilizing or not toolobj['reached_target'] or abs(delta) > self.instable_temperature_delta
 
                 # process the status
                 if in_window and stabilizing:
@@ -3825,8 +3837,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 else:
                     status = ToolStatuses.COOLING
 
-            if tool in self.tools:
-                self.tools[tool]["status"] = status
+            if toolobj:
+                toolobj["status"] = status
 
             self.change_status(tool, status)
 
