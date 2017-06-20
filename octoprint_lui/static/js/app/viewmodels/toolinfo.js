@@ -59,6 +59,7 @@ $(function () {
         self.heaterOptions = ko.observable({});
         self.totalProgress = ko.observable(undefined);
 
+        self.toolsHeating = ko.observable(false);
         self.isHeating = ko.observable(false);
         self.isStabilizing = ko.observable(false);
 
@@ -140,12 +141,14 @@ $(function () {
 
                     tools[i]["progress"](self.heatingProgress(actual, target));
 
-                    if (target !== 0) {
+                    if (target !== 0) {   
                         totalActual += actual;
                         totalTarget += target;
                     }
                 }
             }
+
+            self.toolsHeating(totalTarget > 0);
 
             if (lastData.hasOwnProperty("bed")) {
 
@@ -260,8 +263,13 @@ $(function () {
             return result;
         }
 
-        self.printingStatusString = ko.pureComputed(function() {
-            if (self.isStabilizing())
+        self.printingStatusString = ko.pureComputed(function () {
+            if (!self.toolsHeating()) {
+                if (self.isStabilizing()) return gettext('Stabilizing bed');
+                else if (self.isHeating()) return gettext('Heating bed');
+                else return gettext('Printing');
+            }
+            else if (self.isStabilizing())
                 return gettext('Stabilizing');
             else if (self.isHeating())
                 return gettext('Heating');
