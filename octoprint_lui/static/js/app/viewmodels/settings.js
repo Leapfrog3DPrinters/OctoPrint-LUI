@@ -42,8 +42,8 @@ $(function () {
         self.plugins_lui_action_filament = ko.observable();
         self.plugins_lui_debug_lui = ko.observable();
         
-        self.locallock_enabled = ko.observable(undefined);
-        self.locallock_auto_enabled = ko.observable(undefined);
+        self.locallock_enabled = ko.observable(false);
+        self.locallock_auto_enabled = ko.observable(false);
         self.locallock_code = ko.observable(undefined);
         self.locallock_timeout = ko.observable(0);
 
