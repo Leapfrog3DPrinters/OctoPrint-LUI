@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.0.6\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-06-20 11:40+0200\n"
-"PO-Revision-Date: 2017-06-20 11:41+0200\n"
+"POT-Creation-Date: 2017-06-20 11:50+0200\n"
+"PO-Revision-Date: 2017-06-20 11:58+0200\n"
 "Last-Translator: \n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -1573,12 +1573,10 @@ msgid "Bed"
 msgstr "Druckunterlage"
 
 #: octoprint_lui/static/js/app/viewmodels/toolinfo.js:225
-#: octoprint_lui/static/js/app/viewmodels/toolinfo.js:275
 msgid "Heating"
 msgstr "Aufheizen"
 
 #: octoprint_lui/static/js/app/viewmodels/toolinfo.js:227
-#: octoprint_lui/static/js/app/viewmodels/toolinfo.js:273
 msgid "Stabilizing"
 msgstr "Stabilisieren"
 
@@ -1601,6 +1599,14 @@ msgstr "Druckunterlage stabilisieren"
 #: octoprint_lui/static/js/app/viewmodels/toolinfo.js:269
 msgid "Heating bed"
 msgstr "Druckunterlage aufheizen"
+
+#: octoprint_lui/static/js/app/viewmodels/toolinfo.js:273
+msgid "Stabilizing extruders"
+msgstr "Extruder stabilisieren"
+
+#: octoprint_lui/static/js/app/viewmodels/toolinfo.js:275
+msgid "Heating extruders"
+msgstr "Extruder aufheizen"
 
 #: octoprint_lui/static/js/app/viewmodels/update.js:47
 #: octoprint_lui/static/js/app/viewmodels/update.js:55

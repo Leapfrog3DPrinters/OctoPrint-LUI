@@ -165,8 +165,8 @@ $(function () {
                 self.bedTemp["progress"](self.heatingProgress(lastData.bed.actual, lastData.bed.target));
 
                 if (lastData.bed.target !== 0) {
-                    totalTarget += lastData.bed.actual;
-                    totalActual += lastData.bed.target;
+                    totalTarget += lastData.bed.target;
+                    totalActual += lastData.bed.actual;
                 }
             }
 
@@ -270,9 +270,9 @@ $(function () {
                 else return gettext('Printing');
             }
             else if (self.isStabilizing())
-                return gettext('Stabilizing');
+                return gettext('Stabilizing extruders');
             else if (self.isHeating())
-                return gettext('Heating');
+                return gettext('Heating extruders');
             else
                 return gettext('Printing');
         });
