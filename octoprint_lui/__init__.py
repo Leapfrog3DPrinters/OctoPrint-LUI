@@ -130,10 +130,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.tool_status_stabilizing = False
 
         self.current_temperature_data = None
-        self.temperature_window = [-6, 10] # Below, Above target temp
+        self.temperature_window = [-6, 10] # Below, Above target temp, considered ready or stabilizing
 
-        # If we're in the window, but the temperature delta is greater than this value, consider the status to be 'stabilizing'
-        self.instable_temperature_delta = 3
+        # If we're within this window of the temperature, we can consider the tool ready
+        self.ready_temp_window = 1
 
         self.heating_callback_mutex = threading.RLock()
         self.heating_callbacks = {}
@@ -3815,7 +3815,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
                 
-                if delta <= 0:
+                if delta <= self.ready_temp_window:
                     toolobj['reached_target'] = True
 
                 # We make an exception for the bed tool status
@@ -3824,14 +3824,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 # only "releases" the M190 if actual > target.
                 if tool == "bed":
                     prev_status = self.tools[tool]["status"]
-                    stabilizing = not toolobj['reached_target'] and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
+                    # The bed doesn't use a window in the firmware, so check for delta > 0
+                    stabilizing = delta > 0 and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
                 else:
-                    stabilizing = self.tool_status_stabilizing or not toolobj['reached_target'] or abs(delta) > self.instable_temperature_delta
+                    stabilizing = self.tool_status_stabilizing or not toolobj['reached_target']
 
                 # process the status
                 if in_window and stabilizing:
                     status = ToolStatuses.STABILIZING
-                elif in_window and not stabilizing:
+                elif in_window and not stabilizing and toolobj['reached_target']:
                     status = ToolStatuses.READY
                 elif delta > 0:
                     status = ToolStatuses.HEATING
