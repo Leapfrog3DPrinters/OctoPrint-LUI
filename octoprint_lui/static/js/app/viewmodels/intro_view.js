@@ -35,8 +35,8 @@ $(function ()  {
                 stepName: "helloStep",
                 intro: "<div class=\"step-header\">" + gettext("Your first 3D print") + "<a class=\"exit-button\" data-bind=\"touchClick: " +
                 "function () { exitButton() } \"><i class=\"fa fa-times\"></i></a></div>" +
-                "<div class=\"step-text\">" + gettext("<b>Welcome to your new Leapfrog Bolt Pro 3D printer.</b><br />This tutorial will guide you through " +
-                    "the steps you have to take to start printing in 3D.<br />") +
+                "<div class=\"step-text\">" + _.sprintf(gettext("<b>Welcome to your new Leapfrog %(model)s 3D printer.</b><br />This tutorial will guide you through " +
+                    "the steps you have to take to start printing in 3D.<br />"), { model: LPFRG_MODEL_NAME }) +
                  lang_dropdown +
                 "<div class=\"introjs-tooltipbuttons\"><a id=\"nextButton\" role=\"button\"" +
                 "class=\"introjs-button next-button\" data-bind=\"touchClick: function (){ beginButton() }\">" + gettext("Continue") + "</a>" +

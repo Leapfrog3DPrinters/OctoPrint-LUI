@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OctoPrint-LUI 1.2.0\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-06-20 11:50+0200\n"
+"POT-Creation-Date: 2017-06-20 12:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -307,7 +307,7 @@ msgid "Swap left"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:98
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:404
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:370
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:108
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:135
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:139
@@ -749,7 +749,7 @@ msgid "Confirm"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/flyout.js:142
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:45
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:44
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:23
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:48
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:94
@@ -767,91 +767,92 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:37
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:52
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:64
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:76
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:87
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:99
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:110
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:121
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:132
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:36
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:50
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:61
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:72
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:82
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:93
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:103
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:113
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:123
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:134
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:144
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:155
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:167
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:178
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:188
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:200
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:213
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:224
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:235
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:245
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:256
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:267
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:277
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:288
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:298
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:308
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:318
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:328
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:339
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:351
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:361
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:371
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:381
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:390
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:399
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:165
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:174
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:185
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:197
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:207
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:217
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:226
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:236
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:246
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:255
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:265
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:274
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:283
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:292
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:301
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:311
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:322
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:331
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:340
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:349
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:357
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:365
 msgid "Your first 3D print"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:39
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:38
+#, python-format
 msgid ""
-"<b>Welcome to your new Leapfrog Bolt Pro 3D printer.</b><br />This "
+"<b>Welcome to your new Leapfrog %(model)s 3D printer.</b><br />This "
 "tutorial will guide you through the steps you have to take to start "
 "printing in 3D.<br />"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:43
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:384
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:393
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:42
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:352
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:360
 #: octoprint_lui/static/js/app/viewmodels/printerstate.js:135
 msgid "Continue"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:54
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:52
 msgid ""
 "For our first print, we need PLA filament in both extruders. Press <i "
 "class=\"fa fa-refresh\"></i><b> Swap left</b> to load filament in the "
 "left extruder."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:66
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:63
 msgid ""
 "First we have to unload the non PLA filament. Press <i class=\"fa fa-"
 "arrow-up\"></i><b> Unload</b> to unload filament from the left extruder."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:78
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:74
 msgid ""
 "The left extruder is now unloading the filament. When something goes "
 "wrong you can press Abort to cancel the process."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:89
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:157
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:84
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:146
 msgid ""
 "Select PLA as filament material and provide the approximate amount that "
 "is on the spool. This way the printer knows what kind of filament you "
 "want to load."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:101
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:95
 msgid ""
 "The left extruder is now loading your filament. When something goes wrong"
 " you can press Abort to cancel the process."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:112
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:105
 msgid ""
 "Please check if the filament came out of the nozzle. If you are not "
 "satisfied with the amount of filament that came out of the nozzle, you "
@@ -859,32 +860,32 @@ msgid ""
 "step, press <b>Done</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:123
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:115
 msgid ""
 "For our first print, we also need PLA filament in the right extruder. "
 "Press <i class=\"fa fa-refresh\"></i><b> Swap right </b> to load filament"
 " in the right extruder."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:134
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:125
 msgid ""
 "First we have to unload the non PLA filament. Press <i class=\"fa fa-"
 "arrow-up\"></i><b>Unload</b> to unload filament from the right extruder."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:146
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:136
 msgid ""
 "The right extruder is now unloading the filament. When something goes "
 "wrong you can press Abort to cancel the process."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:169
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:157
 msgid ""
 "The right extruder is loading filament. When something goes wrong you can"
 " press Abort to cancel the process."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:180
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:167
 msgid ""
 "Please check if the filament came out of the nozzle. If you are not "
 "satisfied with the amount of filament that came out of the nozzle, you "
@@ -892,7 +893,7 @@ msgid ""
 "step, press <b>Done</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:190
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:176
 msgid ""
 "There is PLA filament detected in both extruders. We will now calibrate "
 "the printer to make sure that the bed and the extruders are aligned. "
@@ -900,83 +901,83 @@ msgid ""
 "after moving the printer."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:193
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:179
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:107
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:132
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:202
 msgid "Next"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:202
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:187
 msgid ""
 "The calibration functions are part of the maintenance menu located in the"
 " settings tab. To get there, press <i class=\"fa fa-"
 "gears\"></i><b>Settings</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:215
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:199
 msgid ""
 "The calibration wizard is located in the maintenance menu. To go there, "
 "press <i class=\"fa fa-wrench\"></i><b>Maintenance</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:226
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:209
 msgid ""
 "First we will calibrate the bed. This will make sure the printed object "
 "will adhere to the bed. Press <b>Calibrate bed</b> to continue."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:237
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:219
 msgid ""
 "Before pressing <b>Continue calibration</b>, check that the print bed is "
 "empty."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:247
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:228
 msgid "When the bed is level, press <b>Done</b> to continue."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:258
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:238
 msgid ""
 "To align the extruders, press <b>Calibrate extruders</b>. This will start"
 " the extruder calibration wizard."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:269
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:248
 msgid ""
 "The calibration wizard will calibrate the Y axis in one step and the X "
 "axis in two steps. To start the first calibration print, press <b>Start "
 "calibration</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:279
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:257
 msgid ""
 "The printer is now printing the first X axis calibration print. This "
 "allows to calibrate the X axis with a precision of 1 mm."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:290
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:320
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:267
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:294
 msgid "Select the best aligned vertical line on the bed. Then, press <b>Next</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:300
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:276
 msgid ""
 "Now we will start the second calibration print. This will allow to "
 "calibrate both the X and Y axes with a precision of 0.1 mm."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:310
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:285
 msgid "The printer is now printing the second calibration print."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:330
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:303
 msgid ""
 "Select the best aligned hortizontal line on the bed. Then, press "
 "<b>Next</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:341
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:313
 msgid ""
 "The printer is now calibrated and ready to print. Normally the "
 "calibration is only needed for the first print after maintenance or after"
@@ -985,30 +986,30 @@ msgid ""
 "file\"></i> <b>Select print job</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:353
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:324
 msgid ""
 "Now we can select a GCODE file that's saved on the printer. There is a "
 "sample print you can try out."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:363
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:333
 msgid ""
 "Select the file and press on the <i class=\"fa fa-play\"></i> button next"
 " to it."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:373
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:342
 msgid ""
 "Select one of the print modes. When you're ready, press <b>Start "
 "print</b> or if you're not, press <b>Cancel</b>."
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:383
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:392
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:351
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:359
 msgid "Please select PLA filament when loading the filament.<br>"
 msgstr ""
 
-#: octoprint_lui/static/js/app/viewmodels/intro_view.js:401
+#: octoprint_lui/static/js/app/viewmodels/intro_view.js:367
 msgid ""
 "Good Job!<br>The printer is now printing the first print. Watch how the "
 "object magically appears in front of you.<br>"
