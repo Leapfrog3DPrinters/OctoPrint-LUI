@@ -143,7 +143,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.tool_defaults = {
                 "status":  ToolStatuses.IDLE,
                 "previous_target": 0,
-                "reached_target": False,
+                "waiting_for_target": False, # Firmware waits for the target temperture (M109/M190)
+                "reached_target": False, # Target temperature has been reached according to LUI
                 "filament_amount": 0,
                 "filament_material_name": self.default_material_name,
                 "last_sent_filament_amount": 0,
@@ -3557,10 +3558,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Needs to keep track of relative or absolute extrusion mode. G90 / G91
         """
         if gcode:
+            ##~ For now only handle extrusion when actually printing a job
+            if (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
+                self._process_G0_G1(cmd, comm_instance)
             # Handle relative / absolute axis
-            if (gcode == "G90" or gcode == "G91"):
+            elif (gcode == "G90" or gcode == "G91"):
                 self._process_G90_G91(cmd)
-
             # Handle zero of axis
             elif gcode == "G92":
                 self._process_G92(cmd)
@@ -3568,9 +3571,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             elif (gcode == "M82" or gcode == "M83"):
                 self._process_M82_M83(cmd)
 
-            ##~ For now only handle extrusion when actually printing a job
-            elif (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
-                self._process_G0_G1(cmd, comm_instance)
 
             # Handle home command
             elif (gcode == "G28"):
@@ -3582,6 +3582,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             elif (gcode == "M400"):
                 self._process_M400(cmd)
+            # Handle wait for temperature command
+            elif gcode == "M109":
+                if "T0" in cmd and "tool0" in self.tools:
+                    self.tools["tool0"]["waiting_for_target"] = True
+                elif "T1" in cmd and "tool0" in self.tools:
+                    self.tools["tool1"]["waiting_for_target"] = True
+            elif gcode == "M190" and "bed" in self.tools:
+                self.tools["bed"]["waiting_for_target"] = True
 
     def _process_G90_G91(self, cmd):
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
@@ -3812,11 +3820,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 status = ToolStatuses.IDLE
             else:
                 self._prevent_overheating(tool, data['target'])
+
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
                 
                 if delta <= self.ready_temp_window:
                     toolobj['reached_target'] = True
+                    toolobj['waiting_for_target'] = False
 
                 # We make an exception for the bed tool status
                 # there's no "temperature residency" here, which makes the status go
@@ -3827,7 +3837,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     # The bed doesn't use a window in the firmware, so check for delta > 0
                     stabilizing = delta > 0 and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
                 else:
-                    stabilizing = self.tool_status_stabilizing or not toolobj['reached_target']
+                    stabilizing = (toolobj['waiting_for_target'] and self.tool_status_stabilizing) or not toolobj['reached_target']
 
                 # process the status
                 if in_window and stabilizing:
