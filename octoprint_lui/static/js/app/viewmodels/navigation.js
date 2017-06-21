@@ -206,11 +206,12 @@ $(function () {
 
             self.settings.requestData();
 
-             if(self.settings.locallock_enabled){
-                self.flyout.showFlyout("locallock", true);
-            }
-            if(!IS_LOCAL && self.loginState.loggedIn){
+            if(!IS_LOCAL && self.loginState.loggedIn()){
                 self.showLoginFlyout();
+            }
+
+            if(self.settings.locallock_enabled()){
+                self.flyout.showFlyout("locallock", true);
             }
         }
     }

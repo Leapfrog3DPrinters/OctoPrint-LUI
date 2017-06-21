@@ -568,6 +568,37 @@ $(function () {
         self.languageSelected = function(data) {
             return (data.language == self.appearance_defaultLanguage());
         };
+
+        self.saveLockSettings = function () {
+            sendToApi("printer/security/local_lock/save_settings", {
+                localLockCode: self.locallock_code(),
+                localLockEnabled: self.locallock_enabled(),
+                localLockTimeout: self.locallock_timeout()
+            })
+                .done(function () {
+                    if(self.locallock_timeout() > 0 && self.locallock_enabled()){
+
+                        var s = self.locallock_timeout();
+                        var timeString = ((s-(s%=3600))/3600+(10<=(s/60)?':':':0')+(s-(s%=60))/60+(9<s?':':':0')+s);
+
+                        self.flyout.showConfirmationFlyout({
+                        'title': gettext('Auto Lock'),
+                        'text': gettext('You are about to turn on the auto lock. The printer will be locked in ' + timeString + '.'),
+                        'question': gettext('Do you want to continue?')
+                        })
+                            .done(function () {
+                                sendToApi("printer/security/local_lock/auto/on");
+                            })
+                    }
+                    else {
+                        sendToApi("printer/security/local_lock/auto/off");
+                        self.flyout.closeFlyout();
+                    }
+                    if(!self.locallock_enabled()){
+                        sendToApi("printer/security/local_lock/unlock");
+                    }
+                });
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([

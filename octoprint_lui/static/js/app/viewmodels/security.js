@@ -330,37 +330,18 @@ $(function () {
             sendToApi("printer/security/local_lock/auto/" + (toggle ? "on" : "off"));
         };
 
-        self.saveLockSettings = function () {
-            sendToApi("printer/security/local_lock/save_settings", {
-                localLockCode: self.settings.locallock_code(),
-                localLockEnabled: self.settings.locallock_enabled(),
-                localLockTimeout: self.settings.locallock_timeout()
-            }).done(function () {
-                if(self.settings.locallock_timeout() > 0){
-                    sendToApi("printer/security/local_lock/auto/on");
-                }
-                else {
-                    sendToApi("printer/security/local_lock/auto/off");
-                }
-                if(!self.settings.locallock_enabled()){
-                    sendToApi("printer/security/local_lock/unlock");
-                }
-            });
-        };
-
         self.toggleShowCode = function (isReadable) {
             self.isCodeReadable(!isReadable);
         };
 
         self.onSecuritySettingsHidden = function () {
             self.isCodeReadable(false);
-            self.saveLockSettings();
         };
     }
 
     OCTOPRINT_VIEWMODELS.push([
         SecurityViewModel,
-        ["loginStateViewModel", "settingsViewModel", "navigationViewModel", "flyoutViewModel"],
+        ["loginStateViewModel", "settingsViewModel", "flyoutViewModel"],
         ["#security_settings_flyout_content"]
     ]);
 });
