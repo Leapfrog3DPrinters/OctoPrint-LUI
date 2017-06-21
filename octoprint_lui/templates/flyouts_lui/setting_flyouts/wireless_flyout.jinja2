@@ -145,9 +145,22 @@
               {{ _('Password:') }}
             </div>
             <div class="Table-item">
-              <input type="text" data-bind="value: connectionDetails.psk" />
+              <input type="password" data-bind="value: connectionDetails.psk" />
             </div>
           </div>
+          <!-- ko if: connectionDetails.isWireless() && !connectionDetails.newConnection() -->
+          <div class="Table-row">
+            <div class="Table-item">
+              {{ _('Auto connect:') }}
+            </div>
+            <div class="Table-item">
+              <div class="check_toggle">
+                <input type="checkbox" id="autoconnect" data-bind="checked: connectionDetails.autoconnect" />
+                <label for="autoconnect"></label>
+              </div>
+            </div>
+          </div>
+          <!-- /ko -->
           <div class="Table-row">
             <div class="Table-item">
               {{ _('Auto settings:') }}
@@ -169,6 +182,14 @@
           </div>
           <div class="Table-row" data-bind="visible: !connectionDetails.ipv4.autoSettings()">
             <div class="Table-item">
+              {{ _('Default gateway:') }}
+            </div>
+            <div class="Table-item">
+              <input type="text" data-bind="value: connectionDetails.ipv4.gateway, css: { disabled: connectionDetails.ipv4.autoSettings() }" />
+            </div>
+          </div>
+          <div class="Table-row" data-bind="visible: !connectionDetails.ipv4.autoSettings()">
+            <div class="Table-item">
               {{ _('DNS Server 1:') }}
             </div>
             <div class="Table-item">
@@ -181,14 +202,6 @@
             </div>
             <div class="Table-item">
               <input type="text" data-bind="value: connectionDetails.ipv4.dns2, css: { disabled: connectionDetails.ipv4.autoSettings() }" />
-            </div>
-          </div>
-          <div class="Table-row" data-bind="visible: !connectionDetails.ipv4.autoSettings()">
-            <div class="Table-item">
-              {{ _('Default gateway:') }}
-            </div>
-            <div class="Table-item">
-              <input type="text" data-bind="value: connectionDetails.ipv4.gateway, css: { disabled: connectionDetails.ipv4.autoSettings() }" />
             </div>
           </div>
           <div class="Table-row">
@@ -213,10 +226,10 @@
               <ul class="button-area">
                 <li class="button" data-bind="touchClick: saveConnectionDetails">
                   <a href="#">
-                    <!-- ko if: connectionDetails.newConnection -->
+                    <!-- ko if: connectionDetails.autoconnect -->
                     <span>{{ _('Connect') }}</span>
                     <!-- /ko -->
-                    <!-- ko ifnot: connectionDetails.newConnection -->
+                    <!-- ko ifnot: connectionDetails.autoconnect -->
                     <span>{{ _('Save') }}</span>
                     <!-- /ko -->
                   </a>

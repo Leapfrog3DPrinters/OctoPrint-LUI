@@ -240,6 +240,13 @@ $(function ()  {
                 true);
         }
 
+        self.showRebootWarning = function () {
+            self.flyout.showWarning(
+                gettext("Rebooting"),
+                gettext("To complete the updates, the system will reboot itself."),
+                true);
+        }
+
         self.hideUpdateWarning = function () 
         {
             if (self.update_warning)
@@ -493,6 +500,9 @@ $(function ()  {
                     break;
                 case "forced_update":
                     self.showUpdateWarning();
+                    break;
+                case "forced_reboot":
+                    self.showRebootWarning();
                     break;
                 case "auto_firmware_update_started":
                     self.showFirmwareUpdateWarning();

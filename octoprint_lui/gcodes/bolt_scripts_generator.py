@@ -28,7 +28,8 @@ w_p = 0.39      # Extrusion width
 
 n_layers = 1    # Number of layers to print. One is fine.
 
-gCodeStart = [ 'G28', \
+gCodeStart = [ '; This script is auto-generated with bolt_scripts_generator', \
+             'G28', \
             'T0', \
             'M109 T0', \
             'M109 T1', \
@@ -96,11 +97,13 @@ def smallcircle(nPi, steps, r, xoffset, yoffset, eoffset):
 for machine in ['bolt', 'boltpro']:
     
     bed_width = 367 # Helper to calculate center position of the bed
+    wiping_dist_x = 20 # Distance between bed edge and wipers (in x)
 
     if machine == "boltpro":
         bed_width = 376
+        wiping_dist_x = 31
 
-    wiping_dist_x = 20 # Distance between bed edge and wipers (in x)
+
     wiping_pos_y = -33 # Y wiping position
 
     x_min = -37                 # Helper to calculate center position of the bed

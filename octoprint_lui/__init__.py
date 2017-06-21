@@ -62,6 +62,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Global
         self.debug = False
         self.auto_shutdown = False
+        self.reboot_requested = False
         self.maintenance_mode = False
         self.auto_local_lock = False
 
@@ -136,10 +137,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.tool_status_stabilizing = False
 
         self.current_temperature_data = None
-        self.temperature_window = [-6, 10] # Below, Above target temp
+        self.temperature_window = [-6, 10] # Below, Above target temp, considered ready or stabilizing
 
-        # If we're in the window, but the temperature delta is greater than this value, consider the status to be 'stabilizing'
-        self.instable_temperature_delta = 3
+        # If we're within this window of the temperature, we can consider the tool ready
+        self.ready_temp_window = 1
+
+         # Firmware waits for the target temperture (M109/M190) for this tool
+        self.last_tool_waiting = None
 
         self.heating_callback_mutex = threading.RLock()
         self.heating_callbacks = {}
@@ -148,6 +152,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self.tool_defaults = {
                 "status":  ToolStatuses.IDLE,
+                "previous_target": 0,
+                "reached_target": False, # Target temperature has been reached according to LUI
                 "filament_amount": 0,
                 "filament_material_name": self.default_material_name,
                 "last_sent_filament_amount": 0,
@@ -228,6 +234,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.fetching_updates = False
         self.installing_updates = False
         self.git_lock = threading.RLock()
+        self.updates_completed_hooks = []
 
         ##~ Changelog
         self.changelog_filename = 'CHANGELOG.md'
@@ -259,9 +266,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.hostname = None
 
     def initialize(self):
-
-		#~~ check if first start
-        self.first_start = self._settings.get_boolean(["first_start"])
 
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
@@ -513,9 +517,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Override tools dict with default values
         self.tools = { tool: deepcopy(self.tool_defaults) for tool in tools }
 
+
     def _read_hostname(self):
         if self.platform == Platforms.RaspberryPi and self.platform_info:
-            image_version = LooseVersion(self.platform_info["image_version"])
+            image_version = LooseVersion(self.platform_info.get("image_version", "1.0"))
             if image_version >= LooseVersion("1.2.0"):
                 with open('/etc/hostname', 'r') as hostname_file:
                     try:
@@ -542,18 +547,41 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _first_run(self):
         """Checks if it is the first run of a new version and updates any material if necessary"""
+
+        needs_first_run = False
+        # First determine if we need a firstrun. That's the case if: ...
+        
+        # 1. The first run is forced in config.yaml 
         force_first_run = self._settings.get_boolean(["force_first_run"])
-        had_first_run_version =  self._settings.get(["had_first_run"])
 
-        profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile")
+        if force_first_run:
+            self._logger.debug("Forcing first run for debugging.")
+            needs_first_run = True
 
-        if force_first_run or not had_first_run_version or LooseVersion(had_first_run_version) < LooseVersion(self.plugin_version) or not os.path.exists(profile_dst_path):
-            if force_first_run:
-                self._logger.debug("Simulating first run for debugging.")
-            elif not os.path.exists(profile_dst_path):
+        # 2. or LUI or OctoPrint has been updated
+        had_first_run_versions =  self._settings.get(["had_first_run"])
+        
+        if not needs_first_run and had_first_run_versions and ":" in had_first_run_versions:
+            versions = had_first_run_versions.split(":")
+
+            had_first_run_version_lui = versions[0]
+            had_first_run_version_octoprint = versions[1]
+
+            if LooseVersion(had_first_run_version_lui) < LooseVersion(self.plugin_version) or \
+                LooseVersion(had_first_run_version_octoprint) < LooseVersion(octoprint.__version__):
+                needs_first_run = True
+        else:
+            needs_first_run = True
+
+        # 3. or no printer profile data has been found
+        if not needs_first_run:
+            profile_dst_path = os.path.join(self._settings.global_get_basefolder("printerProfiles"), self.model.lower() + ".profile")
+            if not os.path.exists(profile_dst_path):
+                needs_first_run = True
                 self._logger.info("Printer profile not found. Simulating first run.")
-            else:
-                self._logger.info("First run of LUI version {0}. Updating scripts and printerprofiles.".format(self.plugin_version))
+
+        if needs_first_run:
+            self._logger.info("First run of LUI version {0} or OctoPrint version {1}.".format(self.plugin_version, octoprint.__display_version__))
 
             first_run_results = []
 
@@ -565,17 +593,19 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             first_run_results.append(self._add_server_commands())
             first_run_results.append(self._disable_ssh())
             first_run_results.append(self._set_chromium_args())
+            first_run_results.append(self._june2017_patch())
 
             # Clean up caches
             first_run_results.append(self._clean_webassets())
 
             # Load printer specific data
             first_run_results.append(self._update_printer_scripts_profiles())
+            first_run_results.append(self._configure_rgbstatus_plugin())
             first_run_results.append(self._configure_local_user())
             first_run_results.append(self._migrate_filament_db())
 
             if not False in first_run_results:
-                self._settings.set(["had_first_run"], self.plugin_version)
+                self._settings.set(["had_first_run"], self.plugin_version + ":" + octoprint.__version__)
                 self._settings.save()
                 self._logger.info("First run completed")
             else:
@@ -728,6 +758,72 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("Not on old RPi image, so skipping chromium command line update")
         return True
 
+    def _june2017_patch(self):
+        """
+        Runs a bash script on the image that applies patches to lpfrg images < v1.1. 
+        It purges dhcpcd, as it is known to conflict with setting a static IP through NetworkManager.
+        Also updates branding images and makes the NetworkManager state folder writable (so state
+        is maintained across boots)
+        """
+
+        if self.platform == Platforms.RaspberryPi:
+            
+            if self.platform_info:
+                image_version = LooseVersion(self.platform_info.get("image_version", "1.0"))
+
+                if image_version >= LooseVersion("1.2.0"):
+                    self._logger.info("Image version >= 1.2.0, no need to run june2017_patch")
+                    return True
+
+            self._logger.info("Image version < 1.2.0. Running june2017_patch...")
+
+            # Copy the bash script to writable folder if we don't have it already
+            self._logger.info("Copying june2017_patch script")
+
+            script_target_path = "/home/pi/scripts/june2017_patch"
+            script_images_target_path = "/home/pi/scripts/images"
+
+            script_source_path = os.path.join(self._basefolder, "system_scripts/june2017_patch")
+            script_images_source_path = os.path.join(self._basefolder, "system_scripts/images")
+
+            try:
+                shutil.copy2(script_source_path, script_target_path)
+            except OSError as e:
+                self._logger.exception("Could not copy june2017_patch script")
+                return False
+
+            try:
+                shutil.rmtree(script_images_target_path, True)
+                shutil.copytree(script_images_source_path, script_images_target_path)
+            except OSError as e:
+                self._logger.exception("Could not copy june2017_patch script images")
+                return False
+
+            # Set execution bits
+            import stat
+            try:
+                st = os.stat(script_target_path)
+                os.chmod(script_target_path, st.st_mode | stat.S_IEXEC)
+            except OSError as e:
+                self._logger.exception("Could not set permissions for june2017_patch script")
+                return False
+
+            # Execute the script, and plan a reboot if requested.
+            returncode, out, _ = octoprint_lui.util.execute(script_target_path, None, False)
+            self._logger.debug("june2017_patch output: {}".format(out))
+
+            if returncode == 0:
+                self._logger.info("june2017_patch succeeded")
+            elif returncode == 3:
+                self._logger.info("june2017_patch succeeded. Reboot required.")
+                self.reboot_requested = True
+            else:
+                self._logger.error("The june2017_patch script failed. Error code: {}".format(returncode))
+                return False
+
+        return True
+
+
     def _clean_webassets(self):
         """ 
         Cleans the webassets folders on first_run. Used to be a function of OctoPrint,
@@ -839,6 +935,41 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             return False
 
         # By default return success
+        return True
+
+    def _configure_rgbstatus_plugin(self):
+        """ Enables or disables the rgbstatus plugin based on the printer profile setting"""        
+        
+        rgbstatusplugin = self._plugin_manager.get_plugin_info('rgbstatus', require_enabled=False)
+        rgbinstalled = self._printer._printerProfileManager.get_current_or_default().get("rgbLights", False)
+
+        if rgbstatusplugin:
+            disabled_list = list(self._settings.global_get(["plugins", "_disabled"]))
+
+            if rgbinstalled:
+                self._logger.info("RGBStatus plugin installed and RGB leds available. Enabling plugin.")
+                if "rgbstatus" in disabled_list:
+                    disabled_list.remove("rgbstatus")
+                    self._settings.global_set(["plugins", "_disabled"], disabled_list)
+                    self._settings.save(force=True)
+
+                    try:
+                        self._plugin_manager.enable_plugin("rgbstatus")
+                    except:
+                        self._logger.warn("Couldn't enable rgbstatus plugin right away. Will be enabled on next boot.")
+            else:
+                self._logger.info("RGBStatus plugin installed, but no RGB leds available. Disabling plugin.")
+                
+                if not "rgbstatus" in disabled_list:
+                    disabled_list.append("rgbstatus")
+                    self._settings.global_set(["plugins", "_disabled"], disabled_list)
+                    self._settings.save(force=True)
+
+                    try:
+                        self._plugin_manager.disable_plugin("rgbstatus")
+                    except:
+                        self._logger.warn("Couldn't disable rgbstatus plugin right away. Will be disabled on next boot.")
+
         return True
 
     def _configure_local_user(self):
@@ -2214,6 +2345,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(ClientMessages.FORCED_UPDATE)
 
             self._update_plugins("all")
+        else:
+            # Nothing to update. Trigger completed hooks
+            self._call_hooks(self.updates_completed_hooks)
 
     def _update_plugins(self, plugin):
         if self.installing_updates:
@@ -2262,9 +2396,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         # We're closing the thread, so release the lock
         self.installing_updates = False
+        
+        # If we have any hooks, execute them now
+        self._call_hooks(self.updates_completed_hooks)
 
         # And let's just restart the service also
-        return self._perform_service_restart()
+        self._perform_service_restart()
 
     def _fetch_update_info_list(self, force):
         self._logger.debug("Starting fetch thread. Forced: {0}".format(force))
@@ -2337,6 +2474,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return update_info
 
     def _is_update_needed(self, path):
+        """ Checks if the local commit of a git path is up-to-date with the remote commit in the current branch."""
+
         branch_name = None
         with self.git_lock:
             try:
@@ -2391,10 +2530,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "debug_bundling" : False,
             "skip_version_sanity_check": False,
             "allow_octoprint_branches": False,
-            "cloud": {
-                "enabled" : False
-                },
-			"first_start": False,
+            "cloud_enabled" : False,
+			"first_start": False
             "lock_code": "",
             "lock_timeout": 0,
             "lock_enabled": False
@@ -2541,7 +2678,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "printer_profile": self.current_printer_profile,
             "reserved_usernames": self.reserved_usernames,
             "cloud_enabled": self.cloud_enabled,
-            "first_start": self.first_start
+            "first_start": self._settings.get_boolean(["first_start"])
         }
 
         args.update(render_kwargs)
@@ -2726,8 +2863,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         elif event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.ERROR:
             self._send_client_message(ClientMessages.CALIBRATION_FAILED, { "calibration_type": self.calibration_type})
             self.calibration_type = None
-            maxZ = self.current_printer_profile.get("boundaries", {}).get("maxZ", 20)
-            self._execute_printer_script("after_print", { "jog_down": self._printer._currentZ < maxZ })
             self._restore_timelapse()
 
 
@@ -3507,21 +3642,17 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Needs to keep track of relative or absolute extrusion mode. G90 / G91
         """
         if gcode:
+            ##~ For now only handle extrusion when actually printing a job
+            if (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
+                self._process_G0_G1(cmd, comm_instance)
             # Handle relative / absolute axis
-            if (gcode == "G90" or gcode == "G91"):
+            elif (gcode == "G90" or gcode == "G91"):
                 self._process_G90_G91(cmd)
-
             # Handle zero of axis
             elif gcode == "G92":
                 self._process_G92(cmd)
-
             elif (gcode == "M82" or gcode == "M83"):
                 self._process_M82_M83(cmd)
-
-            ##~ For now only handle extrusion when actually printing a job
-            elif (gcode == "G0" or gcode =="G1") and comm_instance.isPrinting():
-                self._process_G0_G1(cmd, comm_instance)
-
             # Handle home command
             elif (gcode == "G28"):
                 self._process_G28(cmd)
@@ -3532,6 +3663,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             elif (gcode == "M400"):
                 self._process_M400(cmd)
+            # Handle wait for temperature command
+            elif gcode == "M109":
+                if "T0" in cmd:
+                    self.last_tool_waiting = "tool0"
+                elif "T1" in cmd:
+                    self.last_tool_waiting = "tool1"
+            elif gcode == "M190":
+                self.last_tool_waiting = "bed"
+                
 
     def _process_G90_G91(self, cmd):
         ##~ Process G90 and G91 commands. Handle relative movement+extrusion
@@ -3647,8 +3787,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Check if it is a temperature update, and we're waiting for a stabilized temperature
         if line.startswith("T0:"):
             self.tool_status_stabilizing = "W:" in line and not "W:?" in line
-        elif self.tool_status_stabilizing and line.startswith("ok"):
+        elif line.startswith("ok"):
             self.tool_status_stabilizing = False
+            self.last_tool_waiting = None
 
         return line
 
@@ -3748,37 +3889,50 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             if tool == 'time':
                 continue
 
+            toolobj = None
             has_target = data['target'] > 0
+
+            if tool in self.tools:
+                toolobj = self.tools[tool]
+
+                if data['target'] != toolobj['previous_target']:
+                    toolobj['reached_target'] = not has_target
+                    toolobj['previous_target'] = data['target']
 
             if not has_target and data["actual"] <= 35:
                 status = ToolStatuses.IDLE
             else:
                 self._prevent_overheating(tool, data['target'])
+
                 delta = data['target'] - data['actual']
                 in_window = data['actual'] >= data['target'] + self.temperature_window[0] and data['actual'] <= data['target'] + self.temperature_window[1]
                 
+                if delta <= self.ready_temp_window:
+                    toolobj['reached_target'] = True
+
                 # We make an exception for the bed tool status
                 # there's no "temperature residency" here, which makes the status go
                 # to ready as soon as the temperature is within the window. While the firmware
                 # only "releases" the M190 if actual > target.
                 if tool == "bed":
                     prev_status = self.tools[tool]["status"]
+                    # The bed doesn't use a window in the firmware, so check for delta > 0
                     stabilizing = delta > 0 and (prev_status == ToolStatuses.HEATING or prev_status == ToolStatuses.STABILIZING)
                 else:
-                    stabilizing = self.tool_status_stabilizing or abs(delta) > self.instable_temperature_delta
+                    stabilizing = (tool == self.last_tool_waiting and self.tool_status_stabilizing) or not toolobj['reached_target']
 
                 # process the status
                 if in_window and stabilizing:
                     status = ToolStatuses.STABILIZING
-                elif in_window and not stabilizing:
+                elif in_window and not stabilizing and toolobj['reached_target']:
                     status = ToolStatuses.READY
                 elif delta > 0:
                     status = ToolStatuses.HEATING
                 else:
                     status = ToolStatuses.COOLING
 
-            if tool in self.tools:
-                self.tools[tool]["status"] = status
+            if toolobj:
+                toolobj["status"] = status
 
             self.change_status(tool, status)
 
@@ -4248,11 +4402,23 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # The first run may have determined we need forced updates. This needs some UI interaction, so perform
         # this action as soon as the client is connected.
         if event == Events.CLIENT_OPENED:
-            self._perform_forced_updates()
+            # If a reboot was requested, perform it straight after the updates
+            self.updates_completed_hooks.append(self._perform_forced_reboot)
+            self._perform_forced_updates() # Will perform the forced reboot on completion, if necessary
 
         #if (event == Events.SETTINGS_UPDATED):
         #    self._update_hostname()
         # This function is not enabled yet as the readonly file system doesn't allow us to change the hostname yet
+
+    def _perform_forced_reboot(self):
+        if self.reboot_requested:
+            self._logger.info("Performing a forced reboot")
+            self._send_client_message(ClientMessages.FORCED_REBOOT)
+
+            # Give the user some time to read the message
+            time.sleep(10)
+
+            self._perform_system_reboot()
 
     def _update_hostname(self):
         """ Updates the hostname of the environment"""
@@ -4352,9 +4518,22 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.warn("Restart stderr:\n%s" % e.stderr)
             raise exceptions.RestartFailed()
 
+    def _perform_system_reboot(self):
+        """
+        Reboot the system
+        """
+        self._logger.info("Rebooting...")
+        try:
+            octoprint_lui.util.execute("sudo reboot")
+        except exceptions.ScriptError as e:
+            self._logger.exception("Error while rebooting")
+            self._logger.warn("Reboot stdout:\n%s" % e.stdout)
+            self._logger.warn("Reboot stderr:\n%s" % e.stderr)
+            raise exceptions.RestartFailed()
+
     def _perform_sytem_shutdown(self):
         """
-        Perform a restart of the octoprint service restart
+        Perform a shutdown of the system
         """
 
         self._logger.info("Shutting down...")

@@ -1,3 +1,4 @@
+; This script is auto-generated with bolt_scripts_generator
 G28
 T0
 M109 T0

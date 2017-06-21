@@ -7,7 +7,7 @@
         </div>
         <div class="Table-row">
             <div class="Table-item">
-                <span>{{ _('You have selected ') }}<span class="bold" data-bind="text: printerState.filenameNoExtension"></span>{{ _(' to print.')}}</span>
+                <span>{{ _('You have selected ') }}<span class="bold" data-bind="text: printerState.filenameNoExtension"></span>{{ _(' to print. Please ensure the bed is empty before you continue.')}}</span>
             </div>
         </div>
     </div>
@@ -104,17 +104,12 @@
         </div>
         <div class="Table-row" >
             <div class="Table-item">
-                <span>{{ _('There is not enough filament to print this job in') }} <span data-bind="text: printerState.printMode"></span>{{ _(' mode.') }}</span>
+                <span>{{ _('There is not enough filament to print this job in ') }} <span data-bind="text: printerState.printMode"></span>{{ _(' mode.') }}</span>
             </div>
         </div>
     </div>
     {% endif %}
     <div class="Table">
-        <div class="Table-row">
-            <div class="Table-item">
-                {{ _('Are you sure you want to start this print?') }}
-            </div>
-        </div>
         <div class="Table-row">
             <div class="Table-item">
                 <ul class="button-area">

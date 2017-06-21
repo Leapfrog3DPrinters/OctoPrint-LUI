@@ -1,0 +1,194 @@
+#!/bin/bash
+
+###
+#
+# This script patches v1.0 and v1.1 lpfrg images.
+# The script purges dhcpcd as it conflicts with setting
+# a static IP address trough NetworkManager. For image v1.0
+# the purge is executed immediately. For v1.1, the script
+# makes root writable, reboots, purges dhcpcd, makes root ro again
+# and reboots again. Besides the dhcpcd purge, the branding images 
+# are updated and the NetworkManager state folder is moved
+# to the writable home partition.
+#
+###
+
+script_name="june2017_patch"
+source_nm_state_dir="/var/lib/NetworkManager"
+target_nm_state_dir="/home/etc/NetworkManager/state"
+autostart="/home/pi/.config/openbox/autostart"
+imageinfo="/boot/lpfrgpi.json"
+branding_file="/home/pi/.branding_june2017"
+
+run_sequence()
+{
+    do_update_branding
+    do_disable_dhcpcd
+    do_move_nm_state
+}
+
+splash()
+{
+	export DISPLAY=:0
+	export XAUTHORITY=/home/pi/.Xauthority
+    feh --bg-max /home/pi/scripts/images/lpfrg-updates.png &
+}
+
+do_start()
+{
+    if  ! dhcpcd_installed && state_writable && branding_updated ; then
+        echo "Dhcpcd not found. State already writable. Branding updated. Nothing to do."
+        exit 0
+    elif [ ! -f "$imageinfo" ]; then
+        # No image info, we are < v1.1
+        echo "Image version < 1.1, going to run patch sequence"
+        run_sequence
+        echo "Done. Please reboot."
+        exit 3
+    elif grep -q "\"image_version\"\: \"1.1.0\"" "$imageinfo"; then
+        # V1.1
+        echo "Image version == 1.1, going to purge dhcpcd on the next reboot"
+        do_install
+        echo "Installation done. Please reboot."
+        exit 3
+    else
+        echo "Image version > 1.1. Nothing to do."
+        exit 0
+    fi
+}
+
+do_install() {
+    # Ensures script runs on next startup
+    if ! grep -i -q "$script_name" "$autostart"; then
+        # Makes root read-writable again on next reboot
+        sudo sed -i "s@boot=overlay @@" /boot/cmdline.txt
+        sudo sed -i "s@root_readonly=\"yes\"@root_readonly=\"no\"@" /boot/octopi.txt
+
+        # Append script to autostart file
+        sudo sed -i "1 i\/home/pi/scripts/$script_name run" "$autostart"
+
+        echo "Script installed."
+    else
+        echo "Script is already installed."
+    fi
+}
+
+do_uninstall() {
+    # Don't run script on next boot anymore
+    sudo sed -i "/$script_name/d" "$autostart"
+
+    # Makes root read-writable again on next reboot
+    if ! grep -q "boot=overlay" /boot/cmdline.txt ; then
+        sudo sed -i '1s@^@boot=overlay @' /boot/cmdline.txt
+    fi
+
+    sudo sed -i "s@root_readonly=\"no\"@root_readonly=\"yes\"@" /boot/octopi.txt
+
+    echo "Script uninstalled"
+}
+
+do_move_nm_state() {
+    if ! state_writable ; then
+        sudo service NetworkManager stop
+
+        if [ -d "$source_nm_state_dir" ] && [ ! -d "$target_nm_state_dir" ]; then
+            sudo mv "$source_nm_state_dir" "$target_nm_state_dir"
+            echo "State folder moved."
+        else
+            sudo mkdir -p "$target_nm_state_dir"
+            echo "State folder created."
+        fi
+
+
+        if [ -d "$source_nm_state_dir" ]; then
+            sudo rm -r "$source_nm_state_dir"
+            echo "Old state folder deleted."
+        fi
+
+        sudo ln -s "$target_nm_state_dir" "$source_nm_state_dir"
+        echo "State folder link created."
+        
+    else
+        echo "State folder was already writable."
+    fi
+}
+
+do_disable_dhcpcd() {
+    if dhcpcd_installed ; then
+        sudo apt-get -y purge dhcpcd5
+        echo "dhcpcd purged."
+    else
+        echo "dhcpcd was already disabled"
+    fi
+}
+
+do_update_branding() {
+	
+	if branding_updated; then
+		echo "Branding already updated"
+	else
+
+		echo "Copying images..."
+		sudo cp -f /home/pi/scripts/images/splash-portrait.png /home/pi/lpfrg-portrait.png
+
+		if [ -f "/etc/lilybootportrait.png" ]; then
+			sudo cp -f /home/pi/scripts/images/splash-portrait.png /etc/lilybootportrait.png
+			sudo cp -f /home/pi/scripts/images/splash-shutdown-portrait.png /etc/lilyshutdownportrait.png
+		fi
+		
+		if [ -d "/usr/share/plymouth/themes/lpfrg/" ]; then
+			sudo cp -f /home/pi/scripts/images/splash-portrait.png /usr/share/plymouth/themes/lpfrg/splash.png
+			sudo cp -f /home/pi/scripts/images/splash-portrait.png /usr/share/plymouth/themes/lpfrg/splash-portrait.png
+			sudo cp -f /home/pi/scripts/images/splash-shutdown-portrait.png /usr/share/plymouth/themes/lpfrg/splash-shutdown.png
+			sudo cp -f /home/pi/scripts/images/splash-shutdown-portrait.png /usr/share/plymouth/themes/lpfrg/splash-shutdown-portrait.png
+
+			echo "Updating initramfs..."
+
+			kernelv=$(uname -r)
+			sudo update-initramfs -u -k $kernelv
+
+		fi
+
+		touch "$branding_file"
+		echo "Done."
+
+	fi
+}
+
+branding_updated() {
+	if [ -f "$branding_file" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+dhcpcd_installed() {
+    dpkg -l | grep -q "dhcpcd"
+}
+
+state_writable() {
+    if [ ! -d "/home/etc/NetworkManager" ]; then
+		# If we don't have this folder, we are prior to v1.1. Root is writable.
+        return 0
+    elif [[ -L "$source_nm_state_dir" ]] && [[ -d "$target_nm_state_dir" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+key="$1"
+
+case $key in
+    "run")
+    splash
+    run_sequence
+	do_uninstall
+    sudo reboot
+    ;;
+
+    *)
+    do_start
+    ;;
+esac

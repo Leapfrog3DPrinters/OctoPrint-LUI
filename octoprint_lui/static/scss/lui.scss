@@ -144,6 +144,7 @@ a {
 }
 
 .icon-bar i {
+  pointer-events: none;
   display: block;
   font-size: 2rem;
   color:$second-color;
@@ -1637,6 +1638,13 @@ pre code {
 }
 
 /* Filament swap */
+
+.explain img
+{
+    float: left;
+    padding-top: 10px;
+    width: 175px;
+}
 
 .swap_process_step {
   display: none;

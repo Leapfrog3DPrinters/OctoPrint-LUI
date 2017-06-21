@@ -89,9 +89,10 @@ $(function ()  {
             //IntroJS
             if(self.introView.isTutorialStarted) {
                 setTimeout(function () {
+                    self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startSmallCalibration"));
                     self.introView.introInstance.refresh();
-                }, 1000);
-                self.introView.introInstance.goToStep(self.introView.getStepNumberByName("startSmallCalibration"));
+                }, 100);
+
             }
         };
 
@@ -208,21 +209,19 @@ $(function ()  {
             OctoPrint.printer.setBedTargetTemperature(0);
 
             if (self.isPrintingCalibration()) {
-                sendToApi("printer/immediate_cancel");
+                sendToApi("printer/immediate_cancel"); // Triggers cancel event, which in turn triggers restoreState
+            } else if (self.calibrationProcessStarted()) {
+                self.restoreState();
             }
-
-            if (self.calibrationProcessStarted()) {
-                console.log("Unselecting file");
-                sendToApi("files/unselect");
-            }
-
-            
 
             self.flyout.closeFlyoutAccept();
         };
 
         self.restoreState = function()
         {
+            if (self.calibrationProcessStarted())
+                sendToApi("files/unselect");
+
             self.isPrintingCalibration(false);
             self.calibrationProcessStarted(false);
             self.largeCalibrationCompleted(false);

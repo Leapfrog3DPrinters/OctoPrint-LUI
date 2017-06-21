@@ -365,7 +365,7 @@ $(function ()  {
             }
 
             // IntroJS
-            if (self.introView.isTutorialStarted) {
+            if (self.introView.isTutorialStarted && self.introView.currentStepName() == "browseLocal") {
                 self.isIntroFile(true);
 
                 setTimeout(function () {
@@ -550,7 +550,7 @@ $(function ()  {
 
             var text = gettext("You have opted to delete all print jobs.");
             if (self.selectedFile())
-                text += gettext(" This will not delete the currently selected file.");
+                text += gettext("This will not delete the currently selected file.");
 
             var question = gettext("Do you want to continue?");
             var title = gettext("Delete all jobs");
@@ -725,6 +725,11 @@ $(function ()  {
             return sufficient;
         });
 
+        self.enoughFilament.subscribe(function () {
+            if (self.introView.isTutorialStarted)
+                window.setTimeout(function () { self.introView.introInstance.refresh(); }, 0);
+        });
+
         self.evaluatePrintDimensions = function (data, mode, notify) {
             // This functionality is temporarily disabled for 1.0.8
             return true;
@@ -823,7 +828,7 @@ $(function ()  {
             // First check if the size is correct for the mode.
             var sizeTable = "";
             if (dimensions["width"] > (boundaries["maxX"] + Math.abs(boundaries["minX"]))) {
-                info += gettext("Object exceeds print area in width. ");
+                info += gettext("Object exceeds print area in width.");
                 sizeTable += "<div class='Table-row Table-header'><div class='Table-item'>" + gettext('Print area width') + "</div><div class='Table-item'>" + gettext('Object width') + "</div></div>";
                 sizeTable += _.sprintf("<div class='Table-row'><div class='Table-item'>%(profile.maxX).2f mm</div><div class='Table-item file_failed'>%(dimensions.width).2f mm</div></div>", formatData);
             }
@@ -1106,7 +1111,7 @@ $(function ()  {
                 else
                     self.browseOrigin("usb");
             }
-            else if (available && (!self.flyout.isOpen() || !self.flyout.blocking || !self.introView.isTutorialStarted())) {
+            else if (available && !self.introView.isTutorialStarted && (!self.flyout.isOpen() || !self.flyout.blocking)) {
                 var text = gettext("You have inserted a USB drive.");
                 var question = gettext("Would you like to browse through the files?");
                 var title = gettext("USB drive inserted");
@@ -1191,7 +1196,7 @@ $(function ()  {
             function gcode_upload_fail(e, data) {
                 $.notify({
                     title: gettext("Failed to upload file"),
-                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\"'))
+                    text: _.sprintf(gettext('Could not upload the file. Make sure that it is a GCODE file and has the extension \".gcode\", \".gco\." or \".g\".'))
                 },
                     "error"
                 );
@@ -1395,7 +1400,7 @@ $(function ()  {
 
         self.checkIntroCancel = function () {
             //IntroJS
-            self.introView.introInstance.exit();
+            self.introView.exitButton();
             self.flyout.closeFlyout();
         };
 

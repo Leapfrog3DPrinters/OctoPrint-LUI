@@ -241,7 +241,7 @@ $(function ()  {
             if (self.isConnecting()) {
                 $.notify({
                     title: gettext("Could not restore printer connection"),
-                    text: gettext('The printer connection could not be restored. Please consult your printer\'s manual')
+                    text: gettext('The printer connection could not be restored. Please consult your printer\'s manual.')
                 }, {
                     className: "error",
                     autoHide: false
@@ -354,8 +354,6 @@ $(function ()  {
 
                 $('#mode_select_flyout').one("transitionend", function () {
                     self.introView.introInstance.refresh();
-
-                    setTimeout(function () { self.introView.introInstance.refresh() }, 300);
                 });
             }
 
@@ -541,16 +539,17 @@ $(function ()  {
 
             // This fromResponse method is also called after a firmware update and printer error/disconnect
 
-
-
-            if (!self.isHomed() && !self.settings.locallock_enabled) {
+            if (!self.isHomed()) {
                 self.showStartupFlyout();
+            } else if (FIRST_START && IS_LOCAL) {
+                self.introView.startIntro('firstPrint');
             }
 
             if (data.printerErrorReason) {
                 self.errorReason(data.printerErrorReason);
                 self.erroredExtruder(data.printerErrorExtruder);
                 self.showPrinterErrorFlyout();
+                self.introView.introInstance.exit();
             }
             else {
                 self.closePrinterErrorFlyout();
@@ -617,10 +616,12 @@ $(function ()  {
                     case "is_homed":
                         self.isHomed(true);
                         self.isHoming(false);
-                        //if (self.flyout.currentFlyoutTemplate == "#startup_flyout")
-                        self.closeStartupFlyout();
-                        if(FIRST_START){
-                            self.introView.startIntro('firstPrint');
+                        if (self.flyout.isFlyoutOpen("startup")) {
+                            self.closeStartupFlyout();
+
+                            if (FIRST_START && IS_LOCAL) {
+                                self.introView.startIntro('firstPrint');
+                            }
                         }
                         break;
                     case "is_homing":

@@ -120,7 +120,7 @@ $(function () {
         self.getRgbLights = function () {
             var printerProfile = self.printerProfiles.currentProfileData();
 
-            if (!printerProfile["rgbLights"])
+            if (!printerProfile.hasOwnProperty("rgbLights") || !printerProfile.rgbLights())
                 return;
 
             url = OctoPrint.getBlueprintUrl('rgbstatus') + 'status';

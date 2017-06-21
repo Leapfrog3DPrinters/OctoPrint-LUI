@@ -390,19 +390,11 @@ $(function () {
     };
 
     // Allow components to react to tab change
-    var tabs = $('#tabs a[data-toggle="tab"]');
-    tabs.on('show', function (e) {
-        var current = e.target.hash;
-        var previous = e.relatedTarget.hash;
-        callViewModels(allViewModels, "onTabChange", [current, previous]);
+    var tabs = $('.icon-bar a');
+    tabs.on('mousedown', function (e) {
+        var currentTab = e.target.hash;
+        callViewModels(allViewModels, "onTabChange", [currentTab]);
     });
-
-    tabs.on('shown', function (e) {
-        var current = e.target.hash;
-        var previous = e.relatedTarget.hash;
-        callViewModels(allViewModels, "onAfterTabChange", [current, previous]);
-    });
-
 
     //~~ view model binding
 
