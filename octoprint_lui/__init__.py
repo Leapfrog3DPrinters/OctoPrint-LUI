@@ -2531,7 +2531,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "skip_version_sanity_check": False,
             "allow_octoprint_branches": False,
             "cloud_enabled" : False,
-			"first_start": False
+			"first_start": False,
             "lock_code": "",
             "lock_timeout": 0,
             "lock_enabled": False

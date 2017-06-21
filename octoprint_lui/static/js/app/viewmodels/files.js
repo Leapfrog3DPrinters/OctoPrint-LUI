@@ -1111,7 +1111,7 @@ $(function ()  {
                 else
                     self.browseOrigin("usb");
             }
-            else if (available && !self.introView.isTutorialStarted && (!self.flyout.isOpen() || !self.flyout.blocking)) {
+            else if (available && !self.introView.isTutorialStarted && !self.navigation.isLocalLocked  && (!self.flyout.isOpen() || !self.flyout.blocking)) {
                 var text = gettext("You have inserted a USB drive.");
                 var question = gettext("Would you like to browse through the files?");
                 var title = gettext("USB drive inserted");
