@@ -93,7 +93,7 @@ $(function () {
                     self.fromResponse(response);
                     self.flyout.closeFlyoutAccept();
                     if(!IS_LOCAL){
-                        self.showLoginFlyout();
+                        self.flyout.showFlyout("login");
                     }
                 });
         };
