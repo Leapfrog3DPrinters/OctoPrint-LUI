@@ -2547,9 +2547,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "allow_octoprint_branches": False,
             "cloud_enabled" : False,
 			"first_start": False,
-            "lock_code": "",
-            "lock_timeout": 0,
-            "lock_enabled": False
+            "locallock_code": "",
+            "locallock_timeout": 0,
+            "locallock_enabled": False
         }
 
     def find_assets(self, rel_path, file_ext):
@@ -4569,7 +4569,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _auto_local_lock_start(self, auto_local_lock_timeout):
         if not self.auto_local_lock_timer:
-            self.auto_local_lock_timer_value = int(auto_local_lock_timeout)
+            self.auto_local_lock_timer_value = auto_local_lock_timeout
             self.auto_local_lock_timer = RepeatedTimer(1,
                                                      self._auto_local_lock_tick,
                                                      run_first=False,

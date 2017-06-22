@@ -178,7 +178,11 @@ $(function () {
                         self.flyout.showFlyout("locallock", true);
                         break;
                     case "local_lock_unlocked":
-                        if(messageData.is_local == IS_LOCAL){
+                        if(messageData != null) {
+                            if (messageData.is_local == IS_LOCAL) {
+                                self.flyout.closeFlyout("locallock");
+                            }
+                        } else {
                             self.flyout.closeFlyout("locallock");
                         }
                         break;

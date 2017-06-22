@@ -570,6 +570,11 @@ $(function () {
         };
 
         self.saveLockSettings = function () {
+            var code = self.locallock_code();
+            if(code.length < 4){
+                        self.noValidCodeEntered();
+                        return;
+            }
             sendToApi("printer/security/local_lock/save_settings", {
                 localLockCode: self.locallock_code(),
                 localLockEnabled: self.locallock_enabled(),
@@ -577,7 +582,6 @@ $(function () {
             })
                 .done(function () {
                     if(self.locallock_timeout() > 0 && self.locallock_enabled()){
-
                         var s = self.locallock_timeout();
                         var timeString = ((s-(s%=3600))/3600+(10<=(s/60)?':':':0')+(s-(s%=60))/60+(9<s?':':':0')+s);
 
@@ -599,6 +603,13 @@ $(function () {
                     }
                 });
         };
+
+        self.noValidCodeEntered = function () {
+            self.flyout.showWarning(
+                gettext('No valid lockcode'),
+                gettext('Please enter a valid code with a minimum of 4 digits.')
+            );
+        }
     }
 
     OCTOPRINT_VIEWMODELS.push([
