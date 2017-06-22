@@ -337,6 +337,16 @@ $(function () {
         self.onSecuritySettingsHidden = function () {
             self.isCodeReadable(false);
         };
+
+        self.onBeforeBinding = function () {
+            if(LOCKED_ON_STARTUP) {
+                self.flyout.showFlyout("locallock", true);
+            } else {
+                if(!IS_LOCAL) {
+                    self.loginState.showLoginFlyout();
+                }
+            }
+        };
     }
 
     OCTOPRINT_VIEWMODELS.push([

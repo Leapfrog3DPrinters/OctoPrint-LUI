@@ -32,6 +32,7 @@
   var CONFIG_ACCESS_CONTROL = true;
 
   var FIRST_START = {%  if first_start -%} true; {% else %} false; {%- endif %}
+  var LOCKED_ON_STARTUP = {%  if locked_on_startup -%} true; {% else %} false; {%- endif %}
   var LPFRG_MODEL = "{{ model }}"
   var LPFRG_MODEL_NAME = "{{ printer_profile["name"] }}"
 </script>

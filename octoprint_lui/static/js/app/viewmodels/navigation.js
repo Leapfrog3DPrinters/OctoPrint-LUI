@@ -35,23 +35,18 @@ $(function () {
         };
 
         self.lock = function () {
+            if(self.flyout.isFlyoutOpen("login")){
+                self.flyout.closeFlyout();
+            }
             sendToApi("printer/security/local_lock/lock");
         };
 
         self.unlock = function (code) {
             //TODO: Confirm code before unlocking
-            if (self.settings.locallock_code() == code) {
-                self.flyout.closeFlyout("locallock");
-            } else {
-                $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
-                if (unlockTries > 1) {
-                    unlockTries--;
-                } else {
-                    self.startInvalidUnlockTimer();
-                    self.triesTimeout(true);
-                    self.invalidUnlockTimer(30);
-                }
-            }
+            sendToApi("printer/security/local_lock/check_code",{
+                givenCode: code,
+                isLocal: IS_LOCAL
+            });
             self.givenLockCode(undefined);
             return;
         };
@@ -183,7 +178,9 @@ $(function () {
                         self.flyout.showFlyout("locallock", true);
                         break;
                     case "local_lock_unlocked":
-                        self.flyout.closeFlyout("locallock");
+                        if(messageData.is_local == IS_LOCAL){
+                            self.flyout.closeFlyout("locallock");
+                        }
                         break;
                     case "local_invalid_unlock_timer":
                         if (!$('#locallock_flyout').hasClass('active')) {
@@ -197,22 +194,24 @@ $(function () {
                         self.invalidUnlockTimer(0);
                         unlockTries = 3;
                         break;
+                    case "local_lock_wrong_code":
+                        if(messageData.is_local == IS_LOCAL) {
+                            $.notify({title: gettext("Wrong code"), text: gettext("The code is not correct")}, "error");
+                            if (unlockTries > 1) {
+                                unlockTries--;
+                            } else {
+                                self.startInvalidUnlockTimer();
+                                self.triesTimeout(true);
+                                self.invalidUnlockTimer(30);
+                            }
+                        }
+                        break;
                 }
             }
         }
 
         self.onAllBound = function (allViewModels) {
             self.allViewModels = allViewModels;
-
-            self.settings.requestData();
-
-            if(!IS_LOCAL && self.loginState.loggedIn()){
-                self.showLoginFlyout();
-            }
-
-            if(self.settings.locallock_enabled()){
-                self.flyout.showFlyout("locallock", true);
-            }
         }
     }
 

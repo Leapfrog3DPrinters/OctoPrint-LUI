@@ -100,6 +100,7 @@ class ClientMessages(object):
     AUTO_FIRMWARE_UPDATE_FINISHED = "auto_firmware_update_finished"
 
     AUTO_LOCAL_LOCK_TOGGLE = "auto_local_lock_toggle"
+    LOCAL_LOCK_WRONG_CODE = "local_lock_wrong_code"
     LOCAL_LOCK_LOCKED = "local_lock_locked"
     LOCAL_LOCK_UNLOCKED = "local_lock_unlocked"
     AUTO_LOCK_TIMER = "auto_local_lock_timer"

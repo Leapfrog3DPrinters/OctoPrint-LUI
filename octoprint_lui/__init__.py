@@ -1913,7 +1913,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     @BlueprintPlugin.route("/printer/security/local_lock/lock", methods=["POST"])
     def local_lock(self):
         """
-        Cancels auto-lock and locks the interface of the printer
+        Cancels auto-lock and locks the interface of the printer.
         """
         if self.auto_local_lock_timer:
             self.auto_local_lock_timer.cancel()
@@ -1925,7 +1925,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     @BlueprintPlugin.route("/printer/security/local_lock/save_settings", methods=["POST"])
     def save_lock_settings(self):
         """
-        Saves lock settings in config file
+        Saves lock settings in config file.
         """
         data = request.json
         local_lock_code = data.get("localLockCode")
@@ -1934,15 +1934,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         self._settings.set(["locallock_code"], local_lock_code)
         self._settings.set(["locallock_enabled"], local_lock_enabled)
-        self._settings.set(["locallock_timeout"], local_lock_timeout)
+        self._settings.set(["locallock_timeout"], int(local_lock_timeout))
         self._settings.save()
 
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/printer/security/local_lock/check_code", methods=["POST"])
+    def check_local_lock_code(self):
+        """
+        Checks if given code is correct. If so the interface unlocks, otherwise the interface remains locked.
+        """
+        data = request.json
+        given_code = data.get("givenCode")
+        is_local = data.get("isLocal")
+
+        if(given_code == self._settings.get(["locallock_code"])):
+            self._send_client_message(ClientMessages.LOCAL_LOCK_UNLOCKED, {"is_local" : is_local})
+        else:
+            self._send_client_message(ClientMessages.LOCAL_LOCK_WRONG_CODE, {"is_local" : is_local})
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/printer/security/local_lock/unlock", methods=["POST"])
     def local_unlock(self):
         """
-        Unlocks the interfaces
+        Unlocks the interfaces.
         """
         self._send_client_message(ClientMessages.LOCAL_LOCK_UNLOCKED)
         return make_response(jsonify(), 200)
@@ -1950,7 +1965,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     @BlueprintPlugin.route("/printer/security/local_lock/auto/<string:toggle>", methods=["POST"])
     def auto_local_lock_toggle(self, toggle):
         """
-        Sets auto-lock either on or off
+        Sets auto-lock either on or off.
         """
         self.auto_local_lock = toggle == "on"
 
@@ -2678,7 +2693,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "printer_profile": self.current_printer_profile,
             "reserved_usernames": self.reserved_usernames,
             "cloud_enabled": self.cloud_enabled,
-            "first_start": self._settings.get_boolean(["first_start"])
+            "first_start": self._settings.get_boolean(["first_start"]),
+            "locked_on_startup": self._settings.get_boolean(["locallock_enabled"])
         }
 
         args.update(render_kwargs)
