@@ -20,16 +20,16 @@
       <div class="Table-item">
         {{ _('Code') }}
       </div>
-      <div class="Table-item" data-bind="visible: !isCodeReadable()" style="flex: 0 0 125px;">
-        <input type="password" data-bind="value: settings.locallock_code" pattern="[0-9]*" inputmode="numeric" />
-      </div>
-        <div class="Table-item" data-bind="visible: isCodeReadable()" style="flex: 0 0 125px;">
-        <input type="text" data-bind="value: settings.locallock_code" pattern="[0-9]*" inputmode="numeric" />
-      </div>
-      <div class="Table-item" style="flex: 0 0 50px;">
-        <a href="#" data-bind="touchClick: function() { toggleShowCode(isCodeReadable()) } ">
-            <i class="fa fa-eye"></i>
-        </a>
+      <div class="Table-item" >
+        <input type="password" data-bind="value: settings.locallock_code, visible: !isCodeReadable()" pattern="[0-9]*" inputmode="numeric" style="margin-right: 5px;"/>
+        <input type="text" data-bind="value: settings.locallock_code, visible: isCodeReadable()" pattern="[0-9]*" inputmode="numeric" style="margin-right: 5px;"/>
+        <ul class="button-area" style="flex: 100px;">
+          <li class="button " data-bind="css: { 'primary-button': !isCodeReadable(), 'secondary-button': isCodeReadable() }">
+            <a href="#" data-bind="touchClick: function() { toggleShowCode(isCodeReadable()) } ">
+              <span class="fa fa-eye"></span>
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
   </div>

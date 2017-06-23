@@ -545,12 +545,6 @@ $(function ()  {
                 self.introView.startIntro('firstPrint');
             }
 
-            if (self.settings.locallock_enabled()){
-                if(!self.flyout.isFlyoutOpen('locallock')) {
-                    self.flyout.showFlyout('locallock', true);
-                }
-            }
-
             if (data.printerErrorReason) {
                 self.errorReason(data.printerErrorReason);
                 self.erroredExtruder(data.printerErrorExtruder);

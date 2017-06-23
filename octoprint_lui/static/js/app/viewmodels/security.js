@@ -343,7 +343,7 @@ $(function () {
                 self.flyout.showFlyout("locallock", true);
             } else {
                 if(!IS_LOCAL) {
-                    self.loginState.showLoginFlyout();
+                    self.flyout.showFlyout("login");
                 }
             }
         };

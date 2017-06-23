@@ -182,7 +182,7 @@ $(function () {
                             if (messageData.is_local == IS_LOCAL) {
                                 self.flyout.closeFlyout("locallock");
                                 if(!IS_LOCAL){
-                                    if (!$('#login_flyout').hasClass('active')) {
+                                    if(!self.loginState.loggedIn){
                                         self.flyout.showFlyout("login");
                                     }
                                 }
