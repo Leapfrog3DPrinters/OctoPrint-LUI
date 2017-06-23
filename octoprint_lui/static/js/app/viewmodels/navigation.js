@@ -181,6 +181,11 @@ $(function () {
                         if(messageData != null) {
                             if (messageData.is_local == IS_LOCAL) {
                                 self.flyout.closeFlyout("locallock");
+                                if(!IS_LOCAL){
+                                    if (!$('#login_flyout').hasClass('active')) {
+                                        self.flyout.showFlyout("login");
+                                    }
+                                }
                             }
                         } else {
                             self.flyout.closeFlyout("locallock");

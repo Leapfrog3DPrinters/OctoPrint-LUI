@@ -114,7 +114,11 @@ $(function () {
         self.onStartupComplete = self.onServerConnect = function () {
             if (self.allViewModels == undefined) return;
             self.requestData();
-            callViewModels(self.allViewModels, "checkIfLocked");
+            if(!IS_LOCAL){
+                if (!self.loggedIn) {
+                    self.flyout.showFlyout("login");
+                }
+            }
         };
     }
 
