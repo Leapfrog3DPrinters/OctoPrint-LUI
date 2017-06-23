@@ -189,6 +189,11 @@ $(function () {
                             }
                         } else {
                             self.flyout.closeFlyout("locallock");
+                            if(!IS_LOCAL){
+                                if(!self.loginState.loggedIn){
+                                    self.flyout.showFlyout("login");
+                                }
+                            }
                         }
                         break;
                     case "local_invalid_unlock_timer":
