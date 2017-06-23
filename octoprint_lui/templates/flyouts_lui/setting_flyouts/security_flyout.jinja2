@@ -39,14 +39,11 @@
     </div>
     <div class="Table-item">
       <select data-bind="value: settings.locallock_timeout" >
-        <option value="60">{{ _("1 minute") }}</option>
-        <option value="120">{{ _("2 minutes") }}</option>
         <option value="300">{{ _("5 minutes") }}</option>
+        <option value="600">{{ _("10 minutes") }}</option>
         <option value="900">{{ _("15 minutes") }}</option>
         <option value="1800">{{ _("30 minutes") }}</option>
         <option value="3600">{{ _("1 hour") }}</option>
-        <option value="7200">{{ _("2 hours") }}</option>
-        <option value="10800">{{ _("3 hours") }}</option>
         <option value="0">{{ _("Never") }}</option>
       </select>
     </div>
