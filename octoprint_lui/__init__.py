@@ -1948,8 +1948,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         given_code = data.get("givenCode")
         is_local = data.get("isLocal")
 
+        timeout = self._settings.get(["locallock_timeout"])
+
         if(given_code == self._settings.get(["locallock_code"])):
             self._send_client_message(ClientMessages.LOCAL_LOCK_UNLOCKED, {"is_local" : is_local})
+            if(timeout > 0):
+                if self.auto_local_lock_timer:
+                    self.auto_local_lock_timer.cancel()
+                    self.auto_local_lock_timer = None
+                self._auto_local_lock_start(timeout)
+                self._logger.info("Auto lock started: {timeout}".format(timeout=timeout))
         else:
             self._send_client_message(ClientMessages.LOCAL_LOCK_WRONG_CODE, {"is_local" : is_local})
         return make_response(jsonify(), 200)
@@ -4579,6 +4587,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _auto_local_lock_tick(self):
         self.auto_local_lock_timer_value -= 1
+        #self._send_client_message(ClientMessages.AUTO_LOCK_TIMER, {"timer": self.auto_local_lock_timer_value})
 
     def _auto_local_lock_required(self):
         return self.auto_local_lock_timer_value > 0
