@@ -1414,7 +1414,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         for tool in self.tools:
             self.heat_to_temperature(tool, 0)
 
-        self._printer.home(['x', 'y'])
+        context = { "filamentAction": self.filament_action,
+                    "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
+                    "pausedFilamentSwap": self.paused_filament_swap
+                    }
+
+	self._execute_printer_script("change_filament_done", context)
 
         return make_response(jsonify(), 200)
 
