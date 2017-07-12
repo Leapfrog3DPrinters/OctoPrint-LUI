@@ -1,6 +1,10 @@
 # Changelog 
 
-Changelog for OctoPrint-LUI. 
+Changelog for OctoPrint-LUI.
+
+## 1.2.1
+
+- Fixed: wiping sequence after filament swap
 
 ## 1.2.0
 
