@@ -1418,9 +1418,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                     "stepperTimeout": self.current_printer_profile["defaultStepperTimeout"] if "defaultStepperTimeout" in self.current_printer_profile else None,
                     "pausedFilamentSwap": self.paused_filament_swap
                     }
-
-	self._execute_printer_script("change_filament_done", context)
-
+        
+        self._execute_printer_script("change_filament_done", context)
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/head/swap/start", methods=["POST"])
