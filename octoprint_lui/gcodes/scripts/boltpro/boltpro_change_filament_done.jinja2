@@ -2,6 +2,8 @@ M605 S3 U0;							Mirror without temperature change
 G28 X0;								Home X
 G1 X-6 F12000;						Wipe it
 G1 X-37 F12000;						Wipe it
+G1 X-6 F12000;						Wipe second
+G1 X-37 F12000;						Wipe second
 M605 S1;							Back to normal
 G28 X0 Y0;							Home X, Y
 T0;									Reset tool (mirror mode sets active tool to 1)

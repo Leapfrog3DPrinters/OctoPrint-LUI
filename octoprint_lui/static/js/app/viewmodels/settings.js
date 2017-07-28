@@ -45,7 +45,7 @@ $(function () {
         self.lastReceivedSettings = undefined;
 
         self.addTemperatureProfile = function () {
-            self.temperature_profiles.push({name: "New", extruder:0, bed:0});
+            self.temperature_profiles.push({name: "New", extruder:0, bed:0,speed:2000});
         };
 
         self.removeTemperatureProfile = function(profile) {
@@ -63,6 +63,7 @@ $(function () {
                  // Ensures no strings are being sent to the back-end, and values can be compared to min-max
                 profile.extruder = parseInt(profile.extruder);
                 profile.bed = parseInt(profile.bed);
+				profile.speed = parseInt(profile.speed);
 
                 if (names.indexOf(profile.name.toLowerCase()) > -1) {
                     $.notify({ title: title, text: "\""  + profile.name + gettext('" already exists. Please ensure each profile has a unique name.') }, 'error');
@@ -85,6 +86,10 @@ $(function () {
                     $.notify({ title: title, text: profile + profile.name + gettext('" must have a bed temperature of at least 0 &deg;C.') }, 'error');
                     return;
                 }
+				if (isNaN(profile.speed) || profile.speed<1) {
+					$.notify({ title:title,text:profile + profile.name + gettext('" Must have a speed for extrusion of at least 1.')},'error');
+					return;
+				}
 
 
             }
