@@ -34,7 +34,7 @@ $(function () {
         };
 
         self.headSwapPosition = function () {
-            var text = gettext("You are about to move the printer to the hot end swap position. This will turn off the power of the printer temporarily, shutting down the LED lights with it.");
+            var text = gettext("You are about to move the printer to the hot end swap position. This will leave the printer on, but disconnects it from the software.");
             var question = gettext("Do you want to continue?");
             var title = gettext("Hot end swap position");
             var dialog = { 'title': title, 'text': text, 'question': question };

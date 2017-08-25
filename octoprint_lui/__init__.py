@@ -2844,8 +2844,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Powers down printer after disconnect
         """
         if self.powerbutton_handler:
-            self.powerbutton_handler.disableAuxPower()
-            self._logger.debug("Auxiliary power down for maintenance")
+            self.powerbutton_handler.enableAuxPower()
+            self._logger.debug("Keep Power on for new screen")
             self._send_client_message(ClientMessages.HEAD_IN_SWAP_POSITION)
 
     def _power_up_after_maintenance(self):
