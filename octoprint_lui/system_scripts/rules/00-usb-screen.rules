@@ -1,0 +1,1 @@
+ACTION=="add", ATTR{idVendor}=="03eb",ATTR{idProduct}=="214e", ENV{XAUTHORITY}="/home/pi/.Xauthority", ENV{DISPLAY} = ":0", OWNER="pi",RUN+="/home/pi/scripts/runScreenResize-udev"

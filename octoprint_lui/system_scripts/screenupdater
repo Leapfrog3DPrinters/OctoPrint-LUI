@@ -1,0 +1,100 @@
+#!/bin/bash
+
+###
+#
+# This script patches v1.0 and v1.1 lpfrg images.
+# The script purges dhcpcd as it conflicts with setting
+# a static IP address trough NetworkManager. For image v1.0
+# the purge is executed immediately. For v1.1, the script
+# makes root writable, reboots, purges dhcpcd, makes root ro again
+# and reboots again. Besides the dhcpcd purge, the branding images 
+# are updated and the NetworkManager state folder is moved
+# to the writable home partition.
+#
+###
+
+script_name="screenupdater"
+autostart="/home/pi/.config/openbox/autostart"
+imageinfo="/boot/lpfrgpi.json"
+rulespath="/etc/udev/rules.d"
+chromiumpath="/home/pi/.config/chromium/Default"
+scriptspath="/home/pi/scripts"
+sourcepath="/home/pi/OctoPrint-LUI/octoprint_lui/system-scripts"
+
+run_sequence()
+{
+	sudo cp -fr $sourcepath/rules $rulespath
+	find $rulespath -type d -exec chmod 755 {} \;
+	sudo cp -fr $sourcepath/scripts $scriptspath
+	find $scriptspath -type d -exec chmod 755 {} \;
+	sudo cp -fr $sourcepath/chromium $chromiumpath
+	sudo udevadm control --reload
+	sudo udevadm trigger
+	sudo touch /home/pi/.screenupdated
+}
+
+splash()
+{
+	export DISPLAY=:0
+	export XAUTHORITY=/home/pi/.Xauthority
+    feh --bg-max /home/pi/scripts/images/lpfrg-updates.png &
+}
+
+do_start()
+{
+    if ! grep -q "/home/pi/.screenupdated"; then
+        echo "Image not ready for the new screen. Will be installed on next boot."
+        do_install
+        echo "Installation done. Please reboot."
+        exit 3
+    else
+        echo "Image updated. Nothing to do."
+        exit 0
+    fi
+}
+
+do_install() {
+    # Ensures script runs on next startup
+    if ! grep -i -q "$script_name" "$autostart"; then
+        # Makes root read-writable again on next reboot
+        sudo sed -i "s@boot=overlay @@" /boot/cmdline.txt
+        sudo sed -i "s@root_readonly=\"yes\"@root_readonly=\"no\"@" /boot/octopi.txt
+
+        # Append script to autostart file
+        sudo sed -i "1 i\/home/pi/scripts/$script_name run" "$autostart"
+
+        echo "Script installed."
+    else
+        echo "Script is already installed."
+    fi
+}
+
+do_uninstall() {
+    # Don't run script on next boot anymore
+    sudo sed -i "/$script_name/d" "$autostart"
+
+    # Makes root read-writable again on next reboot
+    if ! grep -q "boot=overlay" /boot/cmdline.txt ; then
+        sudo sed -i '1s@^@boot=overlay @' /boot/cmdline.txt
+    fi
+
+    sudo sed -i "s@root_readonly=\"no\"@root_readonly=\"yes\"@" /boot/octopi.txt
+
+    echo "Script uninstalled"
+}
+
+
+key="$1"
+
+case $key in
+    "run")
+    splash
+    run_sequence
+	do_uninstall
+    sudo reboot
+    ;;
+
+    *)
+    do_start
+    ;;
+esac

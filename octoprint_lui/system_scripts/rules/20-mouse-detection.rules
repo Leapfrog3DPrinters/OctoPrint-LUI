@@ -1,0 +1,1 @@
+ACTION=="add", ATTR{idVendor=="****", ATTR{idProduct}=="****", ENV{XAUTHORITY}="/home/pi/.Xauthority", ENV{DISPLAY} = ":0", OWNER="pi", RUN+="/home/pi/scripts/checkMousePlug-udev"

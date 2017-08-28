@@ -1,0 +1,57 @@
+#!/bin/bash
+sleep 1
+REBOOT="no"
+if [[ $(lsusb | grep 'Atmel') = *Atmel* ]]; then
+	echo step 1
+	if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
+		sudo sed -i '/hdmi_cvt=1024 600 60 6 0 0 0/c\hdmi_cvt=800 480 60 6 0 0 0' /boot/config.txt
+		echo step 2
+		sudo sed -i '/display_rotate=1/c\display_rotate=3' /boot/config.txt
+		echo step 3
+		sudo sed -i '/rot_mat="0 1 0 -1 0 1"/c\rot_mat="0 -1 1 1 0 0"' /usr/bin/dorotatetouch
+		echo step 4
+		REBOOT="yes"
+		echo $REBOOT
+	fi
+	if [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
+		sudo pkill -f "chromium"
+		sudo rm /home/pi/.config/chromium/Default/Preferences
+		sleep 1
+		echo step 5
+		sudo cp /home/pi/.config/chromium/Default/Preferences800x480 /home/pi/.config/chromium/Default/Preferences
+		echo step 6
+		sudo service lightdm restart
+	fi
+fi
+
+echo step between
+
+if [[ $(lsusb | grep 'D-WAV') = *D-WAV* ]]; then
+
+	echo step 7
+	if [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
+		sudo sed -i '/hdmi_cvt=800 480 60 6 0 0 0/c\hdmi_cvt=1024 600 60 6 0 0 0' /boot/config.txt
+		echo step 8
+		sudo sed -i '/display_rotate=3/c\display_rotate=1' /boot/config.txt
+		echo step 9
+		sudo sed -i '/rot_mat="0 -1 1 1 0 0"/c\rot_mat="0 1 0 -1 0 1"' /usr/bin/dorotatetouch
+		echo step 10
+		REBOOT="yes"
+	fi
+	if ! [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
+		sudo pkill -f "chromium"
+		sudo rm /home/pi/.config/chromium/Default/Preferences
+		sleep 1
+		echo step 11
+		sudo cp /home/pi/.config/chromium/Default/Preferences1024x600 /home/pi/.config/chromium/Default/Preferences
+		echo step 12
+		sudo service lightdm restart
+	fi
+fi
+echo step 13
+echo $REBOOT
+
+if [ "$REBOOT" == "yes" ];then
+	sudo reboot
+fi
+sudo service lightdm restart
