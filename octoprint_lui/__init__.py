@@ -751,6 +751,60 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("Not on old RPi image, so skipping chromium command line update")
         return True
 
+	def _screen_patch(self):
+		if self.platform == Platforms.RaspberryPi:
+			dest_path = "/etc/udev/rules.d/00-usb-screen.rules"
+            if os.path.isfile(dest_path):
+				self._logger.info("Image already formed for the screen patch")
+				return True
+			else:
+				self._logger.info("Image needs the screen patch, Running patch...")
+			
+
+            self._logger.info("Copying screen patch...")
+
+            script_target_path = "/home/pi/scripts/screenupdater"
+            script_images_target_path = "/home/pi/scripts/images"
+
+            script_source_path = os.path.join(self._basefolder, "system_scripts/screenupdater")
+            script_images_source_path = os.path.join(self._basefolder, "system_scripts/images")
+
+            try:
+                shutil.copy2(script_source_path, script_target_path)
+            except OSError as e:
+                self._logger.exception("Could not copy screen updater script")
+                return False
+
+            try:
+                shutil.rmtree(script_images_target_path, True)
+                shutil.copytree(script_images_source_path, script_images_target_path)
+            except OSError as e:
+                self._logger.exception("Could not copy screen updater script images")
+                return False
+
+            # Set execution bits
+            import stat
+            try:
+                st = os.stat(script_target_path)
+                os.chmod(script_target_path, st.st_mode | stat.S_IEXEC)
+            except OSError as e:
+                self._logger.exception("Could not set permissions for screen updater script")
+                return False
+
+            # Execute the script, and plan a reboot if requested.
+            returncode, out, _ = octoprint_lui.util.execute(script_target_path, None, False)
+            self._logger.debug("Screen updater output: {}".format(out))
+
+            if returncode == 0:
+                self._logger.info("Screen update script succeeded")
+            elif returncode == 3:
+                self._logger.info("Screen update script succeeded. Reboot required.")
+                self.reboot_requested = True
+            else:
+                return False
+
+        return True
+
     def _june2017_patch(self):
         """
         Runs a bash script on the image that applies patches to lpfrg images < v1.1. 
