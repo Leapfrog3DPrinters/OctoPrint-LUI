@@ -752,14 +752,14 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._logger.info("Not on old RPi image, so skipping chromium command line update")
         return True
 
-	def _screen_patch(self):
-		if self.platform == Platforms.RaspberryPi:
-			dest_path = "/etc/udev/rules.d/00-usb-screen.rules"
+    def _screen_patch(self):
+        if self.platform == Platforms.RaspberryPi:
+            dest_path = "/etc/udev/rules.d/00-usb-screen.rules"
             if os.path.isfile(dest_path):
-				self._logger.info("Image already formed for the screen patch")
-				return True
-			else:
-				self._logger.info("Image needs the screen patch, Running patch...")
+                self._logger.info("Image already formed for the screen patch")
+                return True
+            else:
+                self._logger.info("Image needs the screen patch, Running patch...")
 			
 
             self._logger.info("Copying screen patch...")
