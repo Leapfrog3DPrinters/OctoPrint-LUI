@@ -587,7 +587,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             first_run_results.append(self._disable_ssh())
             first_run_results.append(self._set_chromium_args())
             first_run_results.append(self._june2017_patch())
-			first_run_results.append(self._screen_patch())
+            first_run_results.append(self._screen_patch())
 
             # Clean up caches
             first_run_results.append(self._clean_webassets())
