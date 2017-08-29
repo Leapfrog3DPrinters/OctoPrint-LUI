@@ -62,12 +62,6 @@ additional_setup_parameters = {}
 ########################################################################################################################
 
 from setuptools import setup
-import subprocess
-import os.path
-
-if not os.path.isfile("/etc/udev/rules.d/00-usb-screen.rules"):
-	subprocess.call("scripts/installscreen.sh")
-
 
 try:
 	import octoprint_setuptools
