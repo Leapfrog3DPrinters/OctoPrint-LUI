@@ -115,6 +115,12 @@ $(function () {
                 $.notify({ title: gettext("Head maintenance"), text: gettext("The printhead is moving towards the maintenance position.") }, "success");
             });
         }
+        self.moveToWipingSequence = function()
+        {
+            sendToApi("maintenance/head/wipe").done(function () {
+                $.notify({ title: gettext("Head wiping"), text: gettext("The printhead is moving to wipe the nozzles.") }, "success");
+            });
+        }
 
         self.moveToHeadSwapPosition = function (skipHeatCheck) {
             var tools = self.toolInfo.tools();

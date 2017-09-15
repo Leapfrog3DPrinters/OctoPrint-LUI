@@ -51,7 +51,7 @@ $(function ()  {
         self.errorStateString = ko.observable(undefined);
         self.isConnecting = ko.observable(false);
 
-        self.currentActivity = ko.pureComputed(function ()  {
+        self.currentActivity = ko.pureComputed(function () {
             if (self.activities().length > 0)
                 return self.activities()[0];
             else
@@ -60,20 +60,22 @@ $(function ()  {
 
         self.activities = ko.observableArray([]);
 
-        self.filenameNoExtension = ko.computed(function ()  {
+        self.filenameNoExtension = ko.computed(function () {
             if (self.filename())
                 return self.filename().slice(0, (self.filename().lastIndexOf(".") - 1 >>> 0) + 1);
         })
 
         self.busyFiles = ko.observableArray([]);
 
-        self.enablePrint = ko.computed(function ()  {
+        self.enablePrint = ko.computed(function () {
             return self.isOperational() && self.isReady() && !self.isPrinting() && self.loginState.isUser() && self.filename() != undefined;
         });
-        self.enablePause = ko.computed(function ()  {
+        
+        self.enablePause = ko.computed(function () {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && !self.waitingForPause() && self.loginState.isUser();
         });
-        self.enableCancel = ko.computed(function ()  {
+        
+        self.enableCancel = ko.computed(function () {
             return self.isOperational() && (self.isPrinting() || self.isPaused()) && self.loginState.isUser() && !self.waitingForCancel();
         });
 
@@ -91,30 +93,34 @@ $(function ()  {
         self.titlePrintButton = ko.observable(self.TITLE_PRINT_BUTTON_UNPAUSED);
         self.titlePauseButton = ko.observable(self.TITLE_PAUSE_BUTTON_UNPAUSED);
 
-        self.estimatedPrintTimeString = ko.computed(function ()  {
+        self.estimatedPrintTimeString = ko.computed(function () {
             if (self.lastPrintTime())
                 return formatFuzzyPrintTime(self.lastPrintTime());
             if (self.estimatedPrintTime())
                 return formatFuzzyPrintTime(self.estimatedPrintTime());
             return "-";
         });
-        self.byteString = ko.computed(function ()  {
+        
+        self.byteString = ko.computed(function () {
             if (!self.filesize())
                 return "-";
             var filepos = self.filepos() ? formatSize(self.filepos()) : "-";
             return filepos + " / " + formatSize(self.filesize());
         });
-        self.heightString = ko.computed(function ()  {
+        
+        self.heightString = ko.computed(function () {
             if (!self.currentHeight())
                 return "-";
             return _.sprintf("%.02fmm", self.currentHeight());
         });
-        self.printTimeString = ko.computed(function ()  {
+        
+        self.printTimeString = ko.computed(function () {
             if (!self.printTime())
                 return "-";
             return formatDuration(self.printTime());
         });
-        self.printTimeLeftString = ko.computed(function ()  {
+        
+        self.printTimeLeftString = ko.computed(function () {
             if (self.printTimeLeft() == undefined) {
                 if (!self.printTime() || !(self.isPrinting() || self.isPaused())) {
                     return "-";
@@ -125,26 +131,28 @@ $(function ()  {
                 return formatFuzzyPrintTime(self.printTimeLeft());
             }
         });
-        self.progressString = ko.computed(function ()  {
+        
+        self.progressString = ko.computed(function () {
             if (!self.progress())
                 return 0;
             return self.progress();
         });
-        self.pauseString = ko.computed(function ()  {
+        
+        self.pauseString = ko.computed(function () {
             if (self.isPaused())
                 return gettext("Continue");
             else
                 return gettext("Pause");
         });
 
-        self.fileSelected = ko.computed(function ()  {
+        self.fileSelected = ko.computed(function () {
             if (self.filename())
                 return true
             else
                 return false
         });
 
-        self.timelapseString = ko.computed(function ()  {
+        self.timelapseString = ko.computed(function () {
             var timelapse = self.timelapse();
 
             if (!timelapse || !timelapse.hasOwnProperty("type"))
@@ -180,8 +188,7 @@ $(function ()  {
             self._processBusyFiles(data.busyFiles);
         };
 
-        self.getShortToolName = function (tool)
-        {
+        self.getShortToolName = function (tool) {
             switch (tool)
             {
                 case "tool0":
@@ -254,8 +261,7 @@ $(function ()  {
             }
         };
 
-        self.onEventPrintPaused = function (payload)
-        {
+        self.onEventPrintPaused = function (payload) {
             // Enable resume button
             self.waitingForPause(false);
         }
@@ -265,8 +271,7 @@ $(function ()  {
             self.waitingForCancel(false);
         }
 
-        self.onEventPrintResumed = function (payload)
-        {
+        self.onEventPrintResumed = function (payload) {
             // Enable pause button
             self.waitingForPause(false);
         }
@@ -475,6 +480,7 @@ $(function ()  {
                     gettext('Please close the door before you continue printing.'));
             }
         };
+        
         self.onDoorClose = function ()  {
             if (self.warningVm !== undefined) {
                 self.flyout.closeWarning(self.warningVm);
@@ -492,15 +498,13 @@ $(function ()  {
             self.isConnecting(false);
         };
 
-        self.restorePrinterConnection = function()
-        {
+        self.restorePrinterConnection = function() {
             self.isConnecting(true);
             sendToApi("printer/reconnect") // On success, closeFlyout will set isConnecting to false. OnFail onEventError will
 
         };
 
-        self.refreshPrintPreview = function(url)
-        {
+        self.refreshPrintPreview = function(url) {
             var path = self.filepath(); // Includes subfolder
 
             if (url)
@@ -662,21 +666,18 @@ $(function ()  {
             }
         };
 
-        self.updateAnalyzingActivity = function()
-        {
+        self.updateAnalyzingActivity = function() {
             if (self.filename() && (!self.estimatedPrintTime() || self.requiredFilaments().length == 0))
                 self.activities.push('Analyzing');
             else
                 self.activities.remove('Analyzing');
         };
 
-        self.onBeforeBinding = function()
-        {
+        self.onBeforeBinding = function() {
             self.requestData();
         };
 
-        self.onStartupComplete = function ()  {
-
+        self.onStartupComplete = function () {
             self.filepath.subscribe(function ()  {
                 self.activities.remove(gettext('Creating preview'));
                 self.refreshPrintPreview(); // Important to pass no parameters 

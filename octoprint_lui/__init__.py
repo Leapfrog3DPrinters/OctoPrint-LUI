@@ -1461,6 +1461,15 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._execute_printer_script('filament_load_position', { "filamentChangeTool": None, "currentZ": self._printer._currentZ })
         return make_response(jsonify(), 200)
 
+    @BlueprintPlugin.route("/maintenance/head/wipe", methods=["POST"])
+    def maintenance_head_start(self):
+        """
+        Wipes the heads
+        """
+        self._execute_printer_script('head_wipe_perform', {"currentZ": self._printer._currentZ })
+        return make_response(jsonify(), 200)
+
+
     @BlueprintPlugin.route("/maintenance/head/finish", methods=["POST"])
     def maintenance_head_finish(self):
         """
