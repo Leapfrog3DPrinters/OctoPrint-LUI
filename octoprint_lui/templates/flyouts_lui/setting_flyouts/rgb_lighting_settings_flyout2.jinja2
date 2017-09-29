@@ -1,100 +1,88 @@
-<div id="rgblighting">
+<div id="rgb_lighting">
     <div class="Table">
-      <div id="rgb_lighting_settings_flyout_content" class="flyout_content">
-        <div id="rgbstatusplugin" class="Table active" data-bind="visible: !editColorVisible">
-          <div class="Table-row Table-header">
-            <div class="Table-item">
+        <div id="rgb-light-list" class="Table active" data-bind="visible: !editColorVisible()">
+        <div class="Table-header">
+            {{ _('Select color pattern') }}
+        </div> 
+          <div class="Table-row">
               {{ _('Startup Color') }}
-            </div>
             <div class="Table-item Table-item-right">
               <span data-bind="text: idle_color"></span>
             </div>
-            <div class="Table-item" style="flex-basis: 40px; max-width: 400px;">
-              <a href="#" data-bind="touchClick: function() { editColor('startup'); }">
-                <span><i class="fa fa-pencil"></i>{{ _('Edit') }}</span>
+            <div class="Table-item" style="flex-basis: 40px; max-width: 100px;">
+              <a href="#" data-bind="touchClick: $root.editColor">
+                <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
               </a>
             </div>
           </div>
-          <div class="Table-row Table-header">
-            <div class="Table-item">
+          <div class="Table-row">
               {{ _('Idle Color') }}
-            </div>
             <div class="Table-item Table-item-right">
               <span data-bind="text: idle_color"></span>
             </div>
-            <div class="Table-item" style="flex-basis: 40px; max-width: 400px;">
+            <div class="Table-item" style="flex-basis: 40px; max-width: 100px;">
               <a href="#" data-bind="touchClick: function() { editColor('idle'); }">
-                <span><i class="fa fa-pencil"></i>{{ _('Edit') }}</span>
+                <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
               </a>
             </div>
           </div>
-          <div class="Table-row Table-header">
-            <div class="Table-item">
+          <div class="Table-row">
               {{ _('Printing Color') }}
-            </div>
             <div class="Table-item Table-item-right">
               <span data-bind="text: idle_color"></span>
             </div>
-            <div class="Table-item" style="flex-basis: 40px; max-width: 400px;">
+            <div class="Table-item" style="flex-basis: 40px; max-width: 100px;">
               <a href="#" data-bind="touchClick: function() { editColor('printing'); }">
-                <span><i class="fa fa-pencil"></i>{{ _('Edit') }}</span>
+                <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
               </a>
             </div>
           </div>
-          <div class="Table-row Table-header">
-            <div class="Table-item">
+          <div class="Table-row">
               {{ _('Finished Color') }}
-            </div>
             <div class="Table-item Table-item-right">
               <span data-bind="text: idle_color"></span>
             </div>
-            <div class="Table-item" style="flex-basis: 40px; max-width: 400px;">
+            <div class="Table-item" style="flex-basis: 40px; max-width: 100px;">
               <a href="#" data-bind="touchClick: function() { editColor('finished'); }">
-                <span><i class="fa fa-pencil"></i>{{ _('Edit') }}</span>
+                <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
               </a>
             </div>
           </div>
-          <div class="Table-row Table-header">
-            <div class="Table-item">
+          <div class="Table-row">
               {{ _('heating Color') }}
-            </div>
             <div class="Table-item Table-item-right">
               <span data-bind="text: idle_color"></span>
             </div>
-            <div class="Table-item" style="flex-basis: 40px; max-width: 400px;">
+            <div class="Table-item" style="flex-basis: 40px; max-width: 100px;">
               <a href="#" data-bind="touchClick: function() { editColor('heating'); }">
-                <span><i class="fa fa-pencil"></i>{{ _('Edit') }}</span>
+                <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
               </a>
             </div>
           </div>
-          <div class="Table-row Table-header">
-            <div class="Table-item">
+          <div class="Table-row">
               {{ _('Paused Color') }}
-            </div>
             <div class="Table-item Table-item-right">
               <span data-bind="text: idle_color"></span>
             </div>
-            <div class="Table-item" style="flex-basis: 40px; max-width: 400px;">
+            <div class="Table-item" style="flex-basis: 40px; max-width: 100px;">
               <a href="#" data-bind="touchClick: function() { editColor('paused'); }">
-                <span><i class="fa fa-pencil"></i>{{ _('Edit') }}</span>
+                <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
               </a>
             </div>
           </div>
-          <div class="Table-row Table-header">
-            <div class="Table-item">
+          <div class="Table-row">
               {{ _('Error Color') }}
-            </div>
             <div class="Table-item Table-item-right">
               <span data-bind="text: idle_color"></span>
             </div>
-            <div class="Table-item" style="flex-basis: 40px; max-width: 400px;">
+            <div class="Table-item" style="flex-basis: 40px; max-width: 100px;">
               <a href="#" data-bind="touchClick: function() { editColor('error'); }">
-                <span><i class="fa fa-pencil"></i>{{ _('Edit') }}</span>
+                <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
               </a>
             </div>
           </div>
         </div>
-        <div id="networkmanager_details" class="Table" data-bind="visible: editColorVisible">
+        <div id="rgb-light-list" class="Table" data-bind="visible: editColorVisible()">
           <div class="Table-row ">
             <div class="Table-item">
               {{ _('Red:') }}
@@ -138,6 +126,7 @@
               </select>
             </div>
           </div>
+        <div class="Table-row">
           <div class="Table-item">
             <ul class="button-area">
               <li class="button secondary-button" data-bind="touchClick: preview">
@@ -146,6 +135,16 @@
                 </a>
               </li>
             </ul>
+          </div>
+            <div class="Table-item">
+              <ul class="button-area">
+                <li class="button secondary-button" data-bind="touchClick: defaultColorsetting">
+                  <a href="#">
+                    <span>{{ _('Set Default') }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
           <div class="Table-row ">
             <div class="Table-item">
@@ -157,15 +156,7 @@
                 </li>
               </ul>
             </div>
-            <div class="Table-item">
-              <ul class="button-area">
-                <li class="button secondary-button" data-bind="touchClick: defaultColorsetting">
-                  <a href="#">
-                    <span>{{ _('Set Default') }}</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
+
             <div class="Table-item">
               <ul class="button-area">
                 <li class="button" data-bind="touchClick: saveColorsetting">
@@ -185,12 +176,4 @@
           </a>
         </li>
       </ul>
-      <ul class="button-area">
-        <li class="button">
-          <a href="#close" data-bind="touchClick: function () { flyout.closeFlyout() }">
-            <span>{{ _('Close') }}</span>
-          </a>
-        </li>
-      </ul>
-    </div>
 </div>

@@ -15,7 +15,6 @@ $(function () {
         self.toggleTutorialInfo = function () {
             $(".tutorial-info").toggleClass('hide');
         };
-
     }
 
     OCTOPRINT_VIEWMODELS.push([

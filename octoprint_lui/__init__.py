@@ -1675,7 +1675,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Heat to material temperature, and afterwards begin unloading
         self.heat_to_temperature(tool,
                                 material["extruder"],
-                                self._unload_filament(speedsetting=["speed"]))
+                                self._unload_filament)
 
         self._logger.debug("Unload filament called")
         return make_response(jsonify(), 200)
@@ -3305,7 +3305,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     
     # Filament change helpers
 
-    def _load_filament(self, tool, amount, material_name,speedsetting):
+    def _load_filament(self, tool, amount, material_name):
         """
         Begins to load the filament by running gcodes with small extrusions. 
 
@@ -3323,12 +3323,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
             if self.loading_for_purging:
                 self._logger.debug("load_filament for purging")
-                load_initial=dict(amount=18.0, speed=speedsetting)
+                load_initial=dict(amount=18.0)
                 self.load_amount_stop = 2
                 self.loading_for_purging = False
             else:
                 self._logger.debug("load_filament")
-                load_initial = self.current_printer_profile["filament"]["loadInitial"]["speed"]
+                load_initial = self.current_printer_profile["filament"]["loadInitial"]
 
                 if "loadChange" in self.current_printer_profile["filament"]:
                     load_change = self.current_printer_profile["filament"]["loadChange"]
@@ -3348,7 +3348,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.load_filament_timer.start()
             self._send_client_message(ClientMessages.FILAMENT_CHANGE_LOAD_STARTED)
 
-    def _unload_filament(self, tool,speedsetting):
+    def _unload_filament(self, tool):
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
 
@@ -3356,7 +3356,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self.set_extrusion_mode("relative")
             self.unload_change = None
 			####self.current_printer_profile["speed"] = speedsetting
-            unload_initial = self.current_printer_profile["filament"]["unloadInitial"]["speed"]
+            unload_initial = self.current_printer_profile["filament"]["unloadInitial"]
             unload_change = None
             if "unloadChange" in self.current_printer_profile["filament"]:
                 unload_change = self.current_printer_profile["filament"]["unloadChange"]

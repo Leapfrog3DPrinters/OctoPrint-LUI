@@ -1,0 +1,206 @@
+<div id="rgblighting">
+    <div class="Table">
+        <div class="rgb-topic" data-bind="visible: !editColorVisible()">        
+            <div class="Table-row Table-header">
+                <div class="Table-item">
+                    {{ _('Select color pattern') }}
+                </div>
+            </div> 
+
+            <ul class="rgb_main">
+                <li class="rgb_name">
+                    <a href="#topic">
+                        <span>{{ _('Startup Color') }}</span>
+                    </a>
+                </li>
+                <li class="rgb-start" data-bind="click: function () { editSettings('startup') }">
+                    <a href="#">
+                         <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="rgb_main">
+                <li class="rgb_name">
+                    <a href="#topic">
+                        <span>{{ _('Idle Color') }}</span>
+                    </a>
+                </li>
+                <li class="rgb-start" data-bind="click: function () { editSettings('idle') }">
+                    <a href="#">
+                         <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="rgb_main">
+                <li class="rgb_name">
+                    <a href="#topic">
+                        <span>{{ _('Printing Color') }}</span>
+                    </a>
+                </li>
+                <li class="rgb-start" data-bind="click: function () { editSettings('printing') }">
+                    <a href="#">
+                         <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="rgb_main">
+                <li class="rgb_name">
+                    <a href="#topic">
+                        <span>{{ _('Finished Color') }}</span>
+                    </a>
+                </li>
+                <li class="rgb-start" data-bind="click: function () { editSettings('finished') }">
+                    <a href="#">
+                         <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="rgb_main">
+                <li class="rgb_name">
+                    <a href="#topic">
+                        <span>{{ _('Heating Color') }}</span>
+                    </a>
+                </li>
+                <li class="rgb-start" data-bind="click: function () { editSettings('heating') }">
+                    <a href="#">
+                         <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="rgb_main">
+                <li class="rgb_name">
+                    <a href="#topic">
+                        <span>{{ _('Paused Color') }}</span>
+                    </a>
+                </li>
+                <li class="rgb-start" data-bind="click: function () { editSettings('paused') }">
+                    <a href="#">
+                         <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <ul class="rgb_main">
+                <li class="rgb_name">
+                    <a href="#topic">
+                        <span>{{ _('Error Color') }}</span>
+                    </a>
+                </li>
+                <li class="rgb-start" data-bind="click: function () { editSettings('error') }">
+                    <a href="#">
+                         <span><i class="fa fa-pencil"></i>{{ _(' Edit') }}</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="Table-row">
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button failed-button" data-bind="click: function () {allDefaultSettings() }">
+                            <a href="#">
+                                <span>{{ _('Set All to default') }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="rgb-topic" data-bind="visible: editColorVisible()">
+            <div class="Table-row Table-header">
+                <div class="Table-item">
+                    {{ _('Select colors for the pattern') }}
+                </div>
+            </div> 
+            <div class="Table-row ">
+                <div class="Table-item">
+                  {{ _('Red:') }}
+                </div>
+                <div class="Table-item">
+                    <input type="range" min="0" max="255" data-bind="value: color.red, valueUpdate: 'input'" />
+                </div>
+            </div>   
+            <div class="Table-row ">
+                <div class="Table-item">
+                  {{ _('Green:') }}
+                </div>
+                <div class="Table-item">
+                    <input type="range" min="0" max="255" data-bind="value: color.green, valueUpdate: 'input'" />
+                </div>
+            </div>   
+            <div class="Table-row ">
+                <div class="Table-item">
+                  {{ _('Blue:') }}
+                </div>
+                <div class="Table-item">
+                    <input type="range" min="0" max="255" data-bind="value: color.blue, valueUpdate: 'input'" />
+                </div>
+            </div>               
+            <div class="Table-row ">
+                <div class="Table-item">
+                  {{ _('White:') }}
+                </div>
+                <div class="Table-item">
+                    <input type="range" min="0" max="255" data-bind="value: color.white, valueUpdate: 'input'" />
+                </div>
+            </div>   
+            <div class="Table-row ">
+              <div class="Table-item"> 
+                <select class="select-material" data-bind="
+                    options: patternOptions,
+                    optionsText: 'name',
+                    optionsValue: 'id',
+                    value: selectedOption"
+                    >
+                </select>
+              </div>
+            </div>
+ 
+            
+            <div class="Table-row ">
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button secondary-button" data-bind="click: function () {back() }">
+                            <a href="#">
+                                <span>{{ _('Back') }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {saveSettings() }">
+                            <a href="#">
+                                <span>{{ _('Save') }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="Table-row">
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button secondary-button" data-bind="click: function () {previewSettings() }">
+                            <a href="#">
+                                <span>{{ _('Preview') }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {getDefault() }">
+                            <a href="#">
+                                <span>{{ _('Get Default') }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+  
+        </div>
+    </div>
+</div>
