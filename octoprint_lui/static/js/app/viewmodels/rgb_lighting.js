@@ -11,7 +11,6 @@ $(function () {
         var colorscheme;
         self.patterninput;
 
-        //self.datainput = ko.observable();
         self.editColorVisible = ko.observable(false);
         self.color = { 
           red: ko.observable(0),
@@ -29,7 +28,6 @@ $(function () {
 
         self.selectedOption = ko.observable(self.patternOptions().id);
           
-
 
         self.editSettings = function(name) {
           url = OctoPrint.getBlueprintUrl('rgbstatus') + 'getcolor/' + name;
@@ -74,7 +72,7 @@ $(function () {
           $.notify({
             title: gettext("Settings Saved"),
             text: _.sprintf(gettext('The settings for %(name)s color is saved'),{"name": self.profilename})},
-          "success"); q
+          "success");
           OctoPrint.get(url).done();
           self.editColorVisible(false);
         };
@@ -103,8 +101,13 @@ $(function () {
                 });
         };
 
-        self.back = function() {
+        self.backToMenu = function() {
           self.editColorVisible(false);
+        };
+
+        self.backAndClose = function() {
+          self.editColorVisible(false);
+          flyout.closeFlyout();
         };
 
         function getSettingsUrl(url){

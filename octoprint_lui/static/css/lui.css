@@ -704,7 +704,7 @@ input[type=radio] {
     word-break: break-word;
     -ms-flex-item-align: center;
         align-self: center; }
-    .Table-item:before {
+    .:before {Table-item
       width: 30%;
       font-weight: 700; }
   .Table-item-right {
@@ -1263,9 +1263,6 @@ select {
       flex-wrap: nowrap;
   word-wrap: normal;
   margin-left: 1em; }
-
-.rgb-setting.hide {
-  display: none; }
 
 
 
