@@ -1,3 +1,0 @@
-#!/bin/bash
-sleep 1
-/home/pi/scripts/checkMouseUnplug &

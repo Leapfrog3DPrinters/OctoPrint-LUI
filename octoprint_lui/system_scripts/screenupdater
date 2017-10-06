@@ -28,7 +28,7 @@ run_sequence()
 	sudo cp -fr $sourcepath/scripts $scriptspath
 	find $scriptspath -type d -exec chmod 755 {} \;
 	sudo cp -fr $sourcepath/chromium $chromiumpath
-	sudo udevadm control --reload
+	sudo udevadm control --reload-rules
 	sudo udevadm trigger
 	sudo touch /home/pi/.screenupdated
 }
@@ -42,7 +42,7 @@ splash()
 
 do_start()
 {
-    if ! grep -q "/home/pi/.screenupdated"; then
+    if ! grep -f /home/pi/.screenupdated; then
         echo "Image not ready for the new screen. Will be installed on next boot."
         do_install
         echo "Installation done. Please reboot."
@@ -90,7 +90,7 @@ case $key in
     "run")
     splash
     run_sequence
-	do_uninstall
+	  do_uninstall
     sudo reboot
     ;;
 

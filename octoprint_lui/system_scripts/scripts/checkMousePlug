@@ -1,7 +1,0 @@
-#!/bin/bash
-sleep 1
-if [[ $(lsusb | grep -i 'Mouse'| tr "A-Z" "a-z") = *mouse* ]]; then
-	if ! (grep -q "#xserver-command=X -nocursor" /etc/lightdm/lightdm.conf); then
-		/home/pi/scripts/enable_cursor &
-	fi
-fi

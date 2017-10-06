@@ -754,7 +754,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _screen_patch(self):
         if self.platform == Platforms.RaspberryPi:
-            dest_path = "/etc/udev/rules.d/00-usb-screen.rules"
+            dest_path = "/home/pi/.screenupdated"
             if os.path.isfile(dest_path):
                 self._logger.info("Image already formed for the screen patch")
                 return True
