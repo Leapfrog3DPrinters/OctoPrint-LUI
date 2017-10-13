@@ -18,16 +18,4 @@ if ! [[ $(lsusb | grep -i 'Mouse'| tr "A-Z" "a-z") = *mouse* ]]; then
 	fi
 fi
 
-if [[ ! $(find /dev/disk/by-id -lname "*sd*") = *usb* ]]; then
-  name=${name//"'"}
-  if [[ $device = empty  ]]; then
-    echo "run"
 
-  else
-    sudo umount "/media/pi/$name"
-    sudo rm -rf "/media/pi/$name"
-    grep -q "^name" $configfile && sed -i "s/^name.*/name=empty/" $configfile || echo "name=empty" >> $configfile
-    grep -q "^device" $configfile && sed -i "s/^device.*/device=empty/" $configfile || echo "device=empty" >> $configfile
-    echo "completed"
-  fi
-fi

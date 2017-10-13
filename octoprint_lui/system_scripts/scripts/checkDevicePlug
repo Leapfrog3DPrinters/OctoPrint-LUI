@@ -4,8 +4,6 @@ configfile=/home/pi/scripts/config.cfg
 if [ ! -f $configfile ]; then
   echo "making config file"
   touch $configfile
-  echo "name=empty" >> $configfile
-  echo "device=empty" >> $configfile
   echo "MouseIn=no" >> $configfile
 fi
 
@@ -23,17 +21,3 @@ if [[ $(lsusb | grep -i 'Mouse'| tr "A-Z" "a-z") = *mouse* ]]; then
 	fi
 fi
 
-if [[ $(find /dev/disk/by-id -lname "*sd*") = *usb* ]]; then
-  echo $device
-  echo "found USB stick"
-  name=$(ls -l /dev/disk/by-label/ | grep sd* | awk '{ print $9 }')
-  name=${name//"\x20"/" "}
-  device=$(ls -l /dev/disk/by-label/ | grep sd* | awk '{ print $11 }')
-  device=${device//"../"}
-  sudo mkdir "/media/pi/$name"
-  sudo chmod 755 "/media/pi/$name"
-  sudo mount /dev/$device "/media/pi/$name" -o defaults,sync,user_xattr,fmask=0000,dmask=0002
-  sudo chmod -R "pi" /media/pi/$name
-  grep -q "^name" $configfile && sed -i "s/^name.*/name='$name'/" $configfile || echo "name='$name'" >> $configfile
-  grep -q "^device" $configfile && sed -i "s/^device.*/device=$device/" $configfile || echo "device=$device" >> $configfile
-fi
