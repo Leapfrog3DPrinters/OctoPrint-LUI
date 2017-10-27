@@ -496,7 +496,7 @@ $(function () {
                 var name = command.name || "";
                 $.notify({
                     title: _.sprintf(gettext('Command "%(name)s" sent'), { name: name }),
-                    text: _.sprintf(gettext(''), {})
+                    text: _.sprintf(gettext(' '), {})
                 },
                     "success"
                 );

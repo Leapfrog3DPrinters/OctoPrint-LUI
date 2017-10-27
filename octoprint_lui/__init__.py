@@ -1449,7 +1449,6 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._printer.commands(["M84 S{0}".format(self.current_printer_profile["defaultStepperTimeout"])]) # Reset stepper disable timeout
             self._printer.commands(["M84"]) # And disable them right away for now
 
-
         self.restore_movement_mode()
         return make_response(jsonify(), 200)
 
@@ -1462,7 +1461,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/head/wipe", methods=["POST"])
-    def maintenance_head_start(self):
+    def maintenance_head_wipe(self):
         """
         Wipes the heads
         """
@@ -2882,7 +2881,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Executes a printer script in form of a .jinja2 file
         """
         full_script_name = self.model.lower() + "_" + script_name + ".jinja2"
-        self._logger.debug("Executing script {0}".format(full_script_name))
+        self._logger.warning("Executing script {0}".format(full_script_name))
         self._printer.script(full_script_name, context, must_be_set = False)
 
     def _head_in_swap_position(self):

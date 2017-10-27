@@ -2,7 +2,7 @@
 
 configfile=/home/pi/scripts/config.cfg
 if [ ! -f $configfile ]; then
-  echo "making config file"
+  sudo lgoger "making config file"
   touch $configfile
   echo "MouseIn=no" >> $configfile
 fi
@@ -10,11 +10,11 @@ fi
 source $configfile
 
 if [[ $(lsusb | grep -i 'Mouse'| tr "A-Z" "a-z") = *mouse* ]]; then
-  echo "device found"
+  sudo logger "device found"
 	if ! (grep -q "#xserver-command=X -nocursor" /etc/lightdm/lightdm.conf); then
-    echo "line found"
+    sudo logger "Mouse newly found"
     if [[ $MouseIn = no ]]; then
-      echo "mouse not in"
+      sudo logger "mouse not configured yet"
       grep -q '^MouseIn' $configfile && sed -i 's/^MouseIn.*/MouseIn=yes/' $configfile || echo 'MouseIn=yes' >> $configfile
 		  /home/pi/scripts/enable_cursor &
     fi

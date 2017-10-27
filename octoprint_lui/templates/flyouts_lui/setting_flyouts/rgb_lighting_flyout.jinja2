@@ -112,7 +112,7 @@
         <div class="rgb-topic" data-bind="visible: editColorVisible()">
             <div class="Table-row Table-header">
                 <div class="Table-item">
-                    {{ _('Select colors for the pattern') }}
+                    {{ _('Select the colors') }}
                 </div>
             </div> 
             <div class="Table-row ">
@@ -120,7 +120,25 @@
                   {{ _('Red:') }}
                 </div>
                 <div class="Table-item">
-                    <input class="rgb-range-slider-red" type="range" min="0" max="255" data-bind="value: color.red, valueUpdate: 'input'" />
+                    <input type="number" min="0" max= "255" readonly="readonly" data-bind="value: color.red" />
+                </div> 
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {stepDown('red') }">
+                            <a href="#">
+                                <span><i class="fa fa-caret-left"></i></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="Table-item">   
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {stepUp('red') }">
+                            <a href="#">
+                                <span><i class="fa fa-caret-right"></i></span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>   
             <div class="Table-row ">
@@ -128,25 +146,63 @@
                   {{ _('Green:') }}
                 </div>
                 <div class="Table-item">
-                    <input class="rgb-range-slider-green" type="range" min="0" max="255" data-bind="value: color.green, valueUpdate: 'input'" />
+                    <input type="number" min="0" max= "255" readonly="readonly" data-bind="value: color.green" />
+                </div> 
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {stepDown('green') }">
+                            <a href="#">
+                                <span><i class="fa fa-caret-left"></i></span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-            </div>   
+                <div class="Table-item">   
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {stepUp('green') }">
+                            <a href="#">
+                                <span><i class="fa fa-caret-right"></i></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
             <div class="Table-row ">
                 <div class="Table-item">
                   {{ _('Blue:') }}
                 </div>
                 <div class="Table-item">
-                    <input class="rgb-range-slider-blue" type="range" min="0" max="255" data-bind="value: color.blue, valueUpdate: 'input'" />
+                    <input type="number" min="0" max= "255" readonly="readonly" data-bind="value: color.blue" />
+                </div> 
+                <div class="Table-item">
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {stepDown('blue') }">
+                            <a href="#">
+                                <span><i class="fa fa-caret-left"></i></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="Table-item">   
+                    <ul class="button-area">
+                        <li class="button" data-bind="click: function () {stepUp('blue') }">
+                            <a href="#">
+                                <span><i class="fa fa-caret-right"></i></span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>               
-            <div class="Table-row ">
+            <div class="Table-row">
+              <div class="Table-item">
+                <input class="text" id="colorbox" readonly="readonly"/>
+              </div>
+            </div>
+            <div class="Table-row Table-header">
                 <div class="Table-item">
-                  {{ _('White:') }}
+                    {{ _('Select the pattern') }}
                 </div>
-                <div class="Table-item">
-                    <input class="rgb-range-slider-white" type="range" min="0" max="255" data-bind="value: color.white, valueUpdate: 'input'" />
-                </div>
-            </div>   
+            </div>    
             <div class="Table-row ">
               <div class="Table-item"> 
                 <select class="select-material" data-bind="
@@ -158,8 +214,6 @@
                 </select>
               </div>
             </div>
- 
-            
             <div class="Table-row ">
                 <div class="Table-item">
                     <ul class="button-area">

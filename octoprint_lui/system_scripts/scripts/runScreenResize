@@ -1,57 +1,97 @@
 #!/bin/bash
-sleep 1
-REBOOT="no"
-if [[ $(lsusb | grep 'Atmel') = *Atmel* ]]; then
-	echo step 1
-	if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
+run_screensetting(){
+  if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
+    sudo logger "Noticed D-Wave resolution. Will be changed."
 		sudo sed -i '/hdmi_cvt=1024 600 60 6 0 0 0/c\hdmi_cvt=800 480 60 6 0 0 0' /boot/config.txt
-		echo step 2
 		sudo sed -i '/display_rotate=1/c\display_rotate=3' /boot/config.txt
-		echo step 3
 		sudo sed -i '/rot_mat="0 1 0 -1 0 1"/c\rot_mat="0 -1 1 1 0 0"' /usr/bin/dorotatetouch
-		echo step 4
+    sudo logger "Resolution changed to 800x480."
 		REBOOT="yes"
 		echo $REBOOT
 	fi
-	if [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
-		sudo pkill -f "chromium"
-		sudo rm /home/pi/.config/chromium/Default/Preferences
-		sleep 1
-		echo step 5
-		sudo cp /home/pi/.config/chromium/Default/Preferences800x480 /home/pi/.config/chromium/Default/Preferences
-		echo step 6
-		sudo service lightdm restart
-	fi
-fi
 
-echo step between
-
-if [[ $(lsusb | grep 'D-WAV') = *D-WAV* ]]; then
-
-	echo step 7
 	if [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
 		sudo sed -i '/hdmi_cvt=800 480 60 6 0 0 0/c\hdmi_cvt=1024 600 60 6 0 0 0' /boot/config.txt
-		echo step 8
+    sudo logger "Noticed D-Wave resolution. Will be changed."
 		sudo sed -i '/display_rotate=3/c\display_rotate=1' /boot/config.txt
-		echo step 9
 		sudo sed -i '/rot_mat="0 -1 1 1 0 0"/c\rot_mat="0 1 0 -1 0 1"' /usr/bin/dorotatetouch
-		echo step 10
+    sudo logger "Resolution changed to 1024x600."
 		REBOOT="yes"
 	fi
-	if ! [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
-		sudo pkill -f "chromium"
-		sudo rm /home/pi/.config/chromium/Default/Preferences
-		sleep 1
-		echo step 11
-		sudo cp /home/pi/.config/chromium/Default/Preferences1024x600 /home/pi/.config/chromium/Default/Preferences
-		echo step 12
-		sudo service lightdm restart
-	fi
-fi
-echo step 13
-echo $REBOOT
+}
 
-if [ "$REBOOT" == "yes" ];then
-	sudo reboot
-fi
+set_readwrite(){
+    if ! grep -i -q "$script_name" "$autostart"; then
+        sudo sed -i "s@boot=overlay @@" /boot/cmdline.txt
+        sudo sed -i "s@root_readonly=\"yes\"@root_readonly=\"no\"@" /boot/octopi.txt
+        sudo sed -i "1 i\/home/pi/scripts/runScreenRisize run" "$autostart"
+        sudo logger "script installed"
+    fi
+}
+
+set_readonly() {
+    sudo sed -i "/runScreenResize/d" "$autostart"
+    if ! grep -q "boot=overlay" /boot/cmdline.txt ; then
+        sudo sed -i '1s@^@boot=overlay @' /boot/cmdline.txt
+    fi
+    sudo sed -i "s@root_readonly=\"no\"@root_readonly=\"yes\"@" /boot/octopi.txt
+    sudo logger "Script uninstalled"
+}
+
+cleanrun(){
+REBOOT="no"
+  if [[ $(lsusb | grep 'Atmel') = *Atmel* ]]; then
+	  sudo logger "Found Atmel Board in system."
+	  if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
+      set_readwrite
+      sudo logger "need to turn to read-write mode"
+      REBOOT="yes"
+	  fi
+	  if [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
+      sudo logger "Chromium had wrong zoom for this screen."
+		  sudo pkill -f "chromium"
+		  sudo rm /home/pi/.config/chromium/Default/Preferences
+		  sleep 1
+		  sudo cp /home/pi/.config/chromium/Default/Preferences800x480 /home/pi/.config/chromium/Default/Preferences
+		  sudo service lightdm restart
+      sudo logger "Changed Chromium zoom for the right screen."
+	  fi
+  fi
+
+  if [[ $(lsusb | grep 'D-WAV') = *D-WAV* ]]; then
+	  sudo logger "Found D-Wave Board in system."
+	  if [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
+		  set_readwrite
+      sudo logger "need to turn to read-write mode"
+      REBOOT="yes"
+	  fi
+	  if ! [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
+      sudo logger "Chromium had wrong zoom for this screen."
+		  sudo pkill -f "chromium"
+		  sudo rm /home/pi/.config/chromium/Default/Preferences
+		  sleep 1
+		  sudo cp /home/pi/.config/chromium/Default/Preferences1024x600 /home/pi/.config/chromium/Default/Preferences
+		  sudo service lightdm restart
+      sudo logger "Changed Chromium zoom for the right screen."
+	  fi
+  fi
+  sudo logger "reboot = $REBOOT"
+}
+
+
+
+key = $1
+sleep 1
+case $key in 
+    "run")
+    run_screensetting
+    set_readonly
+    sudo reboot
+    ;;
+
+    *)
+    cleanrun
+    ;;
+esac
+
 sudo service lightdm restart

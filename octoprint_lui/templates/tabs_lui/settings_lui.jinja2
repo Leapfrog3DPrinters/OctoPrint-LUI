@@ -42,29 +42,9 @@
           </li>
         </ul>
       </div><!-- Maintenance -->
+      
       {% endif %}
-      {% if printer_profile["rgbLights"] %}
-      <!-- RGB Lighting -->
-      <div id="rgb_lighting" class="settings_topic">
-        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('rgb_lighting')}, css: { disabled: printerState.isPrinting() } ">
-          <li class="topic_dash">
-            <a href="#">
-              <i class="fa fa-tasks"></i>
-            </a>
-          </li>
-          <li class="topic_name">
-            <a href="#topic">
-              <span>{{ _('RGB lighting') }}</span>
-            </a>
-          </li>
-          <li class="topic_info">
-            <a href="#topic_info">
-              <i class="fa fa-2x fa-angle-right"></i>
-            </a>
-          </li>
-        </ul>
-      </div><!-- RGB Lighting -->
-      {% endif %}
+
       <!-- Materials -->
       <div class="settings_topic">
         <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('materials')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin()}">
@@ -195,6 +175,30 @@
           </li>
         </ul>
       </div><!-- /Update -->
+
+      {% if printer_profile["rgbLights"] %}
+      <!-- RGB Lighting -->
+      <div id="rgb_lighting" class="settings_topic">
+        <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('rgb_lighting')}, css: { disabled: printerState.isPrinting() } ">
+          <li class="topic_dash">
+            <a href="#">
+              <i class="fa fa-lightbulb-o"></i>
+            </a>
+          </li>
+          <li class="topic_name">
+            <a href="#topic">
+              <span>{{ _('RGB lighting') }}</span>
+            </a>
+          </li>
+          <li class="topic_info">
+            <a href="#topic_info">
+              <i class="fa fa-2x fa-angle-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div><!-- RGB Lighting -->
+      {% endif %}
+
       <!-- Languanges -->
       <div class="settings_topic">
         <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('languages')}, css: {disabled: !loginState.loggedIn() || !loginState.isAdmin() }">
@@ -215,6 +219,7 @@
           </li>
         </ul>
       </div><!-- /Languanges -->
+
       <!-- Cloud -->
       {% if cloud_enabled %} 
       <div class="settings_topic">

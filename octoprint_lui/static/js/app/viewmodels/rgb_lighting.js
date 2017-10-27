@@ -10,6 +10,9 @@ $(function () {
         self.profilename;
         var colorscheme;
         self.patterninput;
+        var maximum = 255;
+        var minimum = 0;
+        var increment = 10;
 
         self.editColorVisible = ko.observable(false);
         self.color = { 
@@ -44,7 +47,9 @@ $(function () {
             };
             
           });
-          self.editColorVisible(true);  
+          setcolors();
+          self.editColorVisible(true);
+          setcolors();  
           self.profilename = name;
           
         };
@@ -62,6 +67,7 @@ $(function () {
             if (patterninput.length <=8){
                 self.color.white("00");
             };
+            setcolors();
           });
         };
 
@@ -108,6 +114,42 @@ $(function () {
         self.backAndClose = function() {
           self.editColorVisible(false);
           flyout.closeFlyout();
+        };
+
+        self.stepUp = function(color) {
+          if (color == "red") {self.color.red(self.color.red()+increment);
+            if (self.color.red()>maximum) self.color.red(maximum);
+          };
+          if (color == "green") {self.color.green(self.color.green()+increment);
+            if (self.color.green()>maximum) self.color.green(maximum);
+          };
+          if (color == "blue") {self.color.blue(self.color.blue()+increment);
+            if (self.color.blue()>maximum) self.color.blue(maximum);
+          };
+          var white = Math.min(self.color.red(),Math.min(self.color.green(),self.color.blue()));
+          self.color.white(white);
+          setcolors();
+        };
+
+        self.stepDown = function(color) {
+          if (color == "red") {self.color.red(self.color.red()-increment);
+            if (self.color.red()<minimum) self.color.red(minimum);
+          };
+          if (color == "green") {self.color.green(self.color.green()-increment);
+            if (self.color.green()<minimum) self.color.green(minimum);
+          };
+          if (color == "blue") {self.color.blue(self.color.blue()-increment);
+            if (self.color.blue()<minimum) self.color.blue(minimum);
+          };
+          var white = Math.min(self.color.red(),Math.min(self.color.green(),self.color.blue()));
+          self.color.white(white);
+          setcolors();
+        };
+
+        function setcolors(){
+          var inputcolor = document.getElementById("colorbox");
+          var colorsetting = "#" + toHex(self.color.red()) + toHex(self.color.green()) + toHex(self.color.blue())
+          inputcolor.style.backgroundColor = colorsetting;
         };
 
         function getSettingsUrl(url){

@@ -2,14 +2,14 @@
 {% if paused_print_mode < 2 %}
 G28 X0 Y0
 {% if paused_position['t'] == 0 %}
-{% snippet 'bolt_wipe_right.jinja2' %};									Wiping T0
+{% snippet 'boltpro_wipe_right.jinja2' %};									Wiping T0
 {% else %}
-{% snippet 'bolt_wipe_left.jinja2' %};									Wiping T1
+{% snippet 'boltpro_wipe_left.jinja2' %};									Wiping T1
 {% endif %}
 {% else %}
 M605 S3 U0;																Put in  mirror mode, but don't alter target temperatures
 G28 X0 Y0
-{% snippet 'bolt_wipe_left.jinja2' %};									Wiping in mirror mode
+{% snippet 'boltpro_wipe_left.jinja2' %};									Wiping in mirror mode
 {% endif %}
 M605 S{{ paused_print_mode }};												Restore print mode
 {% if paused_print_mode < 2 %}
