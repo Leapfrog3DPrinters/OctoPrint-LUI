@@ -2,6 +2,13 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.2.2
+
+- Fixed: Wiping sequence for Bolt Pro models
+- Fixed: issue with empty files from USB stick transwer on the machine
+- Added: Automatic mouse detection, user interface able to use with mouse on the printer
+- Added: Support for future changes to new screens
+
 ## 1.2.1
 
 - Fixed: wiping sequence after filament swap
