@@ -108,6 +108,8 @@ $(function () {
         };
 
         self.backToMenu = function() {
+          url = OctoPrint.getBlueprintUrl('rgbstatus');
+          OctoPrint.postJson(url + 'restore');
           self.editColorVisible(false);
         };
 
