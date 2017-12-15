@@ -241,6 +241,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.printer_error_reason = 'unknown_printer_error' # Start with an error. This gets cleared after a succesfull connect.
         self.printer_error_extruder = None
         self.requesting_temperature_after_mintemp = False # Force another temperature poll to check if extruder is disconnected or it's just very cold
+        self.requesting_temperature_after_maxtemp = False
         self.send_M999_on_reconnect = False
 
         ##~ Cloud
@@ -3438,6 +3439,30 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.restore_extrusion_mode()
         self.load_filament_timer = None
 
+    def _load_filament_cont2(self, tool, direction, material_name):
+        if self.load_filament_timer is None:
+            self._printer.change_tool(tool)
+            self.load_amount = 0
+            self.load_amount_stop = self.current_printer_profile["filament"]["contLoadAmountStop"]
+            amount = self.current_printer_profile["filament"][material_name]["amount"]
+            speed = self.current_printer_profile["filament"][material_name]["speed"]
+
+            # Prepare repeatedtimer function calls
+            load_cont_partial = partial(self._load_filament_repeater, tool=tool, direction=direction, initial=load_cont_initial)
+            load_cont_finished_partial = partial(self._load_filament_cont_finished, tool=tool, direction=direction)
+
+            # Start extrusion
+            self.load_filament_timer = RepeatedTimer(0.5,
+                                                    load_cont_partial,
+                                                    run_first=True,
+                                                    condition=self._load_filament_running,
+                                                    on_finish=load_cont_finished_partial)
+            self.load_filament_timer.start()
+
+            # Notify client
+            self._send_client_message(ClientMessages.FILAMENT_EXTRUDING_STARTED, { "tool": tool, "direction": direction })
+
+
     def _load_filament_cont(self, tool, direction):
         ## Only start a timer when there is none running
         if self.load_filament_timer is None:
@@ -3847,6 +3872,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         if self.requesting_temperature_after_mintemp:
             self.requesting_temperature_after_mintemp = False
             self._mintemp_temperature_received()
+
+        if self.requesting_temperature_after_maxtemp:
+            self.requesting_temperature_after_maxtemp = False
+            self._maxtemp_temperature_received()
+
 
     def _single_prop_dict(self, dic, prop):
         """
@@ -4275,9 +4305,26 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 elif "maxtemp" in statestring:
                     self.printer_error_reason = 'extruder_maxtemp'
                     self.printer_error_extruder = statestring[:1]
+                    self._handle_maxtemp()
 
         self._logger.warn('Error or disconnect. Reason: {0}. Statestring: {1}'.format(self.printer_error_reason, statestring))
         self._logger.debug('Current temperature data: {0}'.format(self.current_temperature_data))
+
+    def _handle_maxtemp(self):
+        tool = "tool" + self.printer_error_extruder
+        self.requesting_temperature_after_maxtemp = True
+        self._printer._comm.sendCommand('M105', force=True)
+
+    def _maxtemp_temperature_received(self):
+        tool = "tool" + self.printer_error_extruder
+        self._logger.debug('Checking temperature for {0}'.format(tool))
+        if self.current_temperature_data and tool in self.current_temperature_data:
+            if self.current_temperature_data[tool]["actual"] >= 380.0:
+                self.printer_error_reason = 'extruder_disconnected: ' + self.current_temperature_data[tool]["actual"]
+
+        # This reason may come in late (because an M105 response is awaited first). Therefore, notify the UI
+        self._send_client_message(ClientMessages.PRINTER_ERROR_REASON_UPDATE, { 'printer_error_reason': self.printer_error_reason, 'printer_error_extruder': self.printer_error_extruder })
+
 
     def _handle_mintemp(self):
         tool = "tool" + self.printer_error_extruder
@@ -4289,7 +4336,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._logger.debug('Checking temperature for {0}'.format(tool))
         if self.current_temperature_data and tool in self.current_temperature_data:
             if self.current_temperature_data[tool]["actual"] == 0.0:
-                self.printer_error_reason = 'extruder_disconnected'
+                self.printer_error_reason = 'extruder_disconnected' + self.current_temperature_data[tool]["actual"]
 
         # This reason may come in late (because an M105 response is awaited first). Therefore, notify the UI
         self._send_client_message(ClientMessages.PRINTER_ERROR_REASON_UPDATE, { 'printer_error_reason': self.printer_error_reason, 'printer_error_extruder': self.printer_error_extruder })
