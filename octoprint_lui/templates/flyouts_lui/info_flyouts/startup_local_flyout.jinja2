@@ -7,12 +7,12 @@
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        {{ _('Before you can start using the printer, a homing sequence needs to be executed. This means the bed will move to its upper position.') }}
+        {{ _('To start a print job, a homing sequence needs to be executed. The print bed and extruder heads will move to their home position.') }}
       </div>
     </div>
     <div class="Table-row">
       <div class="Table-item">
-        <span class="bold">{{ _('Please confirm there is no print on the bed.') }}</span>
+        <span class="bold">{{ _('Please make sure the bed is empty before proceeding.') }}</span>
       </div>
     </div>
     <div class="Table-row">
@@ -58,5 +58,20 @@
         </span>
       </div>
     </div>
+  {% if printer_profile["autoBedCalibration"] %}
+    <div class="Table">
+      <div class="Table-item">
+        {{ _('Current view') }}
+      </div>
+
+      <div class="Table-item">
+        <a href="#" data-bind="touchClick: function () { refreshPreview() }" style="margin-left: auto">
+          <i class="fa fa-refresh"></i> {{ _('Refresh') }}
+        </a>
+      </div>
+      <!-- img not in Table-row>Table-item due to chromium bug -->
+      <img class="webcam-preview" data-bind="attr: {src: webcam_previewUrl }" />
+    </div>
+  {% endif %}
   </div>
 </div>

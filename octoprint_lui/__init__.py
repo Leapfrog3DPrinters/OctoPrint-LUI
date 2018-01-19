@@ -260,6 +260,16 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.hostname = None
 
     def initialize(self):
+        #~~ remove all mounted folders
+        folder = '/media/pi'
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path): shutil.rmtree(file_path)
+            except Exception as e:
+                self._logger.warning(e)
 
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
@@ -1243,7 +1253,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.show_changelog = False
         self._settings.save()
 
-        return make_response(jsonify(), 200);
+        return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/software/changelog", methods=["GET"])
     def get_changelog(self):

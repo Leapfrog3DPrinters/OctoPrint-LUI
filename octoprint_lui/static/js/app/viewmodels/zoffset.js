@@ -25,6 +25,11 @@ $(function ()  {
         };
 
         self.startZcalibration = function () {
+            self.sendJogCommand('z', 5, 4.0);
+            self.sendHomeCommand('y');
+            self.sendHomeCommand('x');
+            self.sendJogCommand('x', 10, 25);
+            self.sendJogCommand('y', -10, 50);
             self.sendHomeCommand('z');
             self.startedCalibration(true);
 
@@ -35,6 +40,8 @@ $(function ()  {
             self.settings.saveData();
             self.flyout.closeFlyoutAccept();
             self.sendJogCommand('z', 1, 20.0);
+            self.sendHomeCommand('y');
+            self.sendHomeCommand('x');
         };
 
         self.onAfterBinding = function () {

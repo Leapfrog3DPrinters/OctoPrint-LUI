@@ -652,7 +652,7 @@ $(function () {
         qwerty: {
             display: {
                 'bksp'   :  "\u2190",
-                'accept' : 'Accept',
+                'accept' : 'Close',
                 'default': 'ABC',
                 'meta1'  : '.?123',
                 'meta2'  : '#+=',
@@ -684,7 +684,10 @@ $(function () {
                     '{meta1} . , ? ! \' " {meta1}',
                     '{default} {space} {default} {accept}'
                 ]
-            }
+            },
+            //Remove the previewbox and accept automatically the command after keyboard has been closed
+            usePreview: false,
+            autoAccept: true
         },
         number: {
             layout: 'custom',
@@ -696,7 +699,9 @@ $(function () {
                     '. 0 {sp:3.1}',
                 ]
             },
-            usePreview: true,
+            //Remove the previewbox and accept automatically the command after keyboard has been closed
+            usePreview: false,
+            autoAccept: true,
             display: {
                 'accept':'Accept:Accept',
                 'clear':'Clear:Clear'
