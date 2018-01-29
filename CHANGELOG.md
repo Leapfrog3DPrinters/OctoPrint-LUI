@@ -2,6 +2,13 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.2.3
+
+- Fixed problem with non accessable USB sticks
+- Removed some unnessecary code
+- Changed some messages to make it more user friendly.
+- Added support for Xcel printers
+
 ## 1.2.2
 
 - Fixed: Wiping sequence for Bolt Pro models
