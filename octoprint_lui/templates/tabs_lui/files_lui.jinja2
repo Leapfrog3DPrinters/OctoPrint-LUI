@@ -130,11 +130,6 @@
                   <span>{{ _('Loading files...') }}</span>
                 </a>
               </li>
-              <li class="file_status">
-                <a style="padding: 0;">
-                  <i class="fa fa-spinner fa-pulse"></i>
-                </a>
-              </li>
             </ul>
           </div>
         </div>
@@ -167,11 +162,6 @@
         <div class="file_list"  data-bind="visible: !isLoadingFileList()">
           <div class="file_entry" data-bind="visible: currentPath() != '', touchClick: function () { $root.navigateUp(); }" style="display: none">
             <ul class="file_main" style="background-color: #f2f2f2">
-              <li class="file_status file_neutral">
-                <a href="#file_status">
-                  <i class="fa fa-arrow-left"></i>
-                </a>
-              </li>
               <li class="file_name">
                 <a href="#file_name">
                   <span>...</span>
@@ -191,11 +181,6 @@
                   <i class="fa fa-play"></i>
                 </a>
               </li>
-              <li class="file_status">
-                <a>
-                  <i class="fa fa-circle-thin"></i>
-                </a>
-              </li>
               <li class="file_info">
                 <a href="#file_info" title="{{ _('Additional data') }}">
                   <i class="fa fa-2x fa-angle-down"></i>
@@ -211,11 +196,6 @@
           <div class="file_entry">
             <div data-bind="touchClick: showCloudSettings">
               <ul class="file_main">
-                <li class="file_status file_neutral">
-                  <a href="#file_status">
-                    <i class="fa fa-cog"></i>
-                  </a>
-                </li>
                 <li class="file_name">
                   <a href="#">
                     <span>{{ _('Connect to cloud services') }}</span>
@@ -246,11 +226,7 @@
                     <i class="fa fa-play"></i>
                   </a>
               </li>
-              <li class="file_status">
-                <a>
-                  <i class="fa" data-bind="css: $root.getSuccessIcon($data)"></i>
-                </a>
-              </li>
+
               <li class="file_info">
                 <a href="#file_info" data-bind="touchClick: function () { $root.toggleAdditionalData($data);}" title="{{ _('Additional data') }}">
                   <i class="fa fa-2x fa-angle-down"></i>
@@ -382,12 +358,6 @@
           </script>
           <script type="text/html" id="files_template_cloud_folder">
             <div data-bind="touchClick: $root.changeFolder">
-              <ul class="file_main">
-                <li class="file_status file_neutral">
-                  <a href="#file_status">
-                    <i class="fa fa-folder-open"></i>
-                  </a>
-                </li>
                 <li class="file_name" data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }">
                   <a href="#file_name">
                     <span data-bind="text: name"></span>
@@ -399,11 +369,6 @@
           <script type="text/html" id="files_template_cloud_root_folder">
             <div data-bind="touchClick: $root.changeFolder, css: { disabled: !is_connected }">
               <ul class="file_main">
-                <li class="file_status file_neutral">
-                  <a href="#file_status">
-                    <img data-bind="attr: { src: $root.cloud.getCloudServiceIcon(service) }" style="width: 23px;" />
-                  </a>
-                </li>
                 <li class="file_name" data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }">
                   <a href="#file_name">
                     <span data-bind="text: $root.cloud.getCloudServiceName(service)"></span>
@@ -415,11 +380,6 @@
           <script type="text/html" id="files_template_folder">
             <div data-bind="touchClick: $root.changeFolder">
               <ul class="file_main">
-                <li class="file_status file_neutral">
-                  <a href="#file_status">
-                    <i class="fa fa-folder-open"></i>
-                  </a>
-                </li>
                 <li class="file_name" data-bind="style: { 'font-weight': $root.listHelper.isSelected($data) ? 'bold' : 'normal' }">
                   <a href="#file_name">
                     <span data-bind="text: name"></span>

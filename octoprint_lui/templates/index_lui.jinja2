@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="user-scalable=no, initial-scale=0.5">
-	<link rel="icon" type="image/png" href="{{ url_for("plugin.lui.static", filename="img/favicon.png") }}" />
-    <title>OctoPrint - Leapfrog User Interface</title>
-        {% include 'stylesheets_lui.jinja2' %}
-        {% include 'initscript_lui.jinja2' %}
-		{% include 'javascript_lui.jinja2' %}
-</head>
-<body>
-    <div class="app-wrap">
-        {% include 'header_lui.jinja2' %}
-        {% include 'overlay_flyouts_lui.jinja2' %}
-        <section id="tabs" class="tabs">
-            {% include 'tabs_lui/print_lui.jinja2' %}
-            {% include 'tabs_lui/files_lui.jinja2' %}
-            {% include 'tabs_lui/settings_lui.jinja2' %}
-        </section>
-        {% include 'footer_lui.jinja2' %}
-    </div>
-    <div id="introjs-container"></div>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="user-scalable=no, initial-scale=0.5">
+	      <link rel="icon" type="image/png" href="{{ url_for("plugin.lui.static", filename="img/favicon.png") }}" />
+          <title>OctoPrint - Leapfrog User Interface</title>
+              {% include 'stylesheets_lui.jinja2' %}
+              {% include 'initscript_lui.jinja2' %}
+		          {% include 'javascript_lui.jinja2' %}
+    </head>
+    <body>
+        <div class="app-wrap">
+            {% include 'header_lui.jinja2' %}
+            {% include 'overlay_flyouts_lui.jinja2' %}
+            <section id="tabs" class="tabs">
+                {% include 'tabs_lui/print_lui.jinja2' %}
+                {% include 'tabs_lui/files_lui.jinja2' %}
+                {% include 'tabs_lui/settings_lui.jinja2' %}
+            </section>
+            {% include 'footer_lui.jinja2' %}
+        </div>
+        <div id="introjs-container"></div>
+    </body>
 </html>

@@ -1,6 +1,13 @@
-# Changelog 
+# Changelog
 
 Changelog for OctoPrint-LUI.
+
+## 1.2.3
+
+- Fixed problem with unaccessible USB flash drives
+- Made some menu items and message more user-friendly
+- Added support for Xcel printers
+- General code cleanup
 
 ## 1.2.2
 
@@ -56,9 +63,9 @@ Changelog for OctoPrint-LUI.
 
 ### Bug fix release of 1.0.6
 
-- Added text in the maintenance warning to clarify that the maintenance position will turn off the power of the print electronics temporarily. 
+- Added text in the maintenance warning to clarify that the maintenance position will turn off the power of the print electronics temporarily.
 - Fixed OctoPrint-flashArduino not updating correctly. Added new setup.py and bumped version to 1.0.2
-- Fixed Thermistor errors that could be resolved without a thermistor plugged in. 
+- Fixed Thermistor errors that could be resolved without a thermistor plugged in.
 
 ### 1.0.6 additions:
 
@@ -67,7 +74,7 @@ Changelog for OctoPrint-LUI.
 - When pressing the shutdown button during printing, a request is made to enable auto-shutdown
 - Added the ability to automatically update the printer firmware over internet.
 - 'Head maintenance' now shutsdown the printer temporarily to improve safety when swapping nozzles.
-- Updated OctoPrint branch to 1.3.1(master) with cherry-pick commit from maintenance to enable UI translations. 
+- Updated OctoPrint branch to 1.3.1(master) with cherry-pick commit from maintenance to enable UI translations.
 - OctoPrint-flashArduino(lui-branch) updated to allow flashing through the internet. Version to 1.0.1.
 
 ## 1.0.6
@@ -78,7 +85,7 @@ Changelog for OctoPrint-LUI.
 - When pressing the shutdown button during printing, a request is made to enable auto-shutdown
 - Added the ability to automatically update the printer firmware over internet.
 - 'Head maintenance' now shutsdown the printer temporarily to improve safety when swapping nozzles.
-- Updated OctoPrint branch to 1.3.1(master) with cherry-pick commit from maintenance to enable UI translations. 
+- Updated OctoPrint branch to 1.3.1(master) with cherry-pick commit from maintenance to enable UI translations.
 - OctoPrint-flashArduino(lui-branch) updated to allow flashing through the internet. Version to 1.0.1.
 
 ## 1.0.5
@@ -88,32 +95,32 @@ Changelog for OctoPrint-LUI.
 - Switched main update branch from `devel` to `master`. ***Requires 2 consecutive updates**
 - Added changelog information screen after update. Can be accessed through the Settings -> Update -> Changelog button.
 - Added option to download log files or to copy log files to a usb. Settings -> Logs.
-- Blocked being able to upload STL files from remote PC. If by any method an STL file is uploaded anyways, added an option to delete STL file in the file browser. 
+- Blocked being able to upload STL files from remote PC. If by any method an STL file is uploaded anyways, added an option to delete STL file in the file browser.
 - Added auto shutdown function. Will shutdown the machine after print is finished. Option will reset after a shutdown. Go to Settings -> Printer to turn it on/off.
 - Auto-shut down adds a "!" behind the power icon in the UI. It also adds a warning to the shutdown option.
 - Enhanced the selection of materials during filament swap. Bigger area to tap on.
-- Added warning when printer is in Error state on start up. 
+- Added warning when printer is in Error state on start up.
 - Printer can be shut down when in Error state on start up.
 - Added error explanation if error is MINTEMP during startup: Either extruder disconnected or very cold environment.
 - User is prevented from uploading other files than .gcode/.gco/.g
 - Fixed: Shifting after resuming a paused print.
 - Fixed: Extruder calibration now shows y-axis alignment in correct order.
 - Fixed: Powerbutton now works before printer has homed.
-- Fixed: Printer is unresponsive after start up and needs to retry connection.  
+- Fixed: Printer is unresponsive after start up and needs to retry connection.
 - Fixed: Can't swap filament after a print is finished.
 - Fixed: Bug in OctoPrint-NetworkManager where SSIDs with ":" would crash the SSID parser. Bumped version of NetworkManager to 1.0.1
-- Fixed: G92 X0 Y0 Z0 were not stripped correctly. G92 X0 Y0 Z0, which will zero a specific axis, will bug the printer when in sync/mirror mode and are therefore removed from gcode when sending. 
+- Fixed: G92 X0 Y0 Z0 were not stripped correctly. G92 X0 Y0 Z0, which will zero a specific axis, will bug the printer when in sync/mirror mode and are therefore removed from gcode when sending.
 
 ## 1.0.4
 
-- Fixed: Bug introduced in 1.0.3 that would not allow remote uploads. 
+- Fixed: Bug introduced in 1.0.3 that would not allow remote uploads.
 
-## 1.0.3 
+## 1.0.3
 
 - Added notifications on disk space low and diskspace critically low.
-- After print done/cancel/error print, move the bed down 20mm. 
+- After print done/cancel/error print, move the bed down 20mm.
 - After z-offset (Xcel / Xeed) is completed, move the bed down 20mm.
-- Fixed: Webcam stream not working in certain situations. 
+- Fixed: Webcam stream not working in certain situations.
 - Fixed: Bug not being to start a print in certain situations introduced in 1.0.2. (typo)
 - Fixed: Can't login remotely on Safari browser(css rule fix)
 - Fixed: Actual and Target temperature could take two lines when certain temperatures were shown
@@ -136,22 +143,22 @@ Changelog for OctoPrint-LUI.
 - Additional information of job can always be shown now, if analysis is not done yet this will be shown with a spinner.
 - No more auto *.HEX detection, only in debug mode
 - Typo's
-- Title change: Timelapse -> Webcam in settings menu 
+- Title change: Timelapse -> Webcam in settings menu
 - Added this changelog ^^
 
 
-## 1.0.0 
+## 1.0.0
 
-- All modules to 1.0.0 
+- All modules to 1.0.0
 - Added global version number to settings screen
 - gcodeRender to master branch
 - Added better multiple flyout support
 - Tweaked bed level calibration
-- on{$SettingsTopic}SettingsShown callback added to minimize calls to back-end 
+- on{$SettingsTopic}SettingsShown callback added to minimize calls to back-end
 - Refactored updating mechanism completely
 - Warning if no internet connection is available or if update server(github) is not available
 - Debug moved to config.yaml setting(debug_lui: true/false)
-- Minimizing back-end calls 
+- Minimizing back-end calls
 
 
 ## Known bugs

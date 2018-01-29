@@ -14,7 +14,7 @@ plugin_package = "octoprint_lui"
 plugin_name = "OctoPrint-LUI"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "1.2.1"
+plugin_version = "1.2.3"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
@@ -33,7 +33,7 @@ plugin_url = "https://github.com/Leapfrog3DPrinters/OctoPrint-LUI"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["tinydb>=3.2.0","RPi.GPIO","cssmin", "dropbox", "onedrivesdk", "google-api-python-client"]
+plugin_requires = ["tinydb>=3.2.0","RPi.GPIO","cssmin", "onedrivesdk", "google-api-python-client"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point

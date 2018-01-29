@@ -118,7 +118,7 @@ a {
 .app-window-header {
   background: #434A54;
   color: #ffffff;
-  height: 45px;
+  height: 55px;
   padding-left: 1rem; }
 
 button {
@@ -357,11 +357,11 @@ input[type=radio] {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  -ms-flex-preferred-size: 45px;
-      flex-basis: 45px;
+  -ms-flex-preferred-size: 55px;
+      flex-basis: 55px;
   -ms-flex-negative: 1;
       flex-shrink: 1;
-  min-height: 45px; }
+  min-height: 55px; }
 
 .app-header .header_login {
   /*margin-left: auto;*/ }
