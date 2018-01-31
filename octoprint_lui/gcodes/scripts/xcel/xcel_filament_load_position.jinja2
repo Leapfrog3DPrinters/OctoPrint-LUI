@@ -4,7 +4,7 @@ G1 Z300 F1200
 {% if stepperTimeout %}
 M84 S{{ stepperTimeout }}; Set stepper disable timeout to 5min
 {% endif %}
-G1 X225 Y100 F6000
+G1 X250 Y50 F6000
 {% if filamentChangeTool  %}
 T{{ filamentChangeTool }}
 {% endif %}
