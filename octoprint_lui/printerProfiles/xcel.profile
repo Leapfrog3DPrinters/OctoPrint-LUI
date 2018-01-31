@@ -37,15 +37,16 @@ boundaries:
   minY: 0
   maxY: 500
   minZ: 0
-  maxZ: 2240
+  maxZ: 2200
 requireOverscroll: false
+hasPowerButton: true
 filamentRollLength: 8000
 autoBedCalibration: true
 extruderCalibration: false
 modelSizeDetection: true
 doorSafety: false
 filamentDetection: true
-filamentQuickLoad: false
+filamentQuickLoad: true
 dualX: false
 materialMinTemp: 150
 materialMaxTemp: 275
