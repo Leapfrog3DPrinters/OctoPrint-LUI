@@ -262,14 +262,12 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def initialize(self):
         #~~ remove all mounted folders
         folder = '/media/pi'
-        for the_file in os.listdir(folder):
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path): shutil.rmtree(file_path)
-            except Exception as e:
-                self._logger.warning(e)
+        for amount in os.listdir(folder)
+            if not os.listdir(amount):
+                try:
+                    os.rmdir(amount)
+                except Exception as e:
+                    self._logger.warning(e)
 
         #~~ get debug from yaml
         self.debug = self._settings.get_boolean(["debug_lui"])
