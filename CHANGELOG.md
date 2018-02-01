@@ -2,9 +2,13 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.2.4
+
+- Additional bug fix for inaccessible USB flash drives
+
 ## 1.2.3
 
-- Fixed problem with unaccessible USB flash drives
+- Fixed problem with inaccessible USB flash drives
 - Made some menu items and message more user-friendly
 - Added support for Xcel printers
 - General code cleanup

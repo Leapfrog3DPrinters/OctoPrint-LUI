@@ -3,5 +3,5 @@ M84 S{{ stepperTimeout }}; Reset stepper disable timeout
 M84; And disable them right away for now
 {% endif %}
 {% if not filamentAction %}
-G28 X0 Y0
+G28 Y0 X0
 {% endif %}
