@@ -263,7 +263,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #~~ remove all mounted folders
         folder = '/media/pi'
         for amount in os.listdir(folder):
-            if not os.listdir(amount):
+			# Remove empty directories only:
+            if os.path.isdir(amount) and not os.listdir(amount):
                 try:
                     os.rmdir(amount)
                 except Exception as e:
