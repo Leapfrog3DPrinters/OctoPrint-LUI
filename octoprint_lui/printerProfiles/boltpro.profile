@@ -75,7 +75,7 @@ manualBedCalibrationPositions:
     Y: 250
     mode: 'fullcontrol'
   top_right:
-    tool: tool0
+    tool: tool1
     X: 268
     Y: 250
     mode: 'fullcontrol'
@@ -85,7 +85,7 @@ manualBedCalibrationPositions:
     Y: 70
     mode: 'fullcontrol'
   bottom_right:
-    tool: tool0
+    tool: tool1
     X: 268
     Y: 70
     mode: 'fullcontrol'

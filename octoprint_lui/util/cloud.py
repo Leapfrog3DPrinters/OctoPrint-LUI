@@ -21,13 +21,14 @@ import io
 import logging
 
 # Dropbox
-import dropbox
+#import dropbox
 
 ONEDRIVE = "onedrive"
 GOOGLE_DRIVE = "google_drive"
-DROPBOX = "dropbox"
+#DROPBOX = "dropbox"
 
-INSTALLED_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
+#INSTALLED_SERVICES = [ DROPBOX, ONEDRIVE, GOOGLE_DRIVE ]
+INSTALLED_SERVICES = [ ONEDRIVE, GOOGLE_DRIVE ]
 
 
 class CloudService(object):
@@ -46,154 +47,154 @@ class CloudService(object):
     def logout(self):
         pass
 
-class DropboxCloudService(CloudService):
-    def __init__(self, secrets, data_folder):
-        super(DropboxCloudService, self).__init__(secrets, data_folder)
-        self._secrets = secrets
-        self._csrf = {}
-        
-        self._client = None
-        self._client_secret = self._secrets.get('client_secret');
-        self._client_id = self._secrets.get('client_id');
-        self._redirect_uri = None
-        self._access_token = None
-        self._id_tracker = {}
-        self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
-        self._load_credentials()
+#class DropboxCloudService(CloudService):
+#    def __init__(self, secrets, data_folder):
+#        super(DropboxCloudService, self).__init__(secrets, data_folder)
+#        self._secrets = secrets
+#        self._csrf = {}
+#        
+#        self._client = None
+#        self._client_secret = self._secrets.get('client_secret');
+#        self._client_id = self._secrets.get('client_id');
+#        self._redirect_uri = None
+#        self._access_token = None
+#        self._id_tracker = {}
+#        self._credential_path = os.path.join(data_folder, DROPBOX + "_credentials.pickle")
+#        self._load_credentials()
+#
+#        self._flow = dropbox.client.DropboxOAuth2FlowNoRedirect(self._client_id, self._client_secret)
+#        
+#    ## Private methods
+#    def _get_client(self):
+#        if not self._client:
+#            self._client = dropbox.Dropbox(self._access_token)
+#            self._logger.debug("Dropbox client created")
+#
+#        return self._client
 
-        self._flow = dropbox.client.DropboxOAuth2FlowNoRedirect(self._client_id, self._client_secret)
-        
-    ## Private methods
-    def _get_client(self):
-        if not self._client:
-            self._client = dropbox.Dropbox(self._access_token)
-            self._logger.debug("Dropbox client created")
+#    def _load_credentials(self):
+#        if os.path.isfile(self._credential_path):
+#            with open(self._credential_path, "rb") as session_file:
+#                import pickle
+#                self._access_token = pickle.load(session_file)
+#            
+#            self._logger.debug("Dropbox credentials loaded")
 
-        return self._client
+#        return self._access_token
 
-    def _load_credentials(self):
-        if os.path.isfile(self._credential_path):
-            with open(self._credential_path, "rb") as session_file:
-                import pickle
-                self._access_token = pickle.load(session_file)
-            
-            self._logger.debug("Dropbox credentials loaded")
+#    def _delete_credentials(self):
+#        if os.path.isfile(self._credential_path):
+#            os.unlink(self._credential_path)
+#            self._logger.debug("Dropbox credentials deleted")
+#        
+#        self._access_token = None
 
-        return self._access_token
+#    def _save_credentials(self):
+#        with open(self._credential_path, "wb") as session_file:
+#            import pickle
+#            pickle.dump(self._access_token, session_file, pickle.HIGHEST_PROTOCOL)
+#            self._logger.debug("Dropbox credentials saved")
 
-    def _delete_credentials(self):
-        if os.path.isfile(self._credential_path):
-            os.unlink(self._credential_path)
-            self._logger.debug("Dropbox credentials deleted")
-        
-        self._access_token = None
-
-    def _save_credentials(self):
-        with open(self._credential_path, "wb") as session_file:
-            import pickle
-            pickle.dump(self._access_token, session_file, pickle.HIGHEST_PROTOCOL)
-            self._logger.debug("Dropbox credentials saved")
-
-    def _get_file_type(self, item):
-        if type(item) is dropbox.files.FolderMetadata:
-            return 'folder'
-        else:
-            type_path = get_file_type(item.name)
-            return type_path[0] if type_path else None
+#    def _get_file_type(self, item):
+#        if type(item) is dropbox.files.FolderMetadata:
+#            return 'folder'
+#        else:
+#            type_path = get_file_type(item.name)
+#            return type_path[0] if type_path else None
 
     ## Public methods
 
-    def is_logged_in(self):
-        return not self._access_token is None
+#    def is_logged_in(self):
+#        return not self._access_token is None
 
-    def get_auth_url(self, redirect_uri):
-        self._redirect_uri = redirect_uri
-        return self._flow.start()
+#    def get_auth_url(self, redirect_uri):
+#        self._redirect_uri = redirect_uri
+#        return self._flow.start()
 
-    def handle_auth_response(self, request):
-        if not self._flow:
-            self._logger.error("Could not handle unrequested Dropbox authentication")
-            return False
+#    def handle_auth_response(self, request):
+#        if not self._flow:
+#            self._logger.error("Could not handle unrequested Dropbox authentication")
+#            return False
 
-        try:
-            self._access_token, _, _ = self._flow.finish(request.values)
-            self._save_credentials()
-            self._logger.info("Dropbox authenticated")
-            return True
-        except Exception as e:
-            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
-            return False
+#        try:
+#            self._access_token, _, _ = self._flow.finish(request.values)
+#            self._save_credentials()
+#            self._logger.info("Dropbox authenticated")
+#            return True
+#        except Exception as e:
+#            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
+#            return False
 
-    def handle_manual_auth_response(self, auth_code):
+#    def handle_manual_auth_response(self, auth_code):
 
-        try:
-            self._access_token, _, _ = flow.finish(auth_code)
-            self._save_credentials()
-            self._logger.info("Dropbox authenticated")
-            return True
-        except Exception as e:
-            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
-            return False
+#        try:
+#            self._access_token, _, _ = flow.finish(auth_code)
+#            self._save_credentials()
+#            self._logger.info("Dropbox authenticated")
+#            return True
+#        except Exception as e:
+#            self._logger.warning("Dropbox could not be authenticated: {0}".format(e.message))
+#            return False
 
-    def list_files(self, path = None, filter = None):
+#    def list_files(self, path = None, filter = None):
 
-        if path == None:
-            path = DROPBOX
-        else:
-            path = path.rstrip('/')
+#        if path == None:
+#            path = DROPBOX
+#        else:
+#            path = path.rstrip('/')
 
-        if path == DROPBOX:
-            path_id = ''
-        else:
-            path_id = self._id_tracker[path]
+#        if path == DROPBOX:
+#            path_id = ''
+#        else:
+#            path_id = self._id_tracker[path]
 
-        folder = self._get_client().files_list_folder(path_id).entries
-        items = []
-        for f in folder:
-            file_path = path + "/" + f.name
-            self._id_tracker[file_path] = f.path_lower
+#        folder = self._get_client().files_list_folder(path_id).entries
+#        items = []
+#        for f in folder:
+#            file_path = path + "/" + f.name
+#            self._id_tracker[file_path] = f.path_lower
 
-            file_type = self._get_file_type(f)
+#            file_type = self._get_file_type(f)
             
-            entry_data = {
-                            "name": f.name,
-		                    "path": file_path,
-                            "service": DROPBOX,
-		                    "type": file_type,
-                            "origin": "cloud"
-                            }
+#            entry_data = {
+#                            "name": f.name,
+#		                    "path": file_path,
+#                            "service": DROPBOX,
+#		                    "type": file_type,
+#                            "origin": "cloud"
+#                            }
+#
+#            if file_type and (not filter or filter(f.name, entry_data)):
+#                items.append(entry_data)
 
-            if file_type and (not filter or filter(f.name, entry_data)):
-                items.append(entry_data)
+#        return items
 
-        return items
-
-    def download_file(self, path, target_path, progress_callback = None):
-        file_id = self._id_tracker[path]
-        entry, response = self._get_client().files_download(file_id)
-        total_length = entry.size
+#    def download_file(self, path, target_path, progress_callback = None):
+#        file_id = self._id_tracker[path]
+#        entry, response = self._get_client().files_download(file_id)
+#        total_length = entry.size
+#        
+#        if total_length:
+#            total_length = int(total_length)
+#            dl = 0
         
-        if total_length:
-            total_length = int(total_length)
-            dl = 0
-        
-        with open(target_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=2**16):
-                if callable(progress_callback):
-                    dl += len(chunk)
-                    progress_callback(dl / total_length)
-                if chunk:
-                    f.write(chunk)
-                    f.flush()
+#        with open(target_path, 'wb') as f:
+#            for chunk in response.iter_content(chunk_size=2**16):
+#                if callable(progress_callback):
+#                    dl += len(chunk)
+#                    progress_callback(dl / total_length)
+#                if chunk:
+#                    f.write(chunk)
+#                    f.flush()
 
-    def logout(self):
-        if self._access_token:
-            self._get_client().auth_token_revoke()
-            self._logger.debug("Dropbox auth token revoked")
+#    def logout(self):
+#        if self._access_token:
+#            self._get_client().auth_token_revoke()
+#            self._logger.debug("Dropbox auth token revoked")
 
-        self._delete_credentials()
-        self._client = None
-        self._logger.info("Dropbox disconnected")
+#        self._delete_credentials()
+#        self._client = None
+#        self._logger.info("Dropbox disconnected")
 
 
 class GoogleDriveCloudService(CloudService):

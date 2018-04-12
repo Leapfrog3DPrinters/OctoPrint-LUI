@@ -2,140 +2,301 @@
     <div class="flyout-header">
       <h4>{{ _('Bed calibration') }}</h4>
     </div>
-    <div class="flyout-body">
-        <div id="bed_calibration">
+  <div class="flyout-body">
+    <div id="bed_calibration">
       <div id="bedcalibration_flyout_content">
-			{% if not printer_profile["autoBedCalibration"] %}
-			<div id="warn-before-calibration" data-bind="visible: !showManualBedCalibration()">
-			  <div class="Table">
-				<div class="Table-row Table-header">
-				  <div class="Table-item">
-					{{ _('Bed calibration') }}
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<p>{{ _('Please make sure there is no print on the bed before you continue.') }}</p>
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<ul class="button-area">
-					  <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startManualBedCalibration()}">
-						<a href="#">
-						  <span>{{ _('Continue calibration') }}</span>
-						</a>
-					  </li>
-					</ul>
-				  </div>
-				</div>
-			  </div>
-			</div>
-			<div id="manual-bed-calibration" data-bind="visible: showManualBedCalibration()">
-			  <div class="Table">
-				<div class="Table-row Table-header">
-				  <div class="Table-item">
-					{{ _('Bed leveling') }}
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<p>{{ _('Select the corner you would like to calibrate. The extruder will move into this position. You may adjust the bed by turning the knob below the bed. Place a piece of paper between the bed and the nozzle and adjust the bed until there is friction between the paper and the nozzle. Repeat this for every corner.')}}</p>
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<div class="bed-canvas">
-					  <div class="bed-canvas-item top left" data-corner="top_left"></div>
-					  <div class="bed-canvas-item top right" data-corner="top_right"></div>
-					  <div class="bed-canvas-item bottom left" data-corner="bottom_left"></div>
-					  <div class="bed-canvas-item bottom right" data-corner="bottom_right"></div>
-					</div>
-				  </div>
-				</div>
-			  </div>
-			</div>
-			{% else %}
-			<div id="warn-before-calibration" data-bind="visible: !showAutoBedCalibration()">
-			  <div class="Table">
-				<div class="Table-row Table-header">
-				  <div class="Table-item">
-					{{ _('Bed calibration') }}
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<p>{{ _('Please make sure there is no print on the bed before you continue.')}}</p>
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<ul class="button-area">
-					  <li class="button" data-bind="touchClick: function () { startAutoBedCalibration() }">
-						<a href="#">
-						  <span>{{ _('Level bed') }}</span>
-						</a>
-					  </li>
-					</ul>
-				  </div>
-				  <div class="Table-item">
-					<ul class="button-area">
-					  <li class="button" data-bind="touchClick: function () { startZoffset() } ">
-						<a href="#">
-						  <span>{{ _('Z-offset wizard') }}</span>
-						</a>
-					  </li>
-					</ul>
-				  </div>
-				</div>
-			  </div>
-			</div>
-			<div id="auto-bed-calibration"  data-bind="visible: showAutoBedCalibration()">
-			  <div class="Table">
-				<div class="Table-row Table-header">
-				  <div class="Table-item">
-					{{ _('Bed leveling') }}
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<span>{{ _('The print bed is currently being leveled. Please wait for the process to complete.')}}</span>
-				  </div>
-				</div>
-				<div class="Table-row">
-				  <div class="Table-item">
-					<div class="progress progress-striped progress-animate">
-					  <span data-bind="text: autoBedCalibrationProgressString, style: {backgroundColor: autoBedCalibrationProgressColor(), width: autoBedCalibrationProgress() + '%'}"></span>
-					</div>
-					<!--<div class="gauge">
-					  <div class="mask">
-						<div class="semi-circle" data-bind="style: { background: autoBedCalibrationProgressColor }"></div>
-						<div class="semi-circle--mask" data-bind="style: { webkitTransform: 'rotate(' + autoBedCalibrationProgress() + ')', mozTransform: 'rotate(' + autoBedCalibrationProgress() + ')', transform: 'rotate(' + autoBedCalibrationProgress() + ')' }"></div>
-					  </div>
-					</div>-->
-				  </div>
-				</div>
-				<div class="Table-row" data-bind="visible: autoBedCalibrationComplete()">
-				  <div class="Table-item">
-					<span>{{ _('Bed levelling has completed') }}</span>
-				  </div>
-				</div>
-			  </div>
-			</div>
-			{% endif %}
-		</div>
-      <ul class="button-area">
-        <li class="button failed-button" data-bind="visible: mayAbort">
-          <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
-            <span>{{ _('Abort') }}</span>
-          </a>
-        </li>
-        <li class="button ok-button" data-bind="visible: mayAccept">
-          <a href="#save" data-bind="touchClick: function () { accept() }, disabled: mayAccept">
-            <span>{{ _('Done') }}</span>
-          </a>
-        </li>
-      </ul>
+        {% if not printer_profile["autoBedCalibration"]%}
+        <div id="warn-before-calibration" data-bind="visible: !showManualBedCalibration()">
+          <div class="Table">
+            <div class="Table-row Table-header">
+              <div class="Table-item">
+              {{ _('Bed calibration') }}
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+              <p>{{ _('Please make sure there is no print on the bed before you continue.') }}</p>
+              </div>
+            </div>
+            <div class="Table-row">
+              <div class="Table-item">
+                <ul class="button-area">
+                  <li class="button ok-button" data-bind="css: {disabled: !printerState.isOperational() || printerState.isPrinting() || !loginState.isUser()}, touchClick: function () { startManualBedCalibration()}">
+                  <a href="#">
+                    <span>{{ _('Continue calibration') }}</span>
+                  </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="manual-bed-calibration" data-bind="visible: showManualBedCalibration()">
+          <div class="Table">
+            <div class="Table-row Table-header">
+                <div class="Table-item">
+                {{ _('Bed leveling') }}
+                </div>
+              </div>
+            <div id="bring-bed-forward" data-bind= "visible: showPushInNozzles()">
+              <div class= "Table-row">
+                <div class="explain">
+                  <p>{{ _('To make space for the calibration, please bring the bed down by screwing the knobs of the bed to a flush level with the thread sticking out. Also push the hot-ends in all the way before you continue.')}}</p>
+                 <img src="{{ url_for('plugin.lui.static', filename='img/'+model+'/Calibration-Knob-Height.gif') }}" />
+                </div>
+              </div>
+              <ul class="button-area">
+                <li class="button failed-button">
+                  <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
+                    <span>{{ _('Abort') }}</span>
+                  </a>
+                </li>
+                <li class="button ok-button">
+                  <a href="#" data-bind="touchClick: function () { nozzlesPushedIn() }">
+                    <span>{{ _('Next') }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div id="heat-up-nozzles" data-bind= "visible: showHeatNozzles()">        
+              <div class= "Table-row">
+                <div class="Table-item">
+                  <p>{{ _('The hot-ends are now heating up to the temperature which is best for the material in question. Please wait for this to be finished...')}}</p>
+                </div>
+              </div>
+            </div>
+                   <div id="wipe-nozzles-clean" data-bind= "visible: showHowToClean()">
+              <div class= "Table-row">
+                <div class="Table-item">
+                  <p>{{ _('Clean the hot-end with a cloth on the bottom to ensure that the nozzle is completely flat. It is recommended to remove the current filament.')}}</p>
+                </div>
+              </div>
+              <ul class="button-area">
+                <li class="button secondary-button">
+                  <a href="#" data-bind="touchClick: function () { bringNozzlesForwardInCalibration() }">
+                    <span>{{ _('bring nozzles forward') }}</span>
+                  </a>
+                </li>
+                <li class="button failed-button">
+                  <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
+                    <span>{{ _('Abort') }}</span>
+                  </a>
+                </li>
+                <li class="button ok-button">
+                  <a href="#" data-bind="touchClick: function () { nozzlesAreClean() }">
+                    <span>{{ _('next') }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div id="push-left-down" data-bind= "visible: showBringLeftDown()">
+              <div class= "Table-row">
+                <div class="explain">
+                  <p>{{ _('Bring the left nozzle down to the bed, so that the right nozzle is not touching the paper on the bed. CAUTION! The nozzle is hot!')}}</p>
+                  <img src="{{ url_for('plugin.lui.static', filename='img/'+model+'/Left-Nozzle-Down.gif') }}" />
+                </div>
+              </div>
+              <ul class="button-area">
+                <li class="button failed-button">
+                  <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
+                    <span>{{ _('Abort') }}</span>
+                  </a>
+                </li>
+                <li class="button ok-button">
+                  <a href="#" data-bind="touchClick: function () { leftNozzleDown() }">
+                    <span>{{ _('next') }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div id="bring-right-down" data-bind= "visible: showBringRightDown()">
+              <div class= "Table-row">
+                <div class="Table-item">
+                  <p>{{ _('Bring the right nozzle down to the bed, so that the right nozzle is touching the paper on the bed. CAUTION! The nozzle can be still hot!')}}</p>
+                </div>
+            </div>
+             <ul class="button-area">
+              <li class="button failed-button">
+                <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
+                  <span>{{ _('Abort') }}</span>
+                </a>
+              </li>
+              <li class="button ok-button">
+                <a href="#save" data-bind="touchClick: function () { accept() }">
+                  <span>{{ _('Done') }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+            <div id="show-calibration" data-bind="visible: showNormalCalibration()">        
+              <div class="Table-row">
+                <div class="Table-item">
+                <p>{{ _('Select the corner you would like to calibrate. The extruder will move into this position. You may adjust the bed by turning the knob below the bed. Place a piece of paper between the bed and the nozzle and adjust the bed until there is friction between the paper and the nozzle. Repeat this for every corner.')}}</p>
+                </div>
+              </div>
+              <div class="Table-row">
+                <div class="Table-item">
+                <div class="bed-canvas">
+                  <div class="bed-canvas-item top left" data-corner="top_left"></div>
+                  <div class="bed-canvas-item top right" data-corner="top_right"></div>
+                  <div class="bed-canvas-item bottom left" data-corner="bottom_left"></div>
+                  <div class="bed-canvas-item bottom right" data-corner="bottom_right"></div>
+                </div>
+                </div>
+              </div>
+              <ul class="button-area">
+                  <li class="button failed-button" data-bind="visible: mayAbort">
+                    <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
+                      <span>{{ _('Abort') }}</span>
+                    </a>
+                  </li>
+                  <li class="button ok-button" data-bind="visible: mayAccept">
+                    <a href="#" data-bind="touchClick: function () { calibrationDone() }">
+                      <span>{{ _('Done') }}</span>
+                    </a>
+                  </li>
+                </ul>
+            </div>
+           <div id="show-temperature" data-bind="visible: showHeatingOrCooling()">
+             <!-- ko allowBindings: false -->
+             <div id="temperatures">
+                    <div class="Table-row Table-header">
+                        <div class="Table-item Table-item-grow-6">{{ _('Temperature') }}</div>
+
+                        <div class="Table-item" style="font-size:0.7em; font-weight: normal; flex-basis: 60px; max-width: 60px;">
+                            <span>{{ _('Actual') }}</span>
+                        </div>
+                        <div class="Table-item" style="font-size:0.7em; font-weight: normal; flex-basis: 60px; max-width: 60px;">
+                            <span>{{ _('Target') }}</span>
+                        </div>
+                    </div>
+                    <!-- ko foreach: tools -->
+                    <div class="Table-row">
+                        <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
+                        <div class="Table-item Table-item-grow-4">
+                            <div class="progress">
+                                <span style="width: 0%" data-bind="text: displayStatus, style: { width: progress() + '%'}, css: cssClass"></span>
+                            </div>
+                        </div>
+                        <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
+                            <span data-bind="text: actual"></span>
+                        </div>
+                        <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
+                            <span data-bind="text: target"></span>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                  <!-- ko if: hasBed -->
+                  <div class="Table-row" data-bind="with: bedTemp">
+                    <div class="Table-item Table-item-grow-2" data-bind="text: name"></div>
+                    <div class="Table-item Table-item-grow-4">
+                      <div class="progress">
+                        <span style="width: 0%" data-bind="text: displayStatus, style: { width: progress() + '%'}, css: cssClass"></span>
+                      </div>
+                    </div>
+                    <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
+                      <span data-bind="text: actual"></span>
+                    </div>
+                    <div class="Table-item" style='flex-basis: 60px; max-width: 60px;'>
+                      <span data-bind="text: target"></span>
+                    </div>
+                  </div>
+                  <!-- /ko -->
+                </div> 
+             <!-- /ko -->
+             <ul class="button-area">
+                <li class="button failed-button">
+                  <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
+                    <span>{{ _('Abort') }}</span>
+                  </a>
+                </li>
+               </ul>
+            </div>  
+          </div>
+        </div>
+        {% else %}
+        <div id="warn-before-calibration" data-bind="visible: !showAutoBedCalibration()">
+          <div class="Table">
+          <div class="Table-row Table-header">
+            <div class="Table-item">
+            {{ _('Bed calibration') }}
+            </div>
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+            <p>{{ _('Please make sure there is no print on the bed before you continue.')}}</p>
+            </div>
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+            <ul class="button-area">
+              <li class="button" data-bind="touchClick: function () { startAutoBedCalibration() }">
+              <a href="#">
+                <span>{{ _('Level bed') }}</span>
+              </a>
+              </li>
+            </ul>
+            </div>
+            <div class="Table-item">
+            <ul class="button-area">
+              <li class="button" data-bind="touchClick: function () { startZoffset() } ">
+              <a href="#">
+                <span>{{ _('Z-offset wizard') }}</span>
+              </a>
+              </li>
+            </ul>
+            </div>
+          </div>
+          </div>
+        </div>
+        <div id="auto-bed-calibration"  data-bind="visible: showAutoBedCalibration()">
+          <div class="Table">
+          <div class="Table-row Table-header">
+            <div class="Table-item">
+            {{ _('Bed leveling') }}
+            </div>
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+            <span>{{ _('The print bed is currently being leveled. Please wait for the process to complete.')}}</span>
+            </div>
+          </div>
+          <div class="Table-row">
+            <div class="Table-item">
+            <div class="progress progress-striped progress-animate">
+              <span data-bind="text: autoBedCalibrationProgressString, style: {backgroundColor: autoBedCalibrationProgressColor(), width: autoBedCalibrationProgress() + '%'}"></span>
+            </div>
+            <!--<div class="gauge">
+              <div class="mask">
+              <div class="semi-circle" data-bind="style: { background: autoBedCalibrationProgressColor }"></div>
+              <div class="semi-circle--mask" data-bind="style: { webkitTransform: 'rotate(' + autoBedCalibrationProgress() + ')', mozTransform: 'rotate(' + autoBedCalibrationProgress() + ')', transform: 'rotate(' + autoBedCalibrationProgress() + ')' }"></div>
+              </div>
+            </div>-->
+            </div>
+          </div>
+          <div class="Table-row" data-bind="visible: autoBedCalibrationComplete()">
+            <div class="Table-item">
+            <span>{{ _('Bed levelling has completed') }}</span>
+            </div>
+          </div>
+          </div>
+          <ul class="button-area">
+          <li class="button failed-button" data-bind="visible: mayAbort">
+            <a href="#save" data-bind="touchClick: function () { abort() }, disabled: mayAbort">
+              <span>{{ _('Abort') }}</span>
+            </a>
+          </li>
+          <li class="button ok-button" data-bind="visible: mayAccept">
+            <a href="#save" data-bind="touchClick: function () { accept() }, disabled: mayAccept">
+              <span>{{ _('Done') }}</span>
+            </a>
+          </li>
+        </ul>
+        </div>
+        {% endif %}
+		  </div>
     </div>
   </div>
 </aside>

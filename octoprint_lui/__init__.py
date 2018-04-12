@@ -262,7 +262,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     def initialize(self):
         #~~ remove all mounted folders
         folder = '/media/pi'
-        for amount in os.listdir(folder)
+        for amount in os.listdir(folder):
             if not os.listdir(amount):
                 try:
                     os.rmdir(amount)
@@ -1407,18 +1407,74 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.home(['x', 'y'])
         return make_response(jsonify(), 200)
 
+
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/bringforward", methods=["POST"])
+    def calibration_bed_bringforward(self):
+        self._set_movement_mode("absolute")
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.commands(["G1 Z5 F300"])
+        self._printer.change_tool("tool1")
+        self.manual_bed_calibration_tool = "tool1"
+        self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
+        self._set_print_mode(PrintModes.MIRROR)
+        self._printer.commands(["G1 X137 Y-33 F12000"])
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/heatandclean", methods=["POST"])
+    def calibration_bed_heat_and_clean(self):
+        self._set_movement_mode("absolute")
+        #material_tool1 = self._get_material_from_name(self.tools["tool1"]["filament_material_name"])
+        #temp_tool1 = int(material_tool1['extruder'])
+        #material_tool0 = self._get_material_from_name(self.tools["tool0"]["filament_material_name"])
+        #temp_tool0 = int(material_tool0['extruder'])
+        #temp_bed = int(material_tool0['bed'])
+        #self.heat_to_temperature("tool1", temp_tool1)
+        #self.heat_to_temperature("tool0", temp_tool0)
+        self.calibration_type = "calibration_bed"
+        calibration_src_filename = self.model + "_heating_for_cleaning.gcode"
+        #self._execute_printer_script('heating_for_cleaning', { "temp_tool0": temp_tool0, "temp_tool1": temp_tool1, "temp_bed": temp_bed })
+        abs_path = self._copy_calibration_file(calibration_src_filename)
+        self._printer.select_file(abs_path, False, True)
+        #self._printer.commands(["G1 Z5 F500"])
+        #self._set_print_mode(PrintModes.MIRROR)
+        #self._printer.commands(["G1 X137 Y-33 F12000"])
+        #self._printer.commands(["G1 Z20 F500"])
+        #self._logger.warning("Temp: {tool} & {temp}".format(tool="tool1", temp=temp_tool1 ))
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/pushLeftNozzleDown", methods=["POST"])
+    def calibration_bed_push_left_nozzle_down(self):
+        #self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
+        self._printer.commands(["G1 Z5 F50"])
+        self._set_print_mode(PrintModes.MIRROR)
+        self._printer.commands(["G1 X135 Y20 F12000"])
+        self._printer.commands(["G1 Z2 F50"])
+        return make_response(jsonify(), 200)
+
+    @BlueprintPlugin.route("/maintenance/bed/calibrate/pushRightNozzleDown", methods=["POST"])
+    def calibration_bed_push_right_nozzle_down(self):
+        #self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
+        self._set_print_mode(PrintModes.MIRROR)
+        self._printer.home(['x', 'y', 'z'])
+        self._printer.commands(["G1 Z5 F50"])   
+        self._printer.commands(["G1 X135 Y20 F12000"])
+        self._printer.commands(["G1 Z0 F50"])
+        return make_response(jsonify(), 200)
+
+
     @BlueprintPlugin.route("/maintenance/bed/calibrate/start", methods=["POST"])
     def calibration_bed_start(self):
         """
         Starts the bed calibration procedure by preparing the printer for the calibration
         """
-        self._set_print_mode(PrintModes.FULL_CONTROL)
-
+        self._set_print_mode(PrintModes.NORMAL)
         self._set_movement_mode("absolute")
         self._printer.home(['x', 'y', 'z'])
         self._printer.change_tool("tool1")
         self.manual_bed_calibration_tool = "tool1"
         self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
+        #self._set_print_mode(PrintModes.MIRROR)
+        #self._printer.commands(["G1 X137 Y-33 F6000"])
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/bed/calibrate/move_to_position/<string:corner_name>", methods=["POST"])
@@ -1427,6 +1483,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         Moves the heads to the given corners
         """
         corner = self.manual_bed_calibration_positions[corner_name]
+        tool = self.manual_bed_calibration_positions[corner_name]["tool"]
         self._printer.commands(['G1 Z5 F600'])
 
         if corner["mode"] == 'fullcontrol' and not self.print_mode == PrintModes.FULL_CONTROL:
@@ -1436,10 +1493,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._set_print_mode(PrintModes.MIRROR)
             self._printer.home(['x'])
 
-        if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != corner["tool"]:
+        if not self.manual_bed_calibration_tool or self.manual_bed_calibration_tool != tool:
             self._printer.home(['x'])
-            self._printer.change_tool(corner["tool"])
-            self.manual_bed_calibration_tool = corner["tool"]
+            self._printer.change_tool(tool)
+            self.manual_bed_calibration_tool = tool
 
         self._printer.commands(["G1 X{} Y{} F6000".format(corner["X"],corner["Y"])])
         self._printer.commands(['G1 Z0 F600'])
@@ -1619,6 +1676,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         # Start heating to the temperature
         temp = int(material['extruder'])
         self.heat_to_temperature(tool, temp)
+        self._logger.warning("Temp: {tool} & {temp}".format(tool=tool, temp=temp ))
 
         return make_response(jsonify(), 200)
 
@@ -2852,6 +2910,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._send_client_message(ClientMessages.CALIBRATION_RESUMED, { "calibration_type": self.calibration_type})
         elif event == Events.PRINT_DONE:
             self._send_client_message(ClientMessages.CALIBRATION_FINISHED, { "calibration_type": self.calibration_type})
+            if self.calibration_type == "bed_calibration":
+                self.calibration_bed_bringforward()
             self.calibration_type = None
             self._restore_timelapse()
         elif event == Events.PRINT_FAILED or event == Events.PRINT_CANCELLED or event == Events.ERROR:
