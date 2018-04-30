@@ -2,13 +2,18 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.2.5
+
+- Improved the calibration sequence for the bed
+- Added support for spanish
+
 ## 1.2.4
 
-- Additional bug fix for inaccessible USB flash drives
+- changed device settings to prevent USB stick corruptions.
 
 ## 1.2.3
 
-- Fixed problem with inaccessible USB flash drives
+- Fixed problem with unaccessible USB flash drives
 - Made some menu items and message more user-friendly
 - Added support for Xcel printers
 - General code cleanup
