@@ -302,6 +302,6 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push([
         ToolInfoViewModel,
         ["loginStateViewModel", "settingsViewModel"],
-        ["#temp"]
+        ["#temp","#temperatures"]
     ]);
 });

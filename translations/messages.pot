@@ -1,15 +1,15 @@
 # Translations template for OctoPrint-LUI.
-# Copyright (C) 2017 The OctoPrint Project
+# Copyright (C) 2018 The OctoPrint Project
 # This file is distributed under the same license as the OctoPrint-LUI
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: OctoPrint-LUI 1.2.1\n"
+"Project-Id-Version: OctoPrint-LUI 1.2.3\n"
 "Report-Msgid-Bugs-To: i18n@octoprint.org\n"
-"POT-Creation-Date: 2017-10-27 08:32+0200\n"
+"POT-Creation-Date: 2018-03-30 10:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -309,18 +309,20 @@ msgstr ""
 #: octoprint_lui/static/js/app/viewmodels/filament.js:95
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:370
 #: octoprint_lui/templates/flyouts_lui/filament_flyouts/filament_flyout.jinja2:108
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:135
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:146
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:128
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:157
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:293
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:148
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/update_flyout.jinja2:164
 msgid "Done"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:97
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:45
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:336
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:337
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:354
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:356
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:312
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:313
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:330
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:332
 msgid "Load"
 msgstr ""
 
@@ -343,8 +345,8 @@ msgid "Loaded"
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/filament.js:158
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:319
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:376
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:295
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:352
 msgid "Delete"
 msgstr ""
 
@@ -903,6 +905,7 @@ msgid ""
 msgstr ""
 
 #: octoprint_lui/static/js/app/viewmodels/intro_view.js:179
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:56
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:107
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:132
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/extrudercalibration_flyout.jinja2:202
@@ -1819,8 +1822,8 @@ msgid "New timelapse %(movie_prefix)s is done rendering."
 msgstr ""
 
 #: octoprint_lui/templates/footer_lui.jinja2:4
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:190
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:245
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:180
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:225
 msgid "Print"
 msgstr ""
 
@@ -1932,7 +1935,13 @@ msgstr ""
 msgid "Filament"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:130
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:51
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:82
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:103
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:123
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:152
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:212
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:288
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:107
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/users_flyout.jinja2:171
 #: octoprint_lui/templates/overlay_flyouts_lui.jinja2:318
@@ -2126,9 +2135,9 @@ msgid "Status"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:36
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:200
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:232
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:255
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:185
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:212
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:231
 msgid "Additional data"
 msgstr ""
 
@@ -2142,12 +2151,12 @@ msgid "Size"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:61
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:313
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:289
 msgid "Download"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/file_flyouts/firmware_file_flyout.jinja2:64
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:375
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:351
 msgid "Remove"
 msgstr ""
 
@@ -2220,14 +2229,17 @@ msgid "Shutdown now"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/info_flyout.jinja2:5
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:166
 msgid "Temperature"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/info_flyout.jinja2:8
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:169
 msgid "Actual"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/info_flyout.jinja2:11
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:172
 msgid "Target"
 msgstr ""
 
@@ -2271,38 +2283,40 @@ msgid ""
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:30
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:46
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:63
 msgid "A temperature error has occured."
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:36
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:52
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:69
 msgid ""
 "Please ensure that the ambient temperature of the printer is within "
 "specifications (see the printer's manual) and the print heads are "
 "properly connected."
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:62
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:42
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:75
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:108
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:136
+msgid "Additional information"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:96
 msgid "An unkown error has occured"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:68
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:102
 msgid ""
 "An unknown error has occured while communicating with your printer. You "
 "can try to restore the connection."
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:74
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:102
-msgid "Additional information"
-msgstr ""
-
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:90
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:124
 msgid "The printer failed to reconnect"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:96
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/printer_error_local_flyout.jinja2:130
 msgid ""
 "If you changed any wiring, please check again if everything is properly "
 "connected. You can try to restore the connection."
@@ -2332,12 +2346,12 @@ msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:10
 msgid ""
-"Before you can start using the printer, a homing sequence needs to be "
-"executed. This means the bed will move to its upper position."
+"To start a print job, a homing sequence needs to be executed. The print "
+"bed and extruder heads will move to their home position."
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:15
-msgid "Please confirm there is no print on the bed."
+msgid "Please make sure the bed is empty before proceeding."
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:24
@@ -2347,6 +2361,16 @@ msgstr ""
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:57
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:26
 msgid "Please wait while the printer is homing."
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:64
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/webcam_flyout.jinja2:24
+msgid "Current view"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_local_flyout.jinja2:69
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/webcam_flyout.jinja2:29
+msgid "Refresh"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/startup_remote_flyout.jinja2:10
@@ -2382,8 +2406,6 @@ msgid ""
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/info_flyouts/update_required_flyout.jinja2:49
-#: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:3
-#: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:120
 msgid "Wireless"
 msgstr ""
 
@@ -2433,12 +2455,12 @@ msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:3
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:13
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:63
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:224
 msgid "Bed calibration"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:18
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:68
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:229
 msgid "Please make sure there is no print on the bed before you continue."
 msgstr ""
 
@@ -2447,11 +2469,51 @@ msgid "Continue calibration"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:38
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:97
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:258
 msgid "Bed leveling"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:43
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:44
+msgid ""
+"To make space for the calibration, please bring the bed down by screwing "
+"the knobs of the bed to a flush level with the thread sticking out. Also "
+"push the hot-ends in all the way before you continue."
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:64
+msgid ""
+"The hot-ends are now heating up to the temperature which is best for the "
+"material in question. Please wait for this to be finished..."
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:71
+msgid ""
+"Clean the hot-end with a cloth on the bottom to ensure that the nozzle is"
+" completely flat. It is recommended to remove the current filament."
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:77
+msgid "bring nozzles forward"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:87
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:108
+msgid "next"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:96
+msgid ""
+"Bring the left nozzle down to the bed, so that the right nozzle is not "
+"touching the paper on the bed. CAUTION! The nozzle is hot!"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:117
+msgid ""
+"Bring the right nozzle down to the bed, so that the right nozzle is "
+"touching the paper on the bed. CAUTION! The nozzle can be still hot!"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:136
 msgid ""
 "Select the corner you would like to calibrate. The extruder will move "
 "into this position. You may adjust the bed by turning the knob below the "
@@ -2460,21 +2522,21 @@ msgid ""
 "this for every corner."
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:76
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:237
 msgid "Level bed"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:85
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:246
 msgid "Z-offset wizard"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:102
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:263
 msgid ""
 "The print bed is currently being leveled. Please wait for the process to "
 "complete."
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:120
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/bedcalibration_flyout.jinja2:281
 msgid "Bed levelling has completed"
 msgstr ""
 
@@ -2570,11 +2632,11 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:131
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:132
 msgid "Wipe nozzles"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:138
+#: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/head_maintenance_flyout.jinja2:140
 msgid "Swap hot ends"
 msgstr ""
 
@@ -2619,11 +2681,13 @@ msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/zoffset_flyout.jinja2:9
 msgid ""
-"Place a 0.05 flusher between the nozzle and the bed. Press the button "
-"Start Calibration, the bed will home and then move close to the nozzle. "
-"Use the up arrow until the nozzle is against the flusher. You can use the"
-" down arrow if you think you are too close. Press \"Save\" to save the "
-"new z-offset."
+"Before you start the Z-offset calibration, it is recommended to do the "
+"bed leveling first. To start the Z-offset calibration, place a 0.05 "
+"flusher between the nozzle and the bed. Press the button Start "
+"Calibration, the bed will home and then move close to the nozzle. Use the"
+" up arrow until the nozzle is against the flusher. You can use the down "
+"arrow if you think you are too close. Press \"Save\" to save the new "
+"z-offset."
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/maintenance_flyouts/zoffset_flyout.jinja2:15
@@ -2950,14 +3014,6 @@ msgstr ""
 msgid "Enabled:"
 msgstr ""
 
-#: octoprint_lui/templates/flyouts_lui/setting_flyouts/webcam_flyout.jinja2:24
-msgid "Current view"
-msgstr ""
-
-#: octoprint_lui/templates/flyouts_lui/setting_flyouts/webcam_flyout.jinja2:29
-msgid "Refresh"
-msgstr ""
-
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/webcam_flyout.jinja2:47
 msgid "Finished timelapses"
 msgstr ""
@@ -2977,6 +3033,10 @@ msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/webcam_flyout.jinja2:170
 msgid "Retry"
+msgstr ""
+
+#: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:3
+msgid "Network Setup"
 msgstr ""
 
 #: octoprint_lui/templates/flyouts_lui/setting_flyouts/wireless_flyout.jinja2:15
@@ -3071,53 +3131,53 @@ msgstr ""
 msgid "Loading files..."
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:147
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:142
 msgid ""
 "There are no files on your printer yet. You can load files from a USB "
 "drive."
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:149
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:144
 msgid ""
 "There are no files on your printer yet. Click upload to load a file from "
 "your computer.."
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:161
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:156
 msgid ""
 "The printer appears to be offline. Connect the printer to the internet "
 "before you browse cloud storage services."
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:221
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:201
 msgid "Connect to cloud services"
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:266
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:242
 msgid "Filename:"
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:278
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:254
 msgid "Est. Print Time:"
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:284
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:260
 msgid "Analyzing job"
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:291
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:267
 msgid "Last printed:"
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:296
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:272
 msgid "Last print duration:"
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:307
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:283
 msgid "Copy to USB"
 msgstr ""
 
-#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:369
+#: octoprint_lui/templates/tabs_lui/files_lui.jinja2:345
 msgid "Not supported"
 msgstr ""
 
@@ -3151,6 +3211,10 @@ msgstr ""
 
 #: octoprint_lui/templates/tabs_lui/print_lui.jinja2:143
 msgid "Cancels the print job"
+msgstr ""
+
+#: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:120
+msgid "Network"
 msgstr ""
 
 #: octoprint_lui/templates/tabs_lui/settings_lui.jinja2:190
