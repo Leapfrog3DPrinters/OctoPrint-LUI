@@ -2,6 +2,10 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.2.7
+
+- fixed calibration procedure for bolt and made abort of calibration procedure work as expected
+
 ## 1.2.6
 
 - fixed failed upload of version 1.2.5

@@ -56,8 +56,14 @@ $(function () {
         self.abort = function()
         {
             sendToApi("printer/immediate_cancel");
-            self.sendHomeCommand('x','y');
             self.flyout.closeFlyout();
+            self.showPushInNozzles(false);
+            self.showHeatNozzles(false);
+            self.showHowToClean(false);
+            self.showBringLeftDown(false);
+            self.showBringRightDown(false);
+            self.showHeatingOrCooling(false);
+            self.showNormalCalibration(false);
             if(self.introView.isTutorialStarted){
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
