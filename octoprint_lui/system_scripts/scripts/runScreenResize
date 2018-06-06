@@ -1,30 +1,33 @@
 #!/bin/bash
+
+script_name="runScreenResize"
+autostart="/home/pi/.config/openbox/autostart"
+
 run_screensetting(){
   if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
     sudo logger "Noticed D-Wave resolution. Will be changed."
-		sudo sed -i '/hdmi_cvt=1024 600 60 6 0 0 0/c\hdmi_cvt=800 480 60 6 0 0 0' /boot/config.txt
-		sudo sed -i '/display_rotate=1/c\display_rotate=3' /boot/config.txt
-		sudo sed -i '/rot_mat="0 1 0 -1 0 1"/c\rot_mat="0 -1 1 1 0 0"' /usr/bin/dorotatetouch
+    echo "noticed wrong screen resolution"
+    sudo sed -i -e 's/hdmi_cvt=1024 600 60 6 0 0 0/hdmi_cvt=800 480 60 6 0 0 0/g' /boot/config.txt
+    sudo sed -i -e 's/display_rotate=1/display_rotate=3/g' /boot/config.txt
+    sudo sed -i -e 's/rot_mat=\"0 1 0 -1 0 1\"/rot_mat=\"0 -1 1 1 0 0\"/g' /usr/bin/dorotatetouch
     sudo logger "Resolution changed to 800x480."
-		REBOOT="yes"
-		echo $REBOOT
-	fi
-
-	if [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
-		sudo sed -i '/hdmi_cvt=800 480 60 6 0 0 0/c\hdmi_cvt=1024 600 60 6 0 0 0' /boot/config.txt
+    REBOOT="yes"
+    echo $REBOOT
+  elif [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
+    sudo sed -i 's@hdmi_cvt=800 480 60 6 0 0 0@hdmi_cvt=1024 600 60 6 0 0 0@' /boot/config.txt
     sudo logger "Noticed D-Wave resolution. Will be changed."
-		sudo sed -i '/display_rotate=3/c\display_rotate=1' /boot/config.txt
-		sudo sed -i '/rot_mat="0 -1 1 1 0 0"/c\rot_mat="0 1 0 -1 0 1"' /usr/bin/dorotatetouch
+    sudo sed -i 's@display_rotate=3@display_rotate=1@' /boot/config.txt
+    sudo sed -i 's@rot_mat=\"0 -1 1 1 0 0\"@rot_mat=\"0 1 0 -1 0 1\"@' /usr/bin/dorotatetouch
     sudo logger "Resolution changed to 1024x600."
-		REBOOT="yes"
-	fi
+    REBOOT="yes"
+  fi
 }
 
 set_readwrite(){
     if ! grep -i -q "$script_name" "$autostart"; then
         sudo sed -i "s@boot=overlay @@" /boot/cmdline.txt
         sudo sed -i "s@root_readonly=\"yes\"@root_readonly=\"no\"@" /boot/octopi.txt
-        sudo sed -i "1 i\/home/pi/scripts/runScreenRisize run" "$autostart"
+        sudo sed -i "1 i\/home/pi/scripts/runScreenResize run" "$autostart"
         sudo logger "script installed"
     fi
 }
@@ -80,7 +83,7 @@ REBOOT="no"
 
 
 
-key = $1
+key=$1
 sleep 1
 case $key in 
     "run")
@@ -93,5 +96,10 @@ case $key in
     cleanrun
     ;;
 esac
+
+if [ $REBOOT == "yes" ] 
+then
+sudo reboot
+fi
 
 sudo service lightdm restart

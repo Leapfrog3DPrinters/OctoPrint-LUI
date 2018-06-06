@@ -2,13 +2,14 @@
 
 Changelog for OctoPrint-LUI.
 
-<<<<<<< HEAD
-=======
+## 1.2.8
+
+- fixed the screen layout for new screen setup and better USB detection
+
 ## 1.2.7
 
 - fixed calibration procedure for bolt and made abort of calibration procedure work as expected
 
->>>>>>> master
 ## 1.2.6
 
 - fixed failed upload of version 1.2.5
