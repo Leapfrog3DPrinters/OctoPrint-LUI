@@ -314,7 +314,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._init_usb()
 
         ##~ Init firmware update
-        self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions.json'
+        self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions_2.json'
         self.firmware_update_url_setting = self._settings.get(['firmware_update_url'])
         if self.debug and self.firmware_update_url_setting:
             self.firmware_update_url = self.firmware_update_url_setting
@@ -1417,7 +1417,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.manual_bed_calibration_tool = "tool1"
         self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
         self._set_print_mode(PrintModes.MIRROR)
-        self._printer.commands(["G1 X137 Y-33 F12000"])
+	if self.model == "bolt":
+            self._printer.commands(["G1 X127 Y-33 F12000"])
+        else:
+            self._printer.commands(["G1 X137 Y-33 F12000"])
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/bed/calibrate/heatandclean", methods=["POST"])
@@ -1447,7 +1450,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         #self._printer.commands(["M84 S600"]) # Set stepper disable timeout to 10min
         self._printer.commands(["G1 Z5 F50"])
         self._set_print_mode(PrintModes.MIRROR)
-        self._printer.commands(["G1 X135 Y20 F12000"])
+        if self.model == "bolt":
+            self._printer.commands(["G1 X127 Y-33 F12000"])
+        else:
+            self._printer.commands(["G1 X137 Y-33 F12000"])
         self._printer.commands(["G1 Z2 F50"])
         return make_response(jsonify(), 200)
 
@@ -1457,7 +1463,10 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._set_print_mode(PrintModes.MIRROR)
         self._printer.home(['x', 'y', 'z'])
         self._printer.commands(["G1 Z5 F50"])   
-        self._printer.commands(["G1 X135 Y20 F12000"])
+        if self.model == "bolt":
+            self._printer.commands(["G1 X127 Y-33 F12000"])
+        else:
+            self._printer.commands(["G1 X137 Y-33 F12000"])
         self._printer.commands(["G1 Z0 F50"])
         return make_response(jsonify(), 200)
 
@@ -2245,7 +2254,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if not self.fw_version_info or forced:
             self._logger.debug("Checking online for new firmware version")
-            self.fw_version_info = self.firmware_update_info.get_latest_version(self.model)
+            self.fw_version_info = self.firmware_update_info.get_latest_version(self.model, LooseVersion(self.machine_info["firmware_version"]))
+            self._logger.warning(LooseVersion(self.machine_info["firmware_versions"]))
 
         new_firmware = False
         new_firmware_version = None
