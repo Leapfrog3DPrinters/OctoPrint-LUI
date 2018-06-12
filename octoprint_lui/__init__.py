@@ -1312,12 +1312,13 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         """
         Starts a thread that fetches firmware updates. A socket message is sent whenever the process completes
         """
+        self._logger.warning("getting update")
         if self.fetching_firmware_update:
-            self._logger.debug("Firmware fetch thread already started. Not spawning another one.")
+            self._logger.warning("Firmware fetch thread already started. Not spawning another one.")
             return make_response(jsonify(), 400)
         else:
             self.fetching_firmware_update = True
-            self._logger.debug("Starting firmware fetch thread")
+            self._logger.warning("Starting firmware fetch thread")
             firmware_fetch_thread = threading.Thread(target=self._notify_firmware_update, args=(bool(silent),))
             firmware_fetch_thread.daemon = False
             firmware_fetch_thread.start()
@@ -1426,23 +1427,11 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
     @BlueprintPlugin.route("/maintenance/bed/calibrate/heatandclean", methods=["POST"])
     def calibration_bed_heat_and_clean(self):
         self._set_movement_mode("absolute")
-        #material_tool1 = self._get_material_from_name(self.tools["tool1"]["filament_material_name"])
-        #temp_tool1 = int(material_tool1['extruder'])
-        #material_tool0 = self._get_material_from_name(self.tools["tool0"]["filament_material_name"])
-        #temp_tool0 = int(material_tool0['extruder'])
-        #temp_bed = int(material_tool0['bed'])
-        #self.heat_to_temperature("tool1", temp_tool1)
-        #self.heat_to_temperature("tool0", temp_tool0)
         self.calibration_type = "calibration_bed"
         calibration_src_filename = self.model + "_heating_for_cleaning.gcode"
         #self._execute_printer_script('heating_for_cleaning', { "temp_tool0": temp_tool0, "temp_tool1": temp_tool1, "temp_bed": temp_bed })
         abs_path = self._copy_calibration_file(calibration_src_filename)
         self._printer.select_file(abs_path, False, True)
-        #self._printer.commands(["G1 Z5 F500"])
-        #self._set_print_mode(PrintModes.MIRROR)
-        #self._printer.commands(["G1 X137 Y-33 F12000"])
-        #self._printer.commands(["G1 Z20 F500"])
-        #self._logger.warning("Temp: {tool} & {temp}".format(tool="tool1", temp=temp_tool1 ))
         return make_response(jsonify(), 200)
 
     @BlueprintPlugin.route("/maintenance/bed/calibrate/pushLeftNozzleDown", methods=["POST"])
@@ -2254,8 +2243,8 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
         if not self.fw_version_info or forced:
             self._logger.debug("Checking online for new firmware version")
-            self.fw_version_info = self.firmware_update_info.get_latest_version(self.model, LooseVersion(self.machine_info["firmware_version"]))
-            self._logger.warning(LooseVersion(self.machine_info["firmware_versions"]))
+            self.fw_version_info = self.firmware_update_info.get_latest_version(self.model, self.machine_info["firmware_version"])
+            self._logger.debug(self.fw_version_info)
 
         new_firmware = False
         new_firmware_version = None
