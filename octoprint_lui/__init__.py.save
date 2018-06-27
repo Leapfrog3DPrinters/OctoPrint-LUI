@@ -1440,9 +1440,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.commands(["G1 Z5 F50"])
         self._set_print_mode(PrintModes.MIRROR)
         if self.model == "bolt":
-            self._printer.commands(["G1 X127 Y20 F12000"])
+            self._printer.commands(["G1 X127 Y-33 F12000"])
         else:
-            self._printer.commands(["G1 X137 Y20 F12000"])
+            self._printer.commands(["G1 X137 Y-33 F12000"])
         self._printer.commands(["G1 Z2 F50"])
         return make_response(jsonify(), 200)
 
@@ -1453,9 +1453,9 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._printer.home(['x', 'y', 'z'])
         self._printer.commands(["G1 Z5 F50"])   
         if self.model == "bolt":
-            self._printer.commands(["G1 X127 Y20 F12000"])
+            self._printer.commands(["G1 X127 Y-33 F12000"])
         else:
-            self._printer.commands(["G1 X137 Y20 F12000"])
+            self._printer.commands(["G1 X137 Y-33 F12000"])
         self._printer.commands(["G1 Z0 F50"])
         return make_response(jsonify(), 200)
 
@@ -3683,7 +3683,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             self._execute_printer_script("after_printer_connected", context)
 
         if script_name == "beforePrintResumed":
-            self._logger.debug('Print resumed. Print mode: {0} Paused positipon: {1}'.format(PrintModes.to_string(self.paused_print_mode), self.paused_position))
+            self._logger.debug('Print resumed. Print mode: {0} Paused position: {1}'.format(PrintModes.to_string(self.paused_print_mode), self.paused_position))
             context = { "paused_position": self.paused_position, "paused_print_mode": self.paused_print_mode }
             self._execute_printer_script("before_print_resumed", context)
 

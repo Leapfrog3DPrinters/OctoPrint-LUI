@@ -406,6 +406,6 @@ $(function ()  {
     ADDITIONAL_VIEWMODELS.push([
         WebcamViewModel,
         ["flyoutViewModel", "loginStateViewModel", "printerStateViewModel", "settingsViewModel", "filesViewModel"],
-        ["#webcam_settings_flyout_content", "#info_livestream"]
+        ["#webcam_settings_flyout_content", "#info_livestream","#homing_with_camera"]
     ]);
 });

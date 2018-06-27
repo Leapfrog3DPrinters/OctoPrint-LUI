@@ -2,6 +2,11 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.2.9
+
+-Changed update mechanism to ensure better installation of software updates in the future
+  
+
 ## 1.2.8
 
 - fixed the screen layout for new screen setup and better USB detection
