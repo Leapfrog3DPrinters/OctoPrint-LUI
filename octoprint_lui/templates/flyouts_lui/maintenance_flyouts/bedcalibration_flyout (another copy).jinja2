@@ -15,7 +15,7 @@
             </div>
             <div class="Table-row">
               <div class="Table-item">
-              <p>{{ _('Ensure Print Bed is clean before continuing. Ensure filament is unloaded.') }}</p>
+              <p>{{ _('Please make sure there is no print on the bed before you continue.') }}</p>
               </div>
             </div>
             <div class="Table-row">
@@ -41,8 +41,8 @@
             <div id="bring-bed-forward" data-bind= "visible: showPushInNozzles()">
               <div class= "Table-row">
                 <div class="explain">
-                  <p>{{ _('Use the Bed Levelling knobs to lower the bed to its lowest position. Loosen the Hot End Thumb screws and push both Hot Ends upwards in to the heat sink. Ensure the left Hot End is around 1mm lower than the right. Tighten the Hot End Thumb screws.')}}</p>
-                 <img src="{{ url_for('plugin.lui.static', filename='img/'+model+'/Calibration-Knob-Height.png') }}" />
+                  <p>{{ _('To make space for the calibration, please bring the bed down by screwing the knobs of the bed to a flush level with the thread sticking out. Also push the hot-ends in all the way before you continue.')}}</p>
+                 <img src="{{ url_for('plugin.lui.static', filename='img/'+model+'/Calibration-Knob-Height.gif') }}" />
                 </div>
               </div>
               <ul class="button-area">
@@ -61,14 +61,14 @@
             <div id="heat-up-nozzles" data-bind= "visible: showHeatNozzles()">        
               <div class= "Table-row">
                 <div class="Table-item">
-                  <p>{{ _('The Hot Ends will now heat up to assist with cleaning.')}}</p>
+                  <p>{{ _('The hot-ends are now heating up to the temperature which is best for the material in question. Please wait for this to be finished...')}}</p>
                 </div>
               </div>
             </div>
                    <div id="wipe-nozzles-clean" data-bind= "visible: showHowToClean()">
               <div class= "Table-row">
                 <div class="Table-item">
-                  <p>{{ _('Caution the Hot Ends are hot. Ensure nozzles are clean from any filament build up.')}}</p>
+                  <p>{{ _('Clean the hot-end with a cloth on the bottom to ensure that the nozzle is completely flat. It is recommended to remove the current filament.')}}</p>
                 </div>
               </div>
               <ul class="button-area">
@@ -93,7 +93,7 @@
             <div id="push-left-down" data-bind= "visible: showBringLeftDown()">
               <div class= "Table-row">
                 <div class="explain">
-                  <p>{{ _('Caution the Hot Ends are hot. Loosen the Hot End Thumb screws and push both Hot Ends upwards in to the heat sink. Ensure the left Hot End is around 1mm lower than the right. Tighten the Hot End Thumb screws.')}}</p>
+                  <p>{{ _('Bring the left nozzle down to the bed, so that the right nozzle is not touching the paper on the bed. CAUTION! The nozzle is hot!')}}</p>
                   <img src="{{ url_for('plugin.lui.static', filename='img/'+model+'/Left-Nozzle-Down.gif') }}" />
                 </div>
               </div>
@@ -114,7 +114,7 @@
             <div id="bring-right-down" data-bind= "visible: showBringRightDown()">
               <div class= "Table-row">
                 <div class="Table-item">
-                  <p>{{ _('Caution the Hot Ends are hot. Adjust the right Hot End so that it is equal with the left.')}}</p>
+                  <p>{{ _('Bring the right nozzle down to the bed, so that the right nozzle is touching the paper on the bed. CAUTION! The nozzle can be still hot!')}}</p>
                 </div>
             </div>
              <ul class="button-area">
@@ -133,7 +133,7 @@
             <div id="show-calibration" data-bind="visible: showNormalCalibration()">        
               <div class="Table-row">
                 <div class="Table-item">
-                <p>{{ _('Caution the Hot Ends are hot. Select each corner in turn. The left print head will move to the selected position. Place a piece of paper between the bed and the nozzle. Adjust the Bed Leveling Screw until there is light friction between the nozzle and the bed. Repeat this sequence until each corner is equal and the bed level.')}}</p>
+                <p>{{ _('Select the corner you would like to calibrate. The extruder will move into this position. You may adjust the bed by turning the knob below the bed. Place a piece of paper between the bed and the nozzle and adjust the bed until there is friction between the paper and the nozzle. Repeat this for every corner.')}}</p>
                 </div>
               </div>
               <div class="Table-row">

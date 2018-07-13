@@ -2,6 +2,10 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.3.0
+
+-Fixed bed calibration sequence   
+
 ## 1.2.9
 
 -Changed update mechanism to ensure better installation of software updates in the future
