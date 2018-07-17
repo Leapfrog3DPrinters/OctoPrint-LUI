@@ -4,7 +4,7 @@ Changelog for OctoPrint-LUI.
 
 ## 1.3.1 
 
--  Fixed problem which stopped some users from being able too update
+-  Fixed problem which stopped some users from being able too update.
 
 
 ## 1.3.0
