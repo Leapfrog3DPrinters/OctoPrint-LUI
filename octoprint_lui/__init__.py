@@ -411,7 +411,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-LUI'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'Network Manager',
@@ -421,7 +421,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-NetworkManager'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'Flash Firmware Module',
@@ -431,7 +431,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-flashArduino'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'G-code Render Module',
@@ -441,7 +441,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-gcodeRender'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             },
             {
                 'name': 'OctoPrint',
@@ -451,7 +451,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             }
         ]
 
@@ -466,7 +466,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
                 'path': '{path}OctoPrint-rgbStatus'.format(path=self.update_basefolder),
                 'update': False,
                 'forced_update': False,
-                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard origin $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
+                "command": "find .git/objects/ -type f -empty | sudo xargs rm -f && git fetch --all && git reset --hard $(git rev-parse --abbrev-ref HEAD) && {path}OctoPrint/venv/bin/python setup.py clean && {path}OctoPrint/venv/bin/python setup.py install".format(path=self.update_basefolder)
             });
 
     def _set_model(self):
