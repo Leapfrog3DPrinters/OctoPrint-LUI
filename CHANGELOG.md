@@ -4,7 +4,7 @@ Changelog for OctoPrint-LUI.
 
 ## 1.2.9
 
--  Fixed issue whih coursed some users to be unable too update 
+-  Fixed issue which coursed some users to be unable too update 
 -  Fixed bed calibration sequence
 -  Changed update mechanism to ensure better installation of software updates in the future
   
