@@ -2,6 +2,9 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.3.6
+-  Update dingen
+
 ## 1.3.2
 -  Nothing just checking
 
