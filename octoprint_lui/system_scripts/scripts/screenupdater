@@ -18,6 +18,7 @@ touchpath="/usr/bin"
 
 run_sequence()
 {
+	#migrate files to correct location in filesystem
 	sudo cp -fr $sourcepath/rules/* $rulespath
 	find $rulespath -type d -exec chmod 755 {} \;
 	sudo cp -fr $sourcepath/scripts $scriptspath
