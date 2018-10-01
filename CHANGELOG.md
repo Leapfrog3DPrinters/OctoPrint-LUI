@@ -2,6 +2,9 @@
 
 Changelog for OctoPrint-LUI.
 
+##1.3.1
+- Implemented compatibility with the three screen versions
+
 ## 1.2.9
 
 -  Fixed issue which coursed some users to be unable too update 

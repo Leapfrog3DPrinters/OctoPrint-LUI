@@ -4,23 +4,60 @@ script_name="runScreenResize"
 autostart="/home/pi/.config/openbox/autostart"
 
 run_screensetting(){
-  if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
-    sudo logger "Noticed D-Wave resolution. Will be changed."
-    echo "noticed wrong screen resolution"
-    sudo sed -i -e 's/hdmi_cvt=1024 600 60 6 0 0 0/hdmi_cvt=800 480 60 6 0 0 0/g' /boot/config.txt
-    sudo sed -i -e 's/display_rotate=1/display_rotate=3/g' /boot/config.txt
-    sudo sed -i -e 's/rot_mat=\"0 1 0 -1 0 1\"/rot_mat=\"0 -1 1 1 0 0\"/g' /usr/bin/dorotatetouch
-    sudo logger "Resolution changed to 800x480."
-    REBOOT="yes"
-    echo $REBOOT
-  elif [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
-    sudo sed -i 's@hdmi_cvt=800 480 60 6 0 0 0@hdmi_cvt=1024 600 60 6 0 0 0@' /boot/config.txt
-    sudo logger "Noticed D-Wave resolution. Will be changed."
-    sudo sed -i 's@display_rotate=3@display_rotate=1@' /boot/config.txt
-    sudo sed -i 's@rot_mat=\"0 -1 1 1 0 0\"@rot_mat=\"0 1 0 -1 0 1\"@' /usr/bin/dorotatetouch
-    sudo logger "Resolution changed to 1024x600."
-    REBOOT="yes"
-  fi
+  #check for screen en set files accordingly
+	if [[ $(lsusb | grep 'D-WAV') = *D-WAV* ]]; then
+		sudo rm /boot/config.txt
+		sleep 1
+		sudo cp /boot/configWave.txt /boot/config.txt
+		sudo logger "config file set to WaveShare screen, resolution is 1024x600, display rotation is 1"
+		
+		sudo rm /usr/bin/dorotatetouch
+		sleep 1
+		sudo cp /usr/bin/dorotatetouchWave /usr/bin/dorotatetouch
+		sudo logger "rotation matrix for touchscreen set to 0 1 0; -1 0 1; 0 0 1;"
+		REBOOT="yes"
+	elif [[ $(lsusb | grep 'Atmel') = *Atmel* ]]; then
+		sudo rm /boot/config.txt
+		sleep 1
+		sudo cp /boot/configAtmel.txt /boot/config.txt
+		sudo logger "config file set to Atmel screen, resolution is 800x480, display rotation is 3"
+		
+		sudo rm /usr/bin/dorotatetouch
+		sleep 1
+		sudo cp /usr/bin/dorotatetouchAtmel /usr/bin/dorotatetouch
+		sudo logger "rotation matrix for touchscreen set to 0 -1 1; 1 0 0; 0 0 1;"
+		REBOOT="yes"
+	elif [[ $(dmesg | grep 'FT5406') = *FT5406* ]]; then
+		sudo rm /boot/config.txt
+		sleep 1
+		sudo cp /boot/configFT5406.txt /boot/config.txt
+		sudo logger "config file set to FT5406 screen, resolution is 800x480, display rotation is 1"
+		
+		sudo rm /usr/bin/dorotatetouch
+		sleep 1
+		#same touch rotation as WaveShare so file can be reused
+		sudo cp /usr/bin/dorotatetouchWave /usr/bin/dorotatetouch
+		sudo logger "rotation matrix for touchscreen set to 0 1 0; -1 0 1; 0 0 1;"
+		REBOOT="yes"
+	fi
+
+#  if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
+#    sudo logger "Noticed D-Wave resolution. Will be changed."
+#    echo "noticed wrong screen resolution"
+#    sudo sed -i -e 's/hdmi_cvt=1024 600 60 6 0 0 0/hdmi_cvt=800 480 60 6 0 0 0/g' /boot/config.txt
+#    sudo sed -i -e 's/display_rotate=1/display_rotate=3/g' /boot/config.txt
+#    sudo sed -i -e 's/rot_mat=\"0 1 0 -1 0 1\"/rot_mat=\"0 -1 1 1 0 0\"/g' /usr/bin/dorotatetouch
+#    sudo logger "Resolution changed to 800x480."
+#    REBOOT="yes"
+#    echo $REBOOT
+#  elif [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
+#    sudo sed -i 's@hdmi_cvt=800 480 60 6 0 0 0@hdmi_cvt=1024 600 60 6 0 0 0@' /boot/config.txt
+#    sudo logger "Noticed D-Wave resolution. Will be changed."
+#    sudo sed -i 's@display_rotate=3@display_rotate=1@' /boot/config.txt
+#    sudo sed -i 's@rot_mat=\"0 -1 1 1 0 0\"@rot_mat=\"0 1 0 -1 0 1\"@' /usr/bin/dorotatetouch
+#    sudo logger "Resolution changed to 1024x600."
+#    REBOOT="yes"
+#  fi
 }
 
 set_readwrite(){
@@ -45,7 +82,7 @@ cleanrun(){
 REBOOT="no"
   if [[ $(lsusb | grep 'Atmel') = *Atmel* ]]; then
 	  sudo logger "Found Atmel Board in system."
-	  if [[ $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
+	  if [[ $(grep "display_rotate=1" /boot/config.txt) = *cvt=* || $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
       set_readwrite
       sudo logger "need to turn to read-write mode"
       REBOOT="yes"
@@ -63,7 +100,7 @@ REBOOT="no"
 
   if [[ $(lsusb | grep 'D-WAV') = *D-WAV* ]]; then
 	  sudo logger "Found D-Wave Board in system."
-	  if [[ $(grep "800 480" /boot/config.txt) = *cvt=* ]]; then
+	  if [[ $(grep "800 480" /boot/config.txt) = *cvt=* || $(grep "display_rotate=3" /boot/config.txt) = *cvt=* ]]; then
 		  set_readwrite
       sudo logger "need to turn to read-write mode"
       REBOOT="yes"
@@ -77,6 +114,39 @@ REBOOT="no"
 		  sudo service lightdm restart
       sudo logger "Changed Chromium zoom for the right screen."
 	  fi
+  fi
+  
+  if [[ $(dmesg | grep 'FT5406') = *FT5406* ]]; then
+	  sudo logger "Found FT5406 Board in system."
+	  #copy of D-WAVE board
+	  if [[ $(grep "800 480" /boot/config.txt) = *cvt=* || $(grep "display_rotate=3" /boot/config.txt) = *cvt=* ]]; then
+		  set_readwrite
+      sudo logger "need to turn to read-write mode"
+      REBOOT="yes"
+	  fi
+	  if ! [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
+      sudo logger "Chromium had wrong zoom for this screen."
+		  sudo pkill -f "chromium"
+		  sudo rm /home/pi/.config/chromium/Default/Preferences
+		  sleep 1
+		  sudo cp /home/pi/.config/chromium/Default/Preferences1024x600 /home/pi/.config/chromium/Default/Preferences
+		  sudo service lightdm restart
+      sudo logger "Changed Chromium zoom for the right screen."
+	  fi
+#	  if [[ $(grep "display_rotate=3" /boot/config.txt) = *cvt=* || $(grep "1024 600" /boot/config.txt) = *cvt=* ]]; then
+#      set_readwrite
+#      sudo logger "need to turn to read-write mode"
+#      REBOOT="yes"
+#	  fi
+#	  if [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
+#      sudo logger "Chromium had wrong zoom for this screen."
+#		  sudo pkill -f "chromium"
+#		  sudo rm /home/pi/.config/chromium/Default/Preferences
+#		  sleep 1
+#		  sudo cp /home/pi/.config/chromium/Default/Preferences800x480 /home/pi/.config/chromium/Default/Preferences
+#		  sudo service lightdm restart
+#      sudo logger "Changed Chromium zoom for the right screen."
+#	  fi
   fi
   sudo logger "reboot = $REBOOT"
 }

@@ -2,7 +2,7 @@
 
 ###
 #
-#fixes the screen resolution when connected and also the mouse should work as intended.
+#rewritten screen updates for expandability purposes
 #
 ###
 
@@ -13,6 +13,8 @@ rulespath="/etc/udev/rules.d"
 chromiumpath="/home/pi/.config/chromium/Default"
 scriptspath="/home/pi/scripts"
 sourcepath="/home/pi/OctoPrint-LUI/octoprint_lui/system_scripts"
+bootpath="/boot"
+touchpath="/usr/bin"
 
 run_sequence()
 {
@@ -21,6 +23,10 @@ run_sequence()
 	sudo cp -fr $sourcepath/scripts $scriptspath
 	find $scriptspath -type d -exec chmod 755 {} \;
 	sudo cp -fr $sourcepath/chromium/* $chromiumpath
+	sudo cp -fr $sourcepath/boot/* $bootpath
+	find $bootpath -type d -exec chmod 755 {} \;
+	sudo cp -fr $sourcepath/usrbin/* $touchpath	
+	find $touchpath/dorotatetouch -type d -exec chmod 777 {} \;
 	sudo udevadm control --reload-rules
 	sudo udevadm trigger
 	sudo touch /home/pi/.screenupdated_new
