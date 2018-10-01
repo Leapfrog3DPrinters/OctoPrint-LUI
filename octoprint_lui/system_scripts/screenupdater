@@ -26,10 +26,10 @@ run_sequence()
 	sudo cp -fr $sourcepath/boot/* $bootpath
 	find $bootpath -type d -exec chmod 755 {} \;
 	sudo cp -fr $sourcepath/usrbin/* $touchpath	
-	find $touchpath/dorotatetouch -type d -exec chmod 777 {} \;
+	find $touchpath/dorotatetouch* -type d -exec chmod 755 {} \;
 	sudo udevadm control --reload-rules
 	sudo udevadm trigger
-	sudo touch /home/pi/.screenupdated_new
+	sudo touch /home/pi/.screenupdated_October1
 }
 
 splash()
@@ -41,7 +41,7 @@ splash()
 
 do_start()
 {
-    if ! grep -f /home/pi/.screenupdated_new; then
+    if ! grep -f /home/pi/.screenupdated_October1; then
         echo "Image not ready for the new screen. Will be installed on next boot."
         do_install
         echo "Installation done. Please reboot."
