@@ -42,7 +42,7 @@ splash()
 
 do_start()
 {
-    if ! grep -f /home/pi/.screenupdated_October1; then
+    if [ ! -f /home/pi/.screenupdated_October1 ]; then
         echo "Image not ready for the new screen. Will be installed on next boot."
         do_install
         echo "Installation done. Please reboot."
