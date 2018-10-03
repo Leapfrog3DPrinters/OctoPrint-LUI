@@ -1,4 +1,4 @@
-$(function ()  {
+$(function () {
     function BedCalibrationViewModel(parameters) {
         var self = this;
 
@@ -7,6 +7,7 @@ $(function ()  {
         self.flyout = parameters[2];
         self.printerState = parameters[3];
         self.introView = parameters[4];
+        self.temperatures = parameters[5];
 
         self.mayAbort = ko.observable(true);
         self.mayAccept = ko.observable(false);
@@ -21,6 +22,19 @@ $(function ()  {
         self.autoBedCalibrationProgressString = ko.observable(" ");
         self.autoBedCalibrationProgressColor = ko.observable("rgb(" + self.gaugeColorStart[0] + "," + self.gaugeColorStart[2] + "," + self.gaugeColorStart[1] + ")");
         self.autoBedCalibrationComplete = ko.observable(false);
+        self.showPushInNozzles = ko.observable(false);
+        self.showHeatNozzles = ko.observable(false);
+        self.showHowToClean = ko.observable(false);
+        self.showBringLeftDown = ko.observable(false);
+        self.showBringRightDown = ko.observable(false);
+        self.showHeatingOrCooling = ko.observable(false);
+        self.showNormalCalibration = ko.observable(false);
+
+
+        self.sendToCalibration = function(name){
+          sendToApi("maintenance/bed/calibrate/" + name);
+        };
+        
 
         self.resetState = function()
         {
@@ -41,7 +55,15 @@ $(function ()  {
 
         self.abort = function()
         {
+            sendToApi("printer/immediate_cancel");
             self.flyout.closeFlyout();
+            self.showPushInNozzles(false);
+            self.showHeatNozzles(false);
+            self.showHowToClean(false);
+            self.showBringLeftDown(false);
+            self.showBringRightDown(false);
+            self.showHeatingOrCooling(false);
+            self.showNormalCalibration(false);
             if(self.introView.isTutorialStarted){
                 setTimeout(function () {
                     self.introView.introInstance.refresh();
@@ -52,6 +74,7 @@ $(function ()  {
 
         self.accept = function()
         {
+            self.showBringRightDown(false);
             if (self.autoBedCalibrationComplete()) {
                 self.restoreFromCalibrationPosition();
                 self.resetState(); // Return to main screen, so user may start z-offset
@@ -66,12 +89,13 @@ $(function ()  {
                     self.introView.introInstance.refresh();
                 }
             }
-        }
+        };
 
-        self.startManualBedCalibration = function()
+        self.leftNozzleDown = function()
         {
             sendToApi("maintenance/bed/calibrate/start");
-            self.showManualBedCalibration(true);
+            self.showNormalCalibration(true);
+            self.showBringLeftDown(false);
             self.mayAbort(false);
             self.mayAccept(true);
             //IntroJS
@@ -81,7 +105,7 @@ $(function ()  {
                 }, 300);
                 self.introView.introInstance.goToStep(self.introView.getStepNumberByName("calibrateBed"));
             }
-        }
+        };
 
         self.startZoffset = function ()  {
             self.flyout.closeFlyoutAccept();
@@ -101,7 +125,7 @@ $(function ()  {
 
         self.restoreFromCalibrationPosition = function () {
             sendToApi("maintenance/bed/calibrate/finish");
-        }
+        };
 
         $('.bed-canvas-item').click(function ()  {
             $(this).siblings().removeClass('active');
@@ -110,8 +134,43 @@ $(function ()  {
             self.moveToCorner($(this).data('corner'));
         });
 
-        self.updateAutoBedCalibrationProgress = function(maxCorrectionValue)
-        {
+        self.startManualBedCalibration = function() {
+            self.showPushInNozzles(true);
+            self.showManualBedCalibration(true);
+            self.sendToCalibration("bringforward");
+            self.mayAbort(true);
+        }
+
+        self.nozzlesPushedIn = function(){
+            self.showPushInNozzles(false);
+            self.showHeatNozzles(true);
+            self.showHeatingOrCooling(true);
+            self.sendToCalibration("heatandclean")
+        };
+
+        self.onHeatingCompleted = function (val){
+            self.showHowToClean(true);
+            self.showHeatNozzles(false);
+            self.showHeatingOrCooling(false);
+        };
+
+        self.nozzlesAreClean = function(){
+            self.showHowToClean(false);
+            self.sendToCalibration("pushLeftNozzleDown");
+            self.showBringLeftDown(true);
+        };
+
+        self.calibrationDone = function(){
+            self.showNormalCalibration(false);
+            self.sendToCalibration("pushRightNozzleDown");
+            self.showBringRightDown(true);
+        };
+
+        self.bringNozzlesForwardInCalibration = function(){
+            self.sendToCalibration("bringforward");
+        };
+
+        self.updateAutoBedCalibrationProgress = function(maxCorrectionValue){
             var progress = Math.max(0, 5 - maxCorrectionValue) / 5;
 
             var gaugeColor = self.gaugeColorStart;
@@ -129,7 +188,7 @@ $(function ()  {
 
             self.autoBedCalibrationProgressColor(progressColorStr);
             self.autoBedCalibrationProgress(Math.round(10 + progress * 90));
-        }
+        };
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "lui") {
@@ -150,27 +209,27 @@ $(function ()  {
                     self.mayAbort(false);
                     self.mayAccept(true);
                     break;
+                //case "heating_failed":
+                //    self.onHeatingFailed(messageData.calibration_type);
+                //    break;
+                //case "heating_completed":
+                //    self.onHeatingCompleted(messageData.calibration_type);
+                //    break;
+                case "calibration_completed":
+                    self.onHeatingCompleted(messageData.calibration_type);
+                    break;
             }
-        }
+        };
 
         self.onBedCalibrationIntroExit = function () {
             self.abort();
-        }
+        };
 
+  }
 
-    }
-    // This is how our plugin registers itself with the application, by adding some configuration
-    // information to the global variable ADDITIONAL_VIEWMODELS
     ADDITIONAL_VIEWMODELS.push([
-        // This is the constructor to call for instantiating the plugin
         BedCalibrationViewModel,
-
-        // This is a list of dependencies to inject into the plugin, the order which you request
-        // here is the order in which the dependencies will be injected into your view model upon
-        // instantiation via the parameters argument
-        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "introViewModel"],
-
-        // Finally, this is the list of all elements we want this view model to be bound to.
-        ["#bedcalibration_flyout"]
+        ["settingsViewModel", "loginStateViewModel", "flyoutViewModel", "printerStateViewModel", "toolInfoViewModel", "introViewModel"],
+        ["#bedcalibration_flyout_content"]
     ]);
 });

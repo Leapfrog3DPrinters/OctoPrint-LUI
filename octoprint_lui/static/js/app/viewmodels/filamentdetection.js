@@ -61,6 +61,7 @@ $(function ()  {
         self.completeFilamentDetection = function()
         {
             self.flyout.closeFlyoutAccept('filament_detection');
+             OctoPrint.job.togglePause();
         }
 
         self.cancelFilamentDetection = function()

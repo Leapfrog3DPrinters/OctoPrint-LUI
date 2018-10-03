@@ -1,5 +1,5 @@
 {% if paused_position %}
-	G28 Y0 X0
+	G1 Y0 X0
 	T{{ paused_position['t'] }};											Set tool (only for normal and full control modes)			
 	G1 Z{{ paused_position['z'] }} F1000;									Return to last known position (z)	
 	G1 X{{ paused_position['x'] }} Y{{ paused_position['y'] }} F10000;		Return to last known position (x,y)
@@ -7,9 +7,11 @@
 		G92 E{{ paused_position['e'] }};										Reset E coordinate
 	{% endif %}
 	{% if paused_position['f'] %}
-		G1 F{{ paused_position['f'] }};											Reset to last known speed
+		G1 X1 Y1 F{{ paused_position['f'] }};											Reset to last known speed
+	{% else%}
+                G1 X1 Y1 F8000
 	{% endif %}
 {% else %}
-	G28 Y0 X0
-	G1 F8000
+	G1 X0 Y0
+	G1 X1 Y1 F8000
 {% endif %}

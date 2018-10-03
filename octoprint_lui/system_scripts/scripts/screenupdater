@@ -18,6 +18,7 @@ touchpath="/usr/bin"
 
 run_sequence()
 {
+	#migrate files to correct location in filesystem
 	sudo cp -fr $sourcepath/rules/* $rulespath
 	find $rulespath -type d -exec chmod 755 {} \;
 	sudo cp -fr $sourcepath/scripts $scriptspath
@@ -41,7 +42,7 @@ splash()
 
 do_start()
 {
-    if ! grep -f /home/pi/.screenupdated_October1; then
+    if [ ! -f /home/pi/.screenupdated_October1 ]; then
         echo "Image not ready for the new screen. Will be installed on next boot."
         do_install
         echo "Installation done. Please reboot."

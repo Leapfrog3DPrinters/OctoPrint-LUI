@@ -176,7 +176,7 @@ $(function () {
 
     }
 
-
+//RGB plugin
 
     ADDITIONAL_VIEWMODELS.push([
         RgbViewModel,

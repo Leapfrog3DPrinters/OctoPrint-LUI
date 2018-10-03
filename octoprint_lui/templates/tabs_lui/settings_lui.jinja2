@@ -21,7 +21,7 @@
           </li>
         </ul>
       </div><!-- Printer -->
-      {% if local_addr %}
+       {% if local_addr %} 
       <!-- Maintenance -->
       <div id="maintenance" class="settings_topic">
         <ul class="topic_main" data-bind="touchClick: function () {showSettingsTopic('maintenance')}, css: { disabled: !printerState.isOperational() || printerState.isPaused() || printerState.isPrinting() } ">

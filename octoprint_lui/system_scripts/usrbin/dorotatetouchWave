@@ -1,0 +1,6 @@
+#!/bin/bash
+export DISPLAY=:0
+export XAUTHORITY=/home/pi/.Xauthority
+id=$(xinput -list | awk -v search="BYZ|WaveShare|214e|FT5406" '$0 ~ search {match($0, /id=[0-9]+/); if(RSTART) print substr($0, RSTART+3, RLENGTH-3) }');
+rot_mat="0 1 0 -1 0 1" #0 -1 1 1 0 0 for 90deg left, 0 1 0 -1 0 1 for 90 deg right
+xinput set-float-prop $id "Coordinate Transformation Matrix" $rot_mat 0 0 1

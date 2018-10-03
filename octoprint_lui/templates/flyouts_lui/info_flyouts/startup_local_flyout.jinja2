@@ -59,19 +59,20 @@
       </div>
     </div>
   {% if printer_profile["autoBedCalibration"] %}
-    <div class="Table">
+  <div id="homing_with_camera">
+    <div class="Table-row">
       <div class="Table-item">
         {{ _('Current view') }}
       </div>
-
       <div class="Table-item">
         <a href="#" data-bind="touchClick: function () { refreshPreview() }" style="margin-left: auto">
-          <i class="fa fa-refresh"></i> {{ _('Refresh') }}
+          <i class="fa fa-refresh"></i> {{ _('Show') }}
         </a>
       </div>
-      <!-- img not in Table-row>Table-item due to chromium bug -->
-      <img class="webcam-preview" data-bind="attr: {src: webcam_previewUrl }" />
     </div>
+    <!-- img not in Table-row>Table-item due to chromium bug -->
+    <img class="webcam-preview" data-bind="attr: {src: webcam_previewUrl }" />
+  </div>
   {% endif %}
   </div>
 </div>

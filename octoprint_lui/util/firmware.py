@@ -1,6 +1,7 @@
 import requests, json
 import logging
 import shutil, os
+from distutils.version import LooseVersion
 
 class FirmwareUpdateUtility(object):
     """Checks the web for a firmware update"""
@@ -11,15 +12,19 @@ class FirmwareUpdateUtility(object):
         self.firmware_storage_folder = data_folder
         self._logger = logging.getLogger("octoprint.plugins.lui.util.firmwareupdateutility")
 
-    def get_latest_version(self, model):
+    def get_latest_version(self, model, current_version):
         """ Returns info about the latest available firmware version """
         all_versions = self._get_version_info()
-
         if all_versions:
             if "firmware_versions" in all_versions and model.lower() in all_versions["firmware_versions"]:
                 model_versions = sorted(all_versions["firmware_versions"][model.lower()], key=lambda info: info["version"], reverse=True)
                 if len(model_versions) > 0:
-                    return model_versions[0]
+                    for i in range(len(model_versions)):
+                        if not 'minimum_version' in model_versions[i]:
+                            return model_versions[i]
+                        elif LooseVersion(model_versions[i]["minimum_version"]) <= LooseVersion(current_version):
+			    return model_versions[i]
+                            
                 else:
                     return None
             else:

@@ -14,14 +14,17 @@ plugin_package = "octoprint_lui"
 plugin_name = "OctoPrint-LUI"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "1.2.4"
+
+plugin_version = "1.3.1"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
-plugin_description = """Serves a mobile first responsive UI, aimed towards touchscreen users."""
+plugin_description = ( "-  Fixed issue whih coursed some users to be unable too update"
+		"-  Fixed bed calibration sequence"
+		"-  Changed update mechanism to ensure better installation of software updates in the future")
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
-plugin_author = "Pim Rutgers, Erik Heidstra, Maurits Hartman"
+plugin_author = "Pim Rutgers, Erik Heidstra, Maurits Hartman, Timo Boon"
 
 # The plugin's author's mail address.
 plugin_author_email = "info@lpfrg.com"
