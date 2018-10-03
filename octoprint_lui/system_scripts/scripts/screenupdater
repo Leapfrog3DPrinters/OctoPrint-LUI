@@ -27,7 +27,8 @@ run_sequence()
 	sudo cp -fr $sourcepath/boot/* $bootpath
 	find $bootpath -type d -exec chmod 755 {} \;
 	sudo cp -fr $sourcepath/usrbin/* $touchpath	
-	find $touchpath/dorotatetouch* -type d -exec chmod 755 {} \;
+	#find $touchpath/dorotatetouch* -type d -exec chmod 755 {} \;
+	sudo chmod 755 $touchpath/dorotatetouch*
 	sudo udevadm control --reload-rules
 	sudo udevadm trigger
 	sudo touch /home/pi/.screenupdated_October1
