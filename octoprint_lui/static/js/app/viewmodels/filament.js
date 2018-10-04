@@ -182,7 +182,8 @@ $(function ()  {
             else {
                 $('.swap_process_step').removeClass('active');
                 self.filamentActionText(gettext("Purge"));
-                self.loadFilament('purge');
+                //self.loadFilament('purge');
+                self.startExtruding();
             }
 
             return self.flyout.showFlyout('filament', true)
