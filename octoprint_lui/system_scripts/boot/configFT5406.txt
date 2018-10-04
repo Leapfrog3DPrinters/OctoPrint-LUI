@@ -32,7 +32,7 @@ hdmi_mode=1
 hdmi_mode=87
 hdmi_cvt=800 480 60 6 0 0 0
 
-display_rotate=1
+display_rotate=3
 
 # By forcing hdmi drive to 1, we prevent a pink line appearing on WaveShare displays
 hdmi_drive=1
