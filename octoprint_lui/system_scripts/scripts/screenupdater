@@ -22,15 +22,14 @@ run_sequence()
 	#and set permissions
 	sudo cp -fr $sourcepath/rules/* $rulespath
 	#find $rulespath -type d -exec chmod 755 {} \;
-	sudo chmod 755 $rulespath
+	sudo chmod -R 755 $rulespath
 	sudo cp -fr $sourcepath/scripts $scriptspath
-	sudo chmod 755 $scriptspath
+	sudo chmod -R 755 $scriptspath
 	sudo cp -fr $sourcepath/chromium/* $chromiumpath
 	sudo cp -fr $sourcepath/boot/* $bootpath
 	#find $bootpath -type d -exec chmod 755 {} \;
-	sudo chmod 755 $bootpath
-	sudo cp -fr $sourcepath/usrbin/* $touchpath
-	#find $touchpath/dorotatetouch* -type d -exec chmod 755 {} \;
+	sudo chmod -R 755 $bootpath
+	sudo cp -fr $sourcepath/usrbin/* $touchpath	
 	sudo chmod 755 $touchpath/dorotatetouch*
 	sudo udevadm control --reload-rules
 	sudo udevadm trigger
