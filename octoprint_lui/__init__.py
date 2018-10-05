@@ -763,7 +763,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
 
     def _screen_patch(self):
         if self.platform == Platforms.RaspberryPi:
-            dest_path = "/home/pi/.screenupdated_new"
+            dest_path = "/home/pi/.screenupdated_October1"
             if os.path.isfile(dest_path):
                 self._logger.info("Image already formed for the screen patch")
                 return True
