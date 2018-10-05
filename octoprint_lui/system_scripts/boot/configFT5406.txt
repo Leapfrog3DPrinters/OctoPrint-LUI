@@ -18,6 +18,7 @@ max_usb_current=1
 #overscan_top=16
 #overscan_bottom=16
 
+#FT5406 screen screwed with the UI size, so console size was forced
 # uncomment to force a console size. By default it will be display's size minus
 # overscan.
 framebuffer_width=622	

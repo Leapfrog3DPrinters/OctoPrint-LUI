@@ -1,9 +1,19 @@
 #!/bin/bash
 
+###
+# Script changes screen settings when new screen is attached.
+# Automaticaally runs when screens with USB are pluged into the raspberry (only when raspberry is turned on)
+# For other connection types run /home/pi/scripts/runScreenResize manually
+###
+
 script_name="runScreenResize"
 autostart="/home/pi/.config/openbox/autostart"
 
 run_screensetting(){
+#when adding a new screen X, us one of these (el)if-statements as a template.
+#create a configX.txt file and dorotatetuchX file with the correct settings in Octoprint-LUI/octoprint-lui/system-scripts/boot and ./usrbin respectively.
+#.screenupdater and runScreenResize will do the rest!
+
   #detect connected screen en set files accordingly
 	if [[ $(lsusb | grep 'D-WAV') = *D-WAV* ]]; then
 		sudo rm /boot/config.txt
@@ -45,7 +55,7 @@ run_screensetting(){
 		sudo rm /boot/config.txt
 		sleep 1
 		sudo cp /boot/configFT5406.txt /boot/config.txt
-		sudo logger "config file set to FT5406 screen, resolution is 800x480, display rotation is 3"
+		sudo logger "config file set to FT5406 screen, resolution auto, console size forced, display rotation is 3"
 		
 		sudo rm /usr/bin/dorotatetouch
 		sleep 1
@@ -82,6 +92,7 @@ set_readonly() {
 
 cleanrun(){
 REBOOT="no"
+#when ading new screen, use one of these if-statements as template. 
   if [[ $(lsusb | grep 'Atmel') = *Atmel* ]]; then
 	  sudo logger "Found Atmel Board in system."
 	  #if AtmelInstalled doesn't exist, that means other screen settings are being used than the ones required

@@ -1,11 +1,14 @@
 #!/bin/bash
 
 ###
+# This script updates and installs screen configiration files
+# For new screenUpdate, replace .screenupdate_October1
 #
-#rewritten screen updates for expandability purposes
-#
+# rewritten screen updates for expandability purposes
+# added FT5406 screen
 ###
 
+# define original and destination paths
 script_name="screenupdater"
 autostart="/home/pi/.config/openbox/autostart"
 imageinfo="/boot/lpfrgpi.json"
