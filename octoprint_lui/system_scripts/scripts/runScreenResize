@@ -92,7 +92,7 @@ set_readonly() {
 
 cleanrun(){
 REBOOT="no"
-#when ading new screen, use one of these if-statements as template. 
+#when adding new screen, use one of these if-statements as template. 
   if [[ $(lsusb | grep 'Atmel') = *Atmel* ]]; then
 	  sudo logger "Found Atmel Board in system."
 	  #if AtmelInstalled doesn't exist, that means other screen settings are being used than the ones required
@@ -104,6 +104,7 @@ REBOOT="no"
 	  else 
 		  echo "Atmel screen settings already set"
 	  fi
+	  #set correct zoom level
 	  if [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
       sudo logger "Chromium had wrong zoom for this screen."
 		  sudo pkill -f "chromium"
@@ -146,7 +147,7 @@ REBOOT="no"
 	  else 
 		  echo "FT5406 screen settings already set"
 	  fi
-	  if ! [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
+	  if [[ $(grep "default_zoom" /home/pi/.config/chromium/Default/Preferences) = *default_zoom* ]]; then
       sudo logger "Chromium had wrong zoom for this screen."
 		  sudo pkill -f "chromium"
 		  sudo rm /home/pi/.config/chromium/Default/Preferences
