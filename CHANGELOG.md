@@ -2,8 +2,9 @@
 
 Changelog for OctoPrint-LUI.
 
-##1.3.1
-- Implemented compatibility with the three screen versions
+## 1.3.1
+- Implemented compatibility with new screen versions
+- Fixed nozzle and bed cooldown after printbed calibration
 
 ## 1.2.9
 
