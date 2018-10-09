@@ -55,6 +55,10 @@ $(function () {
 
         self.abort = function()
         {
+			//cool nozzles down on abort
+			OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
+            OctoPrint.printer.setBedTargetTemperature(0);
+			
             sendToApi("printer/immediate_cancel");
             self.flyout.closeFlyout();
             self.showPushInNozzles(false);
@@ -74,6 +78,10 @@ $(function () {
 
         self.accept = function()
         {
+			//when finished cool nozzles down
+			OctoPrint.printer.setToolTargetTemperatures({ 'tool0': 0, 'tool1': 0 });
+            OctoPrint.printer.setBedTargetTemperature(0);
+			
             self.showBringRightDown(false);
             if (self.autoBedCalibrationComplete()) {
                 self.restoreFromCalibrationPosition();

@@ -2,7 +2,7 @@
 
 ###
 # This script updates and installs screen configiration files
-# For new screenUpdate, replace .screenupdate_October1
+# For new screenUpdate, replace .screenupdate_October9 in this file AND __init__.py
 #
 # rewritten screen updates for expandability purposes
 # added FT5406 screen
@@ -36,7 +36,7 @@ run_sequence()
 	sudo chmod 755 $touchpath/dorotatetouch*
 	sudo udevadm control --reload-rules
 	sudo udevadm trigger
-	sudo touch /home/pi/.screenupdated_October1
+	sudo touch /home/pi/.screenupdated_October9
 }
 
 splash()
@@ -48,7 +48,7 @@ splash()
 
 do_start()
 {
-    if [ ! -f /home/pi/.screenupdated_October1 ]; then
+    if [ ! -f /home/pi/.screenupdated_October9 ]; then
         echo "Image not ready for the new screen. Will be installed on next boot."
         do_install
         echo "Installation done. Please reboot."
