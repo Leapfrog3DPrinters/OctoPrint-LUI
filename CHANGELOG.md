@@ -2,6 +2,9 @@
 
 Changelog for OctoPrint-LUI.
 
+## 1.3.2
+- Fixed bug where printer boots in Octoprint UI when USB drive is inserted at boot
+
 ## 1.3.1
 - Implemented compatibility with new screen versions
 - Fixed nozzle and bed cooldown after printbed calibration
