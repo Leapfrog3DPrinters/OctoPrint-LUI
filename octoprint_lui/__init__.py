@@ -66,7 +66,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.maintenance_mode = False
 
         ##~ Model specific
-        self.supported_models = ['bolt', 'boltpro', 'xeed', 'xcel']
+        self.supported_models = ['bolt', 'boltpro', 'xeed', 'xcel', 'boltpro2']
         self.default_model = 'bolt'
         self.model = None
         self.model_identified = False
@@ -169,7 +169,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         ##~ Firmware
         # If a lower version is found, user is required to update
         # Don't use any signs here. Version requirements are automatically prefixed with '>='
-        self.firmware_version_requirement = { "bolt": "2.7.1", "boltpro": "2.8", "xcel": "2.8.1" }
+        self.firmware_version_requirement = { "bolt": "2.7.1", "boltpro": "2.8", "xcel": "2.8.1", "boltpro2": "2.8.2" }
         self.firmware_info_received_hooks = []
         self.fw_version_info = None
         self.auto_firmware_update_started = False
@@ -192,7 +192,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self.firmware_info_tool_properties["hotend_type"] = "HOTEND_TYPE_T{0:d}"
 
         ##~ Usernames that cannot be removed
-        self.reserved_usernames = ['local', 'bolt', 'boltpro', 'xeed', 'xcel', 'lpfrg']
+        self.reserved_usernames = ['local', 'bolt', 'boltpro', 'xeed', 'xcel', 'lpfrg', 'boltpro2']
         self.local_username = 'lpfrg'
 
         ##~ USB and file browser
@@ -305,7 +305,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
         self._init_usb()
 
         ##~ Init firmware update
-        self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions.json'
+        self.firmware_update_url = 'http://cloud.lpfrg.com/lui/firmwareversions_2.json'
         self.firmware_update_url_setting = self._settings.get(['firmware_update_url'])
         if self.debug and self.firmware_update_url_setting:
             self.firmware_update_url = self.firmware_update_url_setting
@@ -2451,7 +2451,7 @@ class LUIPlugin(octoprint.plugin.UiPlugin,
             "debug_lui": False,
             "changelog_version": "",
             "had_first_run": "",
-            "force_first_run": False,
+            "force_first_run": True,
             "debug_bundling" : False,
             "skip_version_sanity_check": False,
             "allow_octoprint_branches": False,
