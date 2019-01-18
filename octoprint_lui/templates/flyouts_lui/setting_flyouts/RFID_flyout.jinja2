@@ -1,0 +1,31 @@
+<div id="rfid">
+	<div class="Table">
+		<div class="Table-row Table-header">
+			<div class="Table-item">
+				{{ _('RFID Options') }}
+			</div>
+		</div>
+		<div class="Table-row">
+		    <div class="Table-item">
+		      <ul class="button-area">
+		        <li class="button" data-bind="touchClick: function () { showRFIDReading() }">
+		          <a href="#">
+		            <span>{{ _('Read Filament Tag') }}</span>
+		          </a>
+		        </li>
+		      </ul>
+		    </div>
+		</div>
+		<div class="Table-row">
+		    <div class="Table-item">
+		      <ul class="button-area">
+		        <li class="button" data-bind="touchClick: function () { showFilRemoving() }">
+		          <a href="#">
+		            <span>{{ _('Remove Filament Spool') }}</span>
+		          </a>
+		        </li>
+		      </ul>
+		    </div>
+		</div>
+	</div>
+</div>
