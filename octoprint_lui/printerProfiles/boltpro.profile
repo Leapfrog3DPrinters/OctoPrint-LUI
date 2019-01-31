@@ -46,8 +46,8 @@ autoBedCalibration: false
 extruderCalibration: true
 modelSizeDetection: true
 doorSafety: false
-filamentDetection: false
-filamentQuickLoad: false
+filamentDetection: true
+filamentQuickLoad: true
 dualX: true
 materialMinTemp: 150
 materialMaxTemp: 360
